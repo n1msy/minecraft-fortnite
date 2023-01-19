@@ -1,0 +1,185 @@
+{
+    "providers": [
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -13,
+            "height": 4,
+            "chars": [
+                "\u0001"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -17,
+            "height": 4,
+            "chars": [
+                "\u0002"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -21,
+            "height": 4,
+            "chars": [
+                "\u0003"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -25,
+            "height": 4,
+            "chars": [
+                "\u0004"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -29,
+            "height": 4,
+            "chars": [
+                "\u0005"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -33,
+            "height": 4,
+            "chars": [
+                "\u0006"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -37,
+            "height": 4,
+            "chars": [
+                "\u0007"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -41,
+            "height": 4,
+            "chars": [
+                "\u0008"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -45,
+            "height": 4,
+            "chars": [
+                "\u0009"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -49,
+            "height": 4,
+            "chars": [
+                "\u0010"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -53,
+            "height": 4,
+            "chars": [
+                "\u0011"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -57,
+            "height": 4,
+            "chars": [
+                "\u0012"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -61,
+            "height": 4,
+            "chars": [
+                "\u0013"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -65,
+            "height": 4,
+            "chars": [
+                "\u0014"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -69,
+            "height": 4,
+            "chars": [
+                "\u0015"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -73,
+            "height": 4,
+            "chars": [
+                "\u0016"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -77,
+            "height": 4,
+            "chars": [
+                "\u0017"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -81,
+            "height": 4,
+            "chars": [
+                "\u0018"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -85,
+            "height": 4,
+            "chars": [
+                "\u0019"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "denizen:pixel.png",
+            "ascent": -89,
+            "height": 4,
+            "chars": [
+                "\u0020"
+            ]
+        }
+    ]
+  }
+  
