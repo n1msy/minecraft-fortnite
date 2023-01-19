@@ -1,0 +1,18 @@
+{
+  "parent": "item/handheld",
+  "textures": {
+   "layer0": "item/stick"
+  },
+  "overrides": [
+   { "predicate": {"custom_model_data": 1}, "model": "item/custom/hulkhands"},
+   { "predicate": {"custom_model_data": 2}, "model": "item/weapons/flamethrower"},
+   { "predicate": {"custom_model_data": 3}, "model": "item/weapons/plasma_gun"},
+   { "predicate": {"custom_model_data": 4}, "model": "item/weapons/shotgun"},
+   { "predicate": {"custom_model_data": 5}, "model": "item/weapons/rocket_launcher"},
+   { "predicate": {"custom_model_data": 6}, "model": "item/weapons/rocket"},
+   { "predicate": {"custom_model_data": 7}, "model": "item/weapons/tank"},
+   { "predicate": {"custom_model_data": 8}, "model": "item/weapons/megumin_staff"},
+   { "predicate": {"custom_model_data": 9}, "model": "item/weapons/nokia"}
+
+  ]
+ }

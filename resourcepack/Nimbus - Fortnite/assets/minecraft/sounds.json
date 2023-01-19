@@ -1,0 +1,92 @@
+{
+  "traps.mario" : {
+    "subtitle": "Mario Burn PP Head SFX",
+    "sounds":[
+    "traps/mario"
+    ]
+  },
+  "traps.laser" : {
+    "subtitle": "Laser SFX",
+    "sounds":[
+    "traps/laser"
+    ]
+  },
+  "traps.monkey" : {
+    "subtitle": "Monkey SFX",
+    "sounds":[
+    "traps/monkey"
+    ]
+  },
+  "impostor.kill" : {
+    "subtitle": "Impostor Kill",
+    "sounds":[
+    "mobs/impostor_kill"
+    ]
+  },
+  "dream.what" : {
+    "subtitle": "Dream WHAATTT",
+    "sounds":[
+    "mobs/dream_what"
+    ]
+  },
+  "kirby.inhale" : {
+    "subtitle": "Kirby Inhale",
+    "sounds":[
+    "mobs/kirby_inhale"
+    ]
+  },
+  "rickroll" : {
+    "subtitle": "GET RICKROLLED NOOB",
+    "sounds":[
+    "mobs/rickroll"
+    ]
+  },
+  "smp.town_theme" : {
+    "category": "music",
+    "subtitle": "Now Playing: Cozy Town Theme",
+    "volume": 0.5,
+    "sounds":[
+      {
+        "name": "music/town_theme",
+        "stream": true,
+        "attenuation_distance": 8 
+      }
+    ]
+  },
+  "random.call" : {
+    "subtitle": "",
+    "sounds":[
+    "random/call"
+    ]
+  },
+  "random.join" : {
+    "subtitle": "",
+    "sounds":[
+    "random/join"
+    ]
+  },
+  "weapons.lightsaber.ignition" : {
+    "subtitle": "",
+    "sounds":[
+    "weapons/lightsaber/ignition"
+    ]
+  },
+  "weapons.lightsaber.idle" : {
+    "subtitle": "",
+    "sounds":[
+    "weapons/lightsaber/idle"
+    ]
+  },
+  "weapons.lightsaber.swing" : {
+    "subtitle": "",
+    "sounds":[
+    "weapons/lightsaber/swing"
+    ]
+  },
+  "val.match_found" : {
+    "subtitle": "",
+    "sounds":[
+    "val/match_found"
+    ]
+  }
+}

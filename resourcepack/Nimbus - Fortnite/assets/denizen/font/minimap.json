@@ -1,0 +1,912 @@
+{
+  "providers": [
+      {
+        "type": "space",
+        "advances": 
+        {
+        "\uF801": -1,
+        "\uF80F": -72
+        }
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": 0,
+          "height": 1,
+          "chars": [
+              "\u0001"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -1,
+          "height": 1,
+          "chars": [
+              "\u0002"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -2,
+          "height": 1,
+          "chars": [
+              "\u0003"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -3,
+          "height": 1,
+          "chars": [
+              "\u0004"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -4,
+          "height": 1,
+          "chars": [
+              "\u0005"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -5,
+          "height": 1,
+          "chars": [
+              "\u0006"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -6,
+          "height": 1,
+          "chars": [
+              "\u0007"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -7,
+          "height": 1,
+          "chars": [
+              "\u0008"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -8,
+          "height": 1,
+          "chars": [
+              "\u0009"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -9,
+          "height": 1,
+          "chars": [
+              "\u0010"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -10,
+          "height": 1,
+          "chars": [
+              "\u0011"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -11,
+          "height": 1,
+          "chars": [
+              "\u0012"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -12,
+          "height": 1,
+          "chars": [
+              "\u0013"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -13,
+          "height": 1,
+          "chars": [
+              "\u0014"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -14,
+          "height": 1,
+          "chars": [
+              "\u0015"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -15,
+          "height": 1,
+          "chars": [
+              "\u0016"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -16,
+          "height": 1,
+          "chars": [
+              "\u0017"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -17,
+          "height": 1,
+          "chars": [
+              "\u0018"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -18,
+          "height": 1,
+          "chars": [
+              "\u0019"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -19,
+          "height": 1,
+          "chars": [
+              "\u0020"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -20,
+          "height": 1,
+          "chars": [
+              "\u0021"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -21,
+          "height": 1,
+          "chars": [
+              "\u0022"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -22,
+          "height": 1,
+          "chars": [
+              "\u0023"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -23,
+          "height": 1,
+          "chars": [
+              "\u0024"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -24,
+          "height": 1,
+          "chars": [
+              "\u0025"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -25,
+          "height": 1,
+          "chars": [
+              "\u0026"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -26,
+          "height": 1,
+          "chars": [
+              "\u0027"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -27,
+          "height": 1,
+          "chars": [
+              "\u0028"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -28,
+          "height": 1,
+          "chars": [
+              "\u0029"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -29,
+          "height": 1,
+          "chars": [
+              "\u0030"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -30,
+          "height": 1,
+          "chars": [
+              "\u0031"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -31,
+          "height": 1,
+          "chars": [
+              "\u0032"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -32,
+          "height": 1,
+          "chars": [
+              "\u0033"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -33,
+          "height": 1,
+          "chars": [
+              "\u0034"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -34,
+          "height": 1,
+          "chars": [
+              "\u0035"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -35,
+          "height": 1,
+          "chars": [
+              "\u0036"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -36,
+          "height": 1,
+          "chars": [
+              "\u0037"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -37,
+          "height": 1,
+          "chars": [
+              "\u0038"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -38,
+          "height": 1,
+          "chars": [
+              "\u0039"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -39,
+          "height": 1,
+          "chars": [
+              "\u0040"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -40,
+          "height": 1,
+          "chars": [
+              "\u0041"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -41,
+          "height": 1,
+          "chars": [
+              "\u0042"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -42,
+          "height": 1,
+          "chars": [
+              "\u0043"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -43,
+          "height": 1,
+          "chars": [
+              "\u0044"
+          ]
+      },
+      {
+          "type": "bitmap",
+          "file": "denizen:pixel.png",
+          "ascent": -44,
+          "height": 1,
+          "chars": [
+              "\u0045"
+          ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -45,
+        "height": 1,
+        "chars": [
+            "\u0046"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -46,
+        "height": 1,
+        "chars": [
+            "\u0047"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -47,
+        "height": 1,
+        "chars": [
+            "\u0048"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -48,
+        "height": 1,
+        "chars": [
+            "\u0049"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -49,
+        "height": 1,
+        "chars": [
+            "\u0050"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -50,
+        "height": 1,
+        "chars": [
+            "\u0051"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -51,
+        "height": 1,
+        "chars": [
+            "\u0052"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -52,
+        "height": 1,
+        "chars": [
+            "\u0053"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -53,
+        "height": 1,
+        "chars": [
+            "\u0054"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -54,
+        "height": 1,
+        "chars": [
+            "\u0055"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -55,
+        "height": 1,
+        "chars": [
+            "\u0056"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -56,
+        "height": 1,
+        "chars": [
+            "\u0057"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -57,
+        "height": 1,
+        "chars": [
+            "\u0058"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -58,
+        "height": 1,
+        "chars": [
+            "\u0059"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -59,
+        "height": 1,
+        "chars": [
+            "\u0060"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -60,
+        "height": 1,
+        "chars": [
+            "\u0061"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -61,
+        "height": 1,
+        "chars": [
+            "\u0062"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -62,
+        "height": 1,
+        "chars": [
+            "\u0063"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -63,
+        "height": 1,
+        "chars": [
+            "\u0064"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -64,
+        "height": 1,
+        "chars": [
+            "\u0065"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -65,
+        "height": 1,
+        "chars": [
+            "\u0066"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -66,
+        "height": 1,
+        "chars": [
+            "\u0067"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -67,
+        "height": 1,
+        "chars": [
+            "\u0068"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -68,
+        "height": 1,
+        "chars": [
+            "\u0069"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -69,
+        "height": 1,
+        "chars": [
+            "\u0070"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -70,
+        "height": 1,
+        "chars": [
+            "\u0071"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -71,
+        "height": 1,
+        "chars": [
+            "\u0072"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -72,
+        "height": 1,
+        "chars": [
+            "\u0073"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -73,
+        "height": 1,
+        "chars": [
+            "\u0074"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -74,
+        "height": 1,
+        "chars": [
+            "\u0075"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -75,
+        "height": 1,
+        "chars": [
+            "\u0076"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -76,
+        "height": 1,
+        "chars": [
+            "\u0077"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -77,
+        "height": 1,
+        "chars": [
+            "\u0078"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -78,
+        "height": 1,
+        "chars": [
+            "\u0079"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -79,
+        "height": 1,
+        "chars": [
+            "\u0080"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -80,
+        "height": 1,
+        "chars": [
+            "\u0081"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -81,
+        "height": 1,
+        "chars": [
+            "\u0082"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -82,
+        "height": 1,
+        "chars": [
+            "\u0083"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -83,
+        "height": 1,
+        "chars": [
+            "\u0084"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -84,
+        "height": 1,
+        "chars": [
+            "\u0085"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -85,
+        "height": 1,
+        "chars": [
+            "\u0086"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -86,
+        "height": 1,
+        "chars": [
+            "\u0087"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -87,
+        "height": 1,
+        "chars": [
+            "\u0088"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -88,
+        "height": 1,
+        "chars": [
+            "\u0089"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -89,
+        "height": 1,
+        "chars": [
+            "\u0090"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -90,
+        "height": 1,
+        "chars": [
+            "\u0091"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -91,
+        "height": 1,
+        "chars": [
+            "\u0092"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -92,
+        "height": 1,
+        "chars": [
+            "\u0093"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -93,
+        "height": 1,
+        "chars": [
+            "\u0094"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -94,
+        "height": 1,
+        "chars": [
+            "\u0095"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -95,
+        "height": 1,
+        "chars": [
+            "\u0096"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -96,
+        "height": 1,
+        "chars": [
+            "\u0097"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -97,
+        "height": 1,
+        "chars": [
+            "\u0098"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -98,
+        "height": 1,
+        "chars": [
+            "\u0099"
+        ]
+      },
+      {
+        "type": "bitmap",
+        "file": "denizen:pixel.png",
+        "ascent": -99,
+        "height": 1,
+        "chars": [
+            "\u0100"
+        ]
+      }
+  ]
+}
