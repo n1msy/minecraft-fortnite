@@ -7,20 +7,29 @@ minimap:
     - narrate "<&c>minimap removed"
     - stop
 
+  #- define bb minimap_<player.uuid>
+  #- bossbar create <[bb]>
   - flag player minimap
 
   - while <player.is_online> && <player.has_flag[minimap]>:
     - define loc <player.location>
-    - define size 70
+    #140=142 negative spacing
+    #negative spacing = size + 2
+    - define size 100
     #goal = 72
 
-    - define yaw <map[North=0;South=180;West=-90;East=90].get[<player.location.yaw.simple>]>
+    - define yaw <map[North=0;South=180;West=-90;East=90].get[<[loc].yaw.simple>]>
+    #- narrate <[loc].yaw.simple>
+    #- define yaw <map[North=0;Northeast=45;East=90;Southeast=135;South=180;Southwest=-135;West=-90;Northwest=-135].get[<[loc].direction>]>
+    #- narrate <[yaw]||null>/<[loc].direction>
+    #/ex narrate <player.location.direction>
+    #- define yaw <[loc].yaw>
 
     - define center <[loc].center.above[100].with_yaw[<[yaw]>].backward_flat[<[size].div[1.6]>]>
 
     - define neg_spacing <&chr[F801]>
     - define next_line_spacing <&chr[F80F]>
-    #- define pos_spacing <&chr[F901].font[denizen:overlay]>
+    - define pos_spacing <&chr[F901].font[denizen:overlay]>
 
     - define ordered_pixels <list[]>
     - repeat <[size]>:
@@ -40,13 +49,13 @@ minimap:
 
       - define ordered_pixels:->:<[next_line_spacing]><[pixels].reverse.separated_by[<[neg_spacing]>]>
 
-      #- define ordered_pixels:->:<[next_line_spacing]><[row].parse_tag[<[pixel].color[<[parse_value]>]>].reverse.separated_by[<[neg_spacing]>]>
+    - define title <[pos_spacing].repeat[600]><[ordered_pixels].unseparated.font[denizen:minimap].optimize_json>
 
-    - define title <[ordered_pixels].unseparated.font[denizen:minimap].optimize_json>
-
-    #- narrate <[title].to_raw_json.length>
-
-    - title subtitle:<[title]> fade_in:0t
+    #- bossbar update <[bb]> title:<[title]>
+    - sidebar set values:<[title]>
     - wait 10t
 
   - flag player minimap:!
+  - sidebar remove
+  #- if <server.current_bossbars.contains[<[bb]>]>:
+    #- bossbar remove <[bb]>
