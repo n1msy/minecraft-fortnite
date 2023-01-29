@@ -16,7 +16,6 @@ build_tiles:
         #closest tile finds the nearest tile if any (their centers only)
         - define closest_tile_center <[target_loc].find_blocks_flagged[build].within[6].parse[flag[build.center]].sort_by_number[distance[<[target_loc]>]].first||null>
 
-
         #- playeffect effect:FLAME offset:0 at:<[closest_center]>
 
         #- [ if there are any nearby tiles, automatically "snap" the player's selected center to the nearby tile's y ] - #
@@ -109,18 +108,15 @@ build:
     #- define loc <player.location.with_pitch[90].ray_trace[range=3;return=block;default=air].with_yaw[<[eye_loc].yaw>]>
 
     #- define yaw <map[North=90;South=-90;West=0;East=-180].get[<[eye_loc].yaw.simple>]>
-    - define target_loc <[eye_loc].ray_trace[default=air;range=4;return=block]>
-
     - choose <player.held_item_slot>:
       - case 1:
+        - define target_loc <[eye_loc].ray_trace[default=air;range=1.75;return=block]>
         - actionbar wall
+        - flag player build.type:wall
 
         - define closest_center <[target_loc].find_blocks.within[3].parse_tag[<[parse_value].with_x[<proc[round5].context[<[parse_value].x>]>].with_z[<proc[round5].context[<[parse_value].z>]>]>].sort_by_number[distance[<[target_loc]>]].first||null>
 
-        #closest tile finds the nearest tile if any (their centers only)
-        - define closest_tile_center <[target_loc].find_blocks_flagged[build].within[6].parse[flag[build.center]].sort_by_number[distance[<[target_loc]>]].first||null>
-
-        #- [ if there are any nearby tiles, automatically "snap" the player's selected center to the nearby tile's y ] - #
+        - define closest_tile_center <[target_loc].find_blocks_flagged[build].within[1.75].parse[flag[build.center]].sort_by_number[distance[<[target_loc]>]].first||null>
 
         - if <[closest_tile_center]> != null:
           - define closest_center <[closest_center].with_y[<[closest_tile_center].y.add[1]>]>
@@ -134,21 +130,43 @@ build:
         - if <[closest_center].material.name> != air:
           - define closest_center <[closest_center].above>
 
+        #default is true for walls
+        - define can_build True
+
         - define build_loc <[target_loc].with_y[<[closest_center].y.sub[1]>]>
         - define rounded_x <proc[round5].context[<[build_loc].x>]>
         - define rounded_z <proc[round5].context[<[build_loc].z>]>
         - define tile_center <[origin].add[<[rounded_x]>,<[build_loc].y>,<[rounded_z]>]>
 
-        - define can_build False
+        #if the tile has a block there and it's NOT a floor
         - if <[tile_center].material.name> != AIR && !<[tile_center].has_flag[build]> || <[tile_center].flag[build.type]> != FLOOR:
           - define can_build True
           #move the build 1 down, since they're building on top of the ground
           - define tile_center <[tile_center].above>
 
-        - playeffect effect:FLAME offset:0 at:<[tile_center]>
+        - define yaw <map[North=180;South=0;West=90;East=-90].get[<[eye_loc].yaw.simple>]>
+        - define tile_center <[tile_center].with_yaw[<[yaw]>].forward[2].above[2]>
+
+        - define tile <[tile_center].left[2].below[2].to_cuboid[<[tile_center].right[2].above[2]>]>
+
+        #third thing checks if only the blocks "in the way" are structures
+        - define blocks_in_way False
+        - if <[tile].blocks.filter[material.name.equals[AIR].not].any> && <[tile].blocks.filter[has_flag[breakable].not].any> && <[tile].blocks.filter[has_flag[build].not].is_empty>:
+          - define can_build False
+          - define blocks_in_way True
+
+        - if <[can_build]>:
+          - debugblock <[tile].blocks> d:2t color:0,255,0,128
+          - flag player build.struct:<[tile]>
+        - else:
+          - flag player build.struct:!
+          - if <[blocks_in_way]>:
+            - debugblock <[tile].blocks> d:2t color:0,0,0,128
 
       - case 2:
+        - define target_loc <[eye_loc].ray_trace[default=air;range=4;return=block]>
         - actionbar floor
+        - flag player build.type:floor
         - inject build_tiles.floor
 
       - case 3:
@@ -175,11 +193,20 @@ build_system_handler:
     - modifyblock <[build].blocks> oak_planks
     - flag <[build].blocks> build.<player.uuid>.health:<script[nimnite_config].data_key[materials.<[material]>.hp]>
     - flag <[build].blocks> build.center:<[build].center>
-    - flag <[build].blocks> build.type:floor
+    - flag <[build].blocks> build.type:<player.flag[build.type]>
 
     on player right clicks block location_flagged:build.center:
     - determine passively cancelled
     - define center <context.location.flag[build.center]>
-    - define tile <[center].to_cuboid[<[center]>].expand[2,0,2]>
-    - modifyblock <[tile]> air
-    - flag <[tile].blocks> build:!
+
+    - choose <context.location.flag[build.type]>:
+      - case wall:
+        - define tile <[center].to_cuboid[<[center]>].expand[2,0,2]>
+        - modifyblock <[tile]> air
+        - flag <[tile].blocks> build:!
+      - case floor:
+        - define tile <[center].left[2].below[2].to_cuboid[<[center].right[2].above[2]>]>
+        - modifyblock <[tile]> air
+        - flag <[tile].blocks> build:!
+      - default:
+        - narrate a
