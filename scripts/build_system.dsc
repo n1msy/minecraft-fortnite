@@ -14,7 +14,7 @@ build_tiles:
         - define closest_center <[target_loc].find_blocks.within[3].parse_tag[<[parse_value].with_x[<proc[round5].context[<[parse_value].x>]>].with_z[<proc[round5].context[<[parse_value].z>]>]>].sort_by_number[distance[<[target_loc]>]].first||null>
 
         #closest tile finds the nearest tile if any (their centers only)
-        - define closest_tile_center <[target_loc].find_blocks_flagged[build].within[6].parse[flag[build.center]].sort_by_number[distance[<[target_loc]>]].first||null>
+        - define closest_tile_center <[target_loc].find_blocks_flagged[build].within[6].filter[flag[build.type].equals[floor]].parse[flag[build.center]].sort_by_number[distance[<[target_loc]>]].first||null>
 
         #- playeffect effect:FLAME offset:0 at:<[closest_center]>
 
@@ -31,6 +31,8 @@ build_tiles:
 
         - if <[closest_center].material.name> != air:
           - define closest_center <[closest_center].above>
+
+        #- playeffect effect:FLAME offset:0 at:<[closest_center]>
 
         - define build_loc <[target_loc].with_y[<[closest_center].y.sub[1]>]>
         - define rounded_x <proc[round5].context[<[build_loc].x>]>
@@ -66,7 +68,7 @@ build_tiles:
 
         #note: second check also applies to strubuildstures (just as a byproduct)
         - define blocks_in_way False
-        - if <[tile].blocks.filter[material.name.equals[AIR].not].any> && <[tile].blocks.filter[has_flag[breakable].not].any>:
+        - if <[tile].blocks.filter[material.name.equals[AIR].not].any> && <[tile].blocks.filter[has_flag[breakable].not].any> && <[tile].blocks.filter[has_flag[build].not].is_empty>:
           - define can_build False
           - define blocks_in_way True
 
@@ -116,7 +118,7 @@ build:
 
         - define closest_center <[target_loc].find_blocks.within[3].parse_tag[<[parse_value].with_x[<proc[round5].context[<[parse_value].x>]>].with_z[<proc[round5].context[<[parse_value].z>]>]>].sort_by_number[distance[<[target_loc]>]].first||null>
 
-        - define closest_tile_center <[target_loc].find_blocks_flagged[build].within[1.75].parse[flag[build.center]].sort_by_number[distance[<[target_loc]>]].first||null>
+        - define closest_tile_center <[target_loc].find_blocks_flagged[build].within[6].filter[flag[build.type].equals[floor]].parse[flag[build.center]].sort_by_number[distance[<[target_loc]>]].first||null>
 
         - if <[closest_tile_center]> != null:
           - define closest_center <[closest_center].with_y[<[closest_tile_center].y.add[1]>]>
@@ -190,23 +192,39 @@ build_system_handler:
     - define material wood
 
     - define build <player.flag[build.struct]>
-    - modifyblock <[build].blocks> oak_planks
-    - flag <[build].blocks> build.<player.uuid>.health:<script[nimnite_config].data_key[materials.<[material]>.hp]>
-    - flag <[build].blocks> build.center:<[build].center>
-    - flag <[build].blocks> build.type:<player.flag[build.type]>
+    - define blocks <[build].blocks>
 
-    on player right clicks block location_flagged:build.center:
+    - modifyblock <[blocks]> oak_planks
+
+    #this way, already placed structures such as intersecting walls and floors wont be overrided when the blocks are removed
+
+    - flag <[blocks]> build.center:<[build].center>
+    - flag <[blocks]> build.health:<script[nimnite_config].data_key[materials.<[material]>.hp]>
+    - flag <[blocks]> build.type:<player.flag[build.type]>
+    #the cuboid
+    - flag <[blocks]> build.structure:<[build]>
+
+    on player right clicks block location_flagged:build.structure flagged:build:
     - determine passively cancelled
-    - define center <context.location.flag[build.center]>
+    - define loc <context.location>
+    #cuboid
+    - define tile <[loc].flag[build.structure]>
+    - define tile_center <[loc].flag[build.center]>
+    #floor/wall/stair/pyramid
+    - define type <[loc].flag[build.type]>
+    - define total_blocks <[tile].blocks>
 
-    - choose <context.location.flag[build.type]>:
-      - case wall:
-        - define tile <[center].to_cuboid[<[center]>].expand[2,0,2]>
-        - modifyblock <[tile]> air
-        - flag <[tile].blocks> build:!
-      - case floor:
-        - define tile <[center].left[2].below[2].to_cuboid[<[center].right[2].above[2]>]>
-        - modifyblock <[tile]> air
-        - flag <[tile].blocks> build:!
-      - default:
-        - narrate a
+    #deduplicating this
+    - define closest_tiles <[tile_center].find_blocks_flagged[build].within[3].filter[flag[build.type].equals[<map[floor=wall;wall=floor].get[<[type]>]>]].parse[flag[build.center]].sort_by_number[distance[<[tile_center]>]].parse[flag[build.structure]].deduplicate>
+
+    - foreach <[closest_tiles]> as:other_tile:
+      - if !<[tile].intersects[<[other_tile]>]>:
+        - foreach next
+      - define connectors <[tile].intersection[<[other_tile]>].blocks>
+      #swap the connectors to whatever is already placed
+      - flag <[connectors]> build:<[other_tile].center.flag[build]>
+
+    - define actual_blocks <[tile].blocks.filter[flag[build.type].equals[<[type]>]]>
+
+    - modifyblock <[actual_blocks]> air
+    - flag <[actual_blocks]> build:!
