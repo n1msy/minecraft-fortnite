@@ -13,8 +13,14 @@ build_tiles:
         #closest center can be anywhere that's rounded to the grid
         - define closest_center <[target_loc].find_blocks.within[3].parse_tag[<[parse_value].with_x[<proc[round5].context[<[parse_value].x>]>].with_z[<proc[round5].context[<[parse_value].z>]>]>].sort_by_number[distance[<[target_loc]>]].first||null>
 
-        #closest tile finds the nearest tile if any (their centers only)
+        #looking for walls to place the floor on
+        #- if !<[closest_center].find_blocks_flagged[build].within[4].filter[flag[build.type].equals[wall]].filter[center.y.equals[<[closest_center].center.y>]].is_empty>:
+        #  - define closest_tile_center <[closest_center]>
+        #- else:
+          #closest tile finds the nearest tile if any (their centers only)
         - define closest_tile_center <[target_loc].find_blocks_flagged[build].within[6].filter[flag[build.type].equals[floor]].parse[flag[build.center]].sort_by_number[distance[<[target_loc]>]].first||null>
+
+        #- playeffect effect:FLAME at:<[closest_center]> offset:0
 
         #- playeffect effect:FLAME offset:0 at:<[closest_center]>
 
@@ -215,7 +221,7 @@ build_system_handler:
     - define total_blocks <[tile].blocks>
 
     #deduplicating this
-    - define closest_tiles <[tile_center].find_blocks_flagged[build].within[3].filter[flag[build.type].equals[<map[floor=wall;wall=floor].get[<[type]>]>]].parse[flag[build.center]].sort_by_number[distance[<[tile_center]>]].parse[flag[build.structure]].deduplicate>
+    - define closest_tiles <[tile_center].find_blocks_flagged[build].within[3].parse[flag[build.center]].sort_by_number[distance[<[tile_center]>]].parse[flag[build.structure]].deduplicate>
 
     - foreach <[closest_tiles]> as:other_tile:
       - if !<[tile].intersects[<[other_tile]>]>:
@@ -224,7 +230,8 @@ build_system_handler:
       #swap the connectors to whatever is already placed
       - flag <[connectors]> build:<[other_tile].center.flag[build]>
 
-    - define actual_blocks <[tile].blocks.filter[flag[build.type].equals[<[type]>]]>
+    #checking the build centers instead of type, so the connectors between walls can work with this too
+    - define actual_blocks <[tile].blocks.filter[flag[build.center].equals[<[tile_center]>]]>
 
     - modifyblock <[actual_blocks]> air
     - flag <[actual_blocks]> build:!
