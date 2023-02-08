@@ -10,76 +10,64 @@ build_tiles:
 
   floor:
 
-        - define target_loc <[eye_loc].ray_trace[default=air;range=4;return=block]>
+        - define can_build False
 
-        # - / Find the nearest "center" to place the 5x5 floor / - #
-        - define closest_center <[target_loc].find_blocks.within[3].parse_tag[<[parse_value].with_x[<proc[round4].context[<[parse_value].x>]>].with_z[<proc[round4].context[<[parse_value].z>]>]>].sort_by_number[distance[<[target_loc]>]].first||null>
+        - define target_loc <[eye_loc].ray_trace[default=air;range=4]>
 
-        # - / Find nearest floor center to calculate where to position the next tile / - #
-        - define closest_tiles <[target_loc].find_blocks_flagged[build.center].within[6].filter[flag[build.type].equals[floor]]>
-        - define closest_tile_center null
-        - if !<[closest_tiles].is_empty>:
-          - define closest_tile_center <[closest_tiles].parse[flag[build.center]].sort_by_number[distance[<[target_loc]>]].first>
+        #so players can't place floors THROUGH walls
+        - if <[target_loc].has_flag[build]>:
+          - define target_loc <[eye_loc].ray_trace[default=air;range=2]>
 
-        # - / if there are any nearby tiles, automatically "snap" the player's selected center to the nearby tile's y / - #
+        - define x <proc[round4].context[<[target_loc].x>]>
+        - define z <proc[round4].context[<[target_loc].z>]>
 
-        # -> If there IS a nearby tile, position the Y axis of the nearest center with the Y axis of the nearest tile ->
-        - if <[closest_tile_center]> != null:
-          - define closest_center <[closest_center].with_y[<[closest_tile_center].y.add[1]>]>
-        # -> Otherwise if they're pointing in the air, get the block closest to the ground from where you're looking ->
-        - else if <[target_loc].material.name> == air:
-          - define closest_center <[closest_center].with_pitch[90].ray_trace>
-        # -> Otherwise, they're most likely pointing to the ground, so move the Y up 1 #
-        - else:
-          - define closest_center <[closest_center].with_y[<[target_loc].y.add[1]>]>
+        #find's the bottom center of the ENTIRE tower
+        #using eye_loc y so the y doesn't go below anything
+        - define closest_center <[target_loc].with_x[<[x]>].with_z[<[z]>].with_y[<[eye_loc].y>].with_pitch[90].ray_trace>
 
-        # -> If the closest center is still pointing at the ground, move one up #
-        - if <[closest_center].material.name> != air:
+        #if there's a floor there already there
+        #checking .below because ray_trace returns right before the block
+        - if <[closest_center].below.has_flag[build.type]> && <[closest_center].below.flag[build.type]> == FLOOR:
+          - define closest_center <[closest_center].below>
+        #if the tile is underground
+        - else if <[closest_center].material.name> != air:
           - define closest_center <[closest_center].above>
 
-        - define build_loc <[target_loc].with_y[<[closest_center].y.sub[1]>]>
+        #round the wall heights by 5 based on the floor below the target_loc
+        - define add_y <proc[round4].context[<[target_loc].forward[2].distance[<[closest_center]>].vertical.sub[2.5]>]>
+        - define closest_center <[closest_center].above[<[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>]>
 
-        - define rounded_x <proc[round4].context[<[build_loc].x>]>
-        - define rounded_z <proc[round4].context[<[build_loc].z>]>
+        - define tile <[closest_center].to_cuboid[<[closest_center]>].expand[2,0,2]>
 
-        - define tile_center <[origin].add[<[rounded_x]>,<[build_loc].y>,<[rounded_z]>]>
-
-        #if there's a build on left/right/forward/backward, then it's connected to another tile, and it's buildable
-        #mostly used to prevent diagonal building, but is also useful for checking if they can place on walls
-        - define can_build False
-        - foreach <location[3,0,0]>|<location[-3,0,0]>|<location[0,0,3]>|<location[0,0,-3]> as:dir:
-          - if <[tile_center].add[<[dir]>].material.name> != air:
-            - define can_build True
-            - foreach stop
-
-        #if the tile has a block there and it's NOT a floor
-        - if <[tile_center].material.name> != AIR && !<[tile_center].has_flag[build]> || <[tile_center].flag[build.type]> != FLOOR:
+        #-if there's ANY build on the left, right, front, or behind
+        - if <[closest_center].left[2].has_flag[build]> || <[closest_center].right[2].has_flag[build]> || <[closest_center].forward_flat[2].has_flag[build]> || <[closest_center].backward_flat[2].has_flag[build]>:
           - define can_build True
-          #move the build 1 down, since they're building on top of the ground
-          - define tile_center <[tile_center].above>
+        #otherwise default to the ground
+        - else:
+          - define center <[closest_center].with_y[<[eye_loc].y>].with_pitch[90].ray_trace>
+          - define tile <[center].to_cuboid[<[center]>].expand[2,0,2]>
+          #- if <[closest_center].material.name> != air:
+            #- define tile <[tile].shift[0,1,0]>
 
-        - define tile <[tile_center].to_cuboid[<[tile_center]>].expand[2,0,2]>
+
         - define blocks <[tile].blocks>
-
-        #check 1: if there are ANY non-air blocks in the tile
-        #check 2: if there's ANY non-air block that does NOT have the breakable flag
-
-        - define blocks_in_way False
-        - if <[blocks].filter[material.name.equals[AIR].not].any> && <[blocks].filter[material.name.equals[AIR].not].filter[has_flag[breakable].not].any>:
-          - define can_build False
+        #making sure there's either all air in that area or any thing being placed there is breakable
+        - if <[blocks].filter[material.name.equals[AIR].not].is_empty> || <[blocks].filter[material.name.equals[AIR].not].filter[has_flag[breakable].not].is_empty>:
+          - define can_build True
+          - define blocks_in_way False
+        - else:
           - define blocks_in_way True
 
-        #so in case it's doing the ray_trace thing when there's no other nearby tiles, check if the distance is valid
-        - if <[tile_center].distance[<[loc]>].vertical> > 6:
+        #it there's already a build there
+        - if <[tile].center.has_flag[build]>:
           - define can_build False
-          #setting it to false so they dont show up
-          - define blocks_in_way False
 
-        #if there's already a structure there, don't show up
-        - if <[tile_center].has_flag[build]>:
+        #if too far
+        - if <[tile].center.distance[<[eye_loc]>].vertical> > 4:
           - define can_build False
           - define blocks_in_way False
 
+        #if there are blocks in the way, you can't build, otherwise, you can
         - if <[can_build]>:
           - debugblock <[blocks]> d:2t color:0,255,0,128
           - flag player build.struct:<[tile]>
@@ -89,6 +77,8 @@ build_tiles:
             - debugblock <[blocks]> d:2t color:0,0,0,128
 
   wall:
+
+      - define can_build False
 
       - define target_loc <[eye_loc].forward>
 
@@ -108,8 +98,6 @@ build_tiles:
 
       #- playeffect effect:FLAME at:<[closest_center].above[2].center> offset:0
       #- playeffect effect:FLAME at:<[bottom_center].above[2].center> offset:0
-
-      - define can_build False
 
       #base tile
       - define tile <[bottom_center].left[2].to_cuboid[<[bottom_center].right[2].above[4]>]>
@@ -147,15 +135,15 @@ build_tiles:
       - define horizontal:!
       #-if there's a wall on the LEFT side
       #checking 3 blocks above the center, so the corners of the a wall below don't count
-      - if <[center].left[3].has_flag[build]>:
+      - if <[center].left[2].has_flag[build]>:
         - define horizontal True
         - define can_build True
-        - define new_y <[center].left[3].flag[build.structure].min.y>
+        - define new_y <[center].left[2].flag[build.structure].min.y>
       #-if there's a wall on the RIGHT side
-      - else if <[center].right[3].has_flag[build]>:
+      - else if <[center].right[2].has_flag[build]>:
         - define horizontal True
         - define can_build True
-        - define new_y <[center].right[3].flag[build.structure].min.y>
+        - define new_y <[center].right[2].flag[build.structure].min.y>
 
       - if <[new_y].exists>:
         - define bottom_center <[bottom_center].with_y[<[new_y]>]>
@@ -166,23 +154,29 @@ build_tiles:
         - if <[bottom_center].below.material.name> == AIR:
           - define bottom_center <[bottom_center].with_pitch[90].ray_trace.with_yaw[<[yaw]>]>
           - define tile <[bottom_center].left[2].to_cuboid[<[bottom_center].right[2].above[4]>]>
+          #if you're looking high up in the air and there really are no connecting walls, it'll ray trace onto a wall
+          - if <[tile].min.below.has_flag[build]>:
+            - define tile <[tile].shift[0,-1,0]>
           - define can_build True
 
       # - "can place" check
 
+      - define blocks <[tile].blocks>
       #making sure there's either all air in that area or any thing being placed there is breakable
       - if <[blocks].filter[material.name.equals[AIR].not].is_empty> || <[blocks].filter[material.name.equals[AIR].not].filter[has_flag[breakable].not].is_empty>:
+        - define can_build True
         - define blocks_in_way False
       - else:
         - define blocks_in_way True
 
-      - define can_build True
-      - if <[blocks_in_way]>:
-        - define can_build False
-
       #it there's already a build there
       - if <[tile].center.has_flag[build]>:
         - define can_build False
+
+      #if too far
+      - if <[tile].center.distance[<[target_loc]>].vertical> > 10:
+        - define can_build False
+        - define blocks_in_way False
 
       - define blocks <[tile].blocks>
       - if <[can_build]>:
@@ -190,8 +184,8 @@ build_tiles:
         - flag player build.struct:<[tile]>
       - else:
         - flag player build.struct:!
-        #- if <[blocks_in_way]>:
-        - debugblock <[blocks]> d:2t color:0,0,0,128
+        - if <[blocks_in_way]>:
+          - debugblock <[blocks]> d:2t color:0,0,0,128
 
 round4:
   type: procedure
