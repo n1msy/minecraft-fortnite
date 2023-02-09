@@ -11,8 +11,9 @@ build_tiles:
   floor:
 
         - define can_build False
+        - define connected False
 
-        - define target_loc <[eye_loc].ray_trace[default=air;range=4]>
+        - define target_loc <[eye_loc].ray_trace[default=air;range=3]>
 
         #so players can't place floors THROUGH walls
         - if <[target_loc].has_flag[build]>:
@@ -42,6 +43,7 @@ build_tiles:
         #-if there's ANY build on the left, right, front, or behind
         - if <[closest_center].left[2].has_flag[build]> || <[closest_center].right[2].has_flag[build]> || <[closest_center].forward_flat[2].has_flag[build]> || <[closest_center].backward_flat[2].has_flag[build]>:
           - define can_build True
+          - define connected True
         #otherwise default to the ground
         - else:
           - define center <[closest_center].with_y[<[eye_loc].y>].with_pitch[90].ray_trace>
@@ -54,31 +56,39 @@ build_tiles:
         #making sure there's either all air in that area or any thing being placed there is breakable
         - if <[blocks].filter[material.name.equals[AIR].not].is_empty> || <[blocks].filter[material.name.equals[AIR].not].filter[has_flag[breakable].not].is_empty>:
           - define can_build True
-          - define blocks_in_way False
-        - else:
-          - define blocks_in_way True
+          #- define blocks_in_way False
+        #- else:
+          #- define blocks_in_way True
 
         #it there's already a build there
         - if <[tile].center.has_flag[build]>:
           - define can_build False
 
         #if too far
-        - if <[tile].center.distance[<[eye_loc]>].vertical> > 4:
+        - define no_preview:!
+        - if <[tile].center.distance[<[eye_loc]>].vertical> > 6:
           - define can_build False
-          - define blocks_in_way False
+          - define no_preview True
+          #- define blocks_in_way False
 
         #if there are blocks in the way, you can't build, otherwise, you can
         - if <[can_build]>:
           - debugblock <[blocks]> d:2t color:0,255,0,128
           - flag player build.struct:<[tile]>
+          #if it's not connected, it means it's a root tile
+          - if !<[connected]>:
+            - flag player build.root
         - else:
           - flag player build.struct:!
-          - if <[blocks_in_way]>:
+          - flag player build.root:!
+          #- if <[blocks_in_way]>:
+          - if !<[no_preview].exists>:
             - debugblock <[blocks]> d:2t color:0,0,0,128
 
   wall:
 
       - define can_build False
+      - define connected False
 
       - define target_loc <[eye_loc].forward>
 
@@ -111,7 +121,7 @@ build_tiles:
 
       #if the player is still looking at the tile below, dont move the tile upwards
       - define block_looking_at <[eye_loc].ray_trace[return=block;range=5;default=air]>
-      - if !<[block_looking_at].has_flag[build]>:
+      - if !<[block_looking_at].has_flag[build]> || <[tile].center> != <[block_looking_at].flag[build.center]>:
         #-if there's any build BELOW
         - if <[center].below[3].has_flag[build]>:
           - define vertical True
@@ -174,19 +184,23 @@ build_tiles:
         - define can_build False
 
       #if too far
+      - define no_preview:!
       - if <[tile].center.distance[<[target_loc]>].vertical> > 10:
         - define can_build False
-        - define blocks_in_way False
+        - define no_preview True
 
       - define blocks <[tile].blocks>
       - if <[can_build]>:
         - debugblock <[blocks]> d:2t color:0,255,0,128
         - flag player build.struct:<[tile]>
+        - if !<[connected]>:
+          - flag player build.root
       - else:
         - flag player build.struct:!
-        - if <[blocks_in_way]>:
+        - flag player build.root:!
+        #- if <[blocks_in_way]>:
+        - if !<[no_preview].exists>:
           - debugblock <[blocks]> d:2t color:0,0,0,128
-
 round4:
   type: procedure
   definitions: i
@@ -272,12 +286,12 @@ build_system_handler:
     - define total_blocks <[tile].blocks>
 
     #deduplicating this
-    - define closest_tiles <[tile_center].find_blocks_flagged[build].within[3].parse[flag[build.center]].sort_by_number[distance[<[tile_center]>]].parse[flag[build.structure]].deduplicate>
+    - define connected_tiles <[tile_center].find_blocks_flagged[build].within[4].parse[flag[build.center]].deduplicate.parse[flag[build.structure]].filter[intersects[<[tile]>]].exclude[<[tile]>]>
 
-    - foreach <[closest_tiles]> as:other_tile:
-      - if !<[tile].intersects[<[other_tile]>]>:
-        - foreach next
+    - foreach <[connected_tiles]> as:other_tile:
       - define connectors <[tile].intersection[<[other_tile]>].blocks>
+      #- playeffect effect:soul_fire_flame offset:0 at:<[tile].center>|<[other_tile].center>
+      #- playeffect effect:FLAME offset:0 at:<[connectors].parse[center]>
       #swap the connectors to whatever is already placed
       - flag <[connectors]> build:<[other_tile].center.flag[build]>
 
