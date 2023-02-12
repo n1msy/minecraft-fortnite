@@ -1,6 +1,6 @@
 
 ##turn this into a proc that checks if you can place or not
-
+##minor problem: can't build walls on the sides of actual minecraft structures (ie mountain)
 
 build_tiles:
   type: task
@@ -11,7 +11,6 @@ build_tiles:
   floor:
 
         - define can_build False
-        - define connected False
 
         - define target_loc <[eye_loc].ray_trace[default=air;range=3]>
 
@@ -43,7 +42,6 @@ build_tiles:
         #-if there's ANY build on the left, right, front, or behind
         - if <[closest_center].left[2].has_flag[build]> || <[closest_center].right[2].has_flag[build]> || <[closest_center].forward_flat[2].has_flag[build]> || <[closest_center].backward_flat[2].has_flag[build]>:
           - define can_build True
-          - define connected True
         #otherwise default to the ground
         - else:
           - define center <[closest_center].with_y[<[eye_loc].y>].with_pitch[90].ray_trace>
@@ -75,9 +73,6 @@ build_tiles:
         - if <[can_build]>:
           - debugblock <[blocks]> d:2t color:0,255,0,128
           - flag player build.struct:<[tile]>
-          #if it's not connected, it means it's a root tile
-          - if !<[connected]>:
-            - flag player build.root
         - else:
           - flag player build.struct:!
           - flag player build.root:!
@@ -87,8 +82,8 @@ build_tiles:
 
   wall:
 
+      - flag player build.root:!
       - define can_build False
-      - define connected False
 
       - define target_loc <[eye_loc].forward>
 
@@ -110,7 +105,7 @@ build_tiles:
       #- playeffect effect:FLAME at:<[bottom_center].above[2].center> offset:0
 
       #base tile
-      - define tile <[bottom_center].left[2].to_cuboid[<[bottom_center].right[2].above[4]>]>
+      - define tile <[bottom_center].left[2].to_cuboid[<[bottom_center].with_yaw[<[yaw]>].right[2].above[4]>]>
       - define center <[tile].center.with_yaw[<[yaw]>]>
 
       #this new_y should only exist if there's a wall verticall or horizontally
@@ -161,6 +156,7 @@ build_tiles:
 
       #if there's nothing attached vertically and horizontally, default to the ground (if there's space between the wall and the ground)
       - if !<[vertical].exists> && !<[horizontal].exists>:
+        #it's a root tile
         - if <[bottom_center].below.material.name> == AIR:
           - define bottom_center <[bottom_center].with_pitch[90].ray_trace.with_yaw[<[yaw]>]>
           - define tile <[bottom_center].left[2].to_cuboid[<[bottom_center].right[2].above[4]>]>
@@ -179,13 +175,14 @@ build_tiles:
       - else:
         - define blocks_in_way True
 
+      - define center <[tile].center.with_yaw[<[yaw]>]>
       #it there's already a build there
-      - if <[tile].center.has_flag[build]>:
+      - if <[center].has_flag[build]>:
         - define can_build False
 
       #if too far
       - define no_preview:!
-      - if <[tile].center.distance[<[target_loc]>].vertical> > 10:
+      - if <[center].distance[<[target_loc]>].vertical> > 10:
         - define can_build False
         - define no_preview True
 
@@ -193,11 +190,12 @@ build_tiles:
       - if <[can_build]>:
         - debugblock <[blocks]> d:2t color:0,255,0,128
         - flag player build.struct:<[tile]>
-        - if !<[connected]>:
-          - flag player build.root
+        - foreach <[center].left[3]>|<[center].right[3]>|<[center].above[3]>|<[center].below[3]> as:loc:
+          - if <[loc].material.name> != air && !<[loc].has_flag[build]>:
+            - flag player build.root
+            - foreach stop
       - else:
         - flag player build.struct:!
-        - flag player build.root:!
         #- if <[blocks_in_way]>:
         - if !<[no_preview].exists>:
           - debugblock <[blocks]> d:2t color:0,0,0,128
@@ -261,19 +259,53 @@ build_system_handler:
     #metal health - 600
     - define material wood
 
-    - define build <player.flag[build.struct]>
-    - define blocks <[build].blocks>
+    - define tile <player.flag[build.struct]>
+    - define center <[tile].center>
+    - define blocks <[tile].blocks>
 
-    - modifyblock <[blocks]> oak_planks
+    - modifyblock <[blocks]> glass
+    - modifyblock <[tile].center> air
 
-    #this way, already placed structures such as intersecting walls and floors wont be overrided when the blocks are removed
+    ###-make all the tiles have tile data for what's connected to each other and what's not
+    ###doing this BEFORE flagging the blocks as the build structures to find the other tiles before intersections occur
 
-    - flag <[blocks]> build.center:<[build].center>
+    - define connected_tiles <proc[find_connected_tiles].context[<[center]>]>
+
+    - flag <[blocks]> build.center:<[center]>
     - flag <[blocks]> build.health:<script[nimnite_config].data_key[materials.<[material]>.hp]>
     - flag <[blocks]> build.type:<player.flag[build.type]>
     #the cuboid
-    - flag <[blocks]> build.structure:<[build]>
+    - flag <[blocks]> build.structure:<[tile]>
     - flag <[blocks]> breakable
+
+    - if <player.has_flag[build.root]>:
+      - flag <[blocks]> build.root
+
+    - else if <[connected_tiles].any>:
+      #first, find any directly connected tiles
+      - define connected_roots <[connected_tiles].filter[center.has_flag[build.root]]>
+      - define connected_tiles <[connected_tiles].filter[center.has_flag[build.root].not]>
+      #then add the indirectly connected tiles
+      - foreach <[connected_tiles]> as:c_tile:
+        - foreach <[c_tile].center.flag[build.connected_roots]> as:root:
+          - define connected_roots <[connected_roots].include[<[root]>]>
+
+      - foreach <[connected_roots]> as:root:
+        - flag <[root].blocks> build.tiles:->:<[tile]>
+        - flag <[blocks]> build.connected_roots:->:<[root]>
+
+      - narrate <[connected_roots].size>
+      - foreach <[connected_roots]> as:root:
+        - playeffect effect:FLAME offset:0 at:<[root].center> visibility:1000
+
+    ##- if <[connected_tiles].any>:
+    ##  #-all root tiles have the flag "connected tiles" and all non-root tiles have the flag "connected roots"
+    ##  - foreach <[connected_tiles]> as:c_tile:
+    ##    #the other tiles
+    ##    - flag <[c_tile].blocks> build.connected_tiles:->:<[tile]>
+    ##    #the tile being placed
+
+    ##  - flag <[blocks]> build.connected_tiles:<[connected_tiles].first.center.flag[build.connected_tiles]>
 
     on player right clicks block location_flagged:build.structure flagged:build:
     - determine passively cancelled
@@ -295,8 +327,57 @@ build_system_handler:
       #swap the connectors to whatever is already placed
       - flag <[connectors]> build:<[other_tile].center.flag[build]>
 
+    ##- if <[tile_center].has_flag[build.connected_tiles]>:
+    ##  #remove the tile being removed from the total tile-list of all connected tiles of that structure
+    ##  - foreach <[tile_center].flag[build.connected_tiles]> as:c_tile:
+    ##    - flag <[c_tile].blocks> build.connected_tiles:<-:<[tile]>
+    ##  - define total_tiles <[tile_center].flag[build.connected_tiles].exclude[<[tile]>]>
+
     #checking the build centers instead of type, so the connectors between walls can work with this too
     - define actual_blocks <[tile].blocks.filter[flag[build.center].equals[<[tile_center]>]]>
 
     - modifyblock <[actual_blocks]> air
     - flag <[actual_blocks]> build:!
+
+    ##- if <[total_tiles].exists> && <[total_tiles].filter[center.has_flag[build.root]].is_empty>:
+    ##  - foreach <[total_tiles]> as:tile:
+    ##    - modifyblock <[tile]> air
+    ##    - flag <[tile].blocks> build:!
+    ##    - wait 3t
+
+find_connected_tiles:
+  type: procedure
+  definitions: center
+  debug: false
+  script:
+  - if <[center].left[3].has_flag[build]>:
+    #- narrate a
+    - define connected_tiles:->:<[center].left[3].flag[build.structure]>
+  - if <[center].right[3].has_flag[build]>:
+    #- narrate b
+    - define connected_tiles:->:<[center].right[3].flag[build.structure]>
+  - if <[center].above[3].has_flag[build]>:
+    #- narrate c
+    - define connected_tiles:->:<[center].above[3].flag[build.structure]>
+  - if <[center].below[3].has_flag[build]>:
+    #- narrate d
+    - define connected_tiles:->:<[center].below[3].flag[build.structure]>
+
+  - if <[center].below[2].forward_flat[2].has_flag[build]>:
+    #- narrate e
+    - define connected_tiles:->:<[center].below[2].forward_flat[2].flag[build.structure]>
+  - if <[center].below[2].backward_flat[2].has_flag[build]>:
+    #- narrate f
+    - define connected_tiles:->:<[center].below[2].backward_flat[2].flag[build.structure]>
+
+  - if <[center].above[2].forward_flat[2].has_flag[build]>:
+    #- narrate g
+    - define connected_tiles:->:<[center].above[2].forward_flat[2].flag[build.structure]>
+  - if <[center].above[2].backward_flat[2].has_flag[build]>:
+    #- narrate h
+    - define connected_tiles:->:<[center].above[2].backward_flat[2].flag[build.structure]>
+
+  - if <[connected_tiles].exists>:
+    - determine <[connected_tiles].deduplicate>
+  - else:
+    - determine <list[]>
