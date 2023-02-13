@@ -75,14 +75,12 @@ build_tiles:
           - flag player build.struct:<[tile]>
         - else:
           - flag player build.struct:!
-          - flag player build.root:!
           #- if <[blocks_in_way]>:
           - if !<[no_preview].exists>:
             - debugblock <[blocks]> d:2t color:0,0,0,128
 
   wall:
 
-      - flag player build.root:!
       - define can_build False
 
       - define target_loc <[eye_loc].forward>
@@ -190,10 +188,6 @@ build_tiles:
       - if <[can_build]>:
         - debugblock <[blocks]> d:2t color:0,255,0,128
         - flag player build.struct:<[tile]>
-        - foreach <[center].left[3]>|<[center].right[3]>|<[center].above[3]>|<[center].below[3]> as:loc:
-          - if <[loc].material.name> != air && !<[loc].has_flag[build]>:
-            - flag player build.root
-            - foreach stop
       - else:
         - flag player build.struct:!
         #- if <[blocks_in_way]>:
@@ -259,17 +253,12 @@ build_system_handler:
     #metal health - 600
     - define material wood
 
+    - define yaw <map[North=180;South=0;West=90;East=-90].get[<player.eye_location.yaw.simple>]>
     - define tile <player.flag[build.struct]>
-    - define center <[tile].center>
+    - define center <[tile].center.with_yaw[<[yaw]>]>
     - define blocks <[tile].blocks>
 
-    - modifyblock <[blocks]> glass
-    - modifyblock <[tile].center> air
-
-    ###-make all the tiles have tile data for what's connected to each other and what's not
-    ###doing this BEFORE flagging the blocks as the build structures to find the other tiles before intersections occur
-
-    - define connected_tiles <proc[find_connected_tiles].context[<[center]>]>
+    - modifyblock <[blocks]> oak_planks
 
     - flag <[blocks]> build.center:<[center]>
     - flag <[blocks]> build.health:<script[nimnite_config].data_key[materials.<[material]>.hp]>
@@ -278,34 +267,14 @@ build_system_handler:
     - flag <[blocks]> build.structure:<[tile]>
     - flag <[blocks]> breakable
 
-    - if <player.has_flag[build.root]>:
-      - flag <[blocks]> build.root
+    #the connected tiles are the new placed wall's ROOT
+    - define connected_roots <proc[find_connected_tiles].context[<[center]>]>
 
-    - else if <[connected_tiles].any>:
-      #first, find any directly connected tiles
-      - define connected_roots <[connected_tiles].filter[center.has_flag[build.root]]>
-      - define connected_tiles <[connected_tiles].filter[center.has_flag[build.root].not]>
-      #then add the indirectly connected tiles
-      - foreach <[connected_tiles]> as:c_tile:
-        - foreach <[c_tile].center.flag[build.connected_roots]> as:root:
-          - define connected_roots <[connected_roots].include[<[root]>]>
+    - if <[connected_roots].any>:
+      - flag <[blocks]> build.roots:<[connected_roots]>
 
-      - foreach <[connected_roots]> as:root:
-        - flag <[root].blocks> build.tiles:->:<[tile]>
-        - flag <[blocks]> build.connected_roots:->:<[root]>
-
-      - narrate <[connected_roots].size>
-      - foreach <[connected_roots]> as:root:
-        - playeffect effect:FLAME offset:0 at:<[root].center> visibility:1000
-
-    ##- if <[connected_tiles].any>:
-    ##  #-all root tiles have the flag "connected tiles" and all non-root tiles have the flag "connected roots"
-    ##  - foreach <[connected_tiles]> as:c_tile:
-    ##    #the other tiles
-    ##    - flag <[c_tile].blocks> build.connected_tiles:->:<[tile]>
-    ##    #the tile being placed
-
-    ##  - flag <[blocks]> build.connected_tiles:<[connected_tiles].first.center.flag[build.connected_tiles]>
+    - foreach <[connected_roots]> as:root:
+      - flag <[root].blocks> build.shoots:->:<[tile]>
 
     on player right clicks block location_flagged:build.structure flagged:build:
     - determine passively cancelled
@@ -327,11 +296,7 @@ build_system_handler:
       #swap the connectors to whatever is already placed
       - flag <[connectors]> build:<[other_tile].center.flag[build]>
 
-    ##- if <[tile_center].has_flag[build.connected_tiles]>:
-    ##  #remove the tile being removed from the total tile-list of all connected tiles of that structure
-    ##  - foreach <[tile_center].flag[build.connected_tiles]> as:c_tile:
-    ##    - flag <[c_tile].blocks> build.connected_tiles:<-:<[tile]>
-    ##  - define total_tiles <[tile_center].flag[build.connected_tiles].exclude[<[tile]>]>
+    - define shoots <[tile_center].flag[build.shoots]||<list[]>>
 
     #checking the build centers instead of type, so the connectors between walls can work with this too
     - define actual_blocks <[tile].blocks.filter[flag[build.center].equals[<[tile_center]>]]>
@@ -339,23 +304,94 @@ build_system_handler:
     - modifyblock <[actual_blocks]> air
     - flag <[actual_blocks]> build:!
 
-    ##- if <[total_tiles].exists> && <[total_tiles].filter[center.has_flag[build.root]].is_empty>:
-    ##  - foreach <[total_tiles]> as:tile:
-    ##    - modifyblock <[tile]> air
-    ##    - flag <[tile].blocks> build:!
-    ##    - wait 3t
+    - define data <map[shoots=<[shoots]>;root=<[tile]>]>
+    - run tile_break_chain def:<[data]>
 
+
+tile_break_chain:
+  type: task
+  debug: false
+  definitions: data
+  script:
+  - define shoots <[data].get[shoots]>
+  - define root <[data].get[root]>
+
+  - wait 3t
+
+  - foreach <[shoots]> as:tile:
+    - define center <[tile].center.with_yaw[0]>
+    - define blocks <[tile].blocks>
+    - define actual_blocks <[blocks].filter[flag[build.center].with_yaw[0].equals[<[center]>]]>
+
+    - define is_root <proc[is_root].context[<[center]>]>
+    - if <[is_root]>:
+      - foreach next
+
+    - flag <[actual_blocks]> build.roots:<-:<[root]>
+
+    #stop the entire chain reaction if the tile has a root still
+    #floors are NOT root blocks(?) this might run into some issues later on, but idc
+    - if <[center].has_flag[build.roots]> && <[center].flag[build.roots].filter[center.flag[build.type].equals[FLOOR].not].any>:
+      #- playeffect effect:soul_fire_flame offset:0 at:<[center].flag[build.roots].parse[center]>
+      - stop
+
+    - define new_shoots <[center].flag[build.shoots]||<list[]>>
+
+    - modifyblock <[actual_blocks]> air
+    - flag <[actual_blocks]> build:!
+
+    - define data <map[shoots=<[new_shoots]>;root=<[tile]>]>
+    - run tile_break_chain def:<[data]>
+
+#when a tile is placed down, any tiles that are in the "connected_tiles" list would be considered the newly placed tile's "root"
+#if that root is removed, if the newly placed tile doesn't have any other root blocks that its connected to, remove it too
 find_connected_tiles:
   type: procedure
   definitions: center
   debug: false
   script:
+  #-wall to wall (horizontal) check/floor to floor check
   - if <[center].left[3].has_flag[build]>:
     #- narrate a
     - define connected_tiles:->:<[center].left[3].flag[build.structure]>
   - if <[center].right[3].has_flag[build]>:
     #- narrate b
     - define connected_tiles:->:<[center].right[3].flag[build.structure]>
+
+  #-wall to wall (perpendicular) check
+  - if <[center].flag[build.type]> == WALL:
+    - if <[center].left[2].backward_flat[2].has_flag[build]>:
+      - define connected_tiles:->:<[center].left[2].backward_flat[2].flag[build.structure]>
+    - if <[center].left[2].forward_flat[2].has_flag[build]>:
+      - define connected_tiles:->:<[center].left[2].forward_flat[2].flag[build.structure]>
+    - if <[center].right[2].backward_flat[2].has_flag[build]>:
+      - define connected_tiles:->:<[center].right[2].backward_flat[2].flag[build.structure]>
+    - if <[center].right[2].forward_flat[2].has_flag[build]>:
+      - define connected_tiles:->:<[center].right[2].forward_flat[2].flag[build.structure]>
+
+  #-floor to wall check
+  - if <[center].flag[build.type]> == FLOOR:
+    - if <[center].below.backward_flat[2].has_flag[build]>:
+      - define connected_tiles:->:<[center].below.backward_flat[2].flag[build.structure]>
+    - if <[center].below.forward_flat[2].has_flag[build]>:
+      - define connected_tiles:->:<[center].below.forward_flat[2].flag[build.structure]>
+
+    - if <[center].below.left[2].has_flag[build]>:
+      - define connected_tiles:->:<[center].below.left[2].flag[build.structure]>
+    - if <[center].below.right[2].has_flag[build]>:
+      - define connected_tiles:->:<[center].below.right[2].flag[build.structure]>
+
+    - if <[center].above.backward_flat[2].has_flag[build]>:
+      - define connected_tiles:->:<[center].above.backward_flat[2].flag[build.structure]>
+    - if <[center].above.forward_flat[2].has_flag[build]>:
+      - define connected_tiles:->:<[center].above.forward_flat[2].flag[build.structure]>
+
+    - if <[center].above.left[2].has_flag[build]>:
+      - define connected_tiles:->:<[center].above.left[2].flag[build.structure]>
+    - if <[center].above.right[2].has_flag[build]>:
+      - define connected_tiles:->:<[center].above.right[2].flag[build.structure]>
+
+  #-wall to wall (vertical) check
   - if <[center].above[3].has_flag[build]>:
     #- narrate c
     - define connected_tiles:->:<[center].above[3].flag[build.structure]>
@@ -363,6 +399,7 @@ find_connected_tiles:
     #- narrate d
     - define connected_tiles:->:<[center].below[3].flag[build.structure]>
 
+  #-wall to floor AND floor to wall check (floor is below)
   - if <[center].below[2].forward_flat[2].has_flag[build]>:
     #- narrate e
     - define connected_tiles:->:<[center].below[2].forward_flat[2].flag[build.structure]>
@@ -370,14 +407,35 @@ find_connected_tiles:
     #- narrate f
     - define connected_tiles:->:<[center].below[2].backward_flat[2].flag[build.structure]>
 
+  #-wall to floor AND floor to wall check (floor is above)
   - if <[center].above[2].forward_flat[2].has_flag[build]>:
-    #- narrate g
+    #- narrate i
     - define connected_tiles:->:<[center].above[2].forward_flat[2].flag[build.structure]>
   - if <[center].above[2].backward_flat[2].has_flag[build]>:
-    #- narrate h
+    #- narrate j
     - define connected_tiles:->:<[center].above[2].backward_flat[2].flag[build.structure]>
 
   - if <[connected_tiles].exists>:
     - determine <[connected_tiles].deduplicate>
   - else:
     - determine <list[]>
+
+is_root:
+  type: procedure
+  definitions: center
+  debug: false
+  script:
+  - define status False
+  - if !<[center].left[3].has_flag[breakable]> && <[center].left[3].material.name> != AIR:
+    - define status True
+
+  - if !<[center].right[3].has_flag[breakable]> && <[center].right[3].material.name> != AIR:
+    - define status True
+
+  - if !<[center].above[3].has_flag[breakable]> && <[center].above[3].material.name> != AIR:
+    - define status True
+
+  - if !<[center].below[3].has_flag[breakable]> && <[center].below[3].material.name> != AIR:
+    - define status True
+
+  - determine <[status]>
