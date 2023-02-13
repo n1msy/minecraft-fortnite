@@ -193,6 +193,65 @@ build_tiles:
         #- if <[blocks_in_way]>:
         - if !<[no_preview].exists>:
           - debugblock <[blocks]> d:2t color:0,0,0,128
+
+  stair:
+      - define can_build False
+
+      - define target_loc <[eye_loc].forward[3]>
+
+      #find closest floor center to base walls off
+      - define x <proc[round4].context[<[target_loc].x>]>
+      - define z <proc[round4].context[<[target_loc].z>]>
+      - define closest_center <[target_loc].with_x[<[x]>].with_z[<[z]>].with_pitch[90].ray_trace>
+
+      #round the wall heights by 5 based on the floor below the target_loc
+      - define add_y <proc[round4].context[<[target_loc].forward[4].distance[<[closest_center]>].vertical.sub[2.5]>]>
+      - define closest_center <[closest_center].above[<[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>]>
+
+      #make the bottom center of the wall go forward so it's on the edge of the floor, then get the block that itd be on top of,
+      #then reorient it to face where the player is facing
+      - define yaw <map[North=180;South=0;West=90;East=-90].get[<[eye_loc].yaw.simple>]>
+
+      - define center <[closest_center].with_yaw[<[yaw]>].above[2]>
+
+      #- playeffect effect:FLAME at:<[closest_center].above[2].center> offset:0
+      #- playeffect effect:FLAME at:<[bottom_center].above[2].center> offset:0
+
+      #base tile
+      - define tile <[center].to_cuboid[<[center]>].expand[2]>
+
+
+      # - "can place" check
+
+      - define blocks <[tile].blocks>
+      #making sure there's either all air in that area or any thing being placed there is breakable
+      - if <[blocks].filter[material.name.equals[AIR].not].is_empty> || <[blocks].filter[material.name.equals[AIR].not].filter[has_flag[breakable].not].is_empty>:
+        - define can_build True
+        - define blocks_in_way False
+      - else:
+        - define blocks_in_way True
+
+      - define center <[tile].center.with_yaw[<[yaw]>]>
+
+      #it there's already a build there
+      - if <[center].has_flag[build]>:
+        - define can_build False
+
+      - define display_blocks <list[]>
+      - define start_corner <[center].below[3].left[2].backward_flat[3]>
+      - repeat 5:
+        - define corner <[start_corner].above[<[value]>].forward[<[value]>]>
+        - define display_blocks <[display_blocks].include[<[corner].points_between[<[corner].right[4]>]>]>
+
+      - if <[can_build]>:
+        - debugblock <[display_blocks]> d:2t color:0,255,0,128
+        - flag player build.struct:<[tile]>
+      - else:
+        - flag player build.struct:!
+        #- if <[blocks_in_way]>:
+        #- if !<[no_preview].exists>:
+        - debugblock <[display_blocks]> d:2t color:0,0,0,128
+
 round4:
   type: procedure
   definitions: i
@@ -235,6 +294,8 @@ build:
 
       - case 3:
         - actionbar stair
+        - flag player build.type:stair
+        - inject build_tiles.stair
       - case 4:
         - actionbar pyramid
 
@@ -251,17 +312,29 @@ build_system_handler:
     #wood health - 150
     #stone health - 400
     #metal health - 600
-    - define material wood
+
+    - define type wood
 
     - define yaw <map[North=180;South=0;West=90;East=-90].get[<player.eye_location.yaw.simple>]>
     - define tile <player.flag[build.struct]>
     - define center <[tile].center.with_yaw[<[yaw]>]>
     - define blocks <[tile].blocks>
+    - define set_blocks <[blocks]>
 
-    - modifyblock <[blocks]> oak_planks
+    - if <player.flag[build.type]> == stair:
+      - define set_blocks <list[]>
+      - define start_corner <[center].below[3].left[2].backward_flat[3]>
+      - repeat 5:
+        - define corner <[start_corner].above[<[value]>].forward[<[value]>]>
+        - define set_blocks <[set_blocks].include[<[corner].points_between[<[corner].right[4]>]>]>
+      - define material oak_stairs[direction=<player.eye_location.yaw.simple>]
+    - else:
+      - define material oak_planks
+
+    - modifyblock <[set_blocks]> <[material]>
 
     - flag <[blocks]> build.center:<[center]>
-    - flag <[blocks]> build.health:<script[nimnite_config].data_key[materials.<[material]>.hp]>
+    - flag <[blocks]> build.health:<script[nimnite_config].data_key[materials.<[type]>.hp]>
     - flag <[blocks]> build.type:<player.flag[build.type]>
     #the cuboid
     - flag <[blocks]> build.structure:<[tile]>
@@ -299,7 +372,7 @@ build_system_handler:
     - define shoots <[tile_center].flag[build.shoots]||<list[]>>
 
     #checking the build centers instead of type, so the connectors between walls can work with this too
-    - define actual_blocks <[tile].blocks.filter[flag[build.center].equals[<[tile_center]>]]>
+    - define actual_blocks <[tile].blocks.filter[has_flag[build]].filter[flag[build.center].equals[<[tile_center]>]]>
 
     - modifyblock <[actual_blocks]> air
     - flag <[actual_blocks]> build:!
