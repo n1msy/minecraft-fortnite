@@ -1,5 +1,5 @@
 
-##turn this into a proc that checks if you can place or not
+##when you break down a whole structure, sometimes it doesn't completely break down, but it should be fine for now
 ##minor problem: can't build walls on the sides of actual minecraft structures (ie mountain)
 
 build_tiles:
@@ -10,267 +10,174 @@ build_tiles:
 
   floor:
 
+        - define range 1.5
+
         - define can_build False
 
-        - define target_loc <[eye_loc].ray_trace[default=air;range=3]>
-
-        #so players can't place floors THROUGH walls
-        - if <[target_loc].has_flag[build]>:
-          - define target_loc <[eye_loc].ray_trace[default=air;range=2]>
+        - define target_loc <[eye_loc].ray_trace[default=air;range=<[range]>]>
 
         - define x <proc[round4].context[<[target_loc].x>]>
         - define z <proc[round4].context[<[target_loc].z>]>
 
-        #find's the bottom center of the ENTIRE tower
-        #using eye_loc y so the y doesn't go below anything
+        #find the bottom center of the ENTIRE tower
         - define closest_center <[target_loc].with_x[<[x]>].with_z[<[z]>].with_y[<[eye_loc].y>].with_pitch[90].ray_trace>
+        #meaning the floor AND stair doesn't count as an actual block during ray_trace
+        - if <[closest_center].below.has_flag[build]>:
+          #doing .min.y and not just sub[1] to account for stairs too
+          - define y <[closest_center].below.flag[build.structure].min.y>
+          - define closest_center <[closest_center].with_y[<[y]>]>
 
-        #if there's a floor there already there
-        #checking .below because ray_trace returns right before the block
-        - if <[closest_center].below.has_flag[build.type]> && <[closest_center].below.flag[build.type]> == FLOOR:
-          - define closest_center <[closest_center].below>
-        #if the tile is underground
-        - else if <[closest_center].material.name> != air:
-          - define closest_center <[closest_center].above>
+        #how much to add the y by (rounded)
+        - define add_y <proc[round4].context[<[target_loc].forward[2].distance[<[closest_center]>].vertical.sub[1]>]>
+        - define add_y <[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>
 
-        #round the wall heights by 5 based on the floor below the target_loc
-        - define add_y <proc[round4].context[<[target_loc].forward[2].distance[<[closest_center]>].vertical.sub[2.5]>]>
-        - define closest_center <[closest_center].above[<[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>]>
+        #this center is the center that would be anywhere you point (isn't grounded)
+        - define free_center <[closest_center].above[<[add_y]>]>
+        - define grounded_center <[closest_center]>
 
-        - define tile <[closest_center].to_cuboid[<[closest_center]>].expand[2,0,2]>
-
-        #-if there's ANY build on the left, right, front, or behind
-        - if <[closest_center].left[2].has_flag[build]> || <[closest_center].right[2].has_flag[build]> || <[closest_center].forward_flat[2].has_flag[build]> || <[closest_center].backward_flat[2].has_flag[build]>:
-          - define can_build True
-        #otherwise default to the ground
+        #if it's connected to anything else
+        #checks: left, right, forward, backward
+        - if <[free_center].left[2].has_flag[build]> || <[free_center].right[2].has_flag[build]> || <[free_center].forward_flat[2].has_flag[build]> || <[free_center].backward_flat[2].has_flag[build]>:
+          - define tile <[free_center].to_cuboid[<[free_center]>].expand[2,0,2]>
         - else:
-          - define center <[closest_center].with_y[<[eye_loc].y>].with_pitch[90].ray_trace>
-          - define tile <[center].to_cuboid[<[center]>].expand[2,0,2]>
-          #- if <[closest_center].material.name> != air:
-            #- define tile <[tile].shift[0,1,0]>
-
+          - define tile <[grounded_center].to_cuboid[<[grounded_center]>].expand[2,0,2]>
 
         - define blocks <[tile].blocks>
-        #making sure there's either all air in that area or any thing being placed there is breakable
-        - if <[blocks].filter[material.name.equals[AIR].not].is_empty> || <[blocks].filter[material.name.equals[AIR].not].filter[has_flag[breakable].not].is_empty>:
-          - define can_build True
-          #- define blocks_in_way False
-        #- else:
-          #- define blocks_in_way True
 
-        #it there's already a build there
-        - if <[tile].center.has_flag[build]>:
-          - define can_build False
+        - flag player build.struct:<[tile]>
 
-        #if too far
-        - define no_preview:!
-        - if <[tile].center.distance[<[eye_loc]>].vertical> > 6:
-          - define can_build False
-          - define no_preview True
-          #- define blocks_in_way False
-
-        #if there are blocks in the way, you can't build, otherwise, you can
-        - if <[can_build]>:
-          - debugblock <[blocks]> d:2t color:0,255,0,128
-          - flag player build.struct:<[tile]>
-        - else:
-          - flag player build.struct:!
-          #- if <[blocks_in_way]>:
-          - if !<[no_preview].exists>:
-            - debugblock <[blocks]> d:2t color:0,0,0,128
+        #can place:
+        - debugblock <[blocks]> d:2t color:0,255,0,128
+        #cannot place:
+        #- debugblock <[blocks]> d:2t color:0,0,0,128
 
   wall:
 
+      - define range 1
+
       - define can_build False
 
-      - define target_loc <[eye_loc].forward>
+      - define target_loc <[eye_loc].ray_trace[default=air;range=<[range]>]>
 
-      #find closest floor center to base walls off
       - define x <proc[round4].context[<[target_loc].x>]>
       - define z <proc[round4].context[<[target_loc].z>]>
-      - define closest_center <[target_loc].with_x[<[x]>].with_z[<[z]>].with_pitch[90].ray_trace>
 
-      #round the wall heights by 5 based on the floor below the target_loc
+      #find the bottom center of the ENTIRE tower
+      - define closest_center <[target_loc].with_x[<[x]>].with_z[<[z]>].with_y[<[eye_loc].y>].with_pitch[90].ray_trace>
+      #meaning the floor AND stair doesn't count as an actual block during ray_trace
+      - if <[closest_center].below.has_flag[build]>:
+        #doing .min.y and not just sub[1] to account for stairs too
+        - define y <[closest_center].below.flag[build.structure].min.y>
+        - define closest_center <[closest_center].with_y[<[y]>]>
+
       - define add_y <proc[round4].context[<[target_loc].forward[4].distance[<[closest_center]>].vertical.sub[2.5]>]>
-      - define closest_center <[closest_center].above[<[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>]>
+      - define add_y <[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>
 
-      #make the bottom center of the wall go forward so it's on the edge of the floor, then get the block that itd be on top of,
-      #then reorient it to face where the player is facing
       - define yaw <map[North=180;South=0;West=90;East=-90].get[<[eye_loc].yaw.simple>]>
-      - define bottom_center <[closest_center].with_yaw[<[yaw]>].forward_flat[2]>
 
-      #- playeffect effect:FLAME at:<[closest_center].above[2].center> offset:0
-      #- playeffect effect:FLAME at:<[bottom_center].above[2].center> offset:0
+      - define free_center <[closest_center].above[<[add_y]>].with_yaw[<[yaw]>].forward_flat[2].above[2]>
+      - define grounded_center <[closest_center].with_yaw[<[yaw]>].forward_flat[2].above[2]>
 
-      #base tile
-      - define tile <[bottom_center].left[2].to_cuboid[<[bottom_center].with_yaw[<[yaw]>].right[2].above[4]>]>
-      - define center <[tile].center.with_yaw[<[yaw]>]>
+      #- playeffect effect:FLAME at:<[free_center]> offset:0
 
-      #this new_y should only exist if there's a wall verticall or horizontally
-      - define new_y:!
+      #checks: left, right, above, below
+      - if <[free_center].left[2].has_flag[build]> || <[free_center].right[2].has_flag[build]> || <[free_center].above[2].has_flag[build]> || <[free_center].below[2].has_flag[build]>:
+        - define tile <[free_center].below[2].left[2].to_cuboid[<[free_center].above[2].right[2]>]>
+      - else:
+        - define tile <[grounded_center].below[2].left[2].to_cuboid[<[grounded_center].above[2].right[2]>]>
 
-      #if ANY block below the wall is a build, move it one down
-      - define vertical:!
+      - define blocks <[tile].blocks>
 
-      #if the player is still looking at the tile below, dont move the tile upwards
-      - define block_looking_at <[eye_loc].ray_trace[return=block;range=5;default=air]>
-      - if !<[block_looking_at].has_flag[build]> || <[tile].center> != <[block_looking_at].flag[build.center]>:
-        #-if there's any build BELOW
-        - if <[center].below[3].has_flag[build]>:
-          - define vertical True
-          - define vert_tile_center <[center].below[3].flag[build.center]>
-          - if <[vert_tile_center].flag[build.type]> == FLOOR:
-            - define new_y <[bottom_center].y.sub[1]>
-          - else:
-            - define new_y <[vert_tile_center].flag[build.structure].max.y>
-          - define can_build True
+      - flag player build.struct:<[tile]>
 
-        #-if there's a any build ABOVE
-        - else if <[center].above[3].has_flag[build]>:
-          - define vertical True
-          - define vert_tile_center <[center].above[3].flag[build.center]>
-          - if <[vert_tile_center].flag[build.type]> == FLOOR:
-            - define new_y <[bottom_center].y>
-          - else:
-            - define new_y <[vert_tile_center].flag[build.structure].min.y.sub[4]>
-          - define can_build True
-
-      - define horizontal:!
-      #-if there's a wall on the LEFT side
-      #checking 3 blocks above the center, so the corners of the a wall below don't count
-      - if <[center].left[2].has_flag[build]>:
-        - define horizontal True
-        - define can_build True
-        - define new_y <[center].left[2].flag[build.structure].min.y>
-      #-if there's a wall on the RIGHT side
-      - else if <[center].right[2].has_flag[build]>:
-        - define horizontal True
-        - define can_build True
-        - define new_y <[center].right[2].flag[build.structure].min.y>
-
-      - if <[new_y].exists>:
-        - define bottom_center <[bottom_center].with_y[<[new_y]>]>
-        - define tile <[bottom_center].left[2].to_cuboid[<[bottom_center].right[2].above[4]>]>
-
-      #if there's nothing attached vertically and horizontally, default to the ground (if there's space between the wall and the ground)
-      - if !<[vertical].exists> && !<[horizontal].exists>:
-        #it's a root tile
-        - if <[bottom_center].below.material.name> == AIR:
-          - define bottom_center <[bottom_center].with_pitch[90].ray_trace.with_yaw[<[yaw]>]>
-          - define tile <[bottom_center].left[2].to_cuboid[<[bottom_center].right[2].above[4]>]>
-          #if you're looking high up in the air and there really are no connecting walls, it'll ray trace onto a wall
-          - if <[tile].min.below.has_flag[build]>:
-            - define tile <[tile].shift[0,-1,0]>
-          - define can_build True
+      #can place:
+      - debugblock <[blocks]> d:2t color:0,255,0,128
 
       # - "can place" check
 
-      - define blocks <[tile].blocks>
+    #  - define blocks <[tile].blocks>
       #making sure there's either all air in that area or any thing being placed there is breakable
-      - if <[blocks].filter[material.name.equals[AIR].not].is_empty> || <[blocks].filter[material.name.equals[AIR].not].filter[has_flag[breakable].not].is_empty>:
-        - define can_build True
-        - define blocks_in_way False
-      - else:
-        - define blocks_in_way True
+    #  - if <[blocks].filter[material.name.equals[AIR].not].is_empty> || <[blocks].filter[material.name.equals[AIR].not].filter[has_flag[breakable].not].is_empty>:
+    #    - define can_build True
+    #    - define blocks_in_way False
+    #  - else:
+    #    - define blocks_in_way True
 
-      - define center <[tile].center.with_yaw[<[yaw]>]>
+     # - define center <[tile].center.with_yaw[<[yaw]>]>
       #it there's already a build there
-      - if <[center].has_flag[build]>:
-        - define can_build False
+    #  - if <[center].has_flag[build]>:
+    #    - define can_build False
 
       #if too far
-      - define no_preview:!
-      - if <[center].distance[<[target_loc]>].vertical> > 10:
-        - define can_build False
-        - define no_preview True
+    #  - define no_preview:!
+     # - if <[center].distance[<[target_loc]>].vertical> > 10:
+       # - define can_build False
+     #   - define no_preview True
 
-      - define blocks <[tile].blocks>
-      - if <[can_build]>:
-        - debugblock <[blocks]> d:2t color:0,255,0,128
-        - flag player build.struct:<[tile]>
-      - else:
-        - flag player build.struct:!
+     # - define blocks <[tile].blocks>
+     # - if <[can_build]>:
+      #  - debugblock <[blocks]> d:2t color:0,255,0,128
+     #   - flag player build.struct:<[tile]>
+     # - else:
+     #   - flag player build.struct:!
         #- if <[blocks_in_way]>:
-        - if !<[no_preview].exists>:
-          - debugblock <[blocks]> d:2t color:0,0,0,128
+      #  - if !<[no_preview].exists>:
+     #     - debugblock <[blocks]> d:2t color:0,0,0,128
 
   stair:
+
+        - define range 2
+
         - define can_build False
 
-        - define target_loc <[eye_loc].ray_trace[default=air;range=3]>
-
-        #so players can't place floors THROUGH walls
-        - if <[target_loc].has_flag[build]>:
-          - define target_loc <[eye_loc].ray_trace[default=air;range=2]>
+        - define target_loc <[eye_loc].ray_trace[default=air;range=<[range]>]>
 
         - define x <proc[round4].context[<[target_loc].x>]>
         - define z <proc[round4].context[<[target_loc].z>]>
 
-        #find's the bottom center of the ENTIRE tower
-        #using eye_loc y so the y doesn't go below anything
+        #find the bottom center of the ENTIRE tower
         - define closest_center <[target_loc].with_x[<[x]>].with_z[<[z]>].with_y[<[eye_loc].y>].with_pitch[90].ray_trace>
 
-        #if there's a floor there already there
-        #checking .below because ray_trace returns right before the block
-        - if <[closest_center].below.has_flag[build.type]> && <[closest_center].below.flag[build.type]> == FLOOR:
-          - define closest_center <[closest_center].below>
-
-        #if the tile is underground
-        - else if <[closest_center].material.name> != air:
-          - define closest_center <[closest_center].above>
-
-        #round the wall heights by 5 based on the floor below the target_loc
-        - define add_y <proc[round4].context[<[target_loc].forward[2].distance[<[closest_center]>].vertical.sub[2.5]>]>
-        - define closest_center <[closest_center].above[<[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>]>
-
-        - define tile <[closest_center].above[2].to_cuboid[<[closest_center].above[2]>].expand[2]>
-
-        #-if there's ANY build on the left, right, front, or behind
-        - if <[closest_center].left[2].has_flag[build]> || <[closest_center].right[2].has_flag[build]> || <[closest_center].forward_flat[2].has_flag[build]> || <[closest_center].backward_flat[2].has_flag[build]>:
-          - define can_build True
-        #otherwise default to the ground
+        #meaning the floor AND stair doesn't count as an actual block during ray_trace
+        - if <[closest_center].below.has_flag[build]>:
+          #doing .min.y and not just sub[1] to account for stairs too
+          - define y <[closest_center].below.flag[build.structure].min.y.add[2]>
+          - define closest_center <[closest_center].with_y[<[y]>]>
         - else:
-          - define center <[closest_center].with_y[<[eye_loc].y>].with_pitch[90].ray_trace.above[2]>
-          - define tile <[center].to_cuboid[<[center]>].expand[2]>
+          #above 2 because it's a 2x2x2 cuboid
+          - define closest_center <[closest_center].above[2]>
 
+        #how much to add the y by (rounded)
+        - define add_y <proc[round4].context[<[target_loc].forward[2].distance[<[closest_center]>].vertical.sub[1]>]>
+        - define add_y <[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>
 
-        - define blocks <[tile].blocks>
-        #making sure there's either all air in that area or any thing being placed there is breakable
-        - if <[blocks].filter[material.name.equals[AIR].not].is_empty> || <[blocks].filter[material.name.equals[AIR].not].filter[has_flag[breakable].not].is_empty>:
-          - define can_build True
-          #- define blocks_in_way False
-        #- else:
-          #- define blocks_in_way True
+        - define yaw <map[North=180;South=0;West=90;East=-90].get[<[eye_loc].yaw.simple>]>
+
+        #this center is the center that would be anywhere you point (isn't grounded)
+        - define free_center <[closest_center].above[<[add_y]>].with_yaw[<[yaw]>]>
+        - define grounded_center <[closest_center].with_yaw[<[yaw]>]>
+
+        - define connected False
+        #checks: left, right, forward, backward, above, below, below 2 AND backward 2
+        - foreach <[free_center].left[2]>|<[free_center].right[2]>|<[free_center].forward_flat[2]>|<[free_center].backward_flat[2]>|<[free_center].above[2]>|<[free_center].below[2]>|<[free_center].below[2].backward_flat[2]> as:check_loc:
+          #second check is for conditions such as: stair in front of a stair
+          - if <[check_loc].has_flag[build]> && <[check_loc].material.name> != air:
+            - define connected True
+            - foreach stop
+
+        - if <[connected]>:
+          - define tile <[free_center].to_cuboid[<[free_center]>].expand[2]>
+        - else:
+          - define tile <[grounded_center].to_cuboid[<[grounded_center]>].expand[2]>
 
         - define yaw <map[North=180;South=0;West=90;East=-90].get[<[eye_loc].yaw.simple>]>
         - define center <[tile].center.with_yaw[<[yaw]>]>
 
-        #it there's already a build there
-        - if <[center].has_flag[build]>:
-          - define can_build False
+        - flag player build.struct:<[tile]>
 
-        #if too far
-        - define no_preview:!
-        - if <[center].distance[<[eye_loc]>].vertical> > 6:
-          - define can_build False
-          - define no_preview True
-          #- define blocks_in_way False
+        - define display_blocks <proc[stair_blocks_gen].context[<[center]>]>
+        - debugblock <[display_blocks]> d:2t color:0,255,0,128
 
-        - define display_blocks <list[]>
-        - define start_corner <[center].below[3].left[2].backward_flat[3]>
-        - repeat 5:
-          - define corner <[start_corner].above[<[value]>].forward[<[value]>]>
-          - define display_blocks <[display_blocks].include[<[corner].points_between[<[corner].right[4]>]>]>
-
-        #if there are blocks in the way, you can't build, otherwise, you can
-        - if <[can_build]>:
-          - debugblock <[display_blocks]> d:2t color:0,255,0,128
-          - flag player build.struct:<[tile]>
-        - else:
-          - flag player build.struct:!
-          #- if <[blocks_in_way]>:
-          - if !<[no_preview].exists>:
-            - debugblock <[display_blocks]> d:2t color:0,0,0,128
 
 round4:
   type: procedure
@@ -340,11 +247,7 @@ build_system_handler:
     - define center <[tile].center.with_yaw[<[yaw]>]>
 
     - if <player.flag[build.type]> == stair:
-      - define set_blocks <list[]>
-      - define start_corner <[center].below[3].left[2].backward_flat[3]>
-      - repeat 5:
-        - define corner <[start_corner].above[<[value]>].forward[<[value]>]>
-        - define set_blocks <[set_blocks].include[<[corner].points_between[<[corner].right[4]>]>]>
+      - define set_blocks <proc[stair_blocks_gen].context[<[center]>]>
       - define material oak_stairs[direction=<player.eye_location.yaw.simple>]
 
       #has_flag[build].not so it doesn't override walls or floors
@@ -383,17 +286,33 @@ build_system_handler:
     - define type <[loc].flag[build.type]>
     - define total_blocks <[tile].blocks>
 
-    #deduplicating this
-    - define connected_tiles <[tile_center].find_blocks_flagged[build].within[4].parse[flag[build.center]].deduplicate.parse[flag[build.structure]].filter[intersects[<[tile]>]].exclude[<[tile]>]>
 
+    - define connected_total <[tile_center].find_blocks_flagged[build.center].within[4].parse[flag[build.center]].deduplicate.parse[flag[build.structure]].filter[intersects[<[tile]>]].exclude[<[tile]>]>
+
+    - define connected_tiles <[connected_total].filter[center.flag[build.type].equals[stair].not]>
+    - define connected_stairs_and_pyramids <[connected_total].filter[center.flag[build.type].equals[floor].not].filter[center.flag[build.type].equals[wall].not]>
+
+    #-walls/floors
     - foreach <[connected_tiles]> as:other_tile:
       - define connectors <[tile].intersection[<[other_tile]>].blocks>
-      #- playeffect effect:soul_fire_flame offset:0 at:<[tile].center>|<[other_tile].center>
-      #- playeffect effect:FLAME offset:0 at:<[connectors].parse[center]>
       #swap the connectors to whatever is already placed
       - flag <[connectors]> build:<[other_tile].center.flag[build]>
 
+    #-stairs/
+    - foreach <[connected_stairs_and_pyramids]> as:other_tile:
+        - define connectors <[tile].intersection[<[other_tile]>].blocks>
+
+        #-needs updating in the future
+        - define material <[other_tile].center.material>
+        - define stair_blocks <proc[stair_blocks_gen].context[<[other_tile].center.flag[build.center]>].parse[center]>
+        - define connectors <[connectors].filter_tag[<[stair_blocks].contains[<[filter_value].center>]>].filter[flag[build.structure].equals[<[tile]>]]>
+        #- playeffect effect:FLAME offset:0 at:<[connectors]>
+        #replace the block with the stair
+        - modifyblock <[connectors]> <[material]>
+        - flag <[connectors]> build:<[other_tile].center.flag[build]>
+
     - define shoots <[tile_center].flag[build.shoots]||<list[]>>
+
 
     #checking the build centers instead of type, so the connectors between walls can work with this too
     - define actual_blocks <[tile].blocks.filter[has_flag[build]].filter[flag[build.center].equals[<[tile_center]>]]>
@@ -440,6 +359,18 @@ tile_break_chain:
     - define data <map[shoots=<[new_shoots]>;root=<[tile]>]>
     - run tile_break_chain def:<[data]>
 
+stair_blocks_gen:
+  type: procedure
+  definitions: center
+  debug: false
+  script:
+  - define stair_blocks <list[]>
+  - define start_corner <[center].below[3].left[2].backward_flat[3]>
+  - repeat 5:
+    - define corner <[start_corner].above[<[value]>].forward[<[value]>]>
+    - define stair_blocks <[stair_blocks].include[<[corner].points_between[<[corner].right[4]>]>]>
+  - determine <[stair_blocks]>
+
 #when a tile is placed down, any tiles that are in the "connected_tiles" list would be considered the newly placed tile's "root"
 #if that root is removed, if the newly placed tile doesn't have any other root blocks that its connected to, remove it too
 find_connected_tiles:
@@ -448,72 +379,74 @@ find_connected_tiles:
   debug: false
   script:
   #-wall to wall (horizontal) check/floor to floor check
-  - if <[center].left[3].has_flag[build]>:
+  - if <[center].left[3].has_flag[build.structure]>:
     #- narrate a
     - define connected_tiles:->:<[center].left[3].flag[build.structure]>
-  - if <[center].right[3].has_flag[build]>:
+  - if <[center].right[3].has_flag[build.structure]>:
     #- narrate b
     - define connected_tiles:->:<[center].right[3].flag[build.structure]>
 
   #-wall to wall (perpendicular) check
   - if <[center].flag[build.type]> == WALL:
-    - if <[center].left[2].backward_flat[2].has_flag[build]>:
+    - if <[center].left[2].backward_flat[2].has_flag[build.structure]>:
       - define connected_tiles:->:<[center].left[2].backward_flat[2].flag[build.structure]>
-    - if <[center].left[2].forward_flat[2].has_flag[build]>:
+    - if <[center].left[2].forward_flat[2].has_flag[build.structure]>:
       - define connected_tiles:->:<[center].left[2].forward_flat[2].flag[build.structure]>
-    - if <[center].right[2].backward_flat[2].has_flag[build]>:
+    - if <[center].right[2].backward_flat[2].has_flag[build.structure]>:
       - define connected_tiles:->:<[center].right[2].backward_flat[2].flag[build.structure]>
-    - if <[center].right[2].forward_flat[2].has_flag[build]>:
+    - if <[center].right[2].forward_flat[2].has_flag[build.structure]>:
       - define connected_tiles:->:<[center].right[2].forward_flat[2].flag[build.structure]>
 
   #-floor to wall check
   - if <[center].flag[build.type]> == FLOOR:
-    - if <[center].below.backward_flat[2].has_flag[build]>:
+    - if <[center].below.backward_flat[2].has_flag[build.structure]>:
       - define connected_tiles:->:<[center].below.backward_flat[2].flag[build.structure]>
-    - if <[center].below.forward_flat[2].has_flag[build]>:
+    - if <[center].below.forward_flat[2].has_flag[build.structure]>:
       - define connected_tiles:->:<[center].below.forward_flat[2].flag[build.structure]>
 
-    - if <[center].below.left[2].has_flag[build]>:
+    - if <[center].below.left[2].has_flag[build.structure]>:
       - define connected_tiles:->:<[center].below.left[2].flag[build.structure]>
-    - if <[center].below.right[2].has_flag[build]>:
+    - if <[center].below.right[2].has_flag[build.structure]>:
       - define connected_tiles:->:<[center].below.right[2].flag[build.structure]>
 
-    - if <[center].above.backward_flat[2].has_flag[build]>:
+    - if <[center].above.backward_flat[2].has_flag[build.structure]>:
       - define connected_tiles:->:<[center].above.backward_flat[2].flag[build.structure]>
-    - if <[center].above.forward_flat[2].has_flag[build]>:
+    - if <[center].above.forward_flat[2].has_flag[build.structure]>:
       - define connected_tiles:->:<[center].above.forward_flat[2].flag[build.structure]>
 
-    - if <[center].above.left[2].has_flag[build]>:
+    - if <[center].above.left[2].has_flag[build.structure]>:
       - define connected_tiles:->:<[center].above.left[2].flag[build.structure]>
-    - if <[center].above.right[2].has_flag[build]>:
+    - if <[center].above.right[2].has_flag[build.structure]>:
       - define connected_tiles:->:<[center].above.right[2].flag[build.structure]>
 
   #-wall to wall (vertical) check
-  - if <[center].above[3].has_flag[build]>:
+  - if <[center].above[3].has_flag[build.structure]>:
     #- narrate c
     - define connected_tiles:->:<[center].above[3].flag[build.structure]>
-  - if <[center].below[3].has_flag[build]>:
+  - if <[center].below[3].has_flag[build.structure]>:
     #- narrate d
     - define connected_tiles:->:<[center].below[3].flag[build.structure]>
 
   #-wall to floor AND floor to wall check (floor is below)
-  - if <[center].below[2].forward_flat[2].has_flag[build]>:
+  - if <[center].below[2].forward_flat[2].has_flag[build.structure]>:
     #- narrate e
     - define connected_tiles:->:<[center].below[2].forward_flat[2].flag[build.structure]>
-  - if <[center].below[2].backward_flat[2].has_flag[build]>:
+  - if <[center].below[2].backward_flat[2].has_flag[build.structure]>:
     #- narrate f
     - define connected_tiles:->:<[center].below[2].backward_flat[2].flag[build.structure]>
 
   #-wall to floor AND floor to wall check (floor is above)
-  - if <[center].above[2].forward_flat[2].has_flag[build]>:
+  - if <[center].above[2].forward_flat[2].has_flag[build.structure]>:
     #- narrate i
     - define connected_tiles:->:<[center].above[2].forward_flat[2].flag[build.structure]>
-  - if <[center].above[2].backward_flat[2].has_flag[build]>:
+  - if <[center].above[2].backward_flat[2].has_flag[build.structure]>:
     #- narrate j
     - define connected_tiles:->:<[center].above[2].backward_flat[2].flag[build.structure]>
 
   - if <[connected_tiles].exists>:
+    #second filter check is for stairs especially, since they're a whole tile
     - determine <[connected_tiles].deduplicate>
+    #<[connected_tiles].deduplicate.filter[equals[<[center].flag[build.structure]>].not]>
   - else:
     - determine <list[]>
 
