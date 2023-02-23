@@ -5,6 +5,8 @@
         #if it's too far, disable preview (might not need)
         #green: 0,255,0,128 black:0,0,0,128
 
+#-to do: snap to nearby tiles
+
 build_tiles:
   type: task
   debug: false
@@ -40,7 +42,8 @@ build_tiles:
 
         #-check to use free_center or ground_center
         #checks: left, right, forward, backward
-        - if <[free_center].left[2].has_flag[build]> || <[free_center].right[2].has_flag[build]> || <[free_center].forward_flat[2].has_flag[build]> || <[free_center].backward_flat[2].has_flag[build]>:
+        - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
+        - if <[connected_tiles].any>:
           - define final_center <[free_center]>
         - else:
           - define final_center <[grounded_center]>
@@ -76,7 +79,8 @@ build_tiles:
 
         #-check to use free_center or ground_center
         #checks: left, right, above, below
-        - if <[free_center].left[2].has_flag[build]> || <[free_center].right[2].has_flag[build]> || <[free_center].above[2].has_flag[build]> || <[free_center].below[2].has_flag[build]>:
+        - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
+        - if <[connected_tiles].any>:
           - define final_center <[free_center]>
         - else:
           - define final_center <[grounded_center]>
@@ -115,15 +119,8 @@ build_tiles:
         - define grounded_center <[closest_center].with_yaw[<[yaw]>]>
 
         #-check to use free_center or ground_center
-        - define connected False
-        #checks: left, right, forward, backward, above, below, below 2 AND backward 2 (the one side of the stair that's placeables)
-        - foreach <[free_center].left[2]>|<[free_center].right[2]>|<[free_center].forward_flat[2]>|<[free_center].backward_flat[2]>|<[free_center].above[2]>|<[free_center].below[2]>|<[free_center].below[2].backward_flat[2]> as:check_loc:
-          #second check is for conditions such as: stair in front of a stair
-          - if <[check_loc].has_flag[build]> && <[check_loc].material.name> != air:
-            - define connected True
-            - foreach stop
-
-        - if <[connected]>:
+        - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
+        - if <[connected_tiles].any> || <[nearby_tiles].any>:
           - define final_center <[free_center].with_yaw[<[yaw]>]>
         - else:
           - define final_center <[grounded_center].with_yaw[<[yaw]>]>
@@ -163,7 +160,8 @@ build_tiles:
 
         #-check to use free_center or ground_center
         #checks: left, right, forward, backward
-        - if <[free_center].below[2].left[2].has_flag[build]> || <[free_center].below[2].right[2].has_flag[build]> || <[free_center].below[2].forward_flat[2].has_flag[build]> || <[free_center].below[2].backward_flat[2].has_flag[build]>:
+        - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
+        - if <[connected_tiles].any>:
           - define final_center <[free_center]>
         - else:
           - define final_center <[grounded_center]>
@@ -223,18 +221,18 @@ build_system_handler:
       - flag <[blocks]> build:!
 
       #all the tiles that were intersecting with the tile that was just removed
-      - define connected_tiles <[tile].blocks.filter[has_flag[build.structure]].parse[flag[build.structure]].deduplicate>
+      #- define connected_tiles <proc[find_connected_tiles].context[<[center]>|<[type]>]>
 
       #re-apply each structure that were connected to original tile
-      - foreach <[connected_tiles]> as:tile:
-        - define center <[tile].center>
-        - definemap data:
-            tile: <[tile]>
-            center: <[center].flag[build.center]>
-            build_type: <[center].flag[build.type]>
-            material: <[center].material.name>
+      #- foreach <[connected_tiles]> as:tile:
+        #- define center <[tile].center>
+        #- definemap data:
+        #    tile: <[tile]>
+        #    center: <[center].flag[build.center]>
+        #    build_type: <[center].flag[build.type]>
+        #    material: <[center].material.name>
 
-        - run build_system_handler.place def:<[data]>
+        #- run build_system_handler.place def:<[data]>
 
   place:
     - define tile <[data].get[tile]>
@@ -245,7 +243,7 @@ build_system_handler:
     - choose <[build_type]>:
 
       - case stair:
-        - define set_blocks <proc[stair_blocks_gen].context[<[center]>]>
+        - define set_blocks <proc[stair_blocks_gen].context[<[center]>].filter[has_flag[build].not]>
         - define material oak_stairs[direction=<[center].yaw.simple>]
         - modifyblock <[set_blocks]> <[material]>
 
@@ -255,6 +253,34 @@ build_system_handler:
       #floors/walls
       - default:
         - modifyblock <[tile].blocks> <[material]>
+
+find_connected_tiles:
+  type: procedure
+  definitions: center|type
+  debug: false
+  script:
+    - choose <[type]>:
+      #center of a 2,0,2
+      - case floor:
+        - define check_locs <list[<[center].left[2]>|<[center].right[2]>|<[center].forward_flat[2]>|<[center].backward_flat[2]>]>
+      #center of a 2,2,0 or 2,2,0
+      - case wall:
+        - define check_locs <list[<[center].left[2]>|<[center].right[2]>|<[center].above[2]>|<[center].below[2]>]>
+      #center of a 2,2,2
+      - case stair:
+        - define check_locs <list[<[center].left[2]>|<[center].right[2]>|<[center].forward_flat[2]>|<[center].backward_flat[2]>|<[center].above[2]>|<[center].below[2]>|<[center].below[2].backward_flat[2]>]>
+      #center of a 2,2,2
+      - case pyramid:
+        - define center <[center].below[2]>
+        - define check_locs <list[<[center]>|<[center].left[2]>|<[center].right[2]>|<[center].forward_flat[2]>|<[center].backward_flat[2]>]>
+
+    - define connected_tiles <list[]>
+    - foreach <[check_locs]> as:loc:
+      - if <[loc].has_flag[build.structure]> && <[loc].material.name> != AIR:
+        - define connected_tiles:->:<[loc].flag[build.structure]>
+
+    - determine <[connected_tiles]>
+
 
 place_pyramid:
   type: task
@@ -358,25 +384,12 @@ build:
     - while <player.is_online> && <player.has_flag[build]>:
       - define eye_loc <player.eye_location>
       - define loc <player.location>
+      - define type <map[1=wall;2=floor;3=stair;4=pyramid].get[<player.held_item_slot>]||null>
 
-      - choose <player.held_item_slot>:
-        - case 1:
-          - flag player build.type:wall
-          - inject build_tiles.wall
-
-        - case 2:
-          - actionbar floor
-          - flag player build.type:floor
-          - inject build_tiles.floor
-
-        - case 3:
-          - actionbar stair
-          - flag player build.type:stair
-          - inject build_tiles.stair
-        - case 4:
-          - actionbar pyramid
-          - flag player build.type:pyramid
-          - inject build_tiles.pyramid
+      - if <[type]> != null:
+        - actionbar <[type]>
+        - flag player build.type:<[type]>
+        - inject build_tiles.<[type]>
 
       - wait 1t
 
