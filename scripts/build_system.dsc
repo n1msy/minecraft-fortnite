@@ -14,31 +14,47 @@ build_tiles:
   #general stuff required for all builds
 
         - define can_build False
+        - define yaw <map[North=180;South=0;West=90;East=-90].get[<[eye_loc].yaw.simple>]>
         - define target_loc <[eye_loc].ray_trace[default=air;range=<[range]>]>
         - define x <proc[round4].context[<[target_loc].x>]>
         - define z <proc[round4].context[<[target_loc].z>]>
-        #find the bottom center of the ENTIRE tower (the nearest floor based on where you are, so only the bottom based on where you are)
-        - define closest_center <[target_loc].with_x[<[x]>].with_z[<[z]>].with_y[<[eye_loc].y>].with_pitch[90].ray_trace>
+
+        - define closest_center <[target_loc].with_x[<[x]>].with_z[<[z]>].with_y[<[eye_loc].y.sub[0.5]>]>
+
+        - define grounded_center <[closest_center].with_pitch[90].ray_trace>
+
+        #this is the method used to snap builds together (especially considering unaligned heights in terrains)
+        - define heights:!
+        - foreach <location[2,0,0]>|<location[-2,0,0]>|<location[0,0,2]>|<location[0,0,-2]> as:corner:
+          - define h <[closest_center].add[<[corner]>].center.with_pitch[90].ray_trace.with_yaw[<[yaw]>]>
+          - define heights:->:<[h]>
+          - playeffect effect:FLAME offset:0 visibility:1000 at:<[h]>
+
+        #-calculates Y from the nearby tile
+        #if this happens, it means there are already tiles connected basically
+        - define highest <[heights].sort_by_number[y].reverse.first>
+        - if <[highest].below.has_flag[build.structure]>:
+          - define c <[highest].below.flag[build.structure].center>
+          - define new_y <[c].y>
+          - if <list[stair|wall].contains[<[c].flag[build.type]>]>:
+            #either top or bottom
+            - define y_levels <list[<[c].add[0,2,0]>|<[c].sub[0,2,0]>]>
+            - define new_y <[y_levels].sort_by_number[distance[<[eye_loc].forward[2]>].vertical].first.y>
+          - define highest <[highest].with_y[<[new_y]>]>
+
+          - define free_center <[closest_center].with_y[<[highest].y>].center>
+
+        #-calculates Y from the ground up
+        - else:
+          - define add_y <proc[round4].context[<[target_loc].forward[<[type].equals[stair].if_true[4].if_false[2]>].distance[<[grounded_center]>].vertical.sub[<[type].equals[stair].if_true[2.5].if_false[1]>]>]>
+          - define add_y <[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>
+
+          - define free_center <[grounded_center].above[<[add_y]>]>
 
   floor:
 
-        - define range 1.5
+        - define range 2
         - inject build_tiles
-
-        #-find free_center/ground_center
-        #meaning the floor AND stair doesn't count as an actual block during ray_trace
-        - if <[closest_center].below.has_flag[build]>:
-          #doing .min.y and not just sub[1] to account for stairs too
-          - define y <[closest_center].below.flag[build.structure].min.y>
-          - define closest_center <[closest_center].with_y[<[y]>]>
-
-        #how much to add the y by (rounded)
-        - define add_y <proc[round4].context[<[target_loc].forward[2].distance[<[closest_center]>].vertical.sub[1]>]>
-        - define add_y <[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>
-
-        #this center is the center that would be anywhere you point (isn't grounded)
-        - define free_center <[closest_center].above[<[add_y]>]>
-        - define grounded_center <[closest_center]>
 
         #-check to use free_center or ground_center
         #checks: left, right, forward, backward
@@ -62,20 +78,8 @@ build_tiles:
         - define range 1
         - inject build_tiles
 
-        #-find free_center/ground_center
-        #meaning the floor AND stair doesn't count as an actual block during ray_trace
-        - if <[closest_center].below.has_flag[build]>:
-          #doing .min.y and not just sub[1] to account for stairs too
-          - define y <[closest_center].below.flag[build.structure].min.y>
-          - define closest_center <[closest_center].with_y[<[y]>]>
-
-        - define add_y <proc[round4].context[<[target_loc].forward[4].distance[<[closest_center]>].vertical.sub[2.5]>]>
-        - define add_y <[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>
-
-        - define yaw <map[North=180;South=0;West=90;East=-90].get[<[eye_loc].yaw.simple>]>
-
-        - define free_center <[closest_center].above[<[add_y]>].with_yaw[<[yaw]>].forward_flat[2].above[2]>
-        - define grounded_center <[closest_center].with_yaw[<[yaw]>].forward_flat[2].above[2]>
+        - define free_center <[free_center].with_yaw[<[yaw]>].forward_flat[2].above[2]>
+        - define grounded_center <[grounded_center].with_yaw[<[yaw]>].forward_flat[2].above[2]>
 
         #-check to use free_center or ground_center
         #checks: left, right, above, below
@@ -98,32 +102,17 @@ build_tiles:
         - define range 2.5
         - inject build_tiles
 
-        #-find free_center/ground_center
-        #meaning the floor AND stair doesn't count as an actual block during ray_trace
-        - if <[closest_center].below.has_flag[build]>:
-          #doing .min.y and not just sub[1] to account for stairs too
-          - define y <[closest_center].below.flag[build.structure].min.y.add[2]>
-          - define closest_center <[closest_center].with_y[<[y]>]>
-        - else:
-          #above 2 because it's a 2x2x2 cuboid
-          - define closest_center <[closest_center].above[2]>
-
-        #how much to add the y by (rounded)
-        - define add_y <proc[round4].context[<[target_loc].forward[2].distance[<[closest_center]>].vertical.sub[1]>]>
-        - define add_y <[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>
-
-        - define yaw <map[North=180;South=0;West=90;East=-90].get[<[eye_loc].yaw.simple>]>
-
         #this center is the center that would be anywhere you point (isn't grounded)
-        - define free_center <[closest_center].above[<[add_y]>].with_yaw[<[yaw]>]>
-        - define grounded_center <[closest_center].with_yaw[<[yaw]>]>
+        - define free_center <[free_center].above[2].with_yaw[<[yaw]>]>
+        - define grounded_center <[grounded_center].above[2].with_yaw[<[yaw]>]>
 
         #-check to use free_center or ground_center
         - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
-        - if <[connected_tiles].any> || <[nearby_tiles].any>:
-          - define final_center <[free_center].with_yaw[<[yaw]>]>
+        - if <[connected_tiles].any>:
+          - define final_center <[free_center]>
         - else:
-          - define final_center <[grounded_center].with_yaw[<[yaw]>]>
+          - narrate is_grounded_please_fix
+          - define final_center <[grounded_center]>
         - define tile <[final_center].to_cuboid[<[final_center]>].expand[2]>
 
         #-set flags
@@ -138,28 +127,11 @@ build_tiles:
         - define range 3
         - inject build_tiles
 
-        #-find free_center/ground_center
-        #meaning the floor AND stair doesn't count as an actual block during ray_trace
-        - if <[closest_center].below.has_flag[build]>:
-          #doing .min.y and not just sub[1] to account for stairs too
-          - define y <[closest_center].below.flag[build.structure].min.y.add[2]>
-          - define closest_center <[closest_center].with_y[<[y]>]>
-        - else:
-          #above 2 because it's a 2x2x2 cuboid
-          - define closest_center <[closest_center].above[2]>
-
-        #how much to add the y by (rounded)
-        - define add_y <proc[round4].context[<[target_loc].forward[2].distance[<[closest_center]>].vertical.sub[1]>]>
-        - define add_y <[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>
-
-        - define yaw <map[North=180;South=0;West=90;East=-90].get[<[eye_loc].yaw.simple>]>
-
         #this center is the center that would be anywhere you point (isn't grounded)
-        - define free_center <[closest_center].above[<[add_y]>].with_yaw[<[yaw]>]>
-        - define grounded_center <[closest_center].with_yaw[<[yaw]>]>
+        - define free_center <[free_center].above[2]>
+        - define grounded_center <[grounded_center].above[2]>
 
         #-check to use free_center or ground_center
-        #checks: left, right, forward, backward
         - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
         - if <[connected_tiles].any>:
           - define final_center <[free_center]>
@@ -259,6 +231,7 @@ find_connected_tiles:
   definitions: center|type
   debug: false
   script:
+    #- playeffect effect:soul_fire_flame offset:0 at:<[center]>
     - choose <[type]>:
       #center of a 2,0,2
       - case floor:
@@ -268,7 +241,9 @@ find_connected_tiles:
         - define check_locs <list[<[center].left[2]>|<[center].right[2]>|<[center].above[2]>|<[center].below[2]>]>
       #center of a 2,2,2
       - case stair:
-        - define check_locs <list[<[center].left[2]>|<[center].right[2]>|<[center].forward_flat[2]>|<[center].backward_flat[2]>|<[center].above[2]>|<[center].below[2]>|<[center].below[2].backward_flat[2]>]>
+        #checks from bottom center of the stair
+        - define center <[center].backward_flat[2].below[2]>
+        - define check_locs <list[<[center]>|<[center].left[2]>|<[center].right[2]>|<[center].forward_flat[5]>|<[center].backward_flat>|<[center].forward_flat[4].above[5]>|<[center].below>]>
       #center of a 2,2,2
       - case pyramid:
         - define center <[center].below[2]>
@@ -276,6 +251,7 @@ find_connected_tiles:
 
     - define connected_tiles <list[]>
     - foreach <[check_locs]> as:loc:
+      #- playeffect effect:FLAME offset:0 at:<[loc]>
       - if <[loc].has_flag[build.structure]> && <[loc].material.name> != AIR:
         - define connected_tiles:->:<[loc].flag[build.structure]>
 
