@@ -177,25 +177,23 @@ build_system_handler:
       - define center <player.flag[build.center]>
       - define build_type <player.flag[build.type]>
 
-      - if <[build_type]> == stair:
-        - define set_blocks <proc[stair_blocks_gen].context[<[center]>]>
-        - define material oak_stairs[direction=<[center].yaw.simple>]
+      - define material oak_planks
+      - define blocks <[tile].blocks>
 
-        #has_flag[build].not so it doesn't override walls or floors
-        - define set_blocks <[set_blocks].filter_tag[<[filter_value].has_flag[build].not.or[<[filter_value].has_flag[build.type].and[<[filter_value].flag[build.type].equals[pyramid]>]>]>]>
+      - choose <[build_type]>:
 
-        - define blocks <[tile].blocks.filter[has_flag[build].not]>
+        - case stair:
+          - define set_blocks <proc[stair_blocks_gen].context[<[center]>]>
+          - define material oak_stairs[direction=<[center].yaw.simple>]
+          - modifyblock <[set_blocks]> <[material]>
 
-        - modifyblock <[set_blocks]> <[material]>
+        - case pyramid:
+          - run place_pyramid def:<[center]>
 
-      - else if <[build_type]> == pyramid:
-        - run place_pyramid def:<[center]>
-        - define blocks <[tile].blocks.filter[has_flag[build].not]>
-
-      - else:
-        - define material oak_planks
-        - define blocks <[tile].blocks>
-        - modifyblock <[blocks]> <[material]>
+        #floors/walls
+        - default:
+          - define blocks <[tile].blocks>
+          - modifyblock <[blocks]> <[material]>
 
       - flag <[blocks]> build.structure:<[tile]>
       - flag <[blocks]> build.center:<[center]>
