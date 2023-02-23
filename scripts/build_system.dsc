@@ -23,6 +23,7 @@ build_tiles:
         - define range 1.5
         - inject build_tiles
 
+        #-find free_center/ground_center
         #meaning the floor AND stair doesn't count as an actual block during ray_trace
         - if <[closest_center].below.has_flag[build]>:
           #doing .min.y and not just sub[1] to account for stairs too
@@ -37,7 +38,7 @@ build_tiles:
         - define free_center <[closest_center].above[<[add_y]>]>
         - define grounded_center <[closest_center]>
 
-        #if it's connected to anything else
+        #-check to use free_center or ground_center
         #checks: left, right, forward, backward
         - if <[free_center].left[2].has_flag[build]> || <[free_center].right[2].has_flag[build]> || <[free_center].forward_flat[2].has_flag[build]> || <[free_center].backward_flat[2].has_flag[build]>:
           - define final_center <[free_center]>
@@ -45,6 +46,7 @@ build_tiles:
           - define final_center <[grounded_center]>
         - define tile <[final_center].to_cuboid[<[final_center]>].expand[2,0,2]>
 
+        #-set flags
         - flag player build.struct:<[tile]>
         - flag player build.center:<[final_center]>
 
@@ -54,41 +56,45 @@ build_tiles:
 
   wall:
 
-      - define range 1
-      - inject build_tiles
+        - define range 1
+        - inject build_tiles
 
-      #meaning the floor AND stair doesn't count as an actual block during ray_trace
-      - if <[closest_center].below.has_flag[build]>:
-        #doing .min.y and not just sub[1] to account for stairs too
-        - define y <[closest_center].below.flag[build.structure].min.y>
-        - define closest_center <[closest_center].with_y[<[y]>]>
+        #-find free_center/ground_center
+        #meaning the floor AND stair doesn't count as an actual block during ray_trace
+        - if <[closest_center].below.has_flag[build]>:
+          #doing .min.y and not just sub[1] to account for stairs too
+          - define y <[closest_center].below.flag[build.structure].min.y>
+          - define closest_center <[closest_center].with_y[<[y]>]>
 
-      - define add_y <proc[round4].context[<[target_loc].forward[4].distance[<[closest_center]>].vertical.sub[2.5]>]>
-      - define add_y <[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>
+        - define add_y <proc[round4].context[<[target_loc].forward[4].distance[<[closest_center]>].vertical.sub[2.5]>]>
+        - define add_y <[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>
 
-      - define yaw <map[North=180;South=0;West=90;East=-90].get[<[eye_loc].yaw.simple>]>
+        - define yaw <map[North=180;South=0;West=90;East=-90].get[<[eye_loc].yaw.simple>]>
 
-      - define free_center <[closest_center].above[<[add_y]>].with_yaw[<[yaw]>].forward_flat[2].above[2]>
-      - define grounded_center <[closest_center].with_yaw[<[yaw]>].forward_flat[2].above[2]>
+        - define free_center <[closest_center].above[<[add_y]>].with_yaw[<[yaw]>].forward_flat[2].above[2]>
+        - define grounded_center <[closest_center].with_yaw[<[yaw]>].forward_flat[2].above[2]>
 
-      #checks: left, right, above, below
-      - if <[free_center].left[2].has_flag[build]> || <[free_center].right[2].has_flag[build]> || <[free_center].above[2].has_flag[build]> || <[free_center].below[2].has_flag[build]>:
-        - define final_center <[free_center]>
-      - else:
-        - define final_center <[grounded_center]>
-      - define tile <[final_center].below[2].left[2].to_cuboid[<[final_center].above[2].right[2]>]>
+        #-check to use free_center or ground_center
+        #checks: left, right, above, below
+        - if <[free_center].left[2].has_flag[build]> || <[free_center].right[2].has_flag[build]> || <[free_center].above[2].has_flag[build]> || <[free_center].below[2].has_flag[build]>:
+          - define final_center <[free_center]>
+        - else:
+          - define final_center <[grounded_center]>
+        - define tile <[final_center].below[2].left[2].to_cuboid[<[final_center].above[2].right[2]>]>
 
-      - flag player build.struct:<[tile]>
-      - flag player build.center:<[final_center]>
+        #-set flags
+        - flag player build.struct:<[tile]>
+        - flag player build.center:<[final_center]>
 
-      - define display_blocks <[tile].blocks>
-      - debugblock <[display_blocks]> d:2t color:0,255,0,128
+        - define display_blocks <[tile].blocks>
+        - debugblock <[display_blocks]> d:2t color:0,255,0,128
 
   stair:
 
         - define range 2.5
         - inject build_tiles
 
+        #-find free_center/ground_center
         #meaning the floor AND stair doesn't count as an actual block during ray_trace
         - if <[closest_center].below.has_flag[build]>:
           #doing .min.y and not just sub[1] to account for stairs too
@@ -108,6 +114,7 @@ build_tiles:
         - define free_center <[closest_center].above[<[add_y]>].with_yaw[<[yaw]>]>
         - define grounded_center <[closest_center].with_yaw[<[yaw]>]>
 
+        #-check to use free_center or ground_center
         - define connected False
         #checks: left, right, forward, backward, above, below, below 2 AND backward 2 (the one side of the stair that's placeables)
         - foreach <[free_center].left[2]>|<[free_center].right[2]>|<[free_center].forward_flat[2]>|<[free_center].backward_flat[2]>|<[free_center].above[2]>|<[free_center].below[2]>|<[free_center].below[2].backward_flat[2]> as:check_loc:
@@ -122,6 +129,7 @@ build_tiles:
           - define final_center <[grounded_center].with_yaw[<[yaw]>]>
         - define tile <[final_center].to_cuboid[<[final_center]>].expand[2]>
 
+        #-set flags
         - flag player build.struct:<[tile]>
         - flag player build.center:<[final_center]>
 
@@ -133,6 +141,7 @@ build_tiles:
         - define range 3
         - inject build_tiles
 
+        #-find free_center/ground_center
         #meaning the floor AND stair doesn't count as an actual block during ray_trace
         - if <[closest_center].below.has_flag[build]>:
           #doing .min.y and not just sub[1] to account for stairs too
@@ -152,6 +161,7 @@ build_tiles:
         - define free_center <[closest_center].above[<[add_y]>].with_yaw[<[yaw]>]>
         - define grounded_center <[closest_center].with_yaw[<[yaw]>]>
 
+        #-check to use free_center or ground_center
         #checks: left, right, forward, backward
         - if <[free_center].below[2].left[2].has_flag[build]> || <[free_center].below[2].right[2].has_flag[build]> || <[free_center].below[2].forward_flat[2].has_flag[build]> || <[free_center].below[2].backward_flat[2].has_flag[build]>:
           - define final_center <[free_center]>
@@ -159,6 +169,7 @@ build_tiles:
           - define final_center <[grounded_center]>
         - define tile <[final_center].to_cuboid[<[final_center]>].expand[2]>
 
+        #-set flags
         - flag player build.struct:<[tile]>
         - flag player build.center:<[final_center]>
 
@@ -169,6 +180,7 @@ build_tiles:
 build_system_handler:
   type: world
   debug: false
+  definitions: data
   events:
     on player left clicks block flagged:build.struct:
       - determine passively cancelled
@@ -177,23 +189,19 @@ build_system_handler:
       - define center <player.flag[build.center]>
       - define build_type <player.flag[build.type]>
 
+      #-temp
       - define material oak_planks
-      - define blocks <[tile].blocks>
 
-      - choose <[build_type]>:
+      #filter so the other part of the tile isn't removed upon removal
+      - define blocks <[tile].blocks.filter[has_flag[build].not]>
 
-        - case stair:
-          - define set_blocks <proc[stair_blocks_gen].context[<[center]>]>
-          - define material oak_stairs[direction=<[center].yaw.simple>]
-          - modifyblock <[set_blocks]> <[material]>
+      - definemap data:
+          tile: <[tile]>
+          center: <[center]>
+          build_type: <[build_type]>
+          material: <[material]>
 
-        - case pyramid:
-          - run place_pyramid def:<[center]>
-
-        #floors/walls
-        - default:
-          - define blocks <[tile].blocks>
-          - modifyblock <[blocks]> <[material]>
+      - run build_system_handler.place def:<[data]>
 
       - flag <[blocks]> build.structure:<[tile]>
       - flag <[blocks]> build.center:<[center]>
@@ -207,10 +215,46 @@ build_system_handler:
       - define tile <[loc].flag[build.structure]>
       - define center <[loc].flag[build.center]>
       - define type <[loc].flag[build.type]>
-      - define blocks <[tile].blocks>
+
+      #so it only includes the parts of the tile that are its own (since each cuboid intersects by one)
+      - define blocks <[tile].blocks.filter[flag[build.center].equals[<[center]>]]>
 
       - modifyblock <[blocks]> air
       - flag <[blocks]> build:!
+
+      #all the tiles that were intersecting with the tile that was just removed
+      - define connected_tiles <[tile].blocks.filter[has_flag[build.structure]].parse[flag[build.structure]].deduplicate>
+
+      #re-apply each structure that were connected to original tile
+      - foreach <[connected_tiles]> as:tile:
+        - define center <[tile].center>
+        - definemap data:
+            tile: <[tile]>
+            center: <[center].flag[build.center]>
+            build_type: <[center].flag[build.type]>
+            material: <[center].material.name>
+
+        - run build_system_handler.place def:<[data]>
+
+  place:
+    - define tile <[data].get[tile]>
+    - define center <[data].get[center]>
+    - define build_type <[data].get[build_type]>
+    - define material <[data].get[material]>
+
+    - choose <[build_type]>:
+
+      - case stair:
+        - define set_blocks <proc[stair_blocks_gen].context[<[center]>]>
+        - define material oak_stairs[direction=<[center].yaw.simple>]
+        - modifyblock <[set_blocks]> <[material]>
+
+      - case pyramid:
+        - run place_pyramid def:<[center]>
+
+      #floors/walls
+      - default:
+        - modifyblock <[tile].blocks> <[material]>
 
 place_pyramid:
   type: task
