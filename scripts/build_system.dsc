@@ -24,35 +24,38 @@ build_tiles:
         - if <[grounded_center].below.has_flag[build.structure]>:
           - define grounded_center <[grounded_center].with_y[<[grounded_center].below.flag[build.structure].min.y>]>
 
+        #####What im trying to do right now: find the closest tile the player is looking at and change the y value of the build to the y value of that
+        ##tile, that way, even if there are uneven surfaces, the tiles will still have the same "puzzle" matching effect when connected together
+
         #this is the method used to snap builds together (especially considering unaligned heights in terrains)
-        - define heights:!
-        - foreach <location[2,0,0]>|<location[-2,0,0]>|<location[0,0,2]>|<location[0,0,-2]> as:corner:
-          - define h <[closest_center].with_y[256].add[<[corner]>].center.with_pitch[90].ray_trace.with_yaw[<[yaw]>]>
-          - define heights:->:<[h]>
+        #- define heights:!
+        #- foreach <location[2,0,0]>|<location[-2,0,0]>|<location[0,0,2]>|<location[0,0,-2]> as:corner:
+        #  - define h <[closest_center].with_y[256].add[<[corner]>].center.with_pitch[90].ray_trace.with_yaw[<[yaw]>]>
+        #  - define heights:->:<[h]>
           # playeffect effect:FLAME offset:0 visibility:1000 at:<[h]>
 
         #-calculates Y from the nearby tile
         #if this happens, it means there are already tiles connected basically
-        - define highest <[heights].sort_by_number[distance[<[target_loc]>]].first>
-        - if <[highest].below.has_flag[build.structure]>:
-          - define c <[highest].below.flag[build.structure].center>
-          - define new_y <[c].y>
-          #- if <list[stair|wall].contains[<[c].flag[build.type]>]>:
-          - if <list[stair|wall].contains[<[c].flag[build.type]>]>:
-            #either top or bottom
-            - define y_levels <list[<[c].add[0,2,0]>|<[c].sub[0,2,0]>]>
-            - define new_y <[y_levels].sort_by_number[distance[<[eye_loc].forward[2]>].vertical].first.y>
-          - define highest <[highest].with_y[<[new_y]>]>
+        #- define highest <[heights].sort_by_number[distance[<[target_loc]>]].first>
+        #- if <[highest].below.has_flag[build.structure]>:
+        #  - define c <[highest].below.flag[build.structure].center>
+        #  - define new_y <[c].y>
+        #  #- if <list[stair|wall].contains[<[c].flag[build.type]>]>:
+        #  - if <list[stair|wall].contains[<[c].flag[build.type]>]>:
+        #    #either top or bottom
+        #    - define y_levels <list[<[c].add[0,2,0]>|<[c].sub[0,2,0]>]>
+        #    - define new_y <[y_levels].sort_by_number[distance[<[eye_loc].forward[2]>].vertical].first.y>
+        #  - define highest <[highest].with_y[<[new_y]>]>
 
-          - define free_center <[closest_center].with_y[<[highest].y>].center>
+        #  - define free_center <[closest_center].with_y[<[highest].y>].center>
 
         #-calculates Y from the ground up
-        - else:
-          #- modifyblock <[highest]> dirt
-          - define add_y <proc[round4].context[<[target_loc].forward[<[type].equals[stair].if_true[4].if_false[2]>].distance[<[grounded_center]>].vertical.sub[<[type].equals[stair].if_true[2.5].if_false[1]>]>]>
-          - define add_y <[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>
+        #- else:
+        #- modifyblock <[highest]> dirt
+        - define add_y <proc[round4].context[<[target_loc].forward[<[type].equals[stair].if_true[4].if_false[2]>].distance[<[grounded_center]>].vertical.sub[<[type].equals[stair].if_true[2.5].if_false[1]>]>]>
+        - define add_y <[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>
 
-          - define free_center <[grounded_center].above[<[add_y]>]>
+        - define free_center <[grounded_center].above[<[add_y]>]>
 
   floor:
 
