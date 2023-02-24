@@ -5,8 +5,6 @@
         #if it's too far, disable preview (might not need)
         #green: 0,255,0,128 black:0,0,0,128
 
-#-to do: snap to nearby tiles
-
 build_tiles:
   type: task
   debug: false
@@ -22,20 +20,24 @@ build_tiles:
         - define closest_center <[target_loc].with_x[<[x]>].with_z[<[z]>].with_y[<[eye_loc].y.sub[0.5]>]>
 
         - define grounded_center <[closest_center].with_pitch[90].ray_trace>
+        #in case it lands on something like a stair
+        - if <[grounded_center].below.has_flag[build.structure]>:
+          - define grounded_center <[grounded_center].with_y[<[grounded_center].below.flag[build.structure].min.y>]>
 
         #this is the method used to snap builds together (especially considering unaligned heights in terrains)
         - define heights:!
         - foreach <location[2,0,0]>|<location[-2,0,0]>|<location[0,0,2]>|<location[0,0,-2]> as:corner:
-          - define h <[closest_center].add[<[corner]>].center.with_pitch[90].ray_trace.with_yaw[<[yaw]>]>
+          - define h <[closest_center].with_y[256].add[<[corner]>].center.with_pitch[90].ray_trace.with_yaw[<[yaw]>]>
           - define heights:->:<[h]>
-          - playeffect effect:FLAME offset:0 visibility:1000 at:<[h]>
+          # playeffect effect:FLAME offset:0 visibility:1000 at:<[h]>
 
         #-calculates Y from the nearby tile
         #if this happens, it means there are already tiles connected basically
-        - define highest <[heights].sort_by_number[y].reverse.first>
+        - define highest <[heights].sort_by_number[distance[<[target_loc]>]].first>
         - if <[highest].below.has_flag[build.structure]>:
           - define c <[highest].below.flag[build.structure].center>
           - define new_y <[c].y>
+          #- if <list[stair|wall].contains[<[c].flag[build.type]>]>:
           - if <list[stair|wall].contains[<[c].flag[build.type]>]>:
             #either top or bottom
             - define y_levels <list[<[c].add[0,2,0]>|<[c].sub[0,2,0]>]>
@@ -46,6 +48,7 @@ build_tiles:
 
         #-calculates Y from the ground up
         - else:
+          #- modifyblock <[highest]> dirt
           - define add_y <proc[round4].context[<[target_loc].forward[<[type].equals[stair].if_true[4].if_false[2]>].distance[<[grounded_center]>].vertical.sub[<[type].equals[stair].if_true[2.5].if_false[1]>]>]>
           - define add_y <[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>
 
@@ -57,20 +60,12 @@ build_tiles:
         - inject build_tiles
 
         #-check to use free_center or ground_center
-        #checks: left, right, forward, backward
         - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
-        - if <[connected_tiles].any>:
-          - define final_center <[free_center]>
-        - else:
-          - define final_center <[grounded_center]>
+        - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>]>
+
         - define tile <[final_center].to_cuboid[<[final_center]>].expand[2,0,2]>
 
-        #-set flags
-        - flag player build.struct:<[tile]>
-        - flag player build.center:<[final_center]>
-
         - define display_blocks <[tile].blocks>
-        - debugblock <[display_blocks]> d:2t color:0,255,0,128
 
 
   wall:
@@ -82,25 +77,22 @@ build_tiles:
         - define grounded_center <[grounded_center].with_yaw[<[yaw]>].forward_flat[2].above[2]>
 
         #-check to use free_center or ground_center
-        #checks: left, right, above, below
         - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
-        - if <[connected_tiles].any>:
-          - define final_center <[free_center]>
-        - else:
-          - define final_center <[grounded_center]>
+        - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>]>
+
+        #- narrate <[connected_tiles].any.if_true[free].if_false[ground]>
+
+
         - define tile <[final_center].below[2].left[2].to_cuboid[<[final_center].above[2].right[2]>]>
 
-        #-set flags
-        - flag player build.struct:<[tile]>
-        - flag player build.center:<[final_center]>
-
         - define display_blocks <[tile].blocks>
-        - debugblock <[display_blocks]> d:2t color:0,255,0,128
 
   stair:
 
-        - define range 2.5
+        - define range 3
         - inject build_tiles
+
+        - playeffect effect:FLAME offset:0 at:<[grounded_center]>
 
         #this center is the center that would be anywhere you point (isn't grounded)
         - define free_center <[free_center].above[2].with_yaw[<[yaw]>]>
@@ -108,19 +100,11 @@ build_tiles:
 
         #-check to use free_center or ground_center
         - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
-        - if <[connected_tiles].any>:
-          - define final_center <[free_center]>
-        - else:
-          - narrate is_grounded_please_fix
-          - define final_center <[grounded_center]>
+        - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>]>
+
         - define tile <[final_center].to_cuboid[<[final_center]>].expand[2]>
 
-        #-set flags
-        - flag player build.struct:<[tile]>
-        - flag player build.center:<[final_center]>
-
         - define display_blocks <proc[stair_blocks_gen].context[<[final_center]>]>
-        - debugblock <[display_blocks]> d:2t color:0,255,0,128
 
   pyramid:
 
@@ -133,18 +117,11 @@ build_tiles:
 
         #-check to use free_center or ground_center
         - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
-        - if <[connected_tiles].any>:
-          - define final_center <[free_center]>
-        - else:
-          - define final_center <[grounded_center]>
+        - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>]>
+
         - define tile <[final_center].to_cuboid[<[final_center]>].expand[2]>
 
-        #-set flags
-        - flag player build.struct:<[tile]>
-        - flag player build.center:<[final_center]>
-
         - define display_blocks <proc[pyramid_blocks_gen].context[<[final_center]>]>
-        - debugblock <[display_blocks]> d:2t color:0,255,0,128
 
 
 build_system_handler:
@@ -160,10 +137,13 @@ build_system_handler:
       - define build_type <player.flag[build.type]>
 
       #-temp
-      - define material oak_planks
+      - define material glass
 
       #filter so the other part of the tile isn't removed upon removal
-      - define blocks <[tile].blocks.filter[has_flag[build].not]>
+      #since pyramids and stairs take up full 2x2x2 cuboids, and not all of it is gonna be its blocks, any blocks that are placed within that area
+      #take priority once placed (they get their own flag placed there)
+      #this method is only temp, since editing might eventually get added and this has to be changed
+      - define blocks <[tile].blocks.filter_tag[<[filter_value].has_flag[build].not.or[<[filter_value].material.name.equals[air]>]>]>
 
       - definemap data:
           tile: <[tile]>
@@ -241,13 +221,11 @@ find_connected_tiles:
         - define check_locs <list[<[center].left[2]>|<[center].right[2]>|<[center].above[2]>|<[center].below[2]>]>
       #center of a 2,2,2
       - case stair:
-        #checks from bottom center of the stair
-        - define center <[center].backward_flat[2].below[2]>
-        - define check_locs <list[<[center]>|<[center].left[2]>|<[center].right[2]>|<[center].forward_flat[5]>|<[center].backward_flat>|<[center].forward_flat[4].above[5]>|<[center].below>]>
+        - define check_locs <list[<[center].backward_flat[2].below[2]>|<[center].left[2]>|<[center].right[2]>|<[center].forward_flat[2].above[2]>]>
       #center of a 2,2,2
       - case pyramid:
-        - define center <[center].below[2]>
-        - define check_locs <list[<[center]>|<[center].left[2]>|<[center].right[2]>|<[center].forward_flat[2]>|<[center].backward_flat[2]>]>
+        - define bottom_center <[center].below[2]>
+        - define check_locs <list[<[bottom_center].left[2]>|<[bottom_center].right[2]>|<[bottom_center].forward_flat[2]>|<[bottom_center].backward_flat[2]>]>
 
     - define connected_tiles <list[]>
     - foreach <[check_locs]> as:loc:
@@ -269,7 +247,7 @@ place_pyramid:
 
     - define mat <material[oak_stairs]>
     - define block_data <list[]>
-    - define center <[center].with_yaw[0]>
+    - define center <[center].with_yaw[0].with_pitch[0]>
 
     - repeat 2:
       - define layer_center <[center].below[<[value]>]>
@@ -366,6 +344,12 @@ build:
         - actionbar <[type]>
         - flag player build.type:<[type]>
         - inject build_tiles.<[type]>
+
+        #-set flags
+        - flag player build.struct:<[tile]>
+        - flag player build.center:<[final_center]>
+
+        - debugblock <[display_blocks]> d:2t color:0,255,0,128
 
       - wait 1t
 
