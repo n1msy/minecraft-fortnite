@@ -17,6 +17,8 @@ build_tiles:
         - define x <proc[round4].context[<[target_loc].x>]>
         - define z <proc[round4].context[<[target_loc].z>]>
 
+        # [ ! ] the centers will ALWAYS be the center of a 2x2x2 cuboid and then be changed in their individual structures!
+
         - define closest_center <[target_loc].with_x[<[x]>].with_z[<[z]>].with_y[<[eye_loc].y.sub[0.5]>]>
 
         - define grounded_center <[closest_center].with_pitch[90].ray_trace>
@@ -24,43 +26,34 @@ build_tiles:
         - if <[grounded_center].below.has_flag[build.structure]>:
           - define grounded_center <[grounded_center].with_y[<[grounded_center].below.flag[build.structure].min.y>]>
 
-        #####What im trying to do right now: find the closest tile the player is looking at and change the y value of the build to the y value of that
-        ##tile, that way, even if there are uneven surfaces, the tiles will still have the same "puzzle" matching effect when connected together
-
-        #this is the method used to snap builds together (especially considering unaligned heights in terrains)
-        #- define heights:!
-        #- foreach <location[2,0,0]>|<location[-2,0,0]>|<location[0,0,2]>|<location[0,0,-2]> as:corner:
-        #  - define h <[closest_center].with_y[256].add[<[corner]>].center.with_pitch[90].ray_trace.with_yaw[<[yaw]>]>
-        #  - define heights:->:<[h]>
-          # playeffect effect:FLAME offset:0 visibility:1000 at:<[h]>
-
-        #-calculates Y from the nearby tile
-        #if this happens, it means there are already tiles connected basically
-        #- define highest <[heights].sort_by_number[distance[<[target_loc]>]].first>
-        #- if <[highest].below.has_flag[build.structure]>:
-        #  - define c <[highest].below.flag[build.structure].center>
-        #  - define new_y <[c].y>
-        #  #- if <list[stair|wall].contains[<[c].flag[build.type]>]>:
-        #  - if <list[stair|wall].contains[<[c].flag[build.type]>]>:
-        #    #either top or bottom
-        #    - define y_levels <list[<[c].add[0,2,0]>|<[c].sub[0,2,0]>]>
-        #    - define new_y <[y_levels].sort_by_number[distance[<[eye_loc].forward[2]>].vertical].first.y>
-        #  - define highest <[highest].with_y[<[new_y]>]>
-
-        #  - define free_center <[closest_center].with_y[<[highest].y>].center>
+        #halfway of y would be 4, not 5, since there's overlapping "connectors"
+        - define grounded_center <[grounded_center].above[2]>
 
         #-calculates Y from the ground up
-        #- else:
-        #- modifyblock <[highest]> dirt
         - define add_y <proc[round4].context[<[target_loc].forward[<[type].equals[stair].if_true[4].if_false[2]>].distance[<[grounded_center]>].vertical.sub[<[type].equals[stair].if_true[2.5].if_false[1]>]>]>
         - define add_y <[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>
 
         - define free_center <[grounded_center].above[<[add_y]>]>
 
+        #if there's a nearby tile, automatically "snap" to it's y level instead of ground up
+        - if <[target_loc].find_blocks_flagged[build.structure].within[5].any>:
+          - define nearest_tile <[target_loc].find_blocks_flagged[build.structure].within[5].parse[flag[build.structure]].deduplicate.first>
+
+          - define new_y <[nearest_tile].min.y>
+
+          - define y_levels <list[<[free_center].with_y[<[new_y].add[2]>]>|<[free_center].with_y[<[new_y].add[6]>]>|<[free_center].with_y[<[new_y].sub[2]>]>|<[free_center].with_y[<[new_y].sub[6]>]>]>
+
+          #since all the centers are BOTTOM centers (the original)
+          - define free_center <[y_levels].sort_by_number[distance[<[target_loc]>]].first.round>
+
+
   floor:
 
         - define range 2
         - inject build_tiles
+
+        - define free_center <[free_center].below[2]>
+        - define grounded_center <[grounded_center].below[2]>
 
         #-check to use free_center or ground_center
         - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
@@ -70,23 +63,28 @@ build_tiles:
 
         - define display_blocks <[tile].blocks>
 
-
   wall:
 
         - define range 1
         - inject build_tiles
 
-        - define free_center <[free_center].with_yaw[<[yaw]>].forward_flat[2].above[2]>
-        - define grounded_center <[grounded_center].with_yaw[<[yaw]>].forward_flat[2].above[2]>
+        - define free_center <[free_center].with_yaw[<[yaw]>].forward_flat[2]>
+        - define grounded_center <[grounded_center].with_yaw[<[yaw]>].forward_flat[2]>
 
         #-check to use free_center or ground_center
         - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
-        - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>]>
+        - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>].round>
 
         #- narrate <[connected_tiles].any.if_true[free].if_false[ground]>
 
+        - choose <[eye_loc].yaw.simple>:
+          - case east west:
+            - define expand 0,2,2
+          - case north south:
+            - define expand -2,2,0
 
-        - define tile <[final_center].below[2].left[2].to_cuboid[<[final_center].above[2].right[2]>]>
+        #- define tile <[final_center].below[2].left[2].to_cuboid[<[final_center].above[2].right[2]>]>
+        - define tile <[final_center].to_cuboid[<[final_center]>].expand[<[expand]>]>
 
         - define display_blocks <[tile].blocks>
 
@@ -95,11 +93,9 @@ build_tiles:
         - define range 3
         - inject build_tiles
 
-        - playeffect effect:FLAME offset:0 at:<[grounded_center]>
-
         #this center is the center that would be anywhere you point (isn't grounded)
-        - define free_center <[free_center].above[2].with_yaw[<[yaw]>]>
-        - define grounded_center <[grounded_center].above[2].with_yaw[<[yaw]>]>
+        - define free_center <[free_center].with_yaw[<[yaw]>]>
+        - define grounded_center <[grounded_center].with_yaw[<[yaw]>]>
 
         #-check to use free_center or ground_center
         - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
@@ -114,9 +110,7 @@ build_tiles:
         - define range 3
         - inject build_tiles
 
-        #this center is the center that would be anywhere you point (isn't grounded)
-        - define free_center <[free_center].above[2]>
-        - define grounded_center <[grounded_center].above[2]>
+        #no need to define free/ground center since no modification is required
 
         #-check to use free_center or ground_center
         - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
@@ -140,7 +134,7 @@ build_system_handler:
       - define build_type <player.flag[build.type]>
 
       #-temp
-      - define material glass
+      - define material oak_planks
 
       #filter so the other part of the tile isn't removed upon removal
       #since pyramids and stairs take up full 2x2x2 cuboids, and not all of it is gonna be its blocks, any blocks that are placed within that area
@@ -276,16 +270,15 @@ place_pyramid:
     - modifyblock <[center]> oak_slab
 
 
-
 stair_blocks_gen:
   type: procedure
   definitions: center
   debug: false
   script:
     - define stair_blocks <list[]>
-    - define start_corner <[center].below[3].left[2].backward_flat[3]>
+    - define start_corner <[center].below[3].left[2].backward_flat[3].round>
     - repeat 5:
-      - define corner <[start_corner].above[<[value]>].forward_flat[<[value]>]>
+      - define corner <[start_corner].above[<[value]>].forward_flat[<[value]>].round>
       - define stair_blocks <[stair_blocks].include[<[corner].points_between[<[corner].right[4]>]>]>
     - determine <[stair_blocks]>
 
@@ -302,6 +295,20 @@ pyramid_blocks_gen:
 
     - define blocks <[first_layer].include[<[second_layer]>].include[<[center]>]>
     - determine <[blocks]>
+
+#get the actual center of the build as if it were a 2x2x2 cuboid
+get_center:
+  type: procedure
+  definitions: rel_center|type
+  debug: false
+  script:
+  - choose <[type]>:
+    #- case floor:
+    #- case wall:
+    - case stair:
+      - determine <[rel_center]>
+    - case pyramid:
+      - determine <[rel_center]>
 
 round4:
   type: procedure
