@@ -134,9 +134,13 @@ build_system_handler:
       - define build_type <player.flag[build.type]>
 
       #-temp
-      - define material glass
+      - define material oak_planks
 
-      - define blocks <[tile].blocks.filter[has_flag[build].not]>
+      #because walls and floors override stairs
+      - define total_blocks <[tile].blocks>
+      - define override_blocks <[total_blocks].filter[has_flag[build.type]].filter_tag[<list[pyramid|stair].contains[<[filter_value].flag[build.type]>]>]>
+
+      - define blocks <[total_blocks].filter[has_flag[build].not].include[<[override_blocks]>]>
 
       - definemap data:
           tile: <[tile]>
@@ -160,6 +164,7 @@ build_system_handler:
       - define center <[loc].flag[build.center]>
       - define type <[loc].flag[build.type]>
 
+      - define replace_tiles_data <list[]>
       #-connecting blocks system
       - define nearby_tiles <[center].find_blocks_flagged[build.structure].within[5].parse[flag[build.structure]].deduplicate.exclude[<[tile]>]>
       - foreach <[nearby_tiles]> as:nearby_t:
@@ -167,28 +172,40 @@ build_system_handler:
         - if !<[nearby_t].intersects[<[tile]>]>:
           - foreach next
         #flag the "connected blocks" to the other tile data values that were connected to the tile being removed
-        - define connecting_blocks <[nearby_t].intersection[<[tile]>].blocks>
-        - flag <[connecting_blocks]> build.structure:<[nearby_t]>
-        - flag <[connecting_blocks]> build.center:<[nearby_t].center.flag[build.center]>
-        - flag <[connecting_blocks]> build.type:<[nearby_t].center.flag[build.type]>
 
+        - define connecting_blocks <[nearby_t].intersection[<[tile]>].blocks>
+        - define t_center <[nearby_t].center.flag[build.center]>
+        - define t_type <[t_center].flag[build.type]>
+
+        #walls and floors dont *need* it if, but it's much easier/simpler this way
+        - definemap tile_data:
+            tile: <[nearby_t]>
+            center: <[t_center]>
+            build_type: <[t_type]>
+            #doing this instead of center, since pyramid center is a slab
+            material: <[nearby_t].min.material.name>
+
+        #doing this so AFTER the original tile is completely removed
+        - define replace_tiles_data:<[replace_tiles_data].include[<[tile_data]>]>
+
+        #make the connectors a part of the other tile
+        - flag <[connecting_blocks]> build.structure:<[nearby_t]>
+        - flag <[connecting_blocks]> build.center:<[t_center]>
+        - flag <[connecting_blocks]> build.type:<[t_type]>
+
+
+      #-actually removing the original tile
       #so it only includes the parts of the tile that are its own (since each cuboid intersects by one)
       - define blocks <[tile].blocks.filter[flag[build.center].equals[<[center]>]]>
 
-      - modifyblock <[blocks]> air
+      #everything is being re-applied anyways, so it's ok
+      - modifyblock <[tile].blocks> air
+
       - flag <[blocks]> build:!
       - flag <[blocks]> breakable:!
 
-      #re-apply each structure that were connected to original tile
-      #- foreach <[connected_tiles]> as:tile:
-        #- define center <[tile].center>
-        #- definemap data:
-        #    tile: <[tile]>
-        #    center: <[center].flag[build.center]>
-        #    build_type: <[center].flag[build.type]>
-        #    material: <[center].material.name>
-
-        #- run build_system_handler.place def:<[data]>
+      - foreach <[replace_tiles_data]> as:tile_data:
+        - run build_system_handler.place def:<[tile_data]>
 
   place:
     - define tile <[data].get[tile]>
@@ -199,9 +216,21 @@ build_system_handler:
     - choose <[build_type]>:
 
       - case stair:
-        - define set_blocks <proc[stair_blocks_gen].context[<[center]>].filter[has_flag[build].not]>
+        - define total_set_blocks <proc[stair_blocks_gen].context[<[center]>]>
+
+        #in case this stair is just being "re-applied" (so the has_flag[build.not] doesn't exclude its own stairs)
+        - define own_stair_blocks <[total_set_blocks].filter[has_flag[build.center]].filter[flag[build.center].equals[<[center]>]]>
+
+        #"extra" stair blocks from other stairs/pyramids (turn them into planks like pyramids do)
+        - define set_connector_blocks <[total_set_blocks].filter[material.name.after_last[_].equals[stairs]].exclude[<[own_stair_blocks]>]>
+
+        #so it doesn't completely override any previously placed tiles
+        - define set_blocks <[total_set_blocks].filter[has_flag[build].not].include[<[own_stair_blocks]>]>
+
         - define material oak_stairs[direction=<[center].yaw.simple>]
         - modifyblock <[set_blocks]> <[material]>
+
+        - modifyblock <[set_connector_blocks]> oak_planks
 
       - case pyramid:
         - run place_pyramid def:<[center]>
@@ -249,7 +278,6 @@ place_pyramid:
   # - <[center]>
   #
 
-    - define mat <material[oak_stairs]>
     - define block_data <list[]>
     - define center <[center].with_yaw[0].with_pitch[0]>
 
@@ -261,21 +289,31 @@ place_pyramid:
 
       - foreach <[corners]> as:corner:
 
-        - define direction <map[1=west;2=north;3=east;4=south].get[<[loop_index]>]>
-        - define mat_data <[mat].with[direction=<[direction]>;shape=outer_left]>
-
-        - if !<[corner].has_flag[build.structure]>:
-          - define block_data <[block_data].include[<map[loc=<[corner]>;mat=<[mat_data]>]>]>
-
         - define next_corner <[corners].get[<[loop_index].add[1]>].if_null[<[corners].first>]>
         - define side <[corner].points_between[<[next_corner]>]>
-        - define mat_data <[mat].with[direction=<[direction]>;shape=straight]>
 
+        - define direction <map[1=west;2=north;3=east;4=south].get[<[loop_index]>]>
+
+        - define corner_mat <material[oak_stairs].with[direction=<[direction]>;shape=outer_left]>
+        - define side_mat <material[oak_stairs].with[direction=<[direction]>;shape=straight]>
+
+        #if it's the last layer, and there are any other builds connected to each other, turn the material into non-stairs
+        - if <[value]> == 2 && <[side].get[3].face[<[layer_center]>].backward_flat.has_flag[build.structure]>:
+          - define corner_mat <material[oak_planks]>
+          - define side_mat <material[oak_planks]>
+
+        #-adding corners first
+        #this checks for:
+        # 1) no build is there yet
+        #OR 2) the build there is a pyramid
+        - if !<[corner].has_flag[build.type]> || <[corner].flag[build.type]> == PYRAMID:
+          - define block_data <[block_data].include[<map[loc=<[corner]>;mat=<[corner_mat]>]>]>
+
+        #-then sides
         - foreach <[side].exclude[<[corner]>|<[next_corner]>]> as:s:
           #so it doesn't override any pre-existing builds
-          - if <[s].has_flag[build.structure]>:
-            - foreach next
-          - define block_data <[block_data].include[<map[loc=<[s]>;mat=<[mat_data]>]>]>
+          - if !<[s].has_flag[build.type]> || <[s].flag[build.type]> == PYRAMID:
+            - define block_data <[block_data].include[<map[loc=<[s]>;mat=<[side_mat]>]>]>
 
     - modifyblock <[block_data].parse[get[loc]]> <[block_data].parse[get[mat]]>
     - modifyblock <[center]> oak_slab
