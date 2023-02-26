@@ -1,10 +1,3 @@
-      # - "can place" check
-      #checks:
-        # if there's nothing besides "breakable" blocks
-        # if there's already a build there
-        #if it's too far, disable preview (might not need)
-        #green: 0,255,0,128 black:0,0,0,128
-
 build_tiles:
   type: task
   debug: false
@@ -428,11 +421,28 @@ build:
         - flag player build.type:<[type]>
         - inject build_tiles.<[type]>
 
-        #-set flags
-        - flag player build.struct:<[tile]>
-        - flag player build.center:<[final_center]>
+        # keeping this here, just in case, but we might not need it and can let players break the terrain with the builds, since it gives more freedom
+        # AND the world regenerates each match anyways
 
-        - debugblock <[display_blocks]> d:2t color:0,255,0,128
+        #checks if:
+        # 1) there's something unbreakable there
+        # 2) if there's already a build there (and if that build is NOT a pyramid or a stair (since those can be "overwritten"))
+        #if none pass, it's buildable
+        - define can_build True
+        - define unbreakable_blocks <[display_blocks].filter[material.name.equals[air].not].filter[has_flag[breakable].not]>
+        #this way, grass and shit is overwritten because screw that
+        - if <[unbreakable_blocks].filter[material.vanilla_tags.contains[replaceable_plants].not].any> || <[final_center].has_flag[build.type]> && <list[stair|pyramid].contains[<[final_center].flag[build.type]>].not>:
+          - define can_build False
+
+        - if <[can_build]>:
+          #-set flags
+          - flag player build.struct:<[tile]>
+          - flag player build.center:<[final_center]>
+          - debugblock <[display_blocks]> d:2t color:0,255,0,128
+        - else:
+          - flag player build.struct:!
+          - debugblock <[display_blocks]> d:2t color:0,0,0,128
+
 
       - wait 1t
 
