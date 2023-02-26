@@ -57,7 +57,7 @@ build_tiles:
 
         #-check to use free_center or ground_center
         - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
-        - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>]>
+        - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>].round>
 
         - define tile <[final_center].to_cuboid[<[final_center]>].expand[2,0,2]>
 
@@ -134,13 +134,9 @@ build_system_handler:
       - define build_type <player.flag[build.type]>
 
       #-temp
-      - define material oak_planks
+      - define material glass
 
-      #filter so the other part of the tile isn't removed upon removal
-      #since pyramids and stairs take up full 2x2x2 cuboids, and not all of it is gonna be its blocks, any blocks that are placed within that area
-      #take priority once placed (they get their own flag placed there)
-      #this method is only temp, since editing might eventually get added and this has to be changed
-      - define blocks <[tile].blocks.filter_tag[<[filter_value].has_flag[build].not.or[<[filter_value].material.name.equals[air]>]>]>
+      - define blocks <[tile].blocks.filter[has_flag[build].not]>
 
       - definemap data:
           tile: <[tile]>
@@ -153,6 +149,7 @@ build_system_handler:
       - flag <[blocks]> build.structure:<[tile]>
       - flag <[blocks]> build.center:<[center]>
       - flag <[blocks]> build.type:<[build_type]>
+
       - flag <[blocks]> breakable
 
     #-break
@@ -163,14 +160,24 @@ build_system_handler:
       - define center <[loc].flag[build.center]>
       - define type <[loc].flag[build.type]>
 
+      #-connecting blocks system
+      - define nearby_tiles <[center].find_blocks_flagged[build.structure].within[5].parse[flag[build.structure]].deduplicate.exclude[<[tile]>]>
+      - foreach <[nearby_tiles]> as:nearby_t:
+        #this check could also be fixed by putting in the tag itself, but i think it's clearer this way
+        - if !<[nearby_t].intersects[<[tile]>]>:
+          - foreach next
+        #flag the "connected blocks" to the other tile data values that were connected to the tile being removed
+        - define connecting_blocks <[nearby_t].intersection[<[tile]>].blocks>
+        - flag <[connecting_blocks]> build.structure:<[nearby_t]>
+        - flag <[connecting_blocks]> build.center:<[nearby_t].center.flag[build.center]>
+        - flag <[connecting_blocks]> build.type:<[nearby_t].center.flag[build.type]>
+
       #so it only includes the parts of the tile that are its own (since each cuboid intersects by one)
       - define blocks <[tile].blocks.filter[flag[build.center].equals[<[center]>]]>
 
       - modifyblock <[blocks]> air
       - flag <[blocks]> build:!
-
-      #all the tiles that were intersecting with the tile that was just removed
-      #- define connected_tiles <proc[find_connected_tiles].context[<[center]>|<[type]>]>
+      - flag <[blocks]> breakable:!
 
       #re-apply each structure that were connected to original tile
       #- foreach <[connected_tiles]> as:tile:
@@ -257,13 +264,17 @@ place_pyramid:
         - define direction <map[1=west;2=north;3=east;4=south].get[<[loop_index]>]>
         - define mat_data <[mat].with[direction=<[direction]>;shape=outer_left]>
 
-        - define block_data <[block_data].include[<map[loc=<[corner]>;mat=<[mat_data]>]>]>
+        - if !<[corner].has_flag[build.structure]>:
+          - define block_data <[block_data].include[<map[loc=<[corner]>;mat=<[mat_data]>]>]>
 
         - define next_corner <[corners].get[<[loop_index].add[1]>].if_null[<[corners].first>]>
         - define side <[corner].points_between[<[next_corner]>]>
         - define mat_data <[mat].with[direction=<[direction]>;shape=straight]>
 
         - foreach <[side].exclude[<[corner]>|<[next_corner]>]> as:s:
+          #so it doesn't override any pre-existing builds
+          - if <[s].has_flag[build.structure]>:
+            - foreach next
           - define block_data <[block_data].include[<map[loc=<[s]>;mat=<[mat_data]>]>]>
 
     - modifyblock <[block_data].parse[get[loc]]> <[block_data].parse[get[mat]]>
