@@ -1,3 +1,5 @@
+#TODO: DOMINO BREAK SYSTEM (via flags)
+
 build_tiles:
   type: task
   debug: false
@@ -93,7 +95,7 @@ build_tiles:
 
         #-check to use free_center or ground_center
         - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
-        - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>]>
+        - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>].round>
 
         - define tile <[final_center].to_cuboid[<[final_center]>].expand[2]>
 
@@ -108,7 +110,7 @@ build_tiles:
 
         #-check to use free_center or ground_center
         - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
-        - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>]>
+        - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>].round>
 
         - define tile <[final_center].to_cuboid[<[final_center]>].expand[2]>
 
@@ -160,31 +162,29 @@ build_system_handler:
       - define replace_tiles_data <list[]>
       #-connecting blocks system
       - define nearby_tiles <[center].find_blocks_flagged[build.structure].within[5].parse[flag[build.structure]].deduplicate.exclude[<[tile]>]>
-      - foreach <[nearby_tiles]> as:nearby_t:
-        #this check could also be fixed by putting in the tag itself, but i think it's clearer this way
-        - if !<[nearby_t].intersects[<[tile]>]>:
-          - foreach next
-        #flag the "connected blocks" to the other tile data values that were connected to the tile being removed
+      - define connected_tiles <[nearby_tiles].filter[intersects[<[tile]>]]>
+      - foreach <[connected_tiles]> as:c_tile:
 
-        - define connecting_blocks <[nearby_t].intersection[<[tile]>].blocks>
-        - define t_center <[nearby_t].center.flag[build.center]>
-        - define t_type <[t_center].flag[build.type]>
+        #flag the "connected blocks" to the other tile data values that were connected to the tile being removed
+        - define connecting_blocks <[c_tile].intersection[<[tile]>].blocks>
+        - define c_tile_center <[c_tile].center.flag[build.center]>
+        - define c_tile_type <[c_tile_center].flag[build.type]>
 
         #walls and floors dont *need* it if, but it's much easier/simpler this way
         - definemap tile_data:
-            tile: <[nearby_t]>
-            center: <[t_center]>
-            build_type: <[t_type]>
+            tile: <[c_tile]>
+            center: <[c_tile_center]>
+            build_type: <[c_tile_type]>
             #doing this instead of center, since pyramid center is a slab
-            material: <[t_center].flag[build.material]>
+            material: <[c_tile_center].flag[build.material]>
 
         #doing this so AFTER the original tile is completely removed
         - define replace_tiles_data:<[replace_tiles_data].include[<[tile_data]>]>
 
         #make the connectors a part of the other tile
-        - flag <[connecting_blocks]> build.structure:<[nearby_t]>
-        - flag <[connecting_blocks]> build.center:<[t_center]>
-        - flag <[connecting_blocks]> build.type:<[t_type]>
+        - flag <[connecting_blocks]> build.structure:<[c_tile]>
+        - flag <[connecting_blocks]> build.center:<[c_tile_center]>
+        - flag <[connecting_blocks]> build.type:<[c_tile_type]>
 
 
       #-actually removing the original tile
@@ -201,6 +201,7 @@ build_system_handler:
       - define priority_order <list[wall|floor|stair|pyramid]>
       - foreach <[replace_tiles_data].parse_tag[<[parse_value]>/<[priority_order].find[<[parse_value].get[build_type]>]>].sort_by_number[after[/]].parse[before[/]]> as:tile_data:
         - run build_system_handler.place def:<[tile_data]>
+
 
   place:
     - define tile <[data].get[tile]>
