@@ -133,9 +133,7 @@ build_system_handler:
       - define tile <player.flag[build.struct]>
       - define center <player.flag[build.center]>
       - define build_type <player.flag[build.type]>
-
-      #-temp
-      - define material oak_planks
+      - define material wood
 
       #because walls and floors override stairs
       - define total_blocks <[tile].blocks>
@@ -154,6 +152,7 @@ build_system_handler:
       - flag <[blocks]> build.structure:<[tile]>
       - flag <[blocks]> build.center:<[center]>
       - flag <[blocks]> build.type:<[build_type]>
+      - flag <[blocks]> build.material:<[material]>
 
       - flag <[blocks]> breakable
 
@@ -184,7 +183,7 @@ build_system_handler:
             center: <[t_center]>
             build_type: <[t_type]>
             #doing this instead of center, since pyramid center is a slab
-            material: <[nearby_t].min.material.name>
+            material: <[t_center].flag[build.material]>
 
         #doing this so AFTER the original tile is completely removed
         - define replace_tiles_data:<[replace_tiles_data].include[<[tile_data]>]>
@@ -214,7 +213,8 @@ build_system_handler:
     - define tile <[data].get[tile]>
     - define center <[data].get[center]>
     - define build_type <[data].get[build_type]>
-    - define material <[data].get[material]>
+
+    - define base_material <map[wood=oak].get[<[data].get[material]>]>
 
     - choose <[build_type]>:
 
@@ -239,16 +239,16 @@ build_system_handler:
         - define set_blocks <[total_set_blocks].filter[has_flag[build].not].include[<[own_stair_blocks]>].include[<[override_blocks]>]>
 
         - define direction <[center].yaw.simple>
-        - define material oak_stairs[direction=<[direction]>]
+        - define material <[base_material]>_stairs[direction=<[direction]>]
         - modifyblock <[set_blocks]> <[material]>
 
         #if they're stairs and they are going in the same direction, to keep the stairs "smooth", forget about adding connectors to them
         - define consecutive_stair_blocks <[set_connector_blocks].filter[flag[build.type].equals[stair]].filter[material.direction.equals[<[direction]>]]>
 
-        - modifyblock <[set_connector_blocks].exclude[<[consecutive_stair_blocks]>].exclude[<[override_blocks]>]> oak_planks
+        - modifyblock <[set_connector_blocks].exclude[<[consecutive_stair_blocks]>].exclude[<[override_blocks]>]> <[base_material]>_planks
 
       - case pyramid:
-        - run place_pyramid def:<[center]>
+        - run place_pyramid def:<[center]>|<[base_material]>
 
       #floors/walls
       - default:
@@ -275,7 +275,7 @@ build_system_handler:
           - define exclude_blocks <[top_points].include[<[bot_points]>].parse[with_pose[0,0]]>
 
         - define set_blocks <[total_blocks].exclude[<[exclude_blocks]>]>
-        - modifyblock <[set_blocks]> <[material]>
+        - modifyblock <[set_blocks]> <[base_material]>_<map[oak=planks].get[<[base_material]>]>
 
 find_connected_tiles:
   type: procedure
@@ -310,7 +310,7 @@ find_connected_tiles:
 place_pyramid:
   type: task
   debug: false
-  definitions: center
+  definitions: center|base_material
   script:
   #required definitions:
   # - <[center]>
@@ -332,13 +332,13 @@ place_pyramid:
 
         - define direction <map[1=west;2=north;3=east;4=south].get[<[loop_index]>]>
 
-        - define corner_mat <material[oak_stairs].with[direction=<[direction]>;shape=outer_left]>
-        - define side_mat <material[oak_stairs].with[direction=<[direction]>;shape=straight]>
+        - define corner_mat <material[<[base_material]>_stairs].with[direction=<[direction]>;shape=outer_left]>
+        - define side_mat <material[<[base_material]>_stairs].with[direction=<[direction]>;shape=straight]>
 
         #if it's the last layer, and there are any other builds connected to each other, turn the material into non-stairs
         - if <[value]> == 2 && <[side].get[3].face[<[layer_center]>].backward_flat.has_flag[build.structure]>:
-          - define corner_mat <material[oak_planks]>
-          - define side_mat <material[oak_planks]>
+          - define corner_mat <material[<[base_material]>_<map[oak=planks].get[<[base_material]>]>]>
+          - define side_mat <[corner_mat]>
 
         #-adding corners first
         #this checks for:
@@ -354,7 +354,7 @@ place_pyramid:
             - define block_data <[block_data].include[<map[loc=<[s]>;mat=<[side_mat]>]>]>
 
     - modifyblock <[block_data].parse[get[loc]]> <[block_data].parse[get[mat]]>
-    - modifyblock <[center]> oak_slab
+    - modifyblock <[center]> <[base_material]>_slab
 
 
 stair_blocks_gen:
@@ -382,20 +382,6 @@ pyramid_blocks_gen:
 
     - define blocks <[first_layer].include[<[second_layer]>].include[<[center]>]>
     - determine <[blocks]>
-
-#get the actual center of the build as if it were a 2x2x2 cuboid
-get_center:
-  type: procedure
-  definitions: rel_center|type
-  debug: false
-  script:
-  - choose <[type]>:
-    #- case floor:
-    #- case wall:
-    - case stair:
-      - determine <[rel_center]>
-    - case pyramid:
-      - determine <[rel_center]>
 
 round4:
   type: procedure
