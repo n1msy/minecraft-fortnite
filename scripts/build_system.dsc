@@ -30,7 +30,8 @@ build_tiles:
         - define grounded_center <[grounded_center].above[2]>
 
         #-calculates Y from the ground up
-        - define add_y <proc[round4].context[<[target_loc].forward[<[type].equals[stair].if_true[4].if_false[2]>].distance[<[grounded_center]>].vertical.sub[<[type].equals[stair].if_true[2.5].if_false[1]>]>]>
+        #- define add_y <proc[round4].context[<[target_loc].forward[<[type].equals[stair].if_true[4].if_false[2]>].distance[<[grounded_center]>].vertical.sub[<[type].equals[stair].if_true[2.5].if_false[1]>]>]>
+        - define add_y <proc[round4].context[<[target_loc].forward[2].distance[<[grounded_center]>].vertical.sub[1]>]>
         - define add_y <[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>
 
         - define free_center <[grounded_center].above[<[add_y]>]>
@@ -204,7 +205,9 @@ build_system_handler:
       - flag <[blocks]> build:!
       - flag <[blocks]> breakable:!
 
-      - foreach <[replace_tiles_data]> as:tile_data:
+      #order: first placed -> last placed
+      - define priority_order <list[wall|floor|stair|pyramid]>
+      - foreach <[replace_tiles_data].parse_tag[<[parse_value]>/<[priority_order].find[<[parse_value].get[build_type]>]>].sort_by_number[after[/]].parse[before[/]]> as:tile_data:
         - run build_system_handler.place def:<[tile_data]>
 
   place:
@@ -222,22 +225,57 @@ build_system_handler:
         - define own_stair_blocks <[total_set_blocks].filter[has_flag[build.center]].filter[flag[build.center].equals[<[center]>]]>
 
         #"extra" stair blocks from other stairs/pyramids (turn them into planks like pyramids do)
-        - define set_connector_blocks <[total_set_blocks].filter[material.name.after_last[_].equals[stairs]].exclude[<[own_stair_blocks]>]>
+        - define set_connector_blocks <[total_set_blocks].filter[has_flag[build.type]].filter[material.name.after_last[_].equals[stairs]].exclude[<[own_stair_blocks]>]>
+
+        #this way, the top of walls and bottom of walls turn into stairs (but not the sides)
+        - define top_middle <[center].forward_flat[2].above[2]>
+        - define top_points <list[<[top_middle].left>|<[top_middle]>|<[top_middle].right>]>
+        - define bot_middle <[center].backward_flat[2].below[2]>
+        - define bot_points <list[<[bot_middle].left>|<[bot_middle]>|<[bot_middle].right>]>
+        #this way, pyramid stairs still can't be overriden
+        - define override_blocks <[top_points].include[<[bot_points]>].filter[flag[build.type].equals[pyramid].not]>
 
         #so it doesn't completely override any previously placed tiles
-        - define set_blocks <[total_set_blocks].filter[has_flag[build].not].include[<[own_stair_blocks]>]>
+        - define set_blocks <[total_set_blocks].filter[has_flag[build].not].include[<[own_stair_blocks]>].include[<[override_blocks]>]>
 
-        - define material oak_stairs[direction=<[center].yaw.simple>]
+        - define direction <[center].yaw.simple>
+        - define material oak_stairs[direction=<[direction]>]
         - modifyblock <[set_blocks]> <[material]>
 
-        - modifyblock <[set_connector_blocks]> oak_planks
+        #if they're stairs and they are going in the same direction, to keep the stairs "smooth", forget about adding connectors to them
+        - define consecutive_stair_blocks <[set_connector_blocks].filter[flag[build.type].equals[stair]].filter[material.direction.equals[<[direction]>]]>
+
+        - modifyblock <[set_connector_blocks].exclude[<[consecutive_stair_blocks]>].exclude[<[override_blocks]>]> oak_planks
 
       - case pyramid:
         - run place_pyramid def:<[center]>
 
       #floors/walls
       - default:
-        - modifyblock <[tile].blocks> <[material]>
+        #mostly for the stair overriding stuff with walls and floors
+        - define total_blocks <[tile].blocks>
+
+        - define exclude_blocks <list[]>
+
+        - define nearby_tiles <[center].find_blocks_flagged[build.structure].within[5].parse[flag[build.structure]].deduplicate.exclude[<[tile]>]>
+        - define connected_tiles <[nearby_tiles].filter[intersects[<[tile]>]]>
+        - define stair_tiles <[connected_tiles].filter[center.flag[build.type].equals[stair]]>
+
+        #- define stair_tiles <proc[find_connected_tiles].context[<[center]>|<[build_type]>].filter[center.flag[build.type].equals[stair]]>
+
+        - if <[stair_tiles].any>:
+          - define stair_tile_center <[stair_tiles].first.center.flag[build.center]>
+
+          - define top_middle <[stair_tile_center].forward_flat[2].above[2]>
+          - define top_points <list[<[top_middle].left>|<[top_middle]>|<[top_middle].right>]>
+          - define bot_middle <[stair_tile_center].backward_flat[2].below[2]>
+          - define bot_points <list[<[bot_middle].left>|<[bot_middle]>|<[bot_middle].right>]>
+
+          #with_pose part removes yaw/pitch data so we can exclude it from total blocks
+          - define exclude_blocks <[top_points].include[<[bot_points]>].parse[with_pose[0,0]]>
+
+        - define set_blocks <[total_blocks].exclude[<[exclude_blocks]>]>
+        - modifyblock <[set_blocks]> <[material]>
 
 find_connected_tiles:
   type: procedure
@@ -305,14 +343,14 @@ place_pyramid:
         #-adding corners first
         #this checks for:
         # 1) no build is there yet
-        #OR 2) the build there is a pyramid
-        - if !<[corner].has_flag[build.type]> || <[corner].flag[build.type]> == PYRAMID:
+        #OR 2) the build there is a stair or pyramid
+        - if !<[corner].has_flag[build.type]> || <list[stair|pyramid].contains[<[corner].flag[build.type]>]>:
           - define block_data <[block_data].include[<map[loc=<[corner]>;mat=<[corner_mat]>]>]>
 
         #-then sides
         - foreach <[side].exclude[<[corner]>|<[next_corner]>]> as:s:
           #so it doesn't override any pre-existing builds
-          - if !<[s].has_flag[build.type]> || <[s].flag[build.type]> == PYRAMID:
+          - if !<[s].has_flag[build.type]> || <list[stair|pyramid].contains[<[s].flag[build.type]>]>:
             - define block_data <[block_data].include[<map[loc=<[s]>;mat=<[side_mat]>]>]>
 
     - modifyblock <[block_data].parse[get[loc]]> <[block_data].parse[get[mat]]>
