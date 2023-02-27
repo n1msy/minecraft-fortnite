@@ -1,4 +1,5 @@
 #TODO: DOMINO BREAK SYSTEM (via flags)
+##add roots to all tiles
 
 build_tiles:
   type: task
@@ -151,6 +152,8 @@ build_system_handler:
 
       - flag <[blocks]> breakable
 
+      - run build_system_handler.tile_connection def:<map[tile=<[tile]>;center=<[center]>;build_type=<[build_type]>;action=add]>
+
     #-break
     on player right clicks block location_flagged:build.structure flagged:build:
       - determine passively cancelled
@@ -201,6 +204,57 @@ build_system_handler:
       - define priority_order <list[wall|floor|stair|pyramid]>
       - foreach <[replace_tiles_data].parse_tag[<[parse_value]>/<[priority_order].find[<[parse_value].get[build_type]>]>].sort_by_number[after[/]].parse[before[/]]> as:tile_data:
         - run build_system_handler.place def:<[tile_data]>
+
+      - run build_system_handler.tile_connection def:<map[tile=<[tile]>;center=<[center]>;build_type=<[type]>;action=remove]>
+
+  tile_connection:
+    - define tile <[data].get[tile]>
+    - define center <[data].get[center]>
+    - define build_type <[data].get[build_type]>
+    - define action <[data].get[action]>
+
+    - define total_connected_tiles <proc[find_connected_tiles].context[<[center]>|<[build_type]>]>
+
+    #roots that are DIRECTLY connected to the tile
+    - define direct_roots <[total_connected_tiles].filter[center.has_flag[build.shoots]]>
+    - define direct_shoots <[total_connected_tiles].filter[center.has_flag[build.roots]]>
+
+    #roots that are connected via other shoots
+    - define indirect_roots <list[]>
+    - foreach <[direct_shoots]> as:sh:
+      - define indirect_roots <[indirect_roots].include[<[sh].center.flag[build.roots]>]>
+
+    - define total_roots <[direct_roots].include[<[indirect_roots]>].deduplicate>
+
+    - define indirect_shoots <list[]>
+    - foreach <[total_roots].filter[center.has_flag[build.shoots]]> as:r:
+      - define indirect_shoots <[indirect_shoots].include[<[r].center.flag[build.shoots]>]>
+
+    - define total_shoots <[direct_shoots].include[<[indirect_shoots]>].deduplicate>
+
+    #if true, the tile is a ROOT
+    - define is_root <proc[is_root].context[<[center]>|<[build_type]>]>
+
+    - if <[action]> == add:
+      - define blocks <[tile].blocks>
+      - if <[is_root]>:
+        - flag <[blocks]> build.shoots:<[total_shoots]>
+        - foreach <[total_shoots]> as:sh:
+          - flag <[sh].blocks> build.roots:->:<[tile]>
+
+      - else:
+        - flag <[blocks]> build.roots:<[total_roots]>
+        - foreach <[total_roots]> as:r:
+          - flag <[r].blocks> build.shoots:->:<[tile]>
+
+    - else if <[action]> == remove:
+      - if <[is_root]>:
+        - foreach <[total_shoots]> as:sh:
+          - flag <[sh].blocks> build.roots:<-:<[tile]>
+
+      - else:
+        - foreach <[total_roots]> as:r:
+          - flag <[r].blocks> build.shoots:<-:<[tile]>
 
 
   place:
@@ -294,12 +348,36 @@ find_connected_tiles:
 
     - define connected_tiles <list[]>
     - foreach <[check_locs]> as:loc:
-      #- playeffect effect:FLAME offset:0 at:<[loc]>
       - if <[loc].has_flag[build.structure]> && <[loc].material.name> != AIR:
         - define connected_tiles:->:<[loc].flag[build.structure]>
 
     - determine <[connected_tiles]>
 
+is_root:
+  type: procedure
+  definitions: center|type
+  debug: false
+  script:
+    - choose <[type]>:
+      #center of a 2,0,2
+      - case floor:
+        - define check_loc <[center].below>
+      #center of a 2,2,0 or 2,2,0
+      - case wall:
+        - define check_loc <[center].below[3]>
+      #center of a 2,2,2
+      - case stair:
+        - define check_loc <[center].below[3]>
+      #center of a 2,2,2
+      - case pyramid:
+        - define check_loc <[center].below[3]>
+
+    - define is_root False
+
+    - if !<[check_loc].has_flag[build.structure]> && <[check_loc].material.name> != AIR:
+      - define is_root True
+
+    - determine <[is_root]>
 
 place_pyramid:
   type: task
@@ -369,10 +447,10 @@ pyramid_blocks_gen:
   debug: false
   script:
     - define blocks <list[]>
-    - define start_corner <[center].below[2].left[2].backward_flat[2]>
+    - define start_corner <[center].below[2].left[2].backward_flat[2].round>
 
-    - define first_layer <[start_corner].to_cuboid[<[start_corner].forward_flat[4].right[4]>].outline>
-    - define second_layer <[start_corner].above.forward_flat.right.to_cuboid[<[start_corner].above.forward_flat[3].right[3]>].outline>
+    - define first_layer <[start_corner].to_cuboid[<[start_corner].forward_flat[4].right[4].round>].outline>
+    - define second_layer <[start_corner].above.forward_flat.right.to_cuboid[<[start_corner].above.forward_flat[3].right[3].round>].outline>
 
     - define blocks <[first_layer].include[<[second_layer]>].include[<[center]>]>
     - determine <[blocks]>
