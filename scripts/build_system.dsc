@@ -162,33 +162,7 @@ build_system_handler:
       - define center <[loc].flag[build.center]>
       - define type <[loc].flag[build.type]>
 
-      - define replace_tiles_data <list[]>
-      #-connecting blocks system
-      - define nearby_tiles <[center].find_blocks_flagged[build.structure].within[5].parse[flag[build.structure]].deduplicate.exclude[<[tile]>]>
-      - define connected_tiles <[nearby_tiles].filter[intersects[<[tile]>]]>
-      - foreach <[connected_tiles]> as:c_tile:
-
-        #flag the "connected blocks" to the other tile data values that were connected to the tile being removed
-        - define connecting_blocks <[c_tile].intersection[<[tile]>].blocks>
-        - define c_tile_center <[c_tile].center.flag[build.center]>
-        - define c_tile_type <[c_tile_center].flag[build.type]>
-
-        #walls and floors dont *need* it if, but it's much easier/simpler this way
-        - definemap tile_data:
-            tile: <[c_tile]>
-            center: <[c_tile_center]>
-            build_type: <[c_tile_type]>
-            #doing this instead of center, since pyramid center is a slab
-            material: <[c_tile_center].flag[build.material]>
-
-        #doing this so AFTER the original tile is completely removed
-        - define replace_tiles_data:<[replace_tiles_data].include[<[tile_data]>]>
-
-        #make the connectors a part of the other tile
-        - flag <[connecting_blocks]> build.structure:<[c_tile]>
-        - flag <[connecting_blocks]> build.center:<[c_tile_center]>
-        - flag <[connecting_blocks]> build.type:<[c_tile_type]>
-
+      - inject build_system_handler.replace_tiles
 
       #-actually removing the original tile
       #so it only includes the parts of the tile that are its own (since each cuboid intersects by one)
@@ -213,49 +187,115 @@ build_system_handler:
     - define build_type <[data].get[build_type]>
     - define action <[data].get[action]>
 
-    - define total_connected_tiles <proc[find_connected_tiles].context[<[center]>|<[build_type]>]>
+    - define direct_connected_tiles <proc[find_connected_tiles].context[<[center]>|<[build_type]>]>
 
-    #roots that are DIRECTLY connected to the tile
-    - define direct_roots <[total_connected_tiles].filter[center.has_flag[build.shoots]]>
-    - define direct_shoots <[total_connected_tiles].filter[center.has_flag[build.roots]]>
+    - define indirect_connected_tiles <[direct_connected_tiles].filter[center.has_flag[build.connected_tiles]].parse[center.flag[build.connected_tiles]].combine>
 
-    #roots that are connected via other shoots
-    - define indirect_roots <list[]>
-    - foreach <[direct_shoots]> as:sh:
-      - define indirect_roots <[indirect_roots].include[<[sh].center.flag[build.roots]>]>
-
-    - define total_roots <[direct_roots].include[<[indirect_roots]>].deduplicate>
-
-    - define indirect_shoots <list[]>
-    - foreach <[total_roots].filter[center.has_flag[build.shoots]]> as:r:
-      - define indirect_shoots <[indirect_shoots].include[<[r].center.flag[build.shoots]>]>
-
-    - define total_shoots <[direct_shoots].include[<[indirect_shoots]>].deduplicate>
-
-    #if true, the tile is a ROOT
-    - define is_root <proc[is_root].context[<[center]>|<[build_type]>]>
+    - define total_tiles <[direct_connected_tiles].include[<[indirect_connected_tiles]>].deduplicate.exclude[<[tile]>]>
 
     - if <[action]> == add:
       - define blocks <[tile].blocks>
-      - if <[is_root]>:
-        - flag <[blocks]> build.shoots:<[total_shoots]>
-        - foreach <[total_shoots]> as:sh:
-          - flag <[sh].blocks> build.roots:->:<[tile]>
+      - flag <[blocks]> build.connected_tiles:<[total_tiles]>
 
-      - else:
-        - flag <[blocks]> build.roots:<[total_roots]>
-        - foreach <[total_roots]> as:r:
-          - flag <[r].blocks> build.shoots:->:<[tile]>
+      - foreach <[total_tiles]> as:t:
+        - flag <[t].blocks> build.connected_tiles:->:<[tile]>
 
     - else if <[action]> == remove:
-      - if <[is_root]>:
-        - foreach <[total_shoots]> as:sh:
-          - flag <[sh].blocks> build.roots:<-:<[tile]>
+      - foreach <[total_tiles]> as:t:
+        - flag <[t].blocks> build.connected_tiles:<-:<[tile]>
 
+      #BOTTOM -> TOP
+      - define ordered_tiles <[total_tiles].sort_by_number[center.y]>
+
+      #- foreach <[ordered_tiles]> as:tile:
+      #  - define center <[]>
+      #  - define type
+       # - if <[tile]>
+
+
+      #- stop
+
+      - define deepest_root_tile <[total_tiles].sort_by_number[center.y].filter_tag[<proc[is_root].context[<[filter_value].center.flag[build.center]>|<[filter_value].center.flag[build.type]>]>].first||null>
+
+      - if <[deepest_root_tile]> == null:
+        - define remove_tiles <[total_tiles].sort_by_number[center.y]>
       - else:
-        - foreach <[total_roots]> as:r:
-          - flag <[r].blocks> build.shoots:<-:<[tile]>
+        #frop highest tile to lowest
+        #- define ordered_total_tiles <[total_tiles].sort_by_number[center.y].reverse>
+        #from closest to the deepest root to farthes
+        #CLOSEST -> FARTHEST
+        - define ordered_total_tiles <[total_tiles].sort_by_number[center.distance[<[deepest_root_tile].center>]]>
 
+        - define remove_tiles <list[]>
+        - foreach <[ordered_total_tiles]> as:t:
+          - define t_center <[t].center.flag[build.center]>
+          - define t_type <[t].center.flag[build.type]>
+
+          - define is_root <proc[is_root].context[<[t_center]>|<[t_type]>]>
+          - define direct_tiles <proc[find_connected_tiles].context[<[t_center]>|<[t_type]>]>
+          #- define indirect_tiles <[direct_tiles].filter[center.has_flag[build.connected_tiles]].parse[center.flag[build.connected_tiles]].combine>
+          #- define other_total_tiles <[direct_tiles].include[<[indirect_tiles]>].deduplicate.exclude[<[t]>]>
+
+          #if it's a root tile
+          - if <[is_root]>:
+            - foreach stop
+
+          #OR if it's connected to a root tile in any way
+          - if <[direct_tiles].filter_tag[<proc[is_root].context[<[filter_value].center.flag[build.center]>|<[filter_value].center.flag[build.type]>]>].any>:
+            - foreach stop
+
+          - define remove_tiles <[remove_tiles].include[<[t]>]>
+
+      - define final_total_tiles <[total_tiles].exclude[<[remove_tiles]>]>
+
+      #so it breaks from the bottom up
+      - foreach <[remove_tiles].reverse> as:tile:
+        - define center <[tile].center.flag[build.center]>
+
+        - inject build_system_handler.replace_tiles
+
+        - define blocks <[tile].blocks.filter[flag[build.center].equals[<[center]>]]>
+
+        #everything is being re-applied anyways, so it's ok
+        - modifyblock <[blocks]> air
+
+        - flag <[blocks]> build:!
+        - flag <[blocks]> breakable:!
+
+        #remove that tile from all the total tiles
+        - foreach <[final_total_tiles]> as:t:
+          - flag <[t].blocks> build.connected_tiles:<-:<[tile]>
+
+        - wait 10t
+
+  #-this *safely* prepares the tile for removal (by replacing the original tile data with the intersecting tile data)
+  replace_tiles:
+    - define replace_tiles_data <list[]>
+    #-connecting blocks system
+    - define nearby_tiles <[center].find_blocks_flagged[build.structure].within[5].parse[flag[build.structure]].deduplicate.exclude[<[tile]>]>
+    - define connected_tiles <[nearby_tiles].filter[intersects[<[tile]>]]>
+    - foreach <[connected_tiles]> as:c_tile:
+
+      #flag the "connected blocks" to the other tile data values that were connected to the tile being removed
+      - define connecting_blocks <[c_tile].intersection[<[tile]>].blocks>
+      - define c_tile_center <[c_tile].center.flag[build.center]>
+      - define c_tile_type <[c_tile_center].flag[build.type]>
+
+      #walls and floors dont *need* it if, but it's much easier/simpler this way
+      - definemap tile_data:
+          tile: <[c_tile]>
+          center: <[c_tile_center]>
+          build_type: <[c_tile_type]>
+          #doing this instead of center, since pyramid center is a slab
+          material: <[c_tile_center].flag[build.material]>
+
+      #doing this so AFTER the original tile is completely removed
+      - define replace_tiles_data:<[replace_tiles_data].include[<[tile_data]>]>
+
+      #make the connectors a part of the other tile
+      - flag <[connecting_blocks]> build.structure:<[c_tile]>
+      - flag <[connecting_blocks]> build.center:<[c_tile_center]>
+      - flag <[connecting_blocks]> build.type:<[c_tile_type]>
 
   place:
     - define tile <[data].get[tile]>
@@ -371,6 +411,8 @@ is_root:
       #center of a 2,2,2
       - case pyramid:
         - define check_loc <[center].below[3]>
+      - default:
+        - narrate "<&c>oopsie happened when checking if root or not"
 
     - define is_root False
 
