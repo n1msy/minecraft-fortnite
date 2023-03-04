@@ -150,6 +150,10 @@ build_system_handler:
       - flag <[blocks]> build.type:<[build_type]>
       - flag <[blocks]> build.material:<[material]>
 
+      #if it's a ROOT, it has SHOOTS, if it's a SHOOT, it has ROOTS
+      - if <proc[is_root].context[<[center]>|<[build_type]>]>:
+        - flag <[blocks]> build.shoots:<list[]>
+
       - flag <[blocks]> breakable
 
       - run build_system_handler.tile_connection def:<map[tile=<[tile]>;center=<[center]>;build_type=<[build_type]>;action=add]>
@@ -182,94 +186,70 @@ build_system_handler:
       - run build_system_handler.tile_connection def:<map[tile=<[tile]>;center=<[center]>;build_type=<[type]>;action=remove]>
 
   tile_connection:
+    #this is the data of the tile being placed/removed
     - define tile <[data].get[tile]>
     - define center <[data].get[center]>
     - define build_type <[data].get[build_type]>
     - define action <[data].get[action]>
 
-    - define direct_connected_tiles <proc[find_connected_tiles].context[<[center]>|<[build_type]>]>
+    - define nearby_tiles <[center].find_blocks_flagged[build.structure].within[5].parse[flag[build.structure]].deduplicate.exclude[<[tile]>]>
 
-    - define indirect_connected_tiles <[direct_connected_tiles].filter[center.has_flag[build.connected_tiles]].parse[center.flag[build.connected_tiles]].combine>
+    - define direct_tiles <[nearby_tiles].filter[intersects[<[tile]>]]>
 
-    - define total_tiles <[direct_connected_tiles].include[<[indirect_connected_tiles]>].deduplicate.exclude[<[tile]>]>
+    #roots that are placed NEXT to this root
+    - define direct_roots <[direct_tiles].filter[center.has_flag[build.shoots]]>
+
+    #these are ALL the indirectly connected roots of the directly connected tiles to this root
+    - define indirect_roots <[direct_tiles].filter[center.has_flag[build.roots]].parse[center.flag[build.roots]].combine>
+
+    - define total_roots <[direct_roots].include[<[indirect_roots]>].exclude[<[tile]>].deduplicate>
+
+    #all the total tiles based on the roots that are connected
+    #doing .exclude[<[tile]>] in case it was removed (it'll be added back in the add case below) (same thing goes for root)
+    - define total_nonroot_tiles <[total_roots].parse[center.flag[build.shoots]].deduplicate.exclude[<[tile]>].combine>
+
+      #there's a cleaner way of doing this, but it's more understandable this way
 
     - if <[action]> == add:
-      - define blocks <[tile].blocks>
-      - flag <[blocks]> build.connected_tiles:<[total_tiles]>
 
-      - foreach <[total_tiles]> as:t:
-        - flag <[t].blocks> build.connected_tiles:->:<[tile]>
+      #-if the tile placed is a ROOT
+      - if <[center].has_flag[build.shoots]>:
+
+        - define total_roots <[total_roots].include[<[tile]>]>
+
+        - flag <[tile].blocks> build.shoots:<[total_nonroot_tiles]>
+
+        #connected every nonroot the newly root placed
+        - foreach <[total_nonroot_tiles]> as:t:
+          - flag <[t].blocks> build.roots:<[total_roots]>
+      - else:
+
+        - define total_nonroot_tiles <[total_nonroot_tiles].include[<[tile]>]>
+
+        - flag <[tile].blocks> build.roots:<[total_roots]>
+
+        - foreach <[total_roots]> as:t:
+          - flag <[t].blocks> build.shoots:->:<[tile]>
+
 
     - else if <[action]> == remove:
-      - foreach <[total_tiles]> as:t:
-        - flag <[t].blocks> build.connected_tiles:<-:<[tile]>
 
-      #BOTTOM -> TOP
-      - define ordered_tiles <[total_tiles].sort_by_number[center.y]>
-
-      #- foreach <[ordered_tiles]> as:tile:
-      #  - define center <[]>
-      #  - define type
-       # - if <[tile]>
-
-
-      #- stop
-
-      - define deepest_root_tile <[total_tiles].sort_by_number[center.y].filter_tag[<proc[is_root].context[<[filter_value].center.flag[build.center]>|<[filter_value].center.flag[build.type]>]>].first||null>
-
-      - if <[deepest_root_tile]> == null:
-        - define remove_tiles <[total_tiles].sort_by_number[center.y]>
+      #-if the tile placed is a ROOT
+      #can't check if it has the flag build.shoots anymore, since the flag is removed, using the proc again
+      - if <proc[is_root].context[<[center]>|<[build_type]>]>:
+        #connected every nonroot the newly root placed
+        - foreach <[total_nonroot_tiles]> as:t:
+          - flag <[t].blocks> build.roots:<-:<[tile]>
       - else:
-        #frop highest tile to lowest
-        #- define ordered_total_tiles <[total_tiles].sort_by_number[center.y].reverse>
-        #from closest to the deepest root to farthes
-        #CLOSEST -> FARTHEST
-        - define ordered_total_tiles <[total_tiles].sort_by_number[center.distance[<[deepest_root_tile].center>]]>
-
-        - define remove_tiles <list[]>
-        - foreach <[ordered_total_tiles]> as:t:
-          - define t_center <[t].center.flag[build.center]>
-          - define t_type <[t].center.flag[build.type]>
-
-          - define is_root <proc[is_root].context[<[t_center]>|<[t_type]>]>
-          - define direct_tiles <proc[find_connected_tiles].context[<[t_center]>|<[t_type]>]>
-          #- define indirect_tiles <[direct_tiles].filter[center.has_flag[build.connected_tiles]].parse[center.flag[build.connected_tiles]].combine>
-          #- define other_total_tiles <[direct_tiles].include[<[indirect_tiles]>].deduplicate.exclude[<[t]>]>
-
-          #if it's a root tile
-          - if <[is_root]>:
-            - foreach stop
-
-          #OR if it's connected to a root tile in any way
-          - if <[direct_tiles].filter_tag[<proc[is_root].context[<[filter_value].center.flag[build.center]>|<[filter_value].center.flag[build.type]>]>].any>:
-            - foreach stop
-
-          - define remove_tiles <[remove_tiles].include[<[t]>]>
-
-      - define final_total_tiles <[total_tiles].exclude[<[remove_tiles]>]>
-
-      #so it breaks from the bottom up
-      - foreach <[remove_tiles].reverse> as:tile:
-        - define center <[tile].center.flag[build.center]>
-
-        - inject build_system_handler.replace_tiles
-
-        - define blocks <[tile].blocks.filter[flag[build.center].equals[<[center]>]]>
-
-        #everything is being re-applied anyways, so it's ok
-        - modifyblock <[blocks]> air
-
-        - flag <[blocks]> build:!
-        - flag <[blocks]> breakable:!
-
-        #remove that tile from all the total tiles
-        - foreach <[final_total_tiles]> as:t:
-          - flag <[t].blocks> build.connected_tiles:<-:<[tile]>
-
-        - wait 10t
+        - foreach <[total_roots]> as:t:
+          - flag <[t].blocks> build.shoots:<-:<[tile]>
 
   #-this *safely* prepares the tile for removal (by replacing the original tile data with the intersecting tile data)
   replace_tiles:
+    #required definitions:
+    # - <[tile]>
+    # - <[center]>
+
     - define replace_tiles_data <list[]>
     #-connecting blocks system
     - define nearby_tiles <[center].find_blocks_flagged[build.structure].within[5].parse[flag[build.structure]].deduplicate.exclude[<[tile]>]>
@@ -370,7 +350,6 @@ find_connected_tiles:
   definitions: center|type
   debug: false
   script:
-    #- playeffect effect:soul_fire_flame offset:0 at:<[center]>
     - choose <[type]>:
       #center of a 2,0,2
       - case floor:
@@ -386,9 +365,11 @@ find_connected_tiles:
         - define bottom_center <[center].below[2]>
         - define check_locs <list[<[bottom_center].left[2]>|<[bottom_center].right[2]>|<[bottom_center].forward_flat[2]>|<[bottom_center].backward_flat[2]>]>
 
+    - define current_struct <[center].flag[build.structure]||null>
+
     - define connected_tiles <list[]>
     - foreach <[check_locs]> as:loc:
-      - if <[loc].has_flag[build.structure]> && <[loc].material.name> != AIR:
+      - if <[loc].has_flag[build.structure]> && <[loc].flag[build.structure]> != <[current_struct]> && <[loc].material.name> != AIR:
         - define connected_tiles:->:<[loc].flag[build.structure]>
 
     - determine <[connected_tiles]>
@@ -411,8 +392,6 @@ is_root:
       #center of a 2,2,2
       - case pyramid:
         - define check_loc <[center].below[3]>
-      - default:
-        - narrate "<&c>oopsie happened when checking if root or not"
 
     - define is_root False
 
