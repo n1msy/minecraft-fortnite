@@ -150,13 +150,7 @@ build_system_handler:
       - flag <[blocks]> build.type:<[build_type]>
       - flag <[blocks]> build.material:<[material]>
 
-      #if it's a ROOT, it has SHOOTS, if it's a SHOOT, it has ROOTS
-      - if <proc[is_root].context[<[center]>|<[build_type]>]>:
-        - flag <[blocks]> build.shoots:<list[]>
-
       - flag <[blocks]> breakable
-
-      - run build_system_handler.tile_connection def:<map[tile=<[tile]>;center=<[center]>;build_type=<[build_type]>;action=add]>
 
     #-break
     on player right clicks block location_flagged:build.structure flagged:build:
@@ -183,66 +177,76 @@ build_system_handler:
       - foreach <[replace_tiles_data].parse_tag[<[parse_value]>/<[priority_order].find[<[parse_value].get[build_type]>]>].sort_by_number[after[/]].parse[before[/]]> as:tile_data:
         - run build_system_handler.place def:<[tile_data]>
 
-      - run build_system_handler.tile_connection def:<map[tile=<[tile]>;center=<[center]>;build_type=<[type]>;action=remove]>
+      - run build_system_handler.remove_tiles def:<map[tile=<[tile]>;center=<[center]>]>
 
-  tile_connection:
-    #this is the data of the tile being placed/removed
-    - define tile <[data].get[tile]>
-    - define center <[data].get[center]>
-    - define build_type <[data].get[build_type]>
-    - define action <[data].get[action]>
+  remove_tiles:
 
-    - define nearby_tiles <[center].find_blocks_flagged[build.structure].within[5].parse[flag[build.structure]].deduplicate.exclude[<[tile]>]>
+    - define broken_tile        <[data].get[tile]>
+    - define broken_tile_center <[data].get[center]>
 
-    - define direct_tiles <[nearby_tiles].filter[intersects[<[tile]>]]>
+    #get_surrounding_tiles gets all the tiles connected to the inputted tile
+    - define branches           <proc[get_surrounding_tiles].context[<[broken_tile]>|<[broken_tile_center]>].exclude[<[broken_tile]>]>
 
-    #roots that are placed NEXT to this root
-    - define direct_roots <[direct_tiles].filter[center.has_flag[build.shoots]]>
+    #There's only six four (or less) for each cardinal
+    #direction, so we use a foreach, and go through each one.
+    - foreach <[branches]> as:starting_tile:
+        #The tiles to check are a list of tiles that we need to get siblings of.
+        #Each tile in this list gets checked once, and removed.
+        - define tiles_to_check <list[<[starting_tile]>]>
+        #The structure is a list of every tile in a single continous structure.
+        #When you determine that a group of tiles needs to be broken, you'll go through this list.
+        - define structure <list[<[starting_tile]>]>
 
-    #these are ALL the indirectly connected roots of the directly connected tiles to this root
-    - define indirect_roots <[direct_tiles].filter[center.has_flag[build.roots]].parse[center.flag[build.roots]].combine>
+        #The two above lists are emptied at the start of each while loop,
+        #so that way previous tiles from other branches don't bleed into this one.
+        - while <[tiles_to_check].any>:
+            #Just grab the tile on top of the pile. It doesn't matter the order
+            #in which we check, we'll get to them all eventually, unless the
+            #strucure is touching the ground, in which case it doesn't really
+            #matter.
+            - define tile <[tiles_to_check].last>
 
-    - define total_roots <[direct_roots].include[<[indirect_roots]>].exclude[<[tile]>].deduplicate>
+            #if it doesn't, it's already removed
+            - foreach next if:!<[tile].center.has_flag[build.center]>
 
-    #all the total tiles based on the roots that are connected
-    #doing .exclude[<[tile]>] in case it was removed (it'll be added back in the add case below) (same thing goes for root)
-    - define total_nonroot_tiles <[total_roots].parse[center.flag[build.shoots]].deduplicate.exclude[<[tile]>].combine>
+            #If the tile is touching the ground, then skip this branch. The
+            #tiles_to_check and structure lists get flushed out and we start
+            #on the next branch. When we next the foreach, we are
+            #also breaking out of the while, so we don't need to worry about
+            #keeping track (like you had with has_root)
 
-      #there's a cleaner way of doing this, but it's more understandable this way
+            - define center <[tile].center.flag[build.center]>
+            - define type   <[center].flag[build.type]>
 
-    - if <[action]> == add:
+            - foreach next if:<proc[is_root].context[<[center]>|<[type]>]>
+            #If the tile ISN'T touching the ground, then first, we remove it
+            #from the tiles to check list, because obvi we've already checked
+            #it.
+            - define tiles_to_check:<-:<[tile]>
+            #Next, we get every surrounding tile, but only if they're not already
+            #in the structure list. That means that we don't keep rechecking tiles
+            #we've already checked.
+            - define surrounding_tiles <proc[get_surrounding_tiles].context[<[tile]>|<[center]>].exclude[<[structure]>]>
+            #We add all these new tiles to the structure, and since we already excluded
+            #the previous list of tiles in the structure, we don't need to deduplicate.
+            - define structure:|:<[surrounding_tiles]>
+            #Since these are all new tiles, we need to check them as well.
+            - define tiles_to_check:|:<[surrounding_tiles]>
+        #If we get to this point, then that means we didn't skip out early with foreach.
+        #That means we know it's not touching ground anywhere, so now we want to break
+        #each tile. So we go through the structure list, and break each one (however you handle that.)
+        #-break the tiles
+        - foreach <[structure]> as:tile:
 
-      #-if the tile placed is a ROOT
-      - if <[center].has_flag[build.shoots]>:
+          - wait 3t
 
-        - define total_roots <[total_roots].include[<[tile]>]>
+          - define blocks <[tile].blocks.filter[flag[build.center].equals[<[tile].center.flag[build.center]>]]>
+          #everything is being re-applied anyways, so it's ok
+          - modifyblock <[tile].blocks> air
+          - flag <[blocks]> build:!
+          - flag <[blocks]> breakable:!
 
-        - flag <[tile].blocks> build.shoots:<[total_nonroot_tiles]>
-
-        #connected every nonroot the newly root placed
-        - foreach <[total_nonroot_tiles]> as:t:
-          - flag <[t].blocks> build.roots:<[total_roots]>
-      - else:
-
-        - define total_nonroot_tiles <[total_nonroot_tiles].include[<[tile]>]>
-
-        - flag <[tile].blocks> build.roots:<[total_roots]>
-
-        - foreach <[total_roots]> as:t:
-          - flag <[t].blocks> build.shoots:->:<[tile]>
-
-
-    - else if <[action]> == remove:
-
-      #-if the tile placed is a ROOT
-      #can't check if it has the flag build.shoots anymore, since the flag is removed, using the proc again
-      - if <proc[is_root].context[<[center]>|<[build_type]>]>:
-        #connected every nonroot the newly root placed
-        - foreach <[total_nonroot_tiles]> as:t:
-          - flag <[t].blocks> build.roots:<-:<[tile]>
-      - else:
-        - foreach <[total_roots]> as:t:
-          - flag <[t].blocks> build.shoots:<-:<[tile]>
+    #- narrate "removed <[structure].size||0> tiles"
 
   #-this *safely* prepares the tile for removal (by replacing the original tile data with the intersecting tile data)
   replace_tiles:
@@ -372,6 +376,15 @@ find_connected_tiles:
       - if <[loc].has_flag[build.structure]> && <[loc].flag[build.structure]> != <[current_struct]> && <[loc].material.name> != AIR:
         - define connected_tiles:->:<[loc].flag[build.structure]>
 
+    - determine <[connected_tiles]>
+
+get_surrounding_tiles:
+  type: procedure
+  definitions: tile|center
+  debug: false
+  script:
+    - define nearby_tiles <[center].find_blocks_flagged[build.structure].within[5].parse[flag[build.structure]].deduplicate.exclude[<[tile]>]>
+    - define connected_tiles <[nearby_tiles].filter[intersects[<[tile]>]]>
     - determine <[connected_tiles]>
 
 is_root:
