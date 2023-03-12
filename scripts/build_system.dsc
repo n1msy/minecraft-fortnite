@@ -1,6 +1,3 @@
-#TODO: DOMINO BREAK SYSTEM (via flags)
-##add roots to all tiles
-
 build_tiles:
   type: task
   debug: false
@@ -26,7 +23,6 @@ build_tiles:
         - define grounded_center <[grounded_center].above[2]>
 
         #-calculates Y from the ground up
-        #- define add_y <proc[round4].context[<[target_loc].forward[<[type].equals[stair].if_true[4].if_false[2]>].distance[<[grounded_center]>].vertical.sub[<[type].equals[stair].if_true[2.5].if_false[1]>]>]>
         - define add_y <proc[round4].context[<[target_loc].forward[2].distance[<[grounded_center]>].vertical.sub[1]>]>
         - define add_y <[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>
 
@@ -52,7 +48,6 @@ build_tiles:
         - define free_center <[free_center].below[2]>
         - define grounded_center <[grounded_center].below[2]>
 
-        #-check to use free_center or ground_center
         - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
         - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>].round>
 
@@ -68,11 +63,8 @@ build_tiles:
         - define free_center <[free_center].with_yaw[<[yaw]>].forward_flat[2]>
         - define grounded_center <[grounded_center].with_yaw[<[yaw]>].forward_flat[2]>
 
-        #-check to use free_center or ground_center
         - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
         - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>].round>
-
-        #- narrate <[connected_tiles].any.if_true[free].if_false[ground]>
 
         - choose <[eye_loc].yaw.simple>:
           - case east west:
@@ -80,7 +72,6 @@ build_tiles:
           - case north south:
             - define expand -2,2,0
 
-        #- define tile <[final_center].below[2].left[2].to_cuboid[<[final_center].above[2].right[2]>]>
         - define tile <[final_center].to_cuboid[<[final_center]>].expand[<[expand]>]>
 
         - define display_blocks <[tile].blocks>
@@ -94,7 +85,6 @@ build_tiles:
         - define free_center <[free_center].with_yaw[<[yaw]>]>
         - define grounded_center <[grounded_center].with_yaw[<[yaw]>]>
 
-        #-check to use free_center or ground_center
         - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
         - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>].round>
 
@@ -109,7 +99,6 @@ build_tiles:
 
         #no need to define free/ground center since no modification is required
 
-        #-check to use free_center or ground_center
         - define connected_tiles <proc[find_connected_tiles].context[<[free_center]>|<[type]>]>
         - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>].round>
 
@@ -246,7 +235,7 @@ build_system_handler:
           - flag <[blocks]> build:!
           - flag <[blocks]> breakable:!
 
-    #- narrate "removed <[structure].size||0> tiles"
+    # narrate "removed <[structure].size||0> tiles"
 
   #-this *safely* prepares the tile for removal (by replacing the original tile data with the intersecting tile data)
   replace_tiles:
@@ -332,8 +321,6 @@ build_system_handler:
         - define nearby_tiles <[center].find_blocks_flagged[build.structure].within[5].parse[flag[build.structure]].deduplicate.exclude[<[tile]>]>
         - define connected_tiles <[nearby_tiles].filter[intersects[<[tile]>]]>
         - define stair_tiles <[connected_tiles].filter[center.flag[build.type].equals[stair]]>
-
-        #- define stair_tiles <proc[find_connected_tiles].context[<[center]>|<[build_type]>].filter[center.flag[build.type].equals[stair]]>
 
         - if <[stair_tiles].any>:
           - define stair_tile_center <[stair_tiles].first.center.flag[build.center]>

@@ -37,10 +37,7 @@ minimap:
 
     - define whole_map <[tiles].unseparated>
 
-    - define compass_dir <map[North=N;Northeast=NE;Northwest=NW;East=E;West=W;South=S;Southeast=SE;Southwest=SW].get[<[loc].direction>]>
-
-
-    - define title "<[compass_dir]> <[whole_map]>"
+    - define title "minimap <[whole_map]>"
 
     - bossbar update <[bb]> title:<[title]>
     - wait 1t
