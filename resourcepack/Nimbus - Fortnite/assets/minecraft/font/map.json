@@ -1,0 +1,40 @@
+{
+    "providers": [
+        {
+            "type": "space",
+            "advances": {
+                " ": 4,
+                "\uFFFF": -1,
+                "\uF001": 2,
+                "\uF002": 4,
+                "\uF003": 8,
+                "\uF004": 16,
+                "\uF005": 32,
+                "\uF006": 64,
+                "\uF007": 128,
+                "\uF008": 256
+            }
+        },
+        {
+            "type": "bitmap",
+            "file": "minimap:space_nosplit.png",
+            "ascent": -32768,
+            "height": 0,
+            "chars": [
+                "\uF000"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minimap:map.png",
+            "ascent": 0,
+            "height": 0,
+            "chars": [
+                "\u0001\u0002\u0003\u0004",
+                "\u0005\u0006\u0007\u0008",
+                "\u0009\u0010\u0011\u0012",
+                "\u0013\u0014\u0015\u0016"
+            ]
+        }
+    ]
+}
