@@ -1,6 +1,7 @@
 #version 150
 
 #moj_import <fog.glsl>
+#moj_import <map.glsl>
 
 in vec3 Position;
 in vec4 Color;
@@ -19,9 +20,7 @@ out float vertexDistance;
 out vec4 vertexColor;
 out vec2 texCoord0;
 
-flat out int isMap;
-flat out int delete;
-flat out float xOffset;
+flat out int type;
 flat out vec4 ogColor;
 
 vec2 guiPixel(mat4 ProjMat) {
@@ -31,6 +30,23 @@ vec2 guiPixel(mat4 ProjMat) {
 //default - 128
 const int mapSize = 135;
 const int margin = 16;
+
+const ivec2[] corners = ivec2[](
+    ivec2(-1, -1),
+    ivec2(-1, 1),
+    ivec2(1, 1),
+    ivec2(1, -1)
+);
+
+vec2 rotate(vec2 point, vec2 center, float rot) {
+	float x = center.x + (point.x-center.x)*cos(rot) - (point.y-center.y)*sin(rot);
+    float y = center.y + (point.x-center.x)*sin(rot) + (point.y-center.y)*cos(rot);
+
+    return vec2(x, y);
+}
+
+#define PI 3.1415926535
+
 
 void main() {
     ogColor = Color;
@@ -42,51 +58,31 @@ void main() {
     texCoord0 = UV0;
 
     // map stuff
-    isMap = 0;
-    delete = 0;
+    type = -1;
     bool map = texture(Sampler0, vec2(0, 0)).a == 254./255.;
-    if (map && Position.z == 0) {
-        delete = 1;
-    } else if (map) {
+    bool marker = texture(Sampler0, texCoord0) * 255 == vec4(173, 152, 193, 102);
+    if (map || marker) {
         vec2 pixel = guiPixel(ProjMat);
         vec4 oldPos = gl_Position;
-        xOffset = oldPos.x / pixel.x;
 
         gl_Position = ProjMat * ModelViewMat * vec4(vec3(0, 0, 0), 1.0);
         gl_Position.x *= -1;
 
         gl_Position.x += -pixel.x * (margin + mapSize);
         gl_Position.y += pixel.y * (margin + mapSize);
+        vec2 center = gl_Position.xy;
 
-        //gl_Position.y *= -1;
-
-        switch (gl_VertexID % 4) {
-            //left top
-            case 0:
-                gl_Position.x += pixel.x * -mapSize;
-                gl_Position.y += pixel.y * -mapSize;
-                // xOffset += 0
-                break;
-            //left bottom
-            case 1:
-                gl_Position.x += pixel.x * -mapSize;
-                gl_Position.y += pixel.y * mapSize;
-                // xOffset += 0
-                break;
-            //right bottom
-            case 2:
-                gl_Position.x += pixel.x * mapSize;
-                gl_Position.y += pixel.y * mapSize;
-                //xOffset += 4;
-                break;
-            //right top
-            case 3:
-                gl_Position.x += pixel.x * mapSize;
-                gl_Position.y += pixel.y * -mapSize;
-                //xOffset += 4;
-                break;
+        if (map) {
+            gl_Position.xy += pixel.xy * corners[gl_VertexID % 4] * mapSize;
+            type = MAP_TYPE;
+        } else if (marker) {
+            gl_Position.xy += pixel.xy * corners[gl_VertexID % 4] * 7;
+            gl_Position.xy = rotate(gl_Position.xy / pixel.xy, center / pixel.xy, Color.r*PI*2) * pixel.xy;
+            type = MARKER_TYPE;
         }
-
-        isMap = 1;
+    } 
+    if (type != -1 && Position.z == 0) {
+        type = DELETE_TYPE;
     }
+    //ogColor = texture(Sampler0, texCoord0);
 }

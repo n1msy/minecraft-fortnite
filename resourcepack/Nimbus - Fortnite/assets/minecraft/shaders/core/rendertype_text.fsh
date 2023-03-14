@@ -17,9 +17,7 @@ in float vertexDistance;
 in vec4 vertexColor;
 in vec2 texCoord0;
 
-flat in int isMap;
-flat in int delete;
-flat in float xOffset;
+flat in int type;
 flat in vec4 ogColor;
 
 out vec4 fragColor;
@@ -35,14 +33,15 @@ vec2 rotate(vec2 point, vec2 center, float rot) {
 }
 
 void main() {
+    // vanilla 
     vec4 color = texture(Sampler0, texCoord0) * vertexColor * ColorModulator;
-    if (color.a < 0.1 || delete == 1) {
+    if (color.a < 0.1 || type == DELETE_TYPE) {
         discard;
     }
     fragColor = linear_fog(color, vertexDistance, FogStart, FogEnd, FogColor);
 
-
-    if (isMap == 1) {
+    // map
+    if (type == MAP_TYPE) {
         getInfoFromColor(ogColor);
 
 
@@ -65,18 +64,16 @@ void main() {
         fragColor.a = 1;
 
         //make the edge colors blue, since it's the color of the water rgba(61,61,242,255)
-        if (any(lessThan(c1, mapFrom)) || any(greaterThan(c1, mapFrom + vec2(1, 1)))) if (displayId == 0) fragColor = vec4(68/255., 68/255., 252/255., 1);
-            else discard;
+        if (any(lessThan(c1, mapFrom)) || any(greaterThan(c1, mapFrom + vec2(1, 1)))) {
+            if (displayId == 0) fragColor = vec4(68/255., 68/255., 252/255., 1);
+                else discard;
+        }
 
-        //fragColor = vec4(mod(c0, 1), 0, 1);
         //dot
-        if (all(greaterThan(texCoord0, vec2(0.49, 0.49))) && all(lessThan(texCoord0, vec2(0.51, 0.51)))) fragColor = vec4(1, 1, 1, 1);
-
-        //border
-        //if (any(lessThan(texCoord0, vec2(0.01, 0.01))) || any(greaterThan(texCoord0, vec2(0.99, 0.99)))) fragColor = vec4(1, 1, 1, 0.5);
-
-        //circle
-        //if (length( texCoord0 - vec2(0.5, 0.5) ) > 0.5) discard;
-        //fragColor = vec4(xOffset/2/255., 0, 0, 1);
+        //if (all(greaterThan(texCoord0, vec2(0.49, 0.49))) && all(lessThan(texCoord0, vec2(0.51, 0.51)))) fragColor = vec4(1, 1, 1, 1);
+        
+    } else if (type == MARKER_TYPE) {
+        fragColor = texture(Sampler0, texCoord0);
+        if (fragColor * 255 == vec4(173, 152, 193, 102)) discard;
     }
 }
