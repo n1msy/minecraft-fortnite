@@ -18,7 +18,15 @@ minimap:
 
     #turn loc to color
     - define loc <player.location.round>
+    - define yaw <[loc].yaw>
 
+    #-marker
+    - define marker_red <[yaw].is[LESS].than[0].if_true[<[yaw].add[360]>].if_false[<[yaw]>].div[360].mul[255]>
+
+    - define marker_color <color[<[marker_red].round>,0,0]>
+    - define marker <&chr[E000].font[map].color[<[marker_color]>]>
+
+    #-minimap
     - define x <[loc].x>
     - define z <[loc].z>
 
@@ -74,12 +82,34 @@ minimap:
 
       - define tiles:->:<&chr[<[ch]>].font[map].color[<[loc_to_color]>]>
 
-    - define whole_map <[tiles].unseparated>
 
-    - define compass_dir <map[North=N;Northeast=NE;Northwest=NW;East=E;West=W;South=S;Southeast=SE;Southwest=SW].get[<[loc].direction>]>
+    - define whole_map <[tiles].unseparated><[marker]>
 
+    - define cur_dir <map[North=N;Northeast=NE;Northwest=NW;East=E;West=W;South=S;Southeast=SE;Southwest=SW].get[<[loc].direction>]>
 
-    - define title "<[compass_dir]> <[whole_map]>"
+    #size: 8
+    - define compass_directions <list[N|NE|E|SE|S|SW|W|NW]>
+    #north = 360/0
+
+    - define dir_index <[compass_directions].find[<[cur_dir]>]>
+
+    - define comp_spacing 10
+
+    - if <[dir_index]> == 1:
+      - define prev_dir <[compass_directions].last>
+    - else:
+      - define prev_dir <[compass_directions].get[<[dir_index].sub[1]>]>
+
+    - if <[dir_index]> == <[compass_directions].size>:
+      - define next_dir <[compass_directions].first>
+    - else:
+      - define next_dir <[compass_directions].get[<[dir_index].add[1]>]>
+
+    #adding 2 because that's the minimum size that cur_dir and the other_dir can be (2 letters = 2 size)
+    - define compass_display <[prev_dir]><&sp.repeat[<[comp_spacing].add[2].sub[<[cur_dir].length.add[<[prev_dir].length>]>]>]><[cur_dir].color[green]><&sp.repeat[<[comp_spacing].add[2].sub[<[cur_dir].length.add[<[next_dir].length>]>]>]><[next_dir]>
+    #- define compass_display "<[prev_dir]>   <[cur_dir]>   <[next_dir]>"
+
+    - define title "<[compass_display]> <[whole_map]>"
 
     - bossbar update <[bb]> title:<[title]>
     - wait 1t
@@ -87,3 +117,27 @@ minimap:
   - flag player minimap:!
   - if <server.current_bossbars.contains[<[bb]>]>:
     - bossbar remove <[bb]>
+
+  tab:
+    - define neg_spacing <&chr[F801].font[denizen:overlay]>
+
+    - define border_radius 4
+
+    - define tab_map <list[]>
+
+    - repeat 16:
+
+      - define zeroes <element[0].repeat[<element[3].sub[<[value].length>]>]>
+      - define char A<[zeroes]><[value]>
+
+      - define row:->:<&chr[<[char]>].font[map]>
+
+      - if <[value].mod[4]> == 0:
+        - define tab_map <[tab_map].include[<&sp.repeat[<[border_radius].sub[1]>]><[row].separated_by[<[neg_spacing]>]><&sp.repeat[<[border_radius].sub[1]>]>]>
+        - define row:!
+
+    - define tab_map <[tab_map].separated_by[<n.repeat[7]>]>
+
+    - adjust <player> tab_list_info:<n.repeat[<[border_radius]>]><[tab_map]><n.repeat[<[border_radius]>]>
+
+
