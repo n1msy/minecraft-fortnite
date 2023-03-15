@@ -23,7 +23,7 @@ flat in vec4 ogColor;
 out vec4 fragColor;
 
 //default = 0.5
-const float zoom = 0; 
+const float zoom = 0.5; 
 
 vec2 rotate(vec2 point, vec2 center, float rot) {
 	float x = center.x + (point.x-center.x)*cos(rot) - (point.y-center.y)*sin(rot);
@@ -65,7 +65,13 @@ void main() {
 
         //make the edge colors blue, since it's the color of the water rgba(61,61,242,255)
         if (any(lessThan(c1, mapFrom)) || any(greaterThan(c1, mapFrom + vec2(1, 1)))) {
-            if (displayId == 0) fragColor = vec4(68/255., 68/255., 252/255., 1);
+            if (displayId == 0) fragColor = vec4(53/255., 110/255., 185/255., 1);
+                else discard;
+        }
+
+        //white border
+        if (any(lessThan(texCoord0, vec2(0.01, 0.01))) || any(greaterThan(texCoord0, vec2(0.99, 0.99)))) {
+            if (displayId == 0) fragColor = vec4(1, 1, 1, 0.5);
                 else discard;
         }
 

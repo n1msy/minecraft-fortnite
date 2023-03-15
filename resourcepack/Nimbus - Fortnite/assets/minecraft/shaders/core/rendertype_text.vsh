@@ -76,7 +76,7 @@ void main() {
             gl_Position.xy += pixel.xy * corners[gl_VertexID % 4] * mapSize;
             type = MAP_TYPE;
         } else if (marker) {
-            gl_Position.xy += pixel.xy * corners[gl_VertexID % 4] * 7;
+            gl_Position.xy += pixel.xy * corners[gl_VertexID % 4] * 8;
             gl_Position.xy = rotate(gl_Position.xy / pixel.xy, center / pixel.xy, Color.r*PI*2) * pixel.xy;
             type = MARKER_TYPE;
         }
