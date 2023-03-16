@@ -13,6 +13,8 @@ minimap:
   - bossbar create <[bb]>
   - flag player minimap
 
+  - define oldRotation <player.location.yaw.div[360].mul[1024].round>
+
   - while <player.is_online> && <player.has_flag[minimap]>:
 
 
@@ -85,29 +87,12 @@ minimap:
 
     - define whole_map <[tiles].unseparated><[marker]>
 
-    - define cur_dir <map[North=N;Northeast=NE;Northwest=NW;East=E;West=W;South=S;Southeast=SE;Southwest=SW].get[<[loc].direction>]>
-
-    #size: 8
-    - define compass_directions <list[N|NE|E|SE|S|SW|W|NW]>
-    #north = 360/0
-
-    - define dir_index <[compass_directions].find[<[cur_dir]>]>
-
-    - define comp_spacing 10
-
-    - if <[dir_index]> == 1:
-      - define prev_dir <[compass_directions].last>
-    - else:
-      - define prev_dir <[compass_directions].get[<[dir_index].sub[1]>]>
-
-    - if <[dir_index]> == <[compass_directions].size>:
-      - define next_dir <[compass_directions].first>
-    - else:
-      - define next_dir <[compass_directions].get[<[dir_index].add[1]>]>
-
-    #adding 2 because that's the minimum size that cur_dir and the other_dir can be (2 letters = 2 size)
-    - define compass_display <[prev_dir]><&sp.repeat[<[comp_spacing].add[2].sub[<[cur_dir].length.add[<[prev_dir].length>]>]>]><[cur_dir].color[green]><&sp.repeat[<[comp_spacing].add[2].sub[<[cur_dir].length.add[<[next_dir].length>]>]>]><[next_dir]>
-    #- define compass_display "<[prev_dir]>   <[cur_dir]>   <[next_dir]>"
+    # compass display
+    - define curRotation <player.location.yaw.div[360].mul[1024].round>
+    - define gameTime <player.world.duration_since_created.in_ticks.mod[24000].mod[4]>
+    - define rotation_color <color[<[curRotation].mod[256]>,<[oldRotation].mod[256]>,<[curRotation].div[256].round_down.add[<[oldRotation].div[256].round_down.mul[4]>].add[<[gameTime].mul[16]>]>]>
+    - define oldRotation <[curRotation]>
+    - define compass_display <&chr[B000].font[map].color[<[rotation_color]>]>
 
     - define title "<[compass_display]> <[whole_map]>"
 
