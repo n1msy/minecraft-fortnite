@@ -7,6 +7,14 @@ update_hud:
   debug: false
   script:
 
+
+  #top left health bars (they're different):
+  #shield - ◼
+  #health - ■
+
+  #main health:
+  #shield/health - ⬛ or <element[█].font[hud_text]>
+
   #falling icon turns to clock icon after bus is done dropping
 
   - define time <element[0:00].font[hud_text]>
