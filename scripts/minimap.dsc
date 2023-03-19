@@ -85,7 +85,7 @@ minimap:
       - define tiles:->:<&chr[<[ch]>].font[map].color[<[loc_to_color]>]>
 
 
-    - define whole_map <[tiles].unseparated><[marker]>
+    - define whole_map <[tiles].unseparated>
 
     # compass display
     - define curRotation <player.location.yaw.div[360].mul[1024].round>
@@ -94,7 +94,21 @@ minimap:
     - define oldRotation <[curRotation]>
     - define compass_display <&chr[B000].font[map].color[<[rotation_color]>]>
 
-    - define title "<[compass_display]> <[whole_map]>"
+    # circle display
+    - define circle 100
+    - define storm_id 15
+    - define relX <[circle].sub[<[loc].x>].add[1024]>
+    - define relZ <[circle].sub[<[loc].z>].add[1024]>
+    - define r_ <[relX].mod[256]>
+    - define g_ <[relZ].mod[256]>
+    - define b_ <[relX].div[256].round_down.add[<[relZ].div[256].round_down.mul[8]>].add[<[storm_id].div[4].round_down.mul[64]>]>
+    - define offset <[storm_id].mod[4].mul[2]>
+
+    - define circle_color <color[<[r_]>,<[g_]>,<[b_]>]>
+    - define circle_display <&chr[E001].font[map].color[<[circle_color]>]>
+
+
+    - define title <[compass_display]><[whole_map]><[marker]><proc[spacing].context[<[offset].sub[2].sub[<[tiles].size>]>]><[circle_display]>
 
     - bossbar update <[bb]> title:<[title]>
     - wait 1t
@@ -124,5 +138,3 @@ minimap:
     - define tab_map <[tab_map].separated_by[<n.repeat[7]>]>
 
     - adjust <player> tab_list_info:<n.repeat[<[border_radius]>]><[tab_map]><n.repeat[<[border_radius]>]>
-
-
