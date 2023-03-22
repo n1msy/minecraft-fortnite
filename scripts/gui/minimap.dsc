@@ -110,7 +110,9 @@ minimap:
 
     - define title <[compass_display]><[whole_map]><[marker]><proc[spacing].context[<[offset].sub[2].sub[<[tiles].size>]>]><[circle_display]>
 
-    - bossbar update <[bb]> title:<[title]>
+    - define spacing <&sp.repeat[<element[3].sub[<[yaw].length>]>]>
+
+    - bossbar update <[bb]> title:<&sp><[yaw].color[#4e5c24]><[title]>
     - wait 1t
 
   - flag player minimap:!
