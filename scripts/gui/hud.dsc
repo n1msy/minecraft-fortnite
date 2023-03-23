@@ -19,15 +19,19 @@ hud_setup:
   - define empty_bar <&chr[C000].font[icons]>
 
   # - [ Main Health/Shield Bars ] - #
-  - define health      <player.health.mul[2].round>
-  - define health_bar  <[empty_bar]>
-  - define health_icon <&chr[C004].font[icons]><proc[spacing].context[1]>
-  - define health_     <element[<[health_icon]><[health_bar]><proc[spacing].context[-215]><[health]> / 100].color[<color[10,0,0]>]>
+  - define health      <player.health.mul[5].round>
+  - define health_r    <[health].div[100].mul[255].round_down>
+  - define health_bar  <[empty_bar].color[<[health_r]>,0,0]>
+  - define health_text <element[<proc[spacing].context[-215]><[health]> / 100].color[<color[10,0,0]>]>
+  - define health_icon <element[<&chr[C004].font[icons]><proc[spacing].context[1]>].color[<color[10,0,0]>]>
+  - define health_     <[health_icon]><[health_bar]><[health_text]>
 
-  - define shield      <player.armor_bonus.mul[2].round>
-  - define shield_bar  <[empty_bar]>
-  - define shield_icon <&chr[C003].font[icons]><proc[spacing].context[1]>
-  - define shield_     <element[<[shield_icon]><[shield_bar]><proc[spacing].context[-215]><[shield]> / 100].color[<color[11,0,0]>]>
+  - define shield      <player.armor_bonus.mul[5].round>
+  - define shield_r    <[shield].div[100].mul[255].round_down>
+  - define shield_bar  <[empty_bar].color[<[shield_r]>,0,1]>
+  - define shield_text <element[<proc[spacing].context[-215]><[shield]> / 100].color[<color[11,0,0]>]>
+  - define shield_icon <element[<&chr[C003].font[icons]><proc[spacing].context[1]>].color[<color[11,0,0]>]>
+  - define shield_     <[shield_icon]><[shield_bar]><[shield_text]>
 
   # - [ Inventory ] - #
   #outside of if, since [ builds ] also uses these characters
