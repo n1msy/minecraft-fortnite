@@ -22,12 +22,12 @@ hud_setup:
   - define health      <player.health.mul[2].round>
   - define health_bar  <[empty_bar]>
   - define health_icon <&chr[C004].font[icons]><proc[spacing].context[1]>
-  - define health_     <element[<[health_icon]><[health_bar]><[health]><element[&pipe].unescaped>100].color[<color[10,0,0]>]>
+  - define health_     <element[<[health_icon]><[health_bar]><proc[spacing].context[-215]><[health]> / 100].color[<color[10,0,0]>]>
 
   - define shield      <player.armor_bonus.mul[2].round>
-  - define shield_bar  <&chr[C000].font[icons]>
+  - define shield_bar  <[empty_bar]>
   - define shield_icon <&chr[C003].font[icons]><proc[spacing].context[1]>
-  - define shield_     <element[<[shield_icon]><[shield_bar]><[shield]><element[&pipe].unescaped>100].color[<color[11,0,0]>]>
+  - define shield_     <element[<[shield_icon]><[shield_bar]><proc[spacing].context[-215]><[shield]> / 100].color[<color[11,0,0]>]>
 
   # - [ Inventory ] - #
   #outside of if, since [ builds ] also uses these characters
