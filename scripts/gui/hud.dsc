@@ -2,7 +2,7 @@
 ###use shaders for health bar instead of repeating values (input the health in r values)
 
 #-basically everything that's not the map
-hud_setup:
+update_hud:
   type: task
   debug: false
   script:
@@ -22,31 +22,23 @@ hud_setup:
   - define health      <player.health.mul[5].round>
   - define health_r    <[health].div[100].mul[255].round_down>
   - define health_bar  <[empty_bar].color[<[health_r]>,0,0]>
-  - define health_text <element[<proc[spacing].context[-215]><[health]> / 100].color[<color[10,0,0]>]>
+  - define health_text "<element[<proc[spacing].context[-215]><[health]>].color[<color[10,0,0]>]> <element[｜ 100].color[<color[101,0,0]>]>"
   - define health_icon <element[<&chr[C004].font[icons]><proc[spacing].context[1]>].color[<color[10,0,0]>]>
   - define health_     <[health_icon]><[health_bar]><[health_text]>
 
   - define shield      <player.armor_bonus.mul[5].round>
   - define shield_r    <[shield].div[100].mul[255].round_down>
   - define shield_bar  <[empty_bar].color[<[shield_r]>,0,1]>
-  - define shield_text <element[<proc[spacing].context[-215]><[shield]> / 100].color[<color[11,0,0]>]>
+  - define shield_text "<element[<proc[spacing].context[-215]><[shield]>].color[<color[11,0,0]>]> <element[｜ 100].color[<color[111,0,0]>]>"
   - define shield_icon <element[<&chr[C003].font[icons]><proc[spacing].context[1]>].color[<color[11,0,0]>]>
   - define shield_     <[shield_icon]><[shield_bar]><[shield_text]>
 
-  # - [ Inventory ] - #
-  #outside of if, since [ builds ] also uses these characters
-  - define unselected_slot     <&chr[B000].font[icons]>
-  - define selected_slot       <&chr[B001].font[icons]>
-  - define slots               <[unselected_slot].repeat_as_list[6]>
-  - define slots_              <[slots].space_separated.color[<color[20,0,0]>]>
-
-  # - [ Builds ] - #
-  - define wall           <&chr[D001].font[icons]>
-  - define floor          <&chr[D002].font[icons]>
-  - define stair          <&chr[D003].font[icons]>
-  - define pyramid        <&chr[D004].font[icons]>
-  - define build_slots    "<[wall]> <[floor]> <[stair]> <[pyramid]> <[unselected_slot]>"
-  - define build_         <[build_slots].color[<color[30,0,0]>]>
+  # - [ Inventory / Builds ] - #
+  #in case they were already defined by outside scripts
+  - if !<[new_slot].exists> || !<[old_slot].exists>:
+    - define new_slot <player.held_item_slot>
+    - define old_slot <[new_slot]>
+  - inject hud_handler.update_slots
 
   # - [ Materials ] - #
   - define wood_icon  <&chr[A001].font[icons]>
@@ -84,8 +76,8 @@ hud_setup:
   - define small_shield_bar <&chr[C002].font[icons]>
 
   - define name <player.name>
-  - define small_bar <[small_health_bar]><proc[spacing].context[-106]><[small_shield_bar]>
-  - define team_bars <element[<[small_bar]><proc[spacing].context[-106]><[name]>].color[<color[61,0,0]>]>
+  - define small_bar <[small_health_bar].color[<color[<[health_r]>,1,0]>]><proc[spacing].context[-106]><[small_shield_bar].color[<color[<[shield_r]>,1,1]>]>
+  - define team_bars <[small_bar]><element[<proc[spacing].context[-106]><[name]>].color[<color[61,0,0]>]>
 
   - sidebar set title:<empty> values:<[ammo_]>|<[shield_]>|<[health_]>|<[build_]>|<[slots_]>|<[wood_]>|<[brick_]>|<[metal_]>|<[time_]>|<[alive_]>|<[kills_]>|<[team_bars]>
 
@@ -98,7 +90,7 @@ hud_handler:
     - define new_slot <context.new_slot>
     - define old_slot <context.previous_slot>
 
-    - inject hud_handler.update_slots
+    - inject update_hud
 
     on player swaps items:
     - determine passively cancelled
@@ -109,7 +101,7 @@ hud_handler:
     - adjust <player> item_slot:1
     - define new_slot 1
 
-    - inject hud_handler.update_slots
+    - inject update_hud
 
     - run build_toggle
 
@@ -152,4 +144,4 @@ hud_handler:
       - define build_         <[build_slots].space_separated.color[<color[30,0,0]>]>
       - define slots_         <[unselected_slot].repeat_as_list[6].space_separated.color[<color[20,0,0]>]>
 
-    - sidebar set_line scores:8|9 values:<[slots_]>|<[build_]>
+    #- sidebar set_line scores:8|9 values:<[slots_]>|<[build_]>
