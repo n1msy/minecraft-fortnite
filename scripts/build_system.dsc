@@ -497,13 +497,12 @@ round4:
 #
 #
 ##temp
-build:
+build_toggle:
   type: task
   debug: false
   script:
     - if <player.has_flag[build]>:
       - flag player build:!
-      - narrate "<&c>build removed"
       - stop
 
     - define world <player.world.name>

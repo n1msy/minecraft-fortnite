@@ -2,7 +2,7 @@
 ###use shaders for health bar instead of repeating values (input the health in r values)
 
 #-basically everything that's not the map
-update_hud:
+hud_setup:
   type: task
   debug: false
   script:
@@ -13,30 +13,35 @@ update_hud:
   #depends on what gun you're holding
   - define ammo_current 20
   - define ammo_max 291
-  - define ammo_icon "[ammo icon]"
+  - define ammo_icon <&chr[E002].font[icons]>
   - define ammo_     <element[<element[<[ammo_current]> / <[ammo_max]>].font[ammo_text]> <[ammo_icon]>].color[<color[12,0,0]>]>
 
   - define empty_bar <&chr[C000].font[icons]>
 
   # - [ Main Health/Shield Bars ] - #
-  - define health      100
+  - define health      <player.health.mul[2].round>
   - define health_bar  <[empty_bar]>
   - define health_icon <&chr[C004].font[icons]><proc[spacing].context[1]>
-  - define health_     <element[<[health_icon]><[health_bar]><[health]>].color[<color[10,0,0]>]>
+  - define health_     <element[<[health_icon]><[health_bar]><[health]><element[&pipe].unescaped>100].color[<color[10,0,0]>]>
 
-  - define shield      100
+  - define shield      <player.armor_bonus.mul[2].round>
   - define shield_bar  <&chr[C000].font[icons]>
   - define shield_icon <&chr[C003].font[icons]><proc[spacing].context[1]>
-  - define shield_     <element[<[shield_icon]><[shield_bar]><[shield]>].color[<color[11,0,0]>]>
+  - define shield_     <element[<[shield_icon]><[shield_bar]><[shield]><element[&pipe].unescaped>100].color[<color[11,0,0]>]>
 
   # - [ Inventory ] - #
-  - define empty_slot     <&chr[B000].font[icons]>
-  - define selected_slot  <&chr[B001].font[icons]>
-  - define slots          <[empty_slot].repeat_as_list[6].space_separated>
-  - define slots_         <[slots].color[<color[20,0,0]>]>
+  #outside of if, since [ builds ] also uses these characters
+  - define unselected_slot     <&chr[B000].font[icons]>
+  - define selected_slot       <&chr[B001].font[icons]>
+  - define slots               <[unselected_slot].repeat_as_list[6]>
+  - define slots_              <[slots].space_separated.color[<color[20,0,0]>]>
 
   # - [ Builds ] - #
-  - define build_slots    <[empty_slot].repeat_as_list[5].space_separated>
+  - define wall           <&chr[D001].font[icons]>
+  - define floor          <&chr[D002].font[icons]>
+  - define stair          <&chr[D003].font[icons]>
+  - define pyramid        <&chr[D004].font[icons]>
+  - define build_slots    "<[wall]> <[floor]> <[stair]> <[pyramid]> <[unselected_slot]>"
   - define build_         <[build_slots].color[<color[30,0,0]>]>
 
   # - [ Materials ] - #
@@ -79,3 +84,68 @@ update_hud:
   - define team_bars <element[<[small_bar]><proc[spacing].context[-106]><[name]>].color[<color[61,0,0]>]>
 
   - sidebar set title:<empty> values:<[ammo_]>|<[shield_]>|<[health_]>|<[build_]>|<[slots_]>|<[wood_]>|<[brick_]>|<[metal_]>|<[time_]>|<[alive_]>|<[kills_]>|<[team_bars]>
+
+hud_handler:
+  type: world
+  debug: false
+  events:
+    on player scrolls their hotbar:
+
+    - define new_slot <context.new_slot>
+    - define old_slot <context.previous_slot>
+
+    - inject hud_handler.update_slots
+
+    on player swaps items:
+    - determine passively cancelled
+    - define new_type <map[inv=build;build=inv].get[<player.flag[fort.inv_type]||inv>]>
+    - flag player fort.inv_type:<[new_type]>
+
+    - define old_slot <player.held_item_slot>
+    - adjust <player> item_slot:1
+    - define new_slot 1
+
+    - inject hud_handler.update_slots
+
+    - run build_toggle
+
+  update_slots:
+  #required definitions:
+  # <[new_slot]>
+  # <[old_slot]>
+    - define slot <[new_slot]>
+
+    - define inv_type <player.flag[fort.inv_type]||inv>
+
+    - define unselected_slot     <&chr[B000].font[icons]>
+    - define selected_slot       <&chr[B001].font[icons]>
+
+    - define wall                <&chr[D001].font[icons]>
+    - define floor               <&chr[D002].font[icons]>
+    - define stair               <&chr[D003].font[icons]>
+    - define pyramid             <&chr[D004].font[icons]>
+
+    - if <[inv_type]> == inv:
+      - if <[new_slot]> > 6:
+        - define slot <[old_slot].is_more_than[3].if_true[1].if_false[6]>
+        - adjust <player> item_slot:<[slot]>
+      - define slots               <[unselected_slot].repeat_as_list[6]>
+
+      - define slots_              <[slots].set[<[selected_slot]>].at[<[slot]>].space_separated.color[<color[20,0,0]>]>
+      - define build_ <element[<[wall]> <[floor]> <[stair]> <[pyramid]> <[unselected_slot]>].color[<color[30,0,0]>]>
+
+    - else if <[inv_type]> == build:
+      - if <[new_slot]> > 5:
+        - define slot <[old_slot].is_more_than[3].if_true[1].if_false[5]>
+        - adjust <player> item_slot:<[slot]>
+      - define wall_sel       <&chr[D011].font[icons]>
+      - define floor_sel      <&chr[D022].font[icons]>
+      - define stair_sel      <&chr[D033].font[icons]>
+      - define pyramid_sel    <&chr[D044].font[icons]>
+      - define selection      <map[1=<[wall_sel]>;2=<[floor_sel]>;3=<[stair_sel]>;4=<[pyramid_sel]>;5=<[selected_slot]>].get[<[slot]>]>
+      - define build_slots    <list[<[wall]>|<[floor]>|<[stair]>|<[pyramid]>|<[unselected_slot]>].set[<[selection]>].at[<[slot]>]>
+
+      - define build_         <[build_slots].space_separated.color[<color[30,0,0]>]>
+      - define slots_         <[unselected_slot].repeat_as_list[6].space_separated.color[<color[20,0,0]>]>
+
+    - sidebar set_line scores:8|9 values:<[slots_]>|<[build_]>
