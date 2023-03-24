@@ -105,6 +105,11 @@ hud_handler:
 
     - run build_toggle
 
+    after player damaged:
+    - inject update_hud
+
+    on player heals:
+    - determine cancelled
   update_slots:
   #required definitions:
   # <[new_slot]>

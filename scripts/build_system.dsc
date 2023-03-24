@@ -112,6 +112,7 @@ build_system_handler:
   debug: false
   definitions: data
   events:
+
     on player left clicks block flagged:build.struct:
       - determine passively cancelled
 
@@ -537,12 +538,21 @@ build_toggle:
           #-set flags
           - flag player build.struct:<[tile]>
           - flag player build.center:<[final_center]>
-          - debugblock <[display_blocks]> d:2t color:0,255,0,128
+          - debugblock <[display_blocks]> d:2t color:45,167,237,150
         - else:
           - flag player build.struct:!
-          - debugblock <[display_blocks]> d:2t color:0,0,0,128
+          - debugblock <[display_blocks]> d:2t color:219,55,55,150
 
 
       - wait 1t
 
     - flag player build:!
+
+
+test:
+  type: task
+  debug: false
+  script:
+    - spawn ITEM_DISPLAY[item=stone] <player.location.above[2]> save:e
+    - define e <entry[e].spawned_entity>
+    - adjust <[e]> display_entity_data:<map[transformation_scale=<location[0,1,0]>]>
