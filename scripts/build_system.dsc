@@ -113,13 +113,25 @@ build_system_handler:
   definitions: data
   events:
 
+    on player drops item flagged:build:
+    - determine cancelled
+
+    on player clicks in inventory flagged:build:
+    - determine cancelled
+
+    #-material switch
+    on player right clicks block flagged:build.material:
+    - flag player build.material:<map[wood=brick;brick=metal;metal=wood].get[<player.flag[build.material]>]>
+    - inject update_hud
+  
+    #-place
     on player left clicks block flagged:build.struct:
       - determine passively cancelled
 
       - define tile <player.flag[build.struct]>
       - define center <player.flag[build.center]>
       - define build_type <player.flag[build.type]>
-      - define material wood
+      - define material <player.flag[build.material]>
 
       #because walls and floors override stairs
       - define total_blocks <[tile].blocks>
@@ -143,7 +155,7 @@ build_system_handler:
       - flag <[blocks]> breakable
 
     #-break
-    on player right clicks block location_flagged:build.structure flagged:build:
+    on player breaks block location_flagged:build.structure flagged:!build:
       - determine passively cancelled
       - define loc <context.location>
       - define tile <[loc].flag[build.structure]>
@@ -276,7 +288,7 @@ build_system_handler:
     - define center <[data].get[center]>
     - define build_type <[data].get[build_type]>
 
-    - define base_material <map[wood=oak].get[<[data].get[material]>]>
+    - define base_material <map[wood=oak;brick=brick;metal=cobblestone].get[<[data].get[material]>]>
 
     - choose <[build_type]>:
 
@@ -307,7 +319,7 @@ build_system_handler:
         #if they're stairs and they are going in the same direction, to keep the stairs "smooth", forget about adding connectors to them
         - define consecutive_stair_blocks <[set_connector_blocks].filter[flag[build.type].equals[stair]].filter[material.direction.equals[<[direction]>]]>
 
-        - modifyblock <[set_connector_blocks].exclude[<[consecutive_stair_blocks]>].exclude[<[override_blocks]>]> <[base_material]>_planks
+        - modifyblock <[set_connector_blocks].exclude[<[consecutive_stair_blocks]>].exclude[<[override_blocks]>]> <map[oak=oak_planks;brick=bricks;cobblestone=cobblestone].get[<[base_material]>]>
 
       - case pyramid:
         - run place_pyramid def:<[center]>|<[base_material]>
@@ -335,7 +347,7 @@ build_system_handler:
           - define exclude_blocks <[top_points].include[<[bot_points]>].parse[with_pose[0,0]]>
 
         - define set_blocks <[total_blocks].exclude[<[exclude_blocks]>]>
-        - modifyblock <[set_blocks]> <[base_material]>_<map[oak=planks].get[<[base_material]>]>
+        - modifyblock <[set_blocks]> <map[oak=oak_planks;brick=bricks;cobblestone=cobblestone].get[<[base_material]>]>
 
 find_connected_tiles:
   type: procedure
@@ -413,6 +425,9 @@ place_pyramid:
     - define block_data <list[]>
     - define center <[center].with_yaw[0].with_pitch[0]>
 
+    - define stairs <[base_material]>_stairs
+    - define block <map[oak=oak_planks;brick=bricks;cobblestone=cobblestone].get[<[base_material]>]>
+
     - repeat 2:
       - define layer_center <[center].below[<[value]>]>
       - define length <[value].mul[2]>
@@ -426,12 +441,12 @@ place_pyramid:
 
         - define direction <map[1=west;2=north;3=east;4=south].get[<[loop_index]>]>
 
-        - define corner_mat <material[<[base_material]>_stairs].with[direction=<[direction]>;shape=outer_left]>
-        - define side_mat <material[<[base_material]>_stairs].with[direction=<[direction]>;shape=straight]>
+        - define corner_mat <material[<[stairs]>].with[direction=<[direction]>;shape=outer_left]>
+        - define side_mat <material[<[stairs]>].with[direction=<[direction]>;shape=straight]>
 
         #if it's the last layer, and there are any other builds connected to each other, turn the material into non-stairs
         - if <[value]> == 2 && <[side].get[3].face[<[layer_center]>].backward_flat.has_flag[build.structure]>:
-          - define corner_mat <material[<[base_material]>_<map[oak=planks].get[<[base_material]>]>]>
+          - define corner_mat <[block]>
           - define side_mat <[corner_mat]>
 
         #-adding corners first
@@ -503,13 +518,17 @@ build_toggle:
   debug: false
   script:
     - if <player.has_flag[build]>:
+      - inventory clear
+      - inventory set o:<player.flag[build.last_inventory]> d:<player.inventory>
       - flag player build:!
       - stop
 
     - define world <player.world.name>
     - define origin <location[0,0,0,<[world]>]>
 
-    - flag player build
+    - flag player build.material:wood
+    - flag player build.last_inventory:<player.inventory.list_contents>
+    - inventory clear
 
     - while <player.is_online> && <player.has_flag[build]>:
       - define eye_loc <player.eye_location>

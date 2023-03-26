@@ -41,20 +41,19 @@ update_hud:
   - inject hud_handler.update_slots
 
   # - [ Materials ] - #
-  - define wood_icon  <&chr[A001].font[icons]>
-  - define wood_qty   999
-  - define wood       <&sp.repeat[<element[3].sub[<[wood_qty].length>]>]><[wood_qty].font[hud_text]>
-  - define wood_      <element[<[wood_icon]><proc[spacing].context[-32]><[wood]>].color[<color[41,0,0]>]>
+  - define selected_material none
+  - if <player.has_flag[build.material]>:
+    - define selected_material <player.flag[build.material]>
 
-  - define brick_icon <&chr[A002].font[icons]>
-  - define brick_qty  999
-  - define brick      <&sp.repeat[<element[3].sub[<[brick_qty].length>]>]><[brick_qty].font[hud_text]>
-  - define brick_     <element[<[brick_icon]><proc[spacing].context[-32]><[brick]>].color[<color[42,0,0]>]>
+  - foreach <list[wood|brick|metal]> as:mat:
 
-  - define metal_icon <&chr[A003].font[icons]>
-  - define metal_qty  999
-  - define metal      <&sp.repeat[<element[3].sub[<[metal_qty].length>]>]><[metal_qty].font[hud_text]>
-  - define metal_     <element[<[metal_icon]><proc[spacing].context[-32]><[metal]>].color[<color[43,0,0]>]>
+    - define mat_icon   <&chr[A00<[loop_index]>].font[icons]>
+    - if <[selected_material]> == <[mat]>:
+      - define mat_icon <&chr[A0<[loop_index]><[loop_index]>].font[icons]>
+
+    - define mat_qty   999
+    - define mat_text  <&sp.repeat[<element[3].sub[<[mat_qty].length>]>]><[mat_qty].font[hud_text]>
+    - define <[mat]>_  <element[<[mat_icon]><proc[spacing].context[-32]><[mat_text]>].color[<color[4<[loop_index]>,0,0]>]>
 
   # - [ Stats ] - #
   - define fall_icon  <&chr[0003].font[icons]>
@@ -101,9 +100,9 @@ hud_handler:
     - adjust <player> item_slot:1
     - define new_slot 1
 
-    - inject update_hud
-
     - run build_toggle
+
+    - inject update_hud
 
     after player damaged:
     - inject update_hud
@@ -148,5 +147,14 @@ hud_handler:
 
       - define build_         <[build_slots].space_separated.color[<color[30,0,0]>]>
       - define slots_         <[unselected_slot].repeat_as_list[6].space_separated.color[<color[20,0,0]>]>
+
+      #trap
+      - if <[slot]> == 5:
+        - equip offhand:air hand:air
+      - else:
+        - inventory clear
+        - equip offhand:<item[paper].with[custom_model_data=<[slot].add[3]>]>
+        #slot hand changes, so give it to the next slot
+        - give gold_nugget slot:<[slot]>
 
     #- sidebar set_line scores:8|9 values:<[slots_]>|<[build_]>
