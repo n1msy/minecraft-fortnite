@@ -3,7 +3,13 @@ nimnite_config:
   materials:
     wood:
       hp: 150
-    stone:
+      valid_materials:
+        - oak_planks
+    brick:
       hp: 400
+      valid_materials:
+        - bricks
     metal:
       hp: 600
+      valid_materials:
+        - stone

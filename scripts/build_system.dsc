@@ -112,7 +112,6 @@ build_system_handler:
   debug: false
   definitions: data
   events:
-
     on player drops item flagged:build:
     - determine cancelled
 
@@ -123,7 +122,7 @@ build_system_handler:
     on player right clicks block flagged:build.material:
     - flag player build.material:<map[wood=brick;brick=metal;metal=wood].get[<player.flag[build.material]>]>
     - inject update_hud
-  
+
     #-place
     on player left clicks block flagged:build.struct:
       - determine passively cancelled
@@ -567,11 +566,10 @@ build_toggle:
 
     - flag player build:!
 
-
-test:
-  type: task
-  debug: false
-  script:
-    - spawn ITEM_DISPLAY[item=stone] <player.location.above[2]> save:e
-    - define e <entry[e].spawned_entity>
-    - adjust <[e]> display_entity_data:<map[transformation_scale=<location[0,1,0]>]>
+#test:
+  #type: task
+  #debug: false
+  #script:
+    #- spawn ITEM_DISPLAY[item=stone] <player.location.above[2]> save:e
+    #- define e <entry[e].spawned_entity>
+    #- adjust <[e]> display_entity_data:<map[transformation_scale=<location[0,1,0]>]>

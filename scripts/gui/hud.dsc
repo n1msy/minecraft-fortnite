@@ -85,13 +85,14 @@ hud_handler:
   debug: false
   events:
     on player scrolls their hotbar:
-
+    - stop if:<player.world.name.equals[fortnite_map].not>
     - define new_slot <context.new_slot>
     - define old_slot <context.previous_slot>
 
     - inject update_hud
 
     on player swaps items:
+    - stop if:<player.world.name.equals[fortnite_map].not>
     - determine passively cancelled
     - define new_type <map[inv=build;build=inv].get[<player.flag[fort.inv_type]||inv>]>
     - flag player fort.inv_type:<[new_type]>
@@ -107,8 +108,6 @@ hud_handler:
     after player damaged:
     - inject update_hud
 
-    on player heals:
-    - determine cancelled
   update_slots:
   #required definitions:
   # <[new_slot]>
