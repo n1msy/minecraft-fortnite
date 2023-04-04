@@ -1,6 +1,6 @@
 fort_pic:
   type: item
-  material: stone_pickaxe
+  material: iron_pickaxe
   display name: Pickaxe
 
 fort_pic_handler:
@@ -19,26 +19,37 @@ fort_pic_handler:
 
     #- ratelimit <player> 1t
 
-    on player clicks block type:!air:
+    #each swing is 50 hp, each crit is 100
+    on player breaks block:
     - stop if:<player.world.name.equals[fortnite_map].not>
     - determine passively cancelled
+    - stop if:<player.item_in_hand.script.name.equals[fort_pic].not||true>
 
-    #on player clicks block type:!air:
-   # - stop if:<player.world.name.equals[fortnite_map].not>
-   # - determine passively cancelled
-    - if <player.item_in_hand.script.name||null> == fort_pic:
-      - define i <player.item_in_hand>
+    - define block <context.location>
 
-      - define block <context.location>
-      - define mat <[block].material.name>
+    - if !<[block].has_flag[health]>:
+      - stop
 
-      - if <[mat].contains_any_text[oak|spruce|birch|jungle|acacia|dark_oak|mangrove|warped|barrel]>:
-        - define tool stone_axe
-      - else:
-        - define tool stone_pickaxe
+    - define damage 50
 
-      - if <[i].material.name> != <[tool]>:
-        - inventory adjust slot:<player.held_item_slot> material:<[tool]>
+    #- define new_health <[block].flag[health]>
+
+    #- if <[health]>
+    #switch between axe and pic
+    on player clicks block type:!air with:fort_pic:
+
+    - define i <context.item>
+
+    - define block <context.location>
+    - define mat <[block].material.name>
+
+    - if <[mat].contains_any_text[oak|spruce|birch|jungle|acacia|dark_oak|mangrove|warped|barrel]>:
+      - define tool iron_axe
+    - else:
+      - define tool iron_pickaxe
+
+    - if <[i].material.name> != <[tool]>:
+      - inventory adjust slot:<player.held_item_slot> material:<[tool]>
 
       #- define type <proc[get_material_type].context[<[mat]>]>
 

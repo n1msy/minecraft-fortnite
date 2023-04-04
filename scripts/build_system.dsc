@@ -16,8 +16,8 @@ build_tiles:
 
         - define grounded_center <[closest_center].with_pitch[90].ray_trace>
         #in case it lands on something like a stair
-        - if <[grounded_center].below.has_flag[build.structure]>:
-          - define grounded_center <[grounded_center].with_y[<[grounded_center].below.flag[build.structure].min.y>]>
+        - if <[grounded_center].below.has_flag[build.center]>:
+          - define grounded_center <[grounded_center].with_y[<[grounded_center].below.flag[build.center].flag[build.structure].min.y>]>
 
         #halfway of y would be 4, not 5, since there's overlapping "connectors"
         - define grounded_center <[grounded_center].above[2]>
@@ -29,8 +29,8 @@ build_tiles:
         - define free_center <[grounded_center].above[<[add_y]>]>
 
         #if there's a nearby tile, automatically "snap" to it's y level instead of ground up
-        - if <[target_loc].find_blocks_flagged[build.structure].within[5].any>:
-          - define nearest_tile <[target_loc].find_blocks_flagged[build.structure].within[5].parse[flag[build.structure]].deduplicate.first>
+        - if <[target_loc].find_blocks_flagged[build.center].within[5].any>:
+          - define nearest_tile <[target_loc].find_blocks_flagged[build.center].within[5].parse[flag[build.center].flag[build.structure]].deduplicate.first>
 
           - define new_y <[nearest_tile].min.y>
 
@@ -146,39 +146,40 @@ build_system_handler:
 
       - run build_system_handler.place def:<[data]>
 
-      - flag <[blocks]> build.structure:<[tile]>
-      - flag <[blocks]> build.center:<[center]>
-      - flag <[blocks]> build.type:<[build_type]>
-      - flag <[blocks]> build.material:<[material]>
+      - define health <script[nimnite_config].data_key[materials.<[material]>.hp]>
 
-      - flag <[blocks]> breakable
+      - flag <[center]> build.structure:<[tile]>
+      - flag <[center]> build.type:<[build_type]>
+      - flag <[center]> build.health:<[health]>
+      - flag <[center]> build.material:<[material]>
+
+      - flag <[blocks]> build.center:<[center]>
 
     #-break
-    on player breaks block location_flagged:build.structure flagged:!build:
-      - determine passively cancelled
-      - define loc <context.location>
-      - define tile <[loc].flag[build.structure]>
-      - define center <[loc].flag[build.center]>
-      - define type <[loc].flag[build.type]>
+  break:
+    - define center <[block].flag[build.center]>
 
-      - inject build_system_handler.replace_tiles
+    - define tile <[center].flag[build.structure]>
+    - define center <[center].flag[build.center]>
+    - define type <[center].flag[build.type]>
 
-      #-actually removing the original tile
-      #so it only includes the parts of the tile that are its own (since each cuboid intersects by one)
-      - define blocks <[tile].blocks.filter[flag[build.center].equals[<[center]>]]>
+    - inject build_system_handler.replace_tiles
 
-      #everything is being re-applied anyways, so it's ok
-      - modifyblock <[tile].blocks> air
+    #-actually removing the original tile
+    #so it only includes the parts of the tile that are its own (since each cuboid intersects by one)
+    - define blocks <[tile].blocks.filter[flag[build.center].equals[<[center]>]]>
 
-      - flag <[blocks]> build:!
-      - flag <[blocks]> breakable:!
+    #everything is being re-applied anyways, so it's ok
+    - modifyblock <[tile].blocks> air
 
-      #order: first placed -> last placed
-      - define priority_order <list[wall|floor|stair|pyramid]>
-      - foreach <[replace_tiles_data].parse_tag[<[parse_value]>/<[priority_order].find[<[parse_value].get[build_type]>]>].sort_by_number[after[/]].parse[before[/]]> as:tile_data:
-        - run build_system_handler.place def:<[tile_data]>
+    - flag <[blocks]> build:!
 
-      - run build_system_handler.remove_tiles def:<map[tile=<[tile]>;center=<[center]>]>
+    #order: first placed -> last placed
+    - define priority_order <list[wall|floor|stair|pyramid]>
+    - foreach <[replace_tiles_data].parse_tag[<[parse_value]>/<[priority_order].find[<[parse_value].get[build_type]>]>].sort_by_number[after[/]].parse[before[/]]> as:tile_data:
+      - run build_system_handler.place def:<[tile_data]>
+
+    - run build_system_handler.remove_tiles def:<map[tile=<[tile]>;center=<[center]>]>
 
   remove_tiles:
 
@@ -245,7 +246,6 @@ build_system_handler:
           #everything is being re-applied anyways, so it's ok
           - modifyblock <[tile].blocks> air
           - flag <[blocks]> build:!
-          - flag <[blocks]> breakable:!
 
     # narrate "removed <[structure].size||0> tiles"
 
@@ -257,7 +257,7 @@ build_system_handler:
 
     - define replace_tiles_data <list[]>
     #-connecting blocks system
-    - define nearby_tiles <[center].find_blocks_flagged[build.structure].within[5].parse[flag[build.structure]].deduplicate.exclude[<[tile]>]>
+    - define nearby_tiles <[center].find_blocks_flagged[build.center].within[5].parse[flag[build.center].flag[build.structure]].deduplicate.exclude[<[tile]>]>
     - define connected_tiles <[nearby_tiles].filter[intersects[<[tile]>]]>
     - foreach <[connected_tiles]> as:c_tile:
 
@@ -278,9 +278,7 @@ build_system_handler:
       - define replace_tiles_data:<[replace_tiles_data].include[<[tile_data]>]>
 
       #make the connectors a part of the other tile
-      - flag <[connecting_blocks]> build.structure:<[c_tile]>
       - flag <[connecting_blocks]> build.center:<[c_tile_center]>
-      - flag <[connecting_blocks]> build.type:<[c_tile_type]>
 
   place:
     - define tile <[data].get[tile]>
@@ -298,7 +296,7 @@ build_system_handler:
         - define own_stair_blocks <[total_set_blocks].filter[has_flag[build.center]].filter[flag[build.center].equals[<[center]>]]>
 
         #"extra" stair blocks from other stairs/pyramids (turn them into planks like pyramids do)
-        - define set_connector_blocks <[total_set_blocks].filter[has_flag[build.type]].filter[material.name.after_last[_].equals[stairs]].exclude[<[own_stair_blocks]>]>
+        - define set_connector_blocks <[total_set_blocks].filter[has_flag[build.center]].filter[material.name.after_last[_].equals[stairs]].exclude[<[own_stair_blocks]>]>
 
         #this way, the top of walls and bottom of walls turn into stairs (but not the sides)
         - define top_middle <[center].forward_flat[2].above[2]>
@@ -306,7 +304,7 @@ build_system_handler:
         - define bot_middle <[center].backward_flat[2].below[2]>
         - define bot_points <list[<[bot_middle].left>|<[bot_middle]>|<[bot_middle].right>]>
         #this way, pyramid stairs still can't be overriden
-        - define override_blocks <[top_points].include[<[bot_points]>].filter[flag[build.type].equals[pyramid].not]>
+        - define override_blocks <[top_points].include[<[bot_points]>].filter[flag[build.center].flag[build.type].equals[pyramid].not]>
 
         #so it doesn't completely override any previously placed tiles
         - define set_blocks <[total_set_blocks].filter[has_flag[build].not].include[<[own_stair_blocks]>].include[<[override_blocks]>]>
@@ -316,7 +314,7 @@ build_system_handler:
         - modifyblock <[set_blocks]> <[material]>
 
         #if they're stairs and they are going in the same direction, to keep the stairs "smooth", forget about adding connectors to them
-        - define consecutive_stair_blocks <[set_connector_blocks].filter[flag[build.type].equals[stair]].filter[material.direction.equals[<[direction]>]]>
+        - define consecutive_stair_blocks <[set_connector_blocks].filter[flag[build.center].flag[build.type].equals[stair]].filter[material.direction.equals[<[direction]>]]>
 
         - modifyblock <[set_connector_blocks].exclude[<[consecutive_stair_blocks]>].exclude[<[override_blocks]>]> <map[oak=oak_planks;brick=bricks;cobblestone=cobblestone].get[<[base_material]>]>
 
@@ -330,9 +328,9 @@ build_system_handler:
 
         - define exclude_blocks <list[]>
 
-        - define nearby_tiles <[center].find_blocks_flagged[build.structure].within[5].parse[flag[build.structure]].deduplicate.exclude[<[tile]>]>
+        - define nearby_tiles <[center].find_blocks_flagged[build.center].within[5].parse[flag[build.center].flag[build.structure]].deduplicate.exclude[<[tile]>]>
         - define connected_tiles <[nearby_tiles].filter[intersects[<[tile]>]]>
-        - define stair_tiles <[connected_tiles].filter[center.flag[build.type].equals[stair]]>
+        - define stair_tiles <[connected_tiles].filter[center.flag[build.center].flag[build.type].equals[stair]]>
 
         - if <[stair_tiles].any>:
           - define stair_tile_center <[stair_tiles].first.center.flag[build.center]>
@@ -372,8 +370,8 @@ find_connected_tiles:
 
     - define connected_tiles <list[]>
     - foreach <[check_locs]> as:loc:
-      - if <[loc].has_flag[build.structure]> && <[loc].flag[build.structure]> != <[current_struct]> && <[loc].material.name> != AIR:
-        - define connected_tiles:->:<[loc].flag[build.structure]>
+      - if <[loc].has_flag[build.center]> && <[loc].flag[build.center].flag[build.structure]> != <[current_struct]> && <[loc].material.name> != AIR:
+        - define connected_tiles:->:<[loc].flag[build.center].flag[build.structure]>
 
     - determine <[connected_tiles]>
 
@@ -382,7 +380,7 @@ get_surrounding_tiles:
   definitions: tile|center
   debug: false
   script:
-    - define nearby_tiles <[center].find_blocks_flagged[build.structure].within[5].parse[flag[build.structure]].deduplicate.exclude[<[tile]>]>
+    - define nearby_tiles <[center].find_blocks_flagged[build.center].within[5].parse[flag[build.center].flag[build.structure]].deduplicate.exclude[<[tile]>]>
     - define connected_tiles <[nearby_tiles].filter[intersects[<[tile]>]]>
     - determine <[connected_tiles]>
 
@@ -407,7 +405,7 @@ is_root:
 
     - define is_root False
 
-    - if !<[check_loc].has_flag[build.structure]> && <[check_loc].material.name> != AIR:
+    - if !<[check_loc].has_flag[build.center]> && <[check_loc].material.name> != AIR:
       - define is_root True
 
     - determine <[is_root]>
@@ -444,7 +442,7 @@ place_pyramid:
         - define side_mat <material[<[stairs]>].with[direction=<[direction]>;shape=straight]>
 
         #if it's the last layer, and there are any other builds connected to each other, turn the material into non-stairs
-        - if <[value]> == 2 && <[side].get[3].face[<[layer_center]>].backward_flat.has_flag[build.structure]>:
+        - if <[value]> == 2 && <[side].get[3].face[<[layer_center]>].backward_flat.has_flag[build.center]>:
           - define corner_mat <[block]>
           - define side_mat <[corner_mat]>
 
@@ -452,13 +450,13 @@ place_pyramid:
         #this checks for:
         # 1) no build is there yet
         #OR 2) the build there is a stair or pyramid
-        - if !<[corner].has_flag[build.type]> || <list[stair|pyramid].contains[<[corner].flag[build.type]>]>:
+        - if !<[corner].has_flag[build.center]> || <list[stair|pyramid].contains[<[corner].flag[build.center].flag[build.type]>]>:
           - define block_data <[block_data].include[<map[loc=<[corner]>;mat=<[corner_mat]>]>]>
 
         #-then sides
         - foreach <[side].exclude[<[corner]>|<[next_corner]>]> as:s:
           #so it doesn't override any pre-existing builds
-          - if !<[s].has_flag[build.type]> || <list[stair|pyramid].contains[<[s].flag[build.type]>]>:
+          - if !<[s].has_flag[build.center]> || <list[stair|pyramid].contains[<[s].flag[build.center].flag[build.type]>]>:
             - define block_data <[block_data].include[<map[loc=<[s]>;mat=<[side_mat]>]>]>
 
     - modifyblock <[block_data].parse[get[loc]]> <[block_data].parse[get[mat]]>
@@ -547,7 +545,7 @@ build_toggle:
         # 2) if there's already a build there (and if that build is NOT a pyramid or a stair (since those can be "overwritten"))
         #if none pass, it's buildable
         - define can_build True
-        - define unbreakable_blocks <[display_blocks].filter[material.name.equals[air].not].filter[has_flag[breakable].not]>
+        - define unbreakable_blocks <[display_blocks].filter[material.name.equals[air].not].filter[has_flag[build].not]>
         #this way, grass and shit is overwritten because screw that
         - if <[unbreakable_blocks].filter[material.vanilla_tags.contains[replaceable_plants].not].any> || <[final_center].has_flag[build.type]> && <list[stair|pyramid].contains[<[final_center].flag[build.type]>].not>:
           - define can_build False
