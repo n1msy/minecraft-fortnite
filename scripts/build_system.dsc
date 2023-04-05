@@ -259,7 +259,7 @@ build_system_handler:
 
           - wait 3t
 
-          - define blocks <[tile].blocks.filter[flag[build.center].equals[<[tile].center.flag[build.center]>]]>
+          - define blocks <[tile].blocks.filter[flag[build.center].equals[<[tile].center.flag[build.center]||null>]]>
 
           - playsound <[tile].center> sound:<[tile].center.material.block_sound_data.get[break_sound]> pitch:0.8
           - foreach <[tile].blocks> as:b:

@@ -98,6 +98,9 @@ fort_pic_handler:
 
         #- flag <[block]> health:<[hp]>
 
+    on player right clicks block with:fort_pic:
+    - determine cancelled
+
     #infinite durability
     on fort_pic takes damage:
     - determine cancelled
