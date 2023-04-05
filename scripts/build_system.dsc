@@ -155,9 +155,24 @@ build_system_handler:
 
       - flag <[blocks]> build.center:<[center]>
 
+
+      - define yaw <map[North=0;South=180;West=-90;East=90].get[<player.location.yaw.simple>]>
+
+      #place fx
+      - playsound <[center]> sound:<[center].material.block_sound_data.get[place_sound]> pitch:0.8
+      #no need to filter materials for non-air, since block crack for air is nothing
+      - foreach <[blocks]> as:b:
+        - if <[build_type]> == wall:
+          - define effect_loc <[b].center.with_yaw[<[yaw]>].forward_flat[0.5]>
+        - else:
+          - define effect_loc <[b].center.above>
+        - playeffect effect:BLOCK_CRACK at:<[effect_loc]> offset:0 special_data:<[b].material> quantity:10 visibility:100
+
     #-break
   break:
-    - define center <[block].flag[build.center]>
+  #required definitions:
+  # - <[center]>
+  #
 
     - define tile <[center].flag[build.structure]>
     - define center <[center].flag[build.center]>
@@ -234,6 +249,8 @@ build_system_handler:
             - define structure:|:<[surrounding_tiles]>
             #Since these are all new tiles, we need to check them as well.
             - define tiles_to_check:|:<[surrounding_tiles]>
+
+            - wait 1t
         #If we get to this point, then that means we didn't skip out early with foreach.
         #That means we know it's not touching ground anywhere, so now we want to break
         #each tile. So we go through the structure list, and break each one (however you handle that.)
@@ -243,8 +260,14 @@ build_system_handler:
           - wait 3t
 
           - define blocks <[tile].blocks.filter[flag[build.center].equals[<[tile].center.flag[build.center]>]]>
+
+          - playsound <[tile].center> sound:<[tile].center.material.block_sound_data.get[break_sound]> pitch:0.8
+          - foreach <[tile].blocks> as:b:
+            - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
+
           #everything is being re-applied anyways, so it's ok
           - modifyblock <[tile].blocks> air
+
           - flag <[blocks]> build:!
 
     # narrate "removed <[structure].size||0> tiles"
@@ -547,7 +570,8 @@ build_toggle:
         - define can_build True
         - define unbreakable_blocks <[display_blocks].filter[material.name.equals[air].not].filter[has_flag[build].not]>
         #this way, grass and shit is overwritten because screw that
-        - if <[unbreakable_blocks].filter[material.vanilla_tags.contains[replaceable_plants].not].any> || <[final_center].has_flag[build.type]> && <list[stair|pyramid].contains[<[final_center].flag[build.type]>].not>:
+
+        - if <[unbreakable_blocks].filter[material.vanilla_tags.contains[replaceable_plants].not].any> || <[final_center].has_flag[build.center]> && <[final_center].material.name> != air:
           - define can_build False
 
         - if <[can_build]>:
