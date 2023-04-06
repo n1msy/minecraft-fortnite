@@ -11,7 +11,7 @@ fort_global_handler:
     #you take half the fall damage now
     - define damage <context.damage.div[2]>
     #that way the annoying head thing doesn't happen when falling by the smallest amount
-    - if <[damage]> < 1:
+    - if <[damage]> < 2:
       - determine passively cancelled
       - stop
 

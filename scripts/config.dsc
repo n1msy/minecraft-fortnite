@@ -13,5 +13,5 @@ nimnite_config:
 
   structures:
     tree:
-      qty: 50
-      hp: 200
+      #default: 200
+      hp: 10000

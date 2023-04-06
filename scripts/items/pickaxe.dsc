@@ -1,9 +1,17 @@
+####
+####
+####
+#TODO
+# - add a new flag tracking how much mats the player has
+# - decrease/incrase that number based on how what happens
+# - make a 5x5 pallette creator for builders
+
 fort_pic:
   type: item
   material: netherite_pickaxe
   display name: Pickaxe
   enchantments:
-  - efficiency:4
+  - efficiency:5
   mechanisms:
     hides: ALL
 
@@ -94,10 +102,11 @@ fort_pic_handler:
     - define damage 50
 
     #-tree
+    - run fort_pic_handler.harvest def:<map[structure=tree;type=wood]>
 
     - define tree        <[block].flood_fill[50].types[*wood|*slab|*fence*]>
     #excluding in case there are any of the same fences
-    - define leaves      <[tree].last.find_blocks[*leaves|*fence*].within[13].exclude[<[tree]>]>
+    - define leaves      <[tree].last.find_blocks[*leaves|*fence*].within[17].exclude[<[tree]>]>
     - define tree_blocks <[tree].include[<[leaves]>]>
 
     - define max_health <script[nimnite_config].data_key[structures.tree.hp]>
@@ -134,6 +143,68 @@ fort_pic_handler:
       - playsound <[leaves].first> sound:BLOCK_GRASS_BREAK pitch:0.8
       - playeffect effect:BLOCK_CRACK at:<[leaves].parse[center]> offset:0 special_data:<[leaf_mat]> quantity:2 visibility:100
 
+  harvest:
+  - define struct <[data].get[structure]>
+  - define type <[data].get[type]>
+  - define mult <script[nimnite_config].data_key[harvesting_multiplier]>
+
+  - define qty <util.random.int[5].to[6].mul[<[mult]>]>
+  - define total_qty <[qty]>
+  - define loc <player.eye_location.forward[0.75].left.below[0.3]>
+
+  #-waiting for text displays to unbork with fonts...
+  # define icon <&chr[A<map[wood=111;brick=222;metal=333].get[<[type]>]>].font[icons]>
+  - define icon "<&lb><[type]> icon<&rb>"
+
+  - if <player.has_flag[fort.harvest_display]> && <player.flag[fort.harvest_display].is_spawned>:
+
+    - define old_harvest_display <player.flag[fort.harvest_display]>
+    - define total_qty           <[qty].add[<[old_harvest_display].flag[qty]>]>
+    #- define loc                 <[old_harvest_display].location>
+
+    - remove <[old_harvest_display]>
+
+
+  - define text      "<[icon]> <&f><&l>+<[total_qty]>"
+
+  ##add bouncy effect
+  - definemap display_entity_data:
+      text: <[text]>
+      billboard: center
+      text_is_shadowed: true
+      transformation_scale: 0.3,0.3,0.3
+      transformation_left_rotation: 0|0|0|1
+      transformation_right_rotation: 0|0|0|1
+      transformation_translation: 0,0,0
+      brightness_block: 15
+      brightness_sky: 15
+  - spawn <entity[text_display].with[display_entity_data=<[display_entity_data]>]> <[loc]> save:harvest_display
+  - define harvest_display <entry[harvest_display].spawned_entity>
+
+  - definemap display_entity_data <[display_entity_data].with[transformation_scale].as[1,1,1].with[interpolation_duration].as[3]>
+  - adjust <[harvest_display]> display_entity_data:<[display_entity_data]>
+
+  - flag <[harvest_display]> qty:<[total_qty]>
+
+  - adjust <[harvest_display]> hide_from_players
+  - adjust <player> show_entity:<[harvest_display]>
+
+  #no expiration, it's fine
+  - flag player fort.harvest_display:<[harvest_display]>
+
+  - wait 1.5s
+
+  - if !<player.has_flag[harvest_display]> || <player.flag[harvest_display].location> != <[harvest_display].location>:
+    #in case it was already removed by top code
+    - if <[harvest_display].is_spawned>:
+      ##bounce animation, then go up
+      - repeat 20:
+        - teleport <[harvest_display]> <[harvest_display].location.above[0.015]>
+        # adjust <[harvest_display]> display_entity_data:<map[transformation_translation=0,1,0]>
+        - wait 1t
+      #-play scroll up animation
+      - remove <[harvest_display]>
+
   display_build_health:
     - define yaw <map[North=0;South=180;West=-90;East=90].get[<player.location.yaw.simple>]>
 
@@ -164,9 +235,9 @@ fort_pic_handler:
 
     - waituntil !<player.has_flag[fort.build_health]> || <player.flag[fort.build_health]> != <[health_display]> max:15s
 
-    #checking since waituntils will stack the same amount of times the player breaks the block
     - if <[health_display].is_spawned>:
       - remove <[health_display]>
+
 
 #based on the material inputted, it returns either wood, brick, or metal
 get_material_type:
@@ -183,8 +254,35 @@ get_material_type:
 
     - determine <[material_type]>
 
+#-circle spawn
+#- spawn <entity[block_display].with[material=purpur_block;tracking_range=1000;glowing=true;display_entity_data=<map[view_range=500;transformation_scale=1000,1,1000]>]>
+
 test:
   type: task
-  debug: false
   script:
-  - spawn <entity[block_display].with[material=purpur_block;tracking_range=1000;glowing=true;display_entity_data=<map[view_range=100;transformation_scale=1000,1,1000]>]>
+    - spawn test_ent save:ent
+    - wait 1s
+    - definemap display_entity_data:
+        interpolation_delay: 1
+        interpolation_duration: 0.5
+        transformation_scale: 0.5,0.5,0.5
+        transformation_left_rotation: 0|0|0|1
+        transformation_right_rotation: 0|0|0|1
+        transformation_translation: 0,0,0
+    - adjust <entry[ent].spawned_entity> display_entity_data:<[display_entity_data]>
+
+test_ent:
+  type: entity
+  debug: false
+  entity_type: text_display
+  mechanisms:
+    display_entity_data:
+      text: hi
+      text_is_shadowed: true
+      billboard: center
+      transformation_scale: 0.3,0.3,0.3
+      transformation_left_rotation: 0|0|0|1
+      transformation_right_rotation: 0|0|0|1
+      transformation_translation: 0,0,0
+      brightness_block: 15
+      brightness_sky: 15

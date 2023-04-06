@@ -166,7 +166,7 @@ build_system_handler:
           - define effect_loc <[b].center.with_yaw[<[yaw]>].forward_flat[0.5]>
         - else:
           - define effect_loc <[b].center.above>
-        - playeffect effect:BLOCK_CRACK at:<[effect_loc]> offset:0 special_data:<[b].material> quantity:10 visibility:100
+        - playeffect effect:BLOCK_CRACK at:<[effect_loc]> offset:0 special_data:<[b].material> quantity:5 visibility:100
 
     #-break
   break:
