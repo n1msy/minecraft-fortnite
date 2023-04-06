@@ -3,6 +3,10 @@ fort_global_handler:
   debug: false
   events:
 
+    on block drops item from breaking:
+    - stop if:<context.location.world.name.equals[fortnite_map].not>
+    - determine cancelled
+
     on player damaged by FALL:
     #you take half the fall damage now
     - define damage <context.damage.div[2]>

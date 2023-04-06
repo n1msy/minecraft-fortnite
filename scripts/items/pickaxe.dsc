@@ -22,13 +22,16 @@ fort_pic_handler:
     - define block <context.location>
 
     - if !<[block].has_flag[build.center]>:
+      #because trees and boulders dont have a specific "build type"
+      - if <[block].material.name.contains_text[wood]> || <[block].material.name.contains_text[fence]>:
+        - inject fort_pic_handler.tree
       - stop
 
-    - define center <[block].flag[build.center]>
-    - define hp <[center].flag[build.health]>
+    - define center   <[block].flag[build.center]>
+    - define hp       <[center].flag[build.health]>
     - define mat_type <[center].flag[build.material]>
     #filtering so connected blocks aren't affected
-    - define blocks <[center].flag[build.structure].blocks.filter[flag[build.center].equals[<[center]>]]>
+    - define blocks   <[center].flag[build.structure].blocks.filter[flag[build.center].equals[<[center]>]]>
 
     - define damage 50
 
@@ -36,13 +39,11 @@ fort_pic_handler:
     - define new_health <[hp].sub[<[damage]>]>
 
     - if <[new_health]> > 0:
+      - flag <[center]> build.health:<[new_health]>
 
       - run fort_pic_handler.display_build_health def:<map[loc=<[center]>;health=<[new_health]>;max_health=<[max_health]>]>
 
-      - flag <[center]> build.health:<[new_health]>
-
       - define progress <element[10].sub[<[new_health].div[<[max_health]>].mul[10]>]>
-
       - foreach <[blocks]> as:b:
         - blockcrack <[b]> progress:<[progress]> players:<server.online_players>
 
@@ -75,30 +76,9 @@ fort_pic_handler:
     - if <[i].material.name> != <[tool]>:
       - inventory adjust slot:<player.held_item_slot> material:<[tool]>
 
-      #- define type <proc[get_material_type].context[<[mat]>]>
-
-     # - if <[type]> == null:
-      #  - stop
-
-     # - if <[type]> == wood:
-       # - inventory adjust slot:<player.held_item_slot> material:stone_axe
-      #- else:
-        #- inventory adjust slot:<player.held_item_slot> material:stone_pickaxe
-
-      #flag the block health if it hasn't been set yet
-      #- if !<[block].has_flag[health]>:
-       # - define mat <[block].material.name>
-       # - define type <proc[get_material_type].context[<[mat]>]>
-
-        #if it's not in the list of valid materials to return either wood, brick, or metal
-      #  - if <[type]> == null:
-       #   - define hp -1
-      #  - else:
-         # - define hp <script[nimnite_config].data_key[materials.<[type]>.hp]>
-
-        #- flag <[block]> health:<[hp]>
-
     on player right clicks block with:fort_pic:
+    #so they can't strip logs
+    - stop if:<context.location.material.name.contains_text[wood].not>
     - determine cancelled
 
     #infinite durability
@@ -109,6 +89,50 @@ fort_pic_handler:
     on player clicks fort_pic in inventory:
     - determine cancelled
 
+  tree:
+
+    - define damage 50
+
+    #-tree
+
+    - define tree        <[block].flood_fill[50].types[*wood|*slab|*fence*]>
+    #excluding in case there are any of the same fences
+    - define leaves      <[tree].last.find_blocks[*leaves|*fence*].within[13].exclude[<[tree]>]>
+    - define tree_blocks <[tree].include[<[leaves]>]>
+
+    - define max_health <script[nimnite_config].data_key[structures.tree.hp]>
+
+    - if !<[block].has_flag[build.health]>:
+      - define new_health <[max_health].sub[<[damage]>]>
+    - else:
+      - define new_health <[block].flag[build.health].sub[<[damage]>]>
+
+    - if <[new_health]> > 0:
+      - flag <[tree_blocks]> build.health:<[new_health]>
+
+      - run fort_pic_handler.display_build_health def:<map[loc=<[block]>;health=<[new_health]>;max_health=<[max_health]>]>
+
+      - define progress <element[10].sub[<[new_health].div[<[max_health]>].mul[10]>]>
+      - foreach <[tree_blocks]> as:b:
+        - blockcrack <[b]> progress:<[progress]> players:<server.online_players>
+
+      - stop
+
+    - flag player fort.build_health:!
+    - flag <[tree_blocks]> build:!
+
+    - define tree_mat <[tree].first.material>
+    - foreach <[tree].sub_lists[5]> as:blocks:
+      - modifyblock <[blocks]> air
+      - playsound <[blocks].first> sound:BLOCK_WOOD_BREAK pitch:0.8
+      - playeffect effect:BLOCK_CRACK at:<[blocks].parse[center]> offset:0 special_data:<[tree_mat]> quantity:10 visibility:100
+      - wait 2t
+
+    - if <[leaves].any>:
+      - define leaf_mat <[leaves].first.material>
+      - modifyblock <[leaves]> air
+      - playsound <[leaves].first> sound:BLOCK_GRASS_BREAK pitch:0.8
+      - playeffect effect:BLOCK_CRACK at:<[leaves].parse[center]> offset:0 special_data:<[leaf_mat]> quantity:2 visibility:100
 
   display_build_health:
     - define yaw <map[North=0;South=180;West=-90;East=90].get[<player.location.yaw.simple>]>
@@ -117,7 +141,8 @@ fort_pic_handler:
     - define hp      <[data].get[health]>
     - define max_hp  <[data].get[max_health]>
 
-    - if <[data].get[loc].flag[build.center].flag[build.type]> == floor:
+    #null fallback in case it's a wood structure
+    - if <[data].get[loc].flag[build.center].flag[build.type]||null> == floor:
       - define loc <[loc].above>
 
     - if <player.has_flag[fort.build_health]> && <player.flag[fort.build_health].location> == <[loc]>:
