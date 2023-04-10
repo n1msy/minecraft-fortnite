@@ -121,6 +121,7 @@ build_system_handler:
     #-material switch
     on player right clicks block flagged:build.material:
     - flag player build.material:<map[wood=brick;brick=metal;metal=wood].get[<player.flag[build.material]>]>
+    #- flag player build.
     - inject update_hud
 
     #-place
@@ -131,6 +132,11 @@ build_system_handler:
       - define center <player.flag[build.center]>
       - define build_type <player.flag[build.type]>
       - define material <player.flag[build.material]>
+
+      - if <player.flag[fort.<[material]>.qty]||0> < 10:
+        - stop
+
+      - run fort_pic_handler.mat_count def:<map[qty=10;mat=<[material]>;action=remove]>
 
       #because walls and floors override stairs
       - define total_blocks <[tile].blocks>
@@ -554,6 +560,7 @@ build_toggle:
       - define eye_loc <player.eye_location>
       - define loc <player.location>
       - define type <map[1=wall;2=floor;3=stair;4=pyramid].get[<player.held_item_slot>]||null>
+      - define material <player.flag[build.material]>
 
       - if <[type]> != null:
         - actionbar <[type]>
@@ -576,6 +583,9 @@ build_toggle:
           #made it so you cant place stairs on stairs and pyramids on pyramids
           - if !<[final_center].has_flag[build.center]> || !<list[pyramid|stair].contains[<[final_center].flag[build.center].flag[build.type]>]> || <list[pyramid|stair].contains[<[type]>]>:
             - define can_build False
+
+        - if <player.flag[fort.<[material]>.qty]||0> < 10:
+          - define can_build False
 
         - if <[can_build]>:
           #-set flags

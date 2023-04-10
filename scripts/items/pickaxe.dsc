@@ -97,6 +97,112 @@ fort_pic_handler:
     on player clicks fort_pic in inventory:
     - determine cancelled
 
+    on player picks up oak_log|bricks|iron_block:
+    - if !<context.entity.has_flag[qty]>:
+      - stop
+    #- define name_entity <context.entity.flag[name_entity]||null>
+    - define qty         <context.entity.flag[qty]>
+    - define mat         <map[oak_log=wood;bricks=brick;iron_block=metal].get[<context.item.material.name>]>
+
+    - if <player.flag[fort.<[mat]>.qty]||0> >= 999:
+      - determine passively cancelled
+      - stop
+
+    #fallback in case they picked the drop before the name entity spawned
+    #- if <[name_entity]> != null:
+      #- remove <[name_entity]>
+    - run fort_pic_handler.mat_count def:<map[qty=<[qty]>;mat=<[mat]>;action=add]>
+
+    on oak_log|bricks|iron_block merges:
+    - define e <context.entity>
+    - if !<[e].has_flag[qty]>:
+      - stop
+    - define target <context.target>
+    - define mat       <map[oak_log=wood;bricks=brick;iron_block=metal].get[<context.item.material.name>]>
+    - define other_mat <map[oak_log=wood;bricks=brick;iron_block=metal].get[<[target].item.material.name>]>
+
+    - if <[mat]> != <[other_mat]>:
+      - determine passively cancelled
+      - stop
+
+    - define qty       <[e].flag[qty]>
+    - define other_qty <[target].flag[qty]>
+    - define new_qty   <[qty].add[<[other_qty]>]>
+
+    - define icon <&chr[A<map[wood=111;brick=222;metal=333].get[<[mat]>]>].font[icons]>
+    - define text <[icon]><&f><&l>x<[new_qty]>
+
+    - flag <[target]> qty:<[new_qty]>
+    - adjust <[target]> custom_name:<[text]>
+
+  drop_mat:
+    - define qty  <[data].get[qty]>
+    - define mat  <[data].get[mat]>
+    - define loc  <player.eye_location.forward[1.5].sub[0,0.5,0]>
+
+    - define item <map[wood=oak_log;brick=bricks;metal=iron_block].get[<[mat]>]>
+
+    - drop <[item]> <[loc]> delay:1s save:drop
+    - define drop <entry[drop].dropped_entity>
+    - flag <[drop]> qty:<[qty]>
+
+    - define icon <&chr[A<map[wood=111;brick=222;metal=333].get[<[mat]>]>].font[icons]>
+
+    - define text <[icon]><&f><&l>x<[qty]>
+    - define loc <[drop].location>
+
+    - adjust <[drop]> custom_name:<[text]>
+    - adjust <[drop]> custom_name_visible:true
+
+    #- waituntil !<[drop].is_spawned> || <[drop].is_on_ground> rate:5t
+    #- if !<[drop].is_spawned>:
+      #- stop
+
+    #- spawn chicken[has_ai=false;gravity=false;collidable=false;invulnerable=true;silent=true] <[loc].backward_flat[0.5]> save:chicken
+    #- define chicken <entry[chicken].spawned_entity>
+    #- adjust <[chicken]> custom_name:<[text]>
+    #- adjust <[chicken]> custom_name_visible:false
+
+    #- spawn <entity[text_display].with[display_entity_data=<map[billboard=center;text=<[text]>]>]> <[loc]> save:count_display
+    #- define count_display <entry[count_display].spawned_entity>
+
+    #- flag <[count_display]> drop:<[drop]>
+    #- flag <[drop]>    name_entity:<[count_display]>
+
+  #-increase/decrease materials after mining/placing
+  mat_count:
+    - define qty    <[data].get[qty]>
+    - define mat    <[data].get[mat]>
+    - define action <[data].get[action]>
+
+    - define current_qty <player.flag[fort.<[mat]>.qty]>
+
+    - if <[action]> == add:
+      - if <player.flag[fort.<[mat]>.qty].add[<[qty]>]> > 999:
+        - define total    <[current_qty].add[<[qty]>]>
+        - define real_qty <[qty]>
+        - define qty      <[total].sub[<[total].sub[999]>].sub[<[current_qty]>]>
+        - define left_over <[real_qty].sub[<[qty]>]>
+        #any extras are dropped on the floor
+        - if <[left_over]> > 0:
+          - run fort_pic_handler.drop_mat def:<map[qty=<[left_over]>;mat=<[mat]>]>
+
+      #first add the mat (so they can place it instantly)
+      #(then "animate" the counter)
+      - flag player fort.<[mat]>.qty:+:<[qty]>
+      - repeat <[qty]>:
+        - define override_qty.<[mat]>:<[current_qty].add[<[value]>]>
+        - inject update_hud
+        - wait 1t
+
+    - else if <[action]> == remove:
+      - flag player fort.<[mat]>.qty:-:<[qty]>
+      - repeat <[qty]>:
+        - define override_qty.<[mat]>:<[current_qty].sub[<[value]>]>
+        - inject update_hud
+        - wait 1t
+
+
   tree:
 
     - define damage 50
@@ -152,12 +258,14 @@ fort_pic_handler:
   - define total_qty <[qty]>
   - define loc <player.eye_location.forward[2].left[1].below[2.5]>
 
+  - run fort_pic_handler.mat_count def:<map[qty=<[qty]>;mat=wood;action=add]>
+
   #-waiting for text displays to unbork with fonts...
   - define icon <&chr[A<map[wood=111;brick=222;metal=333].get[<[type]>]>].font[icons]>
 
   - if <player.has_flag[fort.harvest_display]>:
     - define total_qty <[total_qty].add[<player.flag[fort.harvest_display].flag[qty]>]>
-    - if <player.flag[fort.harvest_display].location> == <[loc]>:
+    - if <player.flag[fort.harvest_display].is_spawned> && <player.flag[fort.harvest_display].location> == <[loc]>:
       - define harvest_display <player.flag[fort.harvest_display]>
 
   - define neg  <proc[spacing].context[-50]>

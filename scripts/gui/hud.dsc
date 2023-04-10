@@ -51,7 +51,9 @@ update_hud:
     - if <[selected_material]> == <[mat]>:
       - define mat_icon <&chr[A0<[loop_index]><[loop_index]>].font[icons]>
 
-    - define mat_qty   999
+    - define mat_qty   <player.flag[fort.<[mat]>.qty]||null>
+    - define mat_qty   <[override_qty.<[mat]>]> if:<[override_qty.<[mat]>].exists>
+
     - define mat_text  <&sp.repeat[<element[3].sub[<[mat_qty].length>]>]><[mat_qty].font[hud_text]>
     - define <[mat]>_  <element[<[mat_icon]><proc[spacing].context[-32]><[mat_text]>].color[<color[4<[loop_index]>,0,0]>]>
 
