@@ -134,7 +134,7 @@ build_system_handler:
 
       #because walls and floors override stairs
       - define total_blocks <[tile].blocks>
-      - define override_blocks <[total_blocks].filter[has_flag[build.type]].filter_tag[<list[pyramid|stair].contains[<[filter_value].flag[build.type]>]>]>
+      - define override_blocks <[total_blocks].filter[has_flag[build.center]].filter_tag[<list[pyramid|stair].contains[<[filter_value].flag[build.center].flag[build.type]>]>]>
 
       - define blocks <[total_blocks].filter[has_flag[build].not].include[<[override_blocks]>]>
 
@@ -571,8 +571,11 @@ build_toggle:
         - define unbreakable_blocks <[display_blocks].filter[material.name.equals[air].not].filter[has_flag[build].not]>
         #this way, grass and shit is overwritten because screw that
 
+        - actionbar <[final_center].flag[build.center].flag[build.type]> if:<[final_center].has_flag[build.center]>
+        #final check is to make sure you can place walls around stairs and pyramids (in that order)
         - if <[unbreakable_blocks].filter[material.vanilla_tags.contains[replaceable_plants].not].any> || <[final_center].has_flag[build.center]> && <[final_center].material.name> != air:
-          - define can_build False
+          - if !<[final_center].has_flag[build.center]> || !<list[pyramid|stair].contains[<[final_center].flag[build.center].flag[build.type]>]>:
+            - define can_build False
 
         - if <[can_build]>:
           #-set flags

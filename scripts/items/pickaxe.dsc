@@ -22,8 +22,8 @@ fort_pic_handler:
   events:
 
     #each swing is 50 hp, each crit is 100
-    on player breaks block:
-    - stop if:<player.world.name.equals[fortnite_map].not>
+    on player breaks block with:fort_pic:
+    #- stop if:<player.world.name.equals[fortnite_map].not>
     - determine passively cancelled
     - stop if:<player.item_in_hand.script.name.equals[fort_pic].not||true>
 
@@ -150,7 +150,7 @@ fort_pic_handler:
 
   - define qty <util.random.int[5].to[6].mul[<[mult]>]>
   - define total_qty <[qty]>
-  - define loc <player.eye_location.forward[0.75].left.below[0.3]>
+  - define loc <player.eye_location.forward[0.75].left[0.5].below[0.1]>
 
   #-waiting for text displays to unbork with fonts...
   # define icon <&chr[A<map[wood=111;brick=222;metal=333].get[<[type]>]>].font[icons]>
