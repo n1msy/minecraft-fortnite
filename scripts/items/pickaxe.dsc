@@ -154,11 +154,16 @@ fort_pic_handler:
 
   #-waiting for text displays to unbork with fonts...
   - define icon <&chr[A<map[wood=111;brick=222;metal=333].get[<[type]>]>].font[icons]>
-  - define text <[icon]><&f><&l>+<[total_qty]>
 
-  - if <player.has_flag[fort.harvest_display]> && <player.flag[fort.harvest_display].location> == <[loc]>:
-    - define health_display <player.flag[fort.harvest_display]>
-  - else:
+  - if <player.has_flag[fort.harvest_display]>:
+    - define total_qty <[total_qty].add[<player.flag[fort.harvest_display].flag[qty]>]>
+    - if <player.flag[fort.harvest_display].location> == <[loc]>:
+      - define harvest_display <player.flag[fort.harvest_display]>
+
+  - define neg  <proc[spacing].context[-50]>
+  - define text <[neg]><[icon]><&f><&l>+<[total_qty]><[neg]>
+
+  - if !<[harvest_display].exists>:
     - spawn <entity[armor_stand].with[custom_name=<[text]>;custom_name_visible=true;gravity=false;collidable=false;invulnerable=true;visible=false]> <[loc]> save:harvest_display
     - define harvest_display <entry[harvest_display].spawned_entity>
     - adjust <[harvest_display]> hide_from_players
@@ -170,7 +175,14 @@ fort_pic_handler:
 
   - waituntil !<player.has_flag[fort.harvest_display]> || <player.flag[fort.harvest_display]> != <[harvest_display]> max:15s
 
-  - if <[harvest_display].is_spawned>:
+  #this way, waituntils wont stack
+  - if <[harvest_display].is_spawned> && !<[harvest_display].has_flag[remove_animation]>:
+    #this way, it only plays scroll animation after player stops farming
+    - if !<player.has_flag[fort.harvest_display]>:
+      - flag <[harvest_display]> remove_animation
+      - repeat 20:
+        - teleport <[harvest_display]> <[harvest_display].location.above[0.015]>
+        - wait 1t
     - remove <[harvest_display]>
 
   display_build_health:
