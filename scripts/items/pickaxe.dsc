@@ -150,60 +150,28 @@ fort_pic_handler:
 
   - define qty <util.random.int[5].to[6].mul[<[mult]>]>
   - define total_qty <[qty]>
-  - define loc <player.eye_location.forward[0.75].left[0.5].below[0.1]>
+  - define loc <player.eye_location.forward[2].left[1].below[2.5]>
 
   #-waiting for text displays to unbork with fonts...
-  # define icon <&chr[A<map[wood=111;brick=222;metal=333].get[<[type]>]>].font[icons]>
-  - define icon "<&lb><[type]> icon<&rb>"
+  - define icon <&chr[A<map[wood=111;brick=222;metal=333].get[<[type]>]>].font[icons]>
+  - define text <[icon]><&f><&l>+<[total_qty]>
 
-  - if <player.has_flag[fort.harvest_display]> && <player.flag[fort.harvest_display].is_spawned>:
-
-    - define old_harvest_display <player.flag[fort.harvest_display]>
-    - define total_qty           <[qty].add[<[old_harvest_display].flag[qty]>]>
-    #- define loc                 <[old_harvest_display].location>
-
-    - remove <[old_harvest_display]>
-
-
-  - define text      "<[icon]> <&f><&l>+<[total_qty]>"
-
-  ##add bouncy effect
-  - definemap display_entity_data:
-      text: <[text]>
-      billboard: center
-      text_is_shadowed: true
-      transformation_scale: 0.3,0.3,0.3
-      transformation_left_rotation: 0|0|0|1
-      transformation_right_rotation: 0|0|0|1
-      transformation_translation: 0,0,0
-      brightness_block: 15
-      brightness_sky: 15
-  - spawn <entity[text_display].with[display_entity_data=<[display_entity_data]>]> <[loc]> save:harvest_display
-  - define harvest_display <entry[harvest_display].spawned_entity>
-
-  - definemap display_entity_data <[display_entity_data].with[transformation_scale].as[1,1,1].with[interpolation_duration].as[3]>
-  - adjust <[harvest_display]> display_entity_data:<[display_entity_data]>
+  - if <player.has_flag[fort.harvest_display]> && <player.flag[fort.harvest_display].location> == <[loc]>:
+    - define health_display <player.flag[fort.harvest_display]>
+  - else:
+    - spawn <entity[armor_stand].with[custom_name=<[text]>;custom_name_visible=true;gravity=false;collidable=false;invulnerable=true;visible=false]> <[loc]> save:harvest_display
+    - define harvest_display <entry[harvest_display].spawned_entity>
+    - adjust <[harvest_display]> hide_from_players
+    - adjust <player> show_entity:<[harvest_display]>
 
   - flag <[harvest_display]> qty:<[total_qty]>
+  - flag player fort.harvest_display:<[harvest_display]> duration:2s
+  - adjust <[harvest_display]> custom_name:<[text]>
 
-  - adjust <[harvest_display]> hide_from_players
-  - adjust <player> show_entity:<[harvest_display]>
+  - waituntil !<player.has_flag[fort.harvest_display]> || <player.flag[fort.harvest_display]> != <[harvest_display]> max:15s
 
-  #no expiration, it's fine
-  - flag player fort.harvest_display:<[harvest_display]>
-
-  - wait 1.5s
-
-  - if !<player.has_flag[harvest_display]> || <player.flag[harvest_display].location> != <[harvest_display].location>:
-    #in case it was already removed by top code
-    - if <[harvest_display].is_spawned>:
-      ##bounce animation, then go up
-      - repeat 20:
-        - teleport <[harvest_display]> <[harvest_display].location.above[0.015]>
-        # adjust <[harvest_display]> display_entity_data:<map[transformation_translation=0,1,0]>
-        - wait 1t
-      #-play scroll up animation
-      - remove <[harvest_display]>
+  - if <[harvest_display].is_spawned>:
+    - remove <[harvest_display]>
 
   display_build_health:
     - define yaw <map[North=0;South=180;West=-90;East=90].get[<player.location.yaw.simple>]>
@@ -257,21 +225,46 @@ get_material_type:
 #-circle spawn
 #- spawn <entity[block_display].with[material=purpur_block;tracking_range=1000;glowing=true;display_entity_data=<map[view_range=500;transformation_scale=1000,1,1000]>]>
 
-test:
+harvest_anim:
   type: task
+  debug: false
+  definitions: e|text
   script:
-    - spawn test_ent save:ent
-    - wait 1s
+    - wait 3t
     - definemap display_entity_data:
-        interpolation_delay: 1
-        interpolation_duration: 0.5
-        transformation_scale: 0.5,0.5,0.5
+        text: <[text]>
+        interpolation_delay: 0.1
+        interpolation_duration: 0.1
+        transformation_scale: 1.25,1.25,1.25
         transformation_left_rotation: 0|0|0|1
         transformation_right_rotation: 0|0|0|1
         transformation_translation: 0,0,0
-    - adjust <entry[ent].spawned_entity> display_entity_data:<[display_entity_data]>
+    - adjust <[e]> display_entity_data:<[display_entity_data]>
+    - wait 4t
+    - definemap display_entity_data:
+        interpolation_delay: 0.1
+        interpolation_duration: 0.1
+        transformation_scale: 1,1,1
+        transformation_left_rotation: 0|0|0|1
+        transformation_right_rotation: 0|0|0|1
+        transformation_translation: 0,0,0
+    - adjust <[e]> display_entity_data:<[display_entity_data]>
+    - wait 1s
+    - definemap display_entity_data:
+        interpolation_delay: 1
+        interpolation_duration: 1
+        transformation_scale: 1,1,1
+        transformation_left_rotation: 0|0|0|1
+        transformation_right_rotation: 0|0|0|1
+        transformation_translation: 0,0.4,0
+    - adjust <[e]> display_entity_data:<[display_entity_data]>
+    - wait 1.5s
+    - waituntil !<player.has_flag[fort.harvest_display]> || <player.flag[fort.harvest_display]> != <[e]> max:2s
+    - if <[e].is_spawned>:
+      - remove <[e]>
 
-test_ent:
+
+harvest_display:
   type: entity
   debug: false
   entity_type: text_display
@@ -279,10 +272,12 @@ test_ent:
     display_entity_data:
       text: hi
       text_is_shadowed: true
+      text_is_see_through: false
+      text_opacity: 0
       billboard: center
-      transformation_scale: 0.3,0.3,0.3
+      transformation_scale: 1,1,1
       transformation_left_rotation: 0|0|0|1
       transformation_right_rotation: 0|0|0|1
       transformation_translation: 0,0,0
-      brightness_block: 15
-      brightness_sky: 15
+      #brightness_block: 15
+      #brightness_sky: 15
