@@ -571,10 +571,10 @@ build_toggle:
         - define unbreakable_blocks <[display_blocks].filter[material.name.equals[air].not].filter[has_flag[build].not]>
         #this way, grass and shit is overwritten because screw that
 
-        - actionbar <[final_center].flag[build.center].flag[build.type]> if:<[final_center].has_flag[build.center]>
-        #final check is to make sure you can place walls around stairs and pyramids (in that order)
         - if <[unbreakable_blocks].filter[material.vanilla_tags.contains[replaceable_plants].not].any> || <[final_center].has_flag[build.center]> && <[final_center].material.name> != air:
-          - if !<[final_center].has_flag[build.center]> || !<list[pyramid|stair].contains[<[final_center].flag[build.center].flag[build.type]>]>:
+          #make sure you can place walls around stairs and pyramids (in that order)
+          #made it so you cant place stairs on stairs and pyramids on pyramids
+          - if !<[final_center].has_flag[build.center]> || !<list[pyramid|stair].contains[<[final_center].flag[build.center].flag[build.type]>]> || <list[pyramid|stair].contains[<[type]>]>:
             - define can_build False
 
         - if <[can_build]>:
