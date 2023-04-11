@@ -148,8 +148,9 @@ minimap:
 
     # - marker
     #for full map
-    - define full_marker_red   <[yaw].is[LESS].than[0].if_true[<[yaw].add[360]>].if_false[<[yaw]>].div[360].mul[255]>
-    - define full_marker_color <color[<[marker_red].round>,<[r]>,<[g]>]>
+    - define real_g <[loc].x.add[512].div[4].round_down>
+    - define real_b <[loc].z.add[512].div[4].round_down>
+    - define full_marker_color <color[<[marker_red].round>,<[real_g]>,<[real_b]>]>
     - define full_marker       <&chr[E000].font[map].color[<[full_marker_color]>]>
 
     - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><n><[map]><n.repeat[9]>
