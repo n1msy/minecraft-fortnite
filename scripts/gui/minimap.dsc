@@ -23,10 +23,12 @@ minimap:
     - define yaw <[loc].yaw>
 
     #-marker
-    - define marker_red <[yaw].is[LESS].than[0].if_true[<[yaw].add[360]>].if_false[<[yaw]>].div[360].mul[255]>
+    - define marker_red   <[yaw].is[LESS].than[0].if_true[<[yaw].add[360]>].if_false[<[yaw]>].div[360].mul[255]>
+    #this is minimap marker
+    - define marker_green 0
 
-    - define marker_color <color[<[marker_red].round>,0,0]>
-    - define marker <&chr[E000].font[map].color[<[marker_color]>]>
+    - define marker_color <color[<[marker_red].round>,<[marker_green]>,0]>
+    - define marker       <&chr[E000].font[map].color[<[marker_color]>]>
 
     #-minimap
     - define x <[loc].x>
@@ -50,8 +52,6 @@ minimap:
     - define row_3 <list[0009|0010|0011|0012]>
     - define row_4 <list[0013|0014|0015|0016]>
 
-    #not working
-    # define base_coords <list[<map[x=0;y=0]>|<map[x=0;y=1]>|<map[x=1;y=0]>|<map[x=1;y=1]>]>
     - define base_coords <list[0,0|0,1|1,0|1,1]>
 
     - define chars:!
@@ -88,23 +88,24 @@ minimap:
     - define whole_map <[tiles].unseparated>
 
     # compass display
-    - define curRotation <player.location.yaw.div[360].mul[1024].round>
-    - define gameTime <player.world.duration_since_created.in_ticks.mod[24000].mod[4]>
-    - define rotation_color <color[<[curRotation].mod[256]>,<[oldRotation].mod[256]>,<[curRotation].div[256].round_down.add[<[oldRotation].div[256].round_down.mul[4]>].add[<[gameTime].mul[16]>]>]>
-    - define oldRotation <[curRotation]>
+    - define curRotation     <player.location.yaw.div[360].mul[1024].round>
+    - define gameTime        <player.world.duration_since_created.in_ticks.mod[24000].mod[4]>
+    - define rotation_color  <color[<[curRotation].mod[256]>,<[oldRotation].mod[256]>,<[curRotation].div[256].round_down.add[<[oldRotation].div[256].round_down.mul[4]>].add[<[gameTime].mul[16]>]>]>
+    - define oldRotation     <[curRotation]>
     - define compass_display <&chr[B000].font[map].color[<[rotation_color]>]>
 
     # circle display
-    - define circle 100
+    - define circle_x 65
+    - define circle_y 90
     - define storm_id 15
-    - define relX <[circle].sub[<[loc].x>].add[1024]>
-    - define relZ <[circle].sub[<[loc].z>].add[1024]>
-    - define r_ <[relX].mod[256]>
-    - define g_ <[relZ].mod[256]>
-    - define b_ <[relX].div[256].round_down.add[<[relZ].div[256].round_down.mul[8]>].add[<[storm_id].div[4].round_down.mul[64]>]>
-    - define offset <[storm_id].mod[4].mul[2]>
+    - define relX     <[circle_x].sub[<[loc].x>].add[1024]>
+    - define relZ     <[circle_y].sub[<[loc].z>].add[1024]>
+    - define r_       <[relX].mod[256]>
+    - define g_       <[relZ].mod[256]>
+    - define b_       <[relX].div[256].round_down.add[<[relZ].div[256].round_down.mul[8]>].add[<[storm_id].div[4].round_down.mul[64]>]>
+    - define offset   <[storm_id].mod[4].mul[2]>
 
-    - define circle_color <color[<[r_]>,<[g_]>,<[b_]>]>
+    - define circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
     - define circle_display <&chr[E001].font[map].color[<[circle_color]>]>
 
 
@@ -113,6 +114,8 @@ minimap:
     - define spacing <&sp.repeat[<element[3].sub[<[yaw].length>]>]>
 
     - bossbar update <[bb]> title:<&sp><[yaw].color[#4e5c24]><[title]>
+
+    - inject minimap.tab
     - wait 1t
 
   - flag player minimap:!
@@ -120,23 +123,33 @@ minimap:
     - bossbar remove <[bb]>
 
   tab:
-    - define neg_spacing <&chr[F801].font[denizen:overlay]>
-
+    # - [ Full map ] - #
+    - define neg_spacing <proc[spacing].context[-1]>
     - define border_radius 4
-
-    - define tab_map <list[]>
-
+    - define map <list[]>
     - repeat 16:
-
       - define zeroes <element[0].repeat[<element[3].sub[<[value].length>]>]>
       - define char A<[zeroes]><[value]>
-
       - define row:->:<&chr[<[char]>].font[map]>
-
       - if <[value].mod[4]> == 0:
-        - define tab_map <[tab_map].include[<&sp.repeat[<[border_radius].sub[1]>]><[row].separated_by[<[neg_spacing]>]><&sp.repeat[<[border_radius].sub[1]>]>]>
+        - define map <[map].include[<&sp.repeat[<[border_radius].sub[1]>]><[row].separated_by[<[neg_spacing]>]><&sp.repeat[<[border_radius].sub[1]>]>]>
         - define row:!
+    - define map <[map].separated_by[<n.repeat[10]>]>
 
-    - define tab_map <[tab_map].separated_by[<n.repeat[7]>]>
+    # - circle
+    - define actualX <[circle_x].add[1024]>
+    - define actualY <[circle_y].add[1024]>
+    - define r_ <[actualX].mod[256]>
+    - define g_ <[actualY].mod[256]>
+    - define b_ <[actualX].div[256].round_down.add[<[actualY].div[256].round_down.mul[8]>].add[<[storm_id].div[4].round_down.mul[64]>]>
+    #- narrate <[r_]>,<[g_]>,<[b_]>
+    - define full_circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
+    - define full_circle_display <&chr[E002].font[map].color[<[full_circle_color]>]>
 
-    - adjust <player> tab_list_info:<n.repeat[<[border_radius]>]><[tab_map]><n.repeat[<[border_radius]>]>
+    # - marker
+    #for full map
+    - define full_marker_red   <[yaw].is[LESS].than[0].if_true[<[yaw].add[360]>].if_false[<[yaw]>].div[360].mul[255]>
+    - define full_marker_color <color[<[marker_red].round>,<[r]>,<[g]>]>
+    - define full_marker       <&chr[E000].font[map].color[<[full_marker_color]>]>
+
+    - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><n><[map]><n.repeat[9]>

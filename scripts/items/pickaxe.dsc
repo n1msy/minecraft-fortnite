@@ -84,7 +84,7 @@ fort_pic_handler:
     - if <[i].material.name> != <[tool]>:
       - inventory adjust slot:<player.held_item_slot> material:<[tool]>
 
-    on player right clicks block with:fort_pic:
+    on player right clicks !air with:fort_pic:
     #so they can't strip logs
     - stop if:<context.location.material.name.contains_text[wood].not>
     - determine cancelled
