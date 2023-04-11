@@ -137,11 +137,11 @@ minimap:
     - define map <[map].separated_by[<n.repeat[10]>]>
 
     # - circle
-    - define actualX <[circle_x].add[1024]>
-    - define actualY <[circle_y].add[1024]>
+    - define actualX <[circle_x]>
+    - define actualY <[circle_y]>
     - define r_ <[actualX].mod[256]>
     - define g_ <[actualY].mod[256]>
-    - define b_ <[actualX].div[256].round_down.add[<[actualY].div[256].round_down.mul[8]>].add[<[storm_id].div[4].round_down.mul[64]>]>
+    - define b_ <[actualX].div[256].round_down.add[<[actualY].div[256].round_down.mul[4]>].add[<[storm_id].mul[16]>]>
     #- narrate <[r_]>,<[g_]>,<[b_]>
     - define full_circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
     - define full_circle_display <&chr[E002].font[map].color[<[full_circle_color]>]>
