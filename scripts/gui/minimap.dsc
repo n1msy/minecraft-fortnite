@@ -152,7 +152,6 @@ minimap:
     #for full map
     #uses 1 less bit to send more accurate info for position
     - define rot_data <[yaw].is[LESS].than[0].if_true[<[yaw].add[360]>].if_false[<[yaw]>].div[360].mul[64].round_down>
-    - narrate <[rot_data]>
     #- narrate <[rot_data]>
 
     #<[relX].div[256].round_down.add[<[relZ].div[256].round_down.mul[8]>].add[<[storm_id].div[4].round_down.mul[64]>]>
