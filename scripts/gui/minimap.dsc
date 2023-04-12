@@ -97,7 +97,7 @@ minimap:
     # circle display
     - define circle_x 65
     - define circle_y 90
-    - define storm_id 15
+    - define storm_id 5
     - define relX     <[circle_x].sub[<[loc].x>].add[1024]>
     - define relZ     <[circle_y].sub[<[loc].z>].add[1024]>
     - define r_       <[relX].mod[256]>
@@ -141,16 +141,30 @@ minimap:
     - define actualY <[circle_y]>
     - define r_ <[actualX].mod[256]>
     - define g_ <[actualY].mod[256]>
-    - define b_ <[actualX].div[256].round_down.add[<[actualY].div[256].round_down.mul[4]>].add[<[storm_id].mul[16]>]>
+    #- narrate <[actualX].div[256].round_down>/<[actualY].div[256].round_down>
+    - define b_ <[storm_id].mul[16]>
     #- narrate <[r_]>,<[g_]>,<[b_]>
     - define full_circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
     - define full_circle_display <&chr[E002].font[map].color[<[full_circle_color]>]>
 
     # - marker
     #for full map
+    #uses 1 less bit to send more accurate info for position
+    - define rot_data <[yaw].is[LESS].than[0].if_true[<[yaw].add[360]>].if_false[<[yaw]>].mod[180].div[360].mul[255].round>
+    #- narrate <[rot_data]>
+
+    #<[relX].div[256].round_down.add[<[relZ].div[256].round_down.mul[8]>].add[<[storm_id].div[4].round_down.mul[64]>]>
+    # c.r + (c.b % 8) * 256 - 1024;
+
+    #max is 128
+    - define x_detail <[loc].x.add[512].div[4].mod[1].mul[100]>
+    - define y_detail <[loc].z.add[512].div[4].mod[1].mul[100]>
+    - define full_marker_red <[x_detail].div[256].round_down.add[<[y_detail].div[256].round_down.mul[8]>].add[<[rot_data].div[8].round>]>
+    #- define full_marker_red <[rot_data].div[8].round>
+    #- narrate <[]>
     - define real_g <[loc].x.add[512].div[4].round_down>
     - define real_b <[loc].z.add[512].div[4].round_down>
-    - define full_marker_color <color[<[marker_red].round>,<[real_g]>,<[real_b]>]>
+    - define full_marker_color <color[<[full_marker_red]>,<[real_g]>,<[real_b]>]>
     - define full_marker       <&chr[E000].font[map].color[<[full_marker_color]>]>
 
     - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><n><[map]><n.repeat[9]>
