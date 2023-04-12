@@ -11,6 +11,7 @@ minimap:
 
   - define bb minimap_<player.uuid>
   - bossbar create <[bb]>
+  - bossbar create <[bb]>_yaw color:yellow
   - flag player minimap
 
   - define oldRotation <player.location.yaw.div[360].mul[1024].round>
@@ -108,13 +109,13 @@ minimap:
     - define circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
     - define circle_display <&chr[E001].font[map].color[<[circle_color]>]>
 
-
-    - define title <[yaw].color[#4e5c24]><[compass_display]><[whole_map]><[marker]><proc[spacing].context[<[offset].sub[2].sub[<[tiles].size>]>]><[circle_display]>
+    - define title <[compass_display]><[whole_map]><[marker]><proc[spacing].context[<[offset].sub[2].sub[<[tiles].size>]>]><[circle_display]>
 
     - define spacing <&sp.repeat[<element[3].sub[<[yaw].length>]>]>
 
     # just so you know, adding characters before/and after the title does change the offset. who would've guessed /s
     - bossbar update <[bb]> title:<[title]>
+    - bossbar update <[bb]>_yaw title:<[yaw].color[65,0,0]> color:yellow
 
     - inject minimap.tab
     - wait 1t
@@ -122,6 +123,8 @@ minimap:
   - flag player minimap:!
   - if <server.current_bossbars.contains[<[bb]>]>:
     - bossbar remove <[bb]>
+  - if <server.current_bossbars.contains[<[bb]>_yaw]>:
+    - bossbar remove <[bb]>_yaw
 
   tab:
     # - [ Full map ] - #
