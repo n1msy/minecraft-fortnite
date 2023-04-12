@@ -109,7 +109,7 @@ minimap:
     - define circle_display <&chr[E001].font[map].color[<[circle_color]>]>
 
 
-    - define title <[compass_display]><[whole_map]><[marker]><proc[spacing].context[<[offset].sub[2].sub[<[tiles].size>]>]><[circle_display]>
+    - define title <[yaw].color[#4e5c24]><[compass_display]><[whole_map]><[marker]><proc[spacing].context[<[offset].sub[2].sub[<[tiles].size>]>]><[circle_display]>
 
     - define spacing <&sp.repeat[<element[3].sub[<[yaw].length>]>]>
 
@@ -153,9 +153,6 @@ minimap:
     #uses 1 less bit to send more accurate info for position
     - define rot_data <[yaw].is[LESS].than[0].if_true[<[yaw].add[360]>].if_false[<[yaw]>].div[360].mul[64].round_down>
     #- narrate <[rot_data]>
-
-    #<[relX].div[256].round_down.add[<[relZ].div[256].round_down.mul[8]>].add[<[storm_id].div[4].round_down.mul[64]>]>
-    # c.r + (c.b % 8) * 256 - 1024;
 
     #max is 128
     - define x <[loc].x.add[512].div[2].round_down>
