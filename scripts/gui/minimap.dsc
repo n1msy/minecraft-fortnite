@@ -113,7 +113,8 @@ minimap:
 
     - define spacing <&sp.repeat[<element[3].sub[<[yaw].length>]>]>
 
-    - bossbar update <[bb]> title:<&sp><[yaw].color[#4e5c24]><[title]>
+    # just so you know, adding characters before/and after the title does change the offset. who would've guessed /s
+    - bossbar update <[bb]> title:<[title]>
 
     - inject minimap.tab
     - wait 1t
@@ -150,20 +151,21 @@ minimap:
     # - marker
     #for full map
     #uses 1 less bit to send more accurate info for position
-    - define rot_data <[yaw].is[LESS].than[0].if_true[<[yaw].add[360]>].if_false[<[yaw]>].mod[180].div[360].mul[255].round>
+    - define rot_data <[yaw].is[LESS].than[0].if_true[<[yaw].add[360]>].if_false[<[yaw]>].div[360].mul[64].round_down>
+    - narrate <[rot_data]>
     #- narrate <[rot_data]>
 
     #<[relX].div[256].round_down.add[<[relZ].div[256].round_down.mul[8]>].add[<[storm_id].div[4].round_down.mul[64]>]>
     # c.r + (c.b % 8) * 256 - 1024;
 
     #max is 128
-    - define x_detail <[loc].x.add[512].div[4].mod[1].mul[100]>
-    - define y_detail <[loc].z.add[512].div[4].mod[1].mul[100]>
-    - define full_marker_red <[x_detail].div[256].round_down.add[<[y_detail].div[256].round_down.mul[8]>].add[<[rot_data].div[8].round>]>
+    - define x <[loc].x.add[512].div[2].round_down>
+    - define y <[loc].z.add[512].div[2].round_down>
+    - define full_marker_red <[rot_data].add[<[x].div[256].round_down.mul[64]>].add[<[y].div[256].round_down.mul[128]>]>
     #- define full_marker_red <[rot_data].div[8].round>
     #- narrate <[]>
-    - define real_g <[loc].x.add[512].div[4].round_down>
-    - define real_b <[loc].z.add[512].div[4].round_down>
+    - define real_g <[x].mod[256]>
+    - define real_b <[y].mod[256]>
     - define full_marker_color <color[<[full_marker_red]>,<[real_g]>,<[real_b]>]>
     - define full_marker       <&chr[E000].font[map].color[<[full_marker_color]>]>
 
