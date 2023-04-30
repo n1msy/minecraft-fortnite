@@ -3,6 +3,13 @@ fort_global_handler:
   debug: false
   events:
 
+    on player clicks in inventory:
+    - define slot <context.slot>
+    #-resources
+    - if <list[19|20|21].contains[<[slot]>]>:
+      - determine passively
+      - stop
+
     on block drops item from breaking:
     - stop if:<context.location.world.name.equals[fortnite_map].not>
     - determine cancelled

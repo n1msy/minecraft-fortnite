@@ -1,11 +1,3 @@
-####
-####
-####
-#TODO
-# - add a new flag tracking how much mats the player has
-# - decrease/incrase that number based on how what happens
-# - make a 5x5 pallette creator for builders
-
 fort_pic:
   type: item
   material: netherite_pickaxe
@@ -179,9 +171,9 @@ fort_pic_handler:
 
     - if <[action]> == add:
       - if <player.flag[fort.<[mat]>.qty].add[<[qty]>]> > 999:
-        - define total    <[current_qty].add[<[qty]>]>
-        - define real_qty <[qty]>
-        - define qty      <[total].sub[<[total].sub[999]>].sub[<[current_qty]>]>
+        - define total     <[current_qty].add[<[qty]>]>
+        - define real_qty  <[qty]>
+        - define qty       <[total].sub[<[total].sub[999]>].sub[<[current_qty]>]>
         - define left_over <[real_qty].sub[<[qty]>]>
         #any extras are dropped on the floor
         - if <[left_over]> > 0:
@@ -190,6 +182,11 @@ fort_pic_handler:
       #first add the mat (so they can place it instantly)
       #(then "animate" the counter)
       - flag player fort.<[mat]>.qty:+:<[qty]>
+      #doesn't work well
+      #19,20,21
+      #- define item      <map[wood=oak_log;brick=bricks;metal=iron_block].get[<[mat]>].as[item]>
+      #- define item_slot <map[wood=19;brick=20;metal=21].get[<[mat]>]>
+      #- inventory set o:<[item].with[quantity=<player.flag[fort.<[mat]>.qty]>]> slot:<[item_slot]>
       - repeat <[qty]>:
         - define override_qty.<[mat]>:<[current_qty].add[<[value]>]>
         - inject update_hud
