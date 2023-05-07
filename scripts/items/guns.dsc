@@ -42,12 +42,13 @@ fort_gun_handler:
     - define gun_name        <[gun].script.name.after[_]>
 
     - define rarity              <[gun].flag[rarity]>
-    - define damage              <[gun].flag[rarities.<[rarity]>.damage]>
-    - define pellets             1
+    - define base_damage         <[gun].flag[rarities.<[rarity]>.damage]>
+    - define pellets             <[gun].flag[pellets]>
     - define base_bloom          <[gun].flag[base_bloom]>
     - define bloom_multiplier    <[gun].flag[bloom_multiplier]>
     - define headshot_multiplier <[gun].flag[headshot_multiplier]>
 
+    - define custom_recoil_fx     <[gun].flag[custom_recoil_fx]>
     #phantom / vandal = 2
     #
     - define ticks_between_shots <[gun].flag[ticks_between_shots]||3>
@@ -125,9 +126,12 @@ fort_gun_handler:
         #0 = all damage gone
         #start off with 100% damage falloff
         - define damage_falloff 0
+        - define distance_condensor 1.5
         - foreach <[gun].flag[damage_falloff].keys> as:max_dist:
 
-          - if <[distance]> < <[max_dist]>:
+          #since the distance from fortnite lengths doesn't exactly translate to mc lengths
+          - define actual_max_dist <[max_dist].div[<[distance_condensor]>]>
+          - if <[distance]> < <[actual_max_dist]>:
             - if <[loop_index]> == 1:
               - define damage_falloff 1
               - foreach stop
@@ -138,15 +142,16 @@ fort_gun_handler:
               - define damage_falloff 0
               - foreach stop
 
-            - define min_dist     <[gun].flag[damage_falloff].keys.get[<[loop_index].sub[1]>]>
-            - define min_falloff  <[gun].flag[damage_falloff.<[min_dist]>]>
+            - define min_dist        <[gun].flag[damage_falloff].keys.get[<[loop_index].sub[1]>]>
+            - define actual_min_dist <[min_dist].div[<[distance_condensor]>]>
+            - define min_falloff     <[gun].flag[damage_falloff.<[min_dist]>]>
 
-            - define progress     <[distance].sub[<[min_dist]>].div[<[max_dist].sub[<[min_dist]>]>]>
+            - define progress     <[distance].sub[<[actual_min_dist]>].div[<[actual_max_dist].sub[<[actual_min_dist]>]>]>
 
             - define damage_falloff <[min_falloff].sub[<[min_falloff].sub[<[max_falloff]>].mul[<[progress]>]>].div[100]>
             - foreach stop
 
-        - define damage <[damage].mul[<[damage_falloff]>]>
+        - define damage <[base_damage].div[<[pellets]>].mul[<[damage_falloff]>]>
 
         #if it's headshot, multiply damage by headshot multiplier
         - define part_height <[target_loc].round_to[1].y.sub[<[target].location.y>]>
@@ -157,13 +162,14 @@ fort_gun_handler:
 
         - define damage <[damage].mul[<[headshot_multiplier]>]> if:<[body_part].equals[Head]>
 
-        - narrate <[damage]>
-
+        - define total_damage:+:<[damage]>
         #- hurt <[damage]> <[target]> source:<player>
         - if <[target].is_living>:
           - adjust <[target]> no_damage_duration:0
 
         - adjust <player> reset_attack_cooldown
+
+    - narrate <[total_damage].round> if:<[total_damage].exists>
 
 
   camera_shake:
@@ -187,6 +193,41 @@ fort_gun_handler:
       - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[pitch_sub]>]> offthread_repeat:3
       - wait 1t
 
+  shoot_fx:
+    - if <player.is_sneaking> && <[gun].has_flag[has_scope]>:
+      #scoped origin
+      - define particle_origin <[eye_loc].forward[1.8].below[0.25]>
+    - else:
+      #default origin
+      - define particle_origin <[eye_loc].forward.relative[-0.33,-0.2,0.3]>
+
+    #checking for value so it doesn't repeat the same amount of pellets
+    - if <[custom_recoil_fx]> && <[value]> == 1:
+      - inject fort_gun_handler.custom_recoil_fx.<[gun_name]>
+
+    # - [ "Base" Shoot FX ] - #
+    - define trail <[particle_origin].points_between[<[target_loc]>].distance[7]>
+
+    # - Points Between (Potential: CRIT, WAX_ON, SCRAPE, ELECTRIC_SPARK, BLOCK_DUST, DRIP_LAVA, FALLING_NECTAR, DRIPPING_HONEY, END_ROD,ENCHANTMENT_TABLE)
+    - define between <[particle_origin].points_between[<[target_loc]>].distance[0.5]>
+    - playeffect at:<[between]> effect:CRIT offset:0 visibility:500
+
+    # - Impact (Potential: CAMPFIRE_COSY_SMOKE, SMOKE_NORMAL, SQUID_INK)
+    - define particle_dest <[target_loc].face[<[eye_loc]>].forward[0.1]>
+    - playeffect at:<[particle_dest]> effect:sweep_attack offset:0 quantity:1 visibility:500 velocity:1.65,1.65,1.65
+
+    # - Blood / Material hit
+    - define mat <player.cursor_on.material.name||null>
+    - if <[target]> != null:
+      #splatter: red_glazed_terracotta
+      - playeffect at:<[particle_dest]> effect:BLOCK_CRACK offset:0 quantity:3 visibility:500 special_data:red_wool
+    - else if <[mat]> != null:
+      - playeffect at:<[particle_dest]> effect:BLOCK_CRACK offset:0 quantity:8 visibility:500 special_data:<[mat]>
+
+  custom_recoil_fx:
+
+    pump_shotgun:
+      - playeffect at:<[particle_origin]> effect:SMOKE_NORMAL offset:0.05 quantity:1 visibility:500
 
 #@ [ Gun Data ] @#
 
@@ -213,6 +254,8 @@ gun_pump_shotgun:
     base_bloom: 1.8
     bloom_multiplier: 1
     headshot_multiplier: 2
+    #if there's a slightly different shoot effect alongside the base ones
+    custom_recoil_fx: true
     #rarity-based states
     rarities:
       common:
