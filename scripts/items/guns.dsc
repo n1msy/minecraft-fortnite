@@ -63,8 +63,7 @@ fort_gun_handler:
       - if <[loop_index].mod[<[ticks_between_shots]>]> == <[mod_value]>:
 
         - define times_shot <[ticks_between_shots].equals[1].if_true[<[loop_index]>].if_false[<[loop_index].div[<[ticks_between_shots]>].round_down.add[1]>]>
-        - run fort_gun_handler.camera_shake
-        - run fort_gun_handler.recoil.<[gun_name]>
+        - run fort_gun_handler.recoil def:<map[gun_name=<[gun_name]>]>
 
         - inject fort_gun_handler.fire
 
@@ -127,6 +126,7 @@ fort_gun_handler:
       - if <[target]> != null && <[target].is_spawned>:
 
         # - [ Damage Falloff ] - #
+        #maybe for future: to calculate distances, use the tiles provided in the wiki for distances and convert to tile sizes in mc for 1:1
         - define distance <[target_loc].distance[<[origin]>]>
         #1 = no damage falloff
         #0 = all damage gone
@@ -168,36 +168,43 @@ fort_gun_handler:
 
         - define damage <[damage].mul[<[headshot_multiplier]>]> if:<[body_part].equals[Head]>
 
-        - define total_damage:+:<[damage]>
+        - narrate <[damage]>
+
         #- hurt <[damage]> <[target]> source:<player>
         - if <[target].is_living>:
           - adjust <[target]> no_damage_duration:0
 
         - adjust <player> reset_attack_cooldown
 
-    - narrate <[total_damage].round> if:<[total_damage].exists>
-
 
   camera_shake:
   #default: 0.094
-  - adjust <player> fov_multiplier:0.08
+  - define mult <[data].get[mult]>
+  - adjust <player> fov_multiplier:<[mult]>
   - wait 2t
   - adjust <player> fov_multiplier
 
   recoil:
-    ##cooldown time has to be LONGER than recoil time
 
-    pump_shotgun:
-
-    - define recoil 2
-    - repeat <[recoil]>:
-      - define pitch_sub <[value].div[1.5]>
-      - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[pitch_sub]>]> offthread_repeat:3
-      - wait 1t
-    - repeat <[recoil].mul[4]>:
-      - define pitch_sub <element[8].sub[<[value]>].sub[6].div[10]>
-      - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[pitch_sub]>]> offthread_repeat:3
-      - wait 1t
+    - define gun_name <[data].get[gun_name]>
+    - choose <[gun_name]>:
+      - case pump_shotgun:
+        - run fort_gun_handler.camera_shake def:<map[mult=0.08]>
+        - define recoil 2
+        - repeat <[recoil]>:
+          - define pitch_sub <[value].div[1.5]>
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[pitch_sub]>]> offthread_repeat:3
+          - wait 1t
+        - repeat <[recoil].mul[4]>:
+          - define pitch_sub <element[8].sub[<[value]>].sub[6].div[10]>
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[pitch_sub]>]> offthread_repeat:3
+          - wait 1t
+      - default:
+        - run fort_gun_handler.camera_shake def:<map[mult=0.0965]>
+        - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[0.7]> offthread_repeat:3
+        - repeat 4:
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.add[0.175]> offthread_repeat:3
+          - wait 1t
 
   shoot_fx:
     - if <player.is_sneaking> && <[gun].has_flag[has_scope]>:
@@ -208,8 +215,11 @@ fort_gun_handler:
       - define particle_origin <[eye_loc].forward.relative[-0.33,-0.2,0.3]>
 
     #checking for value so it doesn't repeat the same amount of pellets
-    - if <[custom_recoil_fx]> && <[value]> == 1:
-      - run fort_gun_handler.custom_recoil_fx.<[gun_name]> def:<map[particle_origin=<[particle_origin]>]>
+    - if <[value]> == 1:
+      - if <[custom_recoil_fx]>:
+        - run fort_gun_handler.custom_recoil_fx.<[gun_name]> def:<map[particle_origin=<[particle_origin]>]>
+      - else:
+        - run fort_gun_handler.default_recoil_fx def:<map[particle_origin=<[particle_origin]>]>
 
     # - [ "Base" Shoot FX ] - #
     - define trail <[particle_origin].points_between[<[target_loc]>].distance[7]>
@@ -229,6 +239,17 @@ fort_gun_handler:
       - playeffect at:<[particle_dest]> effect:BLOCK_CRACK offset:0 quantity:3 visibility:500 special_data:red_wool
     - else if <[mat]> != null:
       - playeffect at:<[particle_dest]> effect:BLOCK_CRACK offset:0 quantity:8 visibility:500 special_data:<[mat]>
+
+  default_recoil_fx:
+    - define particle_origin <[data].get[particle_origin]>
+
+    - define neg  <proc[spacing].context[-50]>
+    - define text <[neg]><&chr[000<util.random.int[4].to[6]>].font[muzzle_flash]><[neg]>
+    - spawn <entity[armor_stand].with[custom_name=<[text]>;custom_name_visible=true;gravity=false;collidable=false;invulnerable=true;visible=false]> <[particle_origin].below[2.4]> save:flash
+    - define flash <entry[flash].spawned_entity>
+
+    - wait 2t
+    - remove <[flash]>
 
   custom_recoil_fx:
 
@@ -280,6 +301,7 @@ gun_pump_shotgun:
       uncommon:
         damage: 101
         reload_time: 4.8
+        custom_model_data: x
       rare:
         damage: 110
         reload_time: 4.4
@@ -307,4 +329,59 @@ gun_pump_shotgun:
         volume: 1.2
       ENTITY_DRAGON_FIREBALL_EXPLODE:
         pitch: 1.8
+        volume: 1.2
+
+gun_assault_rifle:
+  type: item
+  material: wooden_hoe
+  display name: <&f><&l>ASSAULT RIFLE
+  mechanisms:
+    custom_model_data: 1
+    hides: ALL
+  flags:
+    #this value can be changed
+    rarity: common
+    icon_chr: 1
+    #global stats
+    #min is 5 if you want singular shots
+    ticks_between_shots: 4
+    mag_size: 30
+    #in seconds
+    #cooldown: 0
+    pellets: 1
+    base_bloom: 1.2
+    bloom_multiplier: 1
+    headshot_multiplier: 1.5
+    custom_recoil_fx: false
+    rarities:
+      common:
+        damage: 30
+        reload_time: 2.7
+        custom_model_data: x
+      uncommon:
+        damage: 31
+        reload_time: 2.6
+        custom_model_data: x
+      rare:
+        damage: 33
+        reload_time: 2.5
+        custom_model_data: x
+      epic:
+        damage: 35
+        reload_time: 2.4
+        custom_model_data: x
+      legendary:
+        damage: 36
+        reload_time: 2.2
+        custom_model_data: x
+    #(in meters)
+    #value is in percentage of damage
+    damage_falloff:
+      50: 100
+      75: 80
+      95: 66
+
+    sounds:
+      ENTITY_FIREWORK_ROCKET_BLAST_FAR:
+        pitch: 1.07
         volume: 1.2
