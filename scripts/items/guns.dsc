@@ -68,6 +68,12 @@ fort_gun_handler:
 
         - inject fort_gun_handler.fire
 
+        #sound
+        - foreach <[gun].flag[Sounds].keys> as:sound:
+          - define pitch <[gun].flag[Sounds.<[sound]>.Pitch]>
+          - define volume <[gun].flag[Sounds.<[sound]>.Volume]>
+          - playsound <player.location> sound:<[sound]> pitch:<[pitch]> volume:<[volume]>
+
         #- inject fort_gun_handler.ammo
         #- inject fort_gun_handler.empty_gun_check
 
@@ -203,7 +209,7 @@ fort_gun_handler:
 
     #checking for value so it doesn't repeat the same amount of pellets
     - if <[custom_recoil_fx]> && <[value]> == 1:
-      - inject fort_gun_handler.custom_recoil_fx.<[gun_name]>
+      - run fort_gun_handler.custom_recoil_fx.<[gun_name]> def:<map[particle_origin=<[particle_origin]>]>
 
     # - [ "Base" Shoot FX ] - #
     - define trail <[particle_origin].points_between[<[target_loc]>].distance[7]>
@@ -227,11 +233,20 @@ fort_gun_handler:
   custom_recoil_fx:
 
     pump_shotgun:
+      - define particle_origin <[data].get[particle_origin]>
+
+      - define neg  <proc[spacing].context[-50]>
+      - define text <[neg]><&chr[000<util.random.int[1].to[3]>].font[muzzle_flash]><[neg]>
+
+      - spawn <entity[armor_stand].with[custom_name=<[text]>;custom_name_visible=true;gravity=false;collidable=false;invulnerable=true;visible=false]> <[particle_origin].below[2.5]> save:flash
+      - define flash <entry[flash].spawned_entity>
+
+      - wait 2t
+      - remove <[flash]>
       - playeffect at:<[particle_origin]> effect:SMOKE_NORMAL offset:0.05 quantity:1 visibility:500
 
 #@ [ Gun Data ] @#
 
-# [ Sidearm ] #
 gun_pump_shotgun:
   type: item
   material: wooden_hoe
@@ -285,3 +300,11 @@ gun_pump_shotgun:
       10: 78
       15: 49
       31: 0
+
+    sounds:
+      ENTITY_FIREWORK_ROCKET_LARGE_BLAST:
+        pitch: 0.8
+        volume: 1.2
+      ENTITY_DRAGON_FIREBALL_EXPLODE:
+        pitch: 1.8
+        volume: 1.2
