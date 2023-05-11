@@ -83,6 +83,19 @@ fort_gun_handler:
       - wait 0.5t
     - flag player is_shooting:!
 
+    #crosshair reset for guns that want it
+    - if !<player.has_flag[gun.<[gun_name]>.recoil]>:
+      - stop
+
+    #how much the pitch was changed
+    - define recoil <player.flag[gun.<[gun_name]>.recoil]>
+
+    - define recoiL_size <[recoil].div[6]>
+    - repeat 6:
+      - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.add[<[recoil_size]>]> offthread_repeat:3
+      - wait 1t
+    - flag player gun.<[gun_name]>.recoil:!
+
   fire:
   #required definitions:
   # - <[pellets]>
@@ -157,7 +170,7 @@ fort_gun_handler:
             - define damage_falloff <[min_falloff].sub[<[min_falloff].sub[<[max_falloff]>].mul[<[progress]>]>].div[100]>
             - foreach stop
 
-        - define damage <[base_damage].div[<[pellets]>].mul[<[damage_falloff]>]>
+        - define damage <[base_damage].div[<[pellets]>].mul[<[damage_falloff]>].round_down>
 
         #if it's headshot, multiply damage by headshot multiplier
         - define part_height <[target_loc].round_to[1].y.sub[<[target].location.y>]>
@@ -166,7 +179,7 @@ fort_gun_handler:
             - define body_part <list[Legs|Body|Head].get[<[Loop_Index]>]>
             - foreach stop
 
-        - define damage <[damage].mul[<[headshot_multiplier]>]> if:<[body_part].equals[Head]>
+        - define damage <[damage].mul[<[headshot_multiplier]>].round_down> if:<[body_part].equals[Head]>
 
         - narrate <[damage]>
 
@@ -180,8 +193,9 @@ fort_gun_handler:
   camera_shake:
   #default: 0.094
   - define mult <[data].get[mult]>
+  - define ticks <[data].get[ticks]||2>
   - adjust <player> fov_multiplier:<[mult]>
-  - wait 2t
+  - wait <[ticks]>t
   - adjust <player> fov_multiplier
 
   recoil:
@@ -199,6 +213,13 @@ fort_gun_handler:
           - define pitch_sub <element[8].sub[<[value]>].sub[6].div[10]>
           - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[pitch_sub]>]> offthread_repeat:3
           - wait 1t
+      - case tactical_smg:
+        - run fort_gun_handler.camera_shake def:<map[mult=0.094;ticks=3]>
+        - define size 0.1
+        - if <player.has_flag[gun.<[gun_name]>.recoil]> && <player.flag[gun.<[gun_name]>.recoil].div[<[size]>].round_down> > 10:
+          - stop
+        - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[size]>]> offthread_repeat:3
+        - flag player gun.<[gun_name]>.recoil:+:<[size]>
       - default:
         - run fort_gun_handler.camera_shake def:<map[mult=0.0965]>
         - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[0.7]> offthread_repeat:3
@@ -385,3 +406,59 @@ gun_assault_rifle:
       ENTITY_FIREWORK_ROCKET_BLAST_FAR:
         pitch: 1.07
         volume: 1.2
+
+gun_tactical_smg:
+  type: item
+  material: wooden_hoe
+  display name: <&f><&l>TACTICAL SMG
+  mechanisms:
+    custom_model_data: 1
+    hides: ALL
+  flags:
+    #this value can be changed
+    rarity: uncommon
+    icon_chr: 1
+    #global stats
+    #min is 5 if you want singular shots
+    ticks_between_shots: 2
+    mag_size: 25
+    #in seconds
+    #cooldown: 0
+    pellets: 1
+    base_bloom: 1.15
+    bloom_multiplier: 1
+    headshot_multiplier: 1.75
+    custom_recoil_fx: false
+    rarities:
+      #no common tac smgs
+      uncommon:
+        damage: 18
+        reload_time: 2.2
+        custom_model_data: x
+      rare:
+        damage: 19
+        reload_time: 2.1
+        custom_model_data: x
+      epic:
+        damage: 20
+        reload_time: 2.0
+        custom_model_data: x
+      legendary:
+        damage: 21
+        reload_time: 1.9
+        custom_model_data: x
+    #(in meters)
+    #value is in percentage of damage
+    #no damage falloff was found, so im using same as AR
+    damage_falloff:
+      50: 100
+      75: 80
+      95: 66
+
+    sounds:
+      ENTITY_FIREWORK_ROCKET_BLAST_FAR:
+        pitch: 1.2
+        volume: 1.2
+      UI_BUTTON_CLICK:
+        pitch: 1.9
+        volume: 0.4
