@@ -426,7 +426,7 @@ gun_tactical_smg:
     #cooldown: 0
     pellets: 1
     base_bloom: 1.15
-    bloom_multiplier: 1
+    bloom_multiplier: 1.5
     headshot_multiplier: 1.75
     custom_recoil_fx: false
     rarities:
