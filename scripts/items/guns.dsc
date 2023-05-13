@@ -42,7 +42,7 @@ fort_gun_handler:
     - define new_qty   <[other_item].quantity>
 
     - define ammo_type <[item].script.name.after_last[_]>
-    - define ammo_icon <&chr[E00<map[light=1;medium=2;heavy=3;shells=4;rocket=5].get[<[ammo_type]>]>].font[icons]>
+    - define ammo_icon <&chr[E0<map[light=11;medium=22;heavy=33;shells=44;rockets=55].get[<[ammo_type]>]>].font[icons]>
     - define text <[ammo_icon]><&f><&l>x<[new_qty]>
 
     - adjust <[target]> custom_name:<[text]>
@@ -308,7 +308,7 @@ fort_gun_handler:
     - drop <[item]> <[loc]> delay:1s save:drop
     - define drop <entry[drop].dropped_entity>
 
-    - define icon <&chr[E00<map[light=1;medium=2;heavy=3;shells=4;rocket=5].get[<[ammo_type]>]>].font[icons]>
+    - define icon <&chr[E0<map[light=11;medium=22;heavy=33;shells=44;rockets=55].get[<[ammo_type]>]>].font[icons]>
 
     - define text <[icon]><&f><&l>x<[qty]>
     - define loc <[drop].location>
