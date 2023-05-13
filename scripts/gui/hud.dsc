@@ -86,10 +86,15 @@ update_hud:
 
   - sidebar set title:<empty> values:<[ammo_]>|<[shield_]>|<[health_]>|<[build_]>|<[slots_]>|<[wood_]>|<[brick_]>|<[metal_]>|<[time_]>|<[alive_]>|<[kills_]>|<[team_bars]>
 
+  - inject hud_handler.update_inventory
+
 hud_handler:
   type: world
   debug: false
   events:
+    on player clicks paper in inventory:
+    - determine cancelled
+
     after player scrolls their hotbar:
     - stop if:<player.world.name.equals[fortnite_map].not>
     - define new_slot <context.new_slot>
@@ -120,6 +125,29 @@ hud_handler:
 
     after player damaged:
     - inject update_hud
+
+  update_inventory:
+  #resources
+  - foreach <list[wood|brick|metal]> as:mat:
+    - if !<player.has_flag[fort.<[mat]>.qty]> || <player.flag[fort.<[mat]>.qty]> == 0:
+      - foreach next
+    - define name <[mat].to_uppercase.bold>
+    - define lore "<&7>Qty: <&f><player.flag[fort.<[mat]>.qty]>"
+    - define item <item[paper].with[display=<[name]>;lore=<[lore]>;custom_model_data=<[loop_index].add[7]>]>
+    - define slot <[loop_index].add[18]>
+    - inventory set o:<[item]> slot:<[slot]>
+
+  #ammo
+  - foreach <list[light|medium|heavy|shells|rockets]> as:ammo_type:
+    - if !<player.has_flag[fort.ammo.<[ammo_type]>]> || <player.flag[fort.ammo.<[ammo_type]>]> == 0:
+      - foreach next
+    - define name <[ammo_type].to_uppercase.bold>
+    - define lore "<&7>Qty: <&f><player.flag[fort.ammo.<[ammo_type]>]>"
+    - define item <item[paper].with[display=<[name]>;lore=<[lore]>;custom_model_data=<[loop_index].add[11]>]>
+    - define slot <[loop_index].add[22]>
+    - inventory set o:<[item]> slot:<[slot]>
+
+
 
   update_slots:
   #required definitions:
