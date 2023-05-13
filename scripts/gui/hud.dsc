@@ -11,10 +11,14 @@ update_hud:
 
   # - [ Ammo ] - #
   #depends on what gun you're holding
-  - define ammo_current 20
-  - define ammo_max 291
-  - define ammo_icon <&chr[E002].font[icons]>
-  - define ammo_     <element[<element[<[ammo_current]> / <[ammo_max]>].font[ammo_text]> <[ammo_icon]>].color[<color[12,0,0]>]>
+  - define ammo_ <empty>
+  - if <player.item_in_hand.script.name.starts_with[gun_]||false>:
+    - define gun_uuid    <player.item_in_hand.flag[uuid]>
+    - define ammo_type   <player.item_in_hand.flag[ammo_type]>
+    - define loaded_ammo <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
+    - define total_ammo  <player.flag[fort.ammo.<[ammo_type]>]||0>
+    - define ammo_icon   <&chr[E00<map[light=1;medium=2;heavy=3;shells=4;rocket=5].get[<[ammo_type]>]>].font[icons]>
+    - define ammo_       <element[<element[<[loaded_ammo]> / <[total_ammo]>].font[ammo_text]> <[ammo_icon]>].color[<color[12,0,0]>]>
 
   - define empty_bar <&chr[C000].font[icons]>
 
@@ -86,12 +90,19 @@ hud_handler:
   type: world
   debug: false
   events:
-    on player scrolls their hotbar:
+    after player scrolls their hotbar:
     - stop if:<player.world.name.equals[fortnite_map].not>
     - define new_slot <context.new_slot>
     - define old_slot <context.previous_slot>
 
     - inject update_hud
+
+    - if <player.item_in_hand.script.name.starts_with[gun].not||true>:
+      - stop
+    - define gun      <player.item_in_hand>
+    - define gun_uuid <[gun].flag[uuid]>
+    - if <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]> == 0:
+      - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
 
     on player swaps items:
     - stop if:<player.world.name.equals[fortnite_map].not>

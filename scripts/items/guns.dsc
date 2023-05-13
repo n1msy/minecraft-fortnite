@@ -7,6 +7,60 @@ fort_gun_handler:
   debug: false
   definitions: data
   events:
+
+    on player picks up ammo_*:
+    - determine passively cancelled
+    - define add_qty    <context.item.quantity>
+    - define ammo_type  <context.item.script.name.after_last[_]>
+    - define total_ammo <player.flag[fort.ammo.<[ammo_type]>]||0>
+    - if <[total_ammo]> >= 999:
+      - stop
+
+    - define new_total <[total_ammo].add[<[add_qty]>]>
+
+    - if <[new_total]> > 999:
+      - define left_over <[new_total].sub[999]>
+      - define add_qty   <[add_qty].sub[<[left_over]>]>
+      - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[left_over]>]>
+
+    - adjust <player> fake_pickup:<context.entity>
+    - remove <context.entity>
+
+    - flag player fort.ammo.<[ammo_type]>:+:<[add_qty]>
+    - inject update_hud
+
+    after ammo_* merges:
+    - define item <context.item>
+    - define target <context.target>
+    - define other_item <[target].item>
+
+    #if they're different ammot ypes
+    - if <[item].script.name> != <[other_item].script.name>:
+      - determine passively cancelled
+      - stop
+
+    - define new_qty   <[other_item].quantity>
+
+    - define ammo_type <[item].script.name.after_last[_]>
+    - define ammo_icon <&chr[E00<map[light=1;medium=2;heavy=3;shells=4;rocket=5].get[<[ammo_type]>]>].font[icons]>
+    - define text <[ammo_icon]><&f><&l>x<[new_qty]>
+
+    - adjust <[target]> custom_name:<[text]>
+
+    on player starts sneaking:
+    - drop gun_assault_rifle <player.location> delay:1.5s
+
+    after player picks up gun_*:
+    - define gun_uuid <context.item.flag[uuid]>
+    - define mag_size <context.item.flag[mag_size]>
+    - if !<server.has_flag[fort.temp.<[gun_uuid]>.loaded_ammo]>:
+      - flag server fort.temp.<[gun_uuid]>.loaded_ammo:<[mag_size]>
+
+    - inject update_hud
+
+    after player drops gun_*:
+    - inject update_hud
+
     #"disable" left clicking with guns
     on player left clicks block with:gun_*:
     - determine passively cancelled
@@ -19,8 +73,12 @@ fort_gun_handler:
 
     - define gun        <player.item_in_hand>
     - define gun_name   <[gun].script.name.after[_]>
+    - define gun_uuid   <[gun].flag[uuid]>
 
     #-out of ammo check
+    - define loaded_ammo <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
+    - if <[loaded_ammo]> == 0:
+      - stop
 
     #all NON-AUTO guns have cooldowns
     - if <player.has_flag[fort.<[gun_name]>.cooldown]>:
@@ -33,13 +91,14 @@ fort_gun_handler:
 
     - run fort_gun_handler.shoot def:<map[gun=<[gun]>]>
 
-
   ## - [ Shoot Stuff ] - ##
   shoot:
 
     - define world           <player.world>
     - define gun             <[data].get[gun]>
     - define gun_name        <[gun].script.name.after[_]>
+    - define gun_uuid        <[gun].flag[uuid]>
+    - define ammo_type       <[gun].flag[ammo_type]>
 
     - define rarity              <[gun].flag[rarity]>
     - define base_damage         <[gun].flag[rarities.<[rarity]>.damage]>
@@ -73,8 +132,7 @@ fort_gun_handler:
           - define volume <[gun].flag[Sounds.<[sound]>.Volume]>
           - playsound <player.location> sound:<[sound]> pitch:<[pitch]> volume:<[volume]>
 
-        #- inject fort_gun_handler.ammo
-        #- inject fort_gun_handler.empty_gun_check
+        - inject fort_gun_handler.ammo_handler
 
         - flag player is_shooting.loc:<player.location>
         - if <[gun].has_flag[cooldown]> && <[times_shot]> == 1:
@@ -191,12 +249,12 @@ fort_gun_handler:
 
 
   camera_shake:
-  #default: 0.094
-  - define mult <[data].get[mult]>
-  - define ticks <[data].get[ticks]||2>
-  - adjust <player> fov_multiplier:<[mult]>
-  - wait <[ticks]>t
-  - adjust <player> fov_multiplier
+    #default: 0.094
+    - define mult <[data].get[mult]>
+    - define ticks <[data].get[ticks]||2>
+    - adjust <player> fov_multiplier:<[mult]>
+    - wait <[ticks]>t
+    - adjust <player> fov_multiplier
 
   recoil:
 
@@ -226,6 +284,89 @@ fort_gun_handler:
         - repeat 4:
           - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.add[0.175]> offthread_repeat:3
           - wait 1t
+
+  # - [ Ammo ] - #
+  ammo_handler:
+
+    - flag server fort.temp.<[gun_uuid]>.loaded_ammo:--
+    - define loaded_ammo <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
+
+    - inject update_hud
+
+    - if <[loaded_ammo]> == 0:
+      - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
+      - while stop
+
+  drop_ammo:
+
+    - define ammo_type <[data].get[ammo_type]>
+    - define qty       <[data].get[qty]>
+    - define loc       <player.eye_location.forward[1.5].sub[0,0.5,0]>
+
+    - define item <item[ammo_<[ammo_type]>].with[quantity=<[qty]>]>
+
+    - drop <[item]> <[loc]> delay:1s save:drop
+    - define drop <entry[drop].dropped_entity>
+
+    - define icon <&chr[E00<map[light=1;medium=2;heavy=3;shells=4;rocket=5].get[<[ammo_type]>]>].font[icons]>
+
+    - define text <[icon]><&f><&l>x<[qty]>
+    - define loc <[drop].location>
+
+    - adjust <[drop]> custom_name:<[text]>
+    - adjust <[drop]> custom_name_visible:true
+
+  reload:
+    - define gun         <[data].get[gun]>
+    - define gun_uuid    <[gun].flag[uuid]>
+    - define rarity      <[gun].flag[rarity]>
+    - define ammo_type   <[gun].flag[ammo_type]>
+    - define mag_size    <[gun].flag[mag_size]>
+    - define total_ammo  <player.flag[fort.ammo.<[ammo_type]>]||0>
+
+    - if <[total_ammo]> == 0:
+      - stop
+
+
+    - flag player fort.reloading_gun
+
+    #to ticks
+    - define reload_time <[gun].flag[rarities.<[rarity]>.reload_time].mul[20]>
+    - define text <element[Reloading...].to_list>
+
+    - cast SLOW_DIGGING amplifier:255 duration:9999999s no_icon no_ambient hide_particles
+    - repeat <[reload_time].div[3]>:
+
+      #if they hold it and it's, it'll auto reload
+      - if <player.item_in_hand> != <[gun]>:
+        - define cancelled True
+        - repeat stop
+
+      - define completed <[value].mul[12].div[<[reload_time].div[3]>].round>
+      - define reloading_text <&c><[text].get[1].to[<[completed]>].unseparated||<empty>><&7><[text].get[<[completed].add[1]>].to[12].unseparated||<empty>>
+
+      - actionbar <[completed].equals[12].if_true[<&c><[text].unseparated>].if_false[<[reloading_text]>]>
+      - playsound <player.location> sound:BLOCK_NOTE_BLOCK_HAT pitch:<[value].div[<[reload_time].div[2]>].add[1]> volume:1.2
+      - wait 3t
+
+    - if !<[cancelled].exists>:
+
+      - if <[total_ammo]> < <[mag_size]>:
+        - define new_loaded_ammo <[total_ammo]>
+      - else:
+        - define new_loaded_ammo <[mag_size]>
+      - define new_total_ammo <[total_ammo].sub[<[new_loaded_ammo]>]>
+
+      - flag server fort.temp.<[gun_uuid]>.loaded_ammo:<[new_loaded_ammo]>
+      - flag player fort.ammo.<[ammo_type]>:<[new_total_ammo]>
+
+      - inject update_hud
+      - playsound <player.location> sound:BLOCK_NOTE_BLOCK_BIT pitch:1 volume:1.2
+      - actionbar <&a>Reloaded
+
+    - cast SLOW_DIGGING remove
+    - flag player fort.reloading_gun:!
+
 
   shoot_fx:
     - if <player.is_sneaking> && <[gun].has_flag[has_scope]>:
@@ -289,6 +430,57 @@ fort_gun_handler:
 
 #@ [ Gun Data ] @#
 
+ammo_light:
+  type: item
+  material: gold_nugget
+  display name: LIGHT
+  mechanisms:
+    custom_model_data: 1
+    hides: ALL
+  flags:
+    qty: 1
+
+ammo_medium:
+  type: item
+  material: gold_nugget
+  display name: MEDIUM
+  mechanisms:
+    custom_model_data: 1
+    hides: ALL
+  flags:
+    qty: 1
+
+ammo_heavy:
+  type: item
+  material: gold_nugget
+  display name: HEAVY
+  mechanisms:
+    custom_model_data: 1
+    hides: ALL
+  flags:
+    qty: 1
+
+ammo_shells:
+  type: item
+  material: gold_nugget
+  display name: SHELLS
+  mechanisms:
+    custom_model_data: 1
+    hides: ALL
+  flags:
+    qty: 1
+
+ammo_rockets:
+  type: item
+  material: gold_nugget
+  display name: ROCKETS
+  mechanisms:
+    custom_model_data: 1
+    hides: ALL
+  flags:
+    qty: 1
+
+
 gun_pump_shotgun:
   type: item
   material: wooden_hoe
@@ -303,6 +495,7 @@ gun_pump_shotgun:
     #global stats
     #min is 5 if you want singular shots
     ticks_between_shots: 5
+    ammo_type: shells
     mag_size: 5
     #in seconds
     cooldown: 1
@@ -313,6 +506,7 @@ gun_pump_shotgun:
     headshot_multiplier: 2
     #if there's a slightly different shoot effect alongside the base ones
     custom_recoil_fx: true
+    uuid: <util.random_uuid>
     #rarity-based states
     rarities:
       common:
@@ -366,6 +560,7 @@ gun_assault_rifle:
     #global stats
     #min is 5 if you want singular shots
     ticks_between_shots: 4
+    ammo_type: medium
     mag_size: 30
     #in seconds
     #cooldown: 0
@@ -374,6 +569,7 @@ gun_assault_rifle:
     bloom_multiplier: 1
     headshot_multiplier: 1.5
     custom_recoil_fx: false
+    uuid: <util.random_uuid>
     rarities:
       common:
         damage: 30
@@ -421,6 +617,7 @@ gun_tactical_smg:
     #global stats
     #min is 5 if you want singular shots
     ticks_between_shots: 2
+    ammo_type: light
     mag_size: 25
     #in seconds
     #cooldown: 0
@@ -429,6 +626,7 @@ gun_tactical_smg:
     bloom_multiplier: 1.5
     headshot_multiplier: 1.75
     custom_recoil_fx: false
+    uuid: <util.random_uuid>
     rarities:
       #no common tac smgs
       uncommon:

@@ -92,23 +92,26 @@ fort_pic_handler:
     on player picks up oak_log|bricks|iron_block:
     - if !<context.entity.has_flag[qty]>:
       - stop
-    #- define name_entity <context.entity.flag[name_entity]||null>
+    - determine passively cancelled
+
     - define qty         <context.entity.flag[qty]>
     - define mat         <map[oak_log=wood;bricks=brick;iron_block=metal].get[<context.item.material.name>]>
 
     - if <player.flag[fort.<[mat]>.qty]||0> >= 999:
-      - determine passively cancelled
       - stop
 
-    #fallback in case they picked the drop before the name entity spawned
-    #- if <[name_entity]> != null:
-      #- remove <[name_entity]>
+    - adjust <player> fake_pickup:<context.entity>
+    - remove <context.entity>
+
     - run fort_pic_handler.mat_count def:<map[qty=<[qty]>;mat=<[mat]>;action=add]>
 
     on oak_log|bricks|iron_block merges:
     - define e <context.entity>
+
+    #then it hasn't spawned correctly/it's a natural block
     - if !<[e].has_flag[qty]>:
       - stop
+
     - define target <context.target>
     - define mat       <map[oak_log=wood;bricks=brick;iron_block=metal].get[<context.item.material.name>]>
     - define other_mat <map[oak_log=wood;bricks=brick;iron_block=metal].get[<[target].item.material.name>]>
