@@ -47,9 +47,6 @@ fort_gun_handler:
 
     - adjust <[target]> custom_name:<[text]>
 
-    on player starts sneaking:
-    - drop gun_assault_rifle <player.location> delay:1.5s
-
     after player picks up gun_*:
     - define gun_uuid <context.item.flag[uuid]>
     - define mag_size <context.item.flag[mag_size]>
@@ -60,6 +57,23 @@ fort_gun_handler:
 
     after player drops gun_*:
     - inject update_hud
+
+    # - [ scope ] - #
+    after player starts sneaking:
+    - if <player.item_in_hand.script.name.starts_with[gun_].not||true>:
+      - stop
+    - define gun <player.item_in_hand>
+
+    - flag player fort.gun_scoped
+
+    #zoom in
+    - cast SPEED amplifier:-4 duration:9999s no_icon no_ambient hide_particles
+
+    #wait until anything stops them from scoping
+    - waituntil !<player.is_online> || !<player.is_sneaking> || <player.gamemode> == SPECTATOR || <player.item_in_hand> != <[gun]> rate:1t
+
+    - cast SPEED remove
+    - flag player fort.gun_scoped:!
 
     #"disable" left clicking with guns
     on player left clicks block with:gun_*:
