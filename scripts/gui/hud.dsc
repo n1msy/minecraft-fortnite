@@ -92,9 +92,7 @@ hud_handler:
   type: world
   debug: false
   events:
-    ####to do next: dont let players change the position of the icons, but let them drag and drop it outside their inventory to drop it with the inventory shit
-    on player clicks paper in inventory:
-    - determine cancelled
+
 
     after player scrolls their hotbar:
     - stop if:<player.world.name.equals[fortnite_map].not>
@@ -128,13 +126,16 @@ hud_handler:
     - inject update_hud
 
   update_inventory:
+
+  - define drop_text "<&r><n><&9><&l>Left-Click <&f>to drop one.<n><&c><&l>Right-Click <&f>to drop multiple."
+
   #resources
   - foreach <list[wood|brick|metal]> as:mat:
     - if !<player.has_flag[fort.<[mat]>.qty]> || <player.flag[fort.<[mat]>.qty]> == 0:
       - foreach next
     - define name <[mat].to_uppercase.bold>
-    - define lore "<&7>Qty: <&f><player.flag[fort.<[mat]>.qty]>"
-    - define item <item[paper].with[display=<[name]>;lore=<[lore]>;custom_model_data=<[loop_index].add[7]>]>
+    - define lore <list[<&7>Qty: <&f><player.flag[fort.<[mat]>.qty]>|<[drop_text]>]>
+    - define item <item[paper].with[display=<[name]>;lore=<[lore]>;custom_model_data=<[loop_index].add[7]>;flag=type:material;flag=mat:<[mat]>]>
     - define slot <[loop_index].add[18]>
     - inventory set o:<[item]> slot:<[slot]>
 
@@ -143,8 +144,8 @@ hud_handler:
     - if !<player.has_flag[fort.ammo.<[ammo_type]>]> || <player.flag[fort.ammo.<[ammo_type]>]> == 0:
       - foreach next
     - define name <[ammo_type].to_uppercase.bold>
-    - define lore "<&7>Qty: <&f><player.flag[fort.ammo.<[ammo_type]>]>"
-    - define item <item[paper].with[display=<[name]>;lore=<[lore]>;custom_model_data=<[loop_index].add[11]>]>
+    - define lore <list[<&7>Qty: <&f><player.flag[fort.ammo.<[ammo_type]>]>|<[drop_text]>]>
+    - define item <item[paper].with[display=<[name]>;lore=<[lore]>;custom_model_data=<[loop_index].add[11]>;flag=type:ammo;flag=ammo_type:<[ammo_type]>]>
     - define slot <[loop_index].add[22]>
     - inventory set o:<[item]> slot:<[slot]>
 

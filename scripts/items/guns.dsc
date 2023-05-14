@@ -359,7 +359,8 @@ fort_gun_handler:
       - define completed <[value].mul[12].div[<[reload_time].div[3]>].round>
       - define reloading_text <&c><[text].get[1].to[<[completed]>].unseparated||<empty>><&7><[text].get[<[completed].add[1]>].to[12].unseparated||<empty>>
 
-      - actionbar <[completed].equals[12].if_true[<&c><[text].unseparated>].if_false[<[reloading_text]>]>
+      #- actionbar <[completed].equals[12].if_true[<&c><[text].unseparated>].if_false[<[reloading_text]>]>
+      - title subtitle:<[completed].equals[12].if_true[<&c><[text].unseparated>].if_false[<[reloading_text]>]> fade_in:0
       - playsound <player.location> sound:BLOCK_NOTE_BLOCK_HAT pitch:<[value].div[<[reload_time].div[2]>].add[1]> volume:1.2
       - wait 3t
 
@@ -376,7 +377,8 @@ fort_gun_handler:
 
       - inject update_hud
       - playsound <player.location> sound:BLOCK_NOTE_BLOCK_BIT pitch:1 volume:1.2
-      - actionbar <&a>Reloaded
+      #- actionbar <&a>Reloaded
+      - title subtitle:<&a>Reloaded fade_in:0 fade_out:0.5 stay:5t
 
     - cast SLOW_DIGGING remove
     - flag player fort.reloading_gun:!
