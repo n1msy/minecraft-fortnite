@@ -92,6 +92,7 @@ hud_handler:
   type: world
   debug: false
   events:
+    ####to do next: dont let players change the position of the icons, but let them drag and drop it outside their inventory to drop it with the inventory shit
     on player clicks paper in inventory:
     - determine cancelled
 
