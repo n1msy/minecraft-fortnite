@@ -18,7 +18,7 @@ update_hud:
     - define loaded_ammo <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
     - define total_ammo  <player.flag[fort.ammo.<[ammo_type]>]||0>
     - define ammo_icon   <&chr[E00<map[light=1;medium=2;heavy=3;shells=4;rocket=5].get[<[ammo_type]>]>].font[icons]>
-    - define ammo_       <element[<element[<[loaded_ammo]> / <[total_ammo]>].font[ammo_text]> <[ammo_icon]>].color[<color[12,0,0]>]>
+    - define ammo_       <element[    <element[<[loaded_ammo]> / <[total_ammo]>].font[ammo_text]> <[ammo_icon]>].color[<color[12,0,0]>]>
 
   - define empty_bar <&chr[C000].font[icons]>
 
