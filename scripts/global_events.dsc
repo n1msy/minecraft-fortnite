@@ -3,11 +3,60 @@ fort_global_handler:
   debug: false
   events:
 
+    ####just pre-apply the font for the inventory for the drop in the slot and click
+
     on player clicks in inventory flagged:fort.drop_menu:
-    - determine passively cancelled
-    - if !<context.item.has_flag[action]>:
+    - define i <context.item>
+    - if !<[i].has_flag[action]>:
       - stop
-    - narrate <context.item.flag[action]>
+    - determine passively cancelled
+    - define total    <player.flag[fort.drop_menu.total]>
+    - define type     <player.flag[fort.drop_menu.type]>
+    - define sub_type <player.flag[fort.drop_menu.sub_type].to_titlecase>
+    - define current_qty <player.flag[fort.drop_menu.qty]>
+
+    - choose <[i].flag[action]>:
+      - case drop:
+        - if <context.click> == LEFT:
+          - if <[current_qty]> > 0:
+            - choose <[type]>:
+              - case ammo:
+                - flag player fort.ammo.<[sub_type]>:-:<[current_qty]>
+                - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[sub_type]>;qty=<[current_qty]>]>
+              - case material:
+                - flag player fort.<[sub_type]>.qty:-:<[current_qty]>
+                - run fort_pic_handler.drop_mat def:<map[mat=<[sub_type]>;qty=<[current_qty]>]>
+              - default:
+                - narrate "<&c>Oops... that wasn't supposed to happen. Whatever..."
+          - inventory close
+          - inject hud_handler.update_inventory
+          - inject update_hud
+        - else if <context.click> == RIGHT:
+          - inventory close
+        - stop
+      - case max:
+        - define qty <[total]>
+      - case min:
+        - define qty 1
+      - default:
+        - define add_qty     <[i].flag[action].as_decimal>
+        - define qty <[current_qty].add[<[add_qty]>]>
+        - if <[current_qty].add[<[add_qty]>]> > <[total]>:
+          - define qty <[total]>
+        - else if <[current_qty].add[<[add_qty]>]> < 0:
+          - define qty 0
+
+    - choose <[type]>:
+      - case ammo:
+        - define icon <&chr[E0<map[light=11;medium=22;heavy=33;shells=44;rockets=55].get[<[sub_type]>]>].font[icons]>
+        - define name "<[sub_type]> Ammo"
+      - case material:
+        - define icon <&chr[A<map[wood=112;brick=223;metal=334].get[<[sub_type]>]>].font[icons]>
+        - define name <[sub_type]>
+
+    - flag player fort.drop_menu.changed_qty
+    #qty flag is handled in here
+    - inject fort_global_handler.open_drop_menu
 
     on player clicks paper in inventory:
     - determine passively cancelled
@@ -16,39 +65,32 @@ fort_global_handler:
     - if !<[i].has_flag[type]>:
       - stop
 
+    #i they were already in the drop menu, dont erase the flags when it closes
+    - if <player.has_flag[fort.drop_menu]>:
+      - flag player fort.drop_menu.changed_qty
+
+    - define type <[i].flag[type]>
     #-drop menu
-    - choose <[i].flag[type]>:
+    - choose <[type]>:
       - case ammo:
-        - define ammo_type <[i].flag[ammo_type]>
-        - define total <player.flag[fort.ammo.<[ammo_type]>]>
-        - define icon <&chr[E0<map[light=11;medium=22;heavy=33;shells=44;rockets=55].get[<[ammo_type]>]>].font[icons]>
-        - define type <[ammo_type].to_titlecase>
+        - define sub_type <[i].flag[ammo_type].to_titlecase>
+        - define total <player.flag[fort.ammo.<[sub_type]>]>
+        - define icon <&chr[E0<map[light=11;medium=22;heavy=33;shells=44;rockets=55].get[<[sub_type]>]>].font[icons]>
+        - define name "<[sub_type]> Ammo"
       - case material:
-        - define mat <[i].flag[mat]>
-        - define total <player.flag[fort.<[mat]>.qty]>
-        - define icon <&chr[A<map[wood=111;brick=222;metal=333].get[<[mat]>]>].font[icons]>
-        - define type <[mat].to_titlecase>
+        - define sub_type <[i].flag[mat].to_titlecase>
+        - define total <player.flag[fort.<[sub_type]>.qty]>
+        - define icon <&chr[A<map[wood=112;brick=223;metal=334].get[<[sub_type]>]>].font[icons]>
+        - define name <[sub_type]>
 
-    - define size 9
-    - define title "<&f><[icon]> <&7>0<&f>/<[total]>"
-    - define drop     <item[gold_nugget].with[flag=action:drop;display=<&f>Drop <&b>0 <&f><[type]> <[icon]><&f>?;lore=<list[<n><&9><&l>Left-Click <&f>to drop.|<&c><&l>Right-Click <&f>to drop cancel.]>]>
-    - define min      <item[red_wool].with[flag=action:min;display=<&c><&l>Minimum;lore=<&e>Click to set.]>
-    - define less_1   <item[red_stained_glass_pane].with[flag=qty:-1;display=<&c><&l>-1;lore=<&e>Click to subtract.]>
-    - define less_10  <item[red_stained_glass_pane].with[flag=qty:-10;display=<&c><&l>-10;lore=<&e>Click to subtract.]>
-    - define less_100 <item[red_stained_glass_pane].with[flag=qty:-10;display=<&c><&l>-100;lore=<&e>Click to subtract.]>
-    - define more_1   <item[lime_stained_glass_pane].with[flag=qty:+1;display=<&a><&l>+1;lore=<&e>Click to add.]>
-    - define more_10  <item[lime_stained_glass_pane].with[flag=qty:+10;display=<&a><&l>+10;lore=<&e>Click to add.]>
-    - define more_100 <item[lime_stained_glass_pane].with[flag=qty:+1;display=<&a><&l>+100;lore=<&e>Click to add.]>
-    - define max      <item[lime_wool].with[flag=action:min;display=<&a><&l>Maximum;lore=<&e>Click to set.]>
-
-    - define contents <list[<[min]>|<[less_100]>|<[less_10]>|<[less_1]>|<[drop]>|<[more_1]>|<[more_10]>|<[more_100]>|<[max]>]>
-
-    - define inv <inventory[generic[title=<[title]>;size=<[size]>;contents=<[contents]>]]>
-
-    - inventory open d:<[inv]>
-    - flag player fort.drop_menu.qty:0
+    - define qty 0
+    - inject fort_global_handler.open_drop_menu
 
     on player closes inventory flagged:fort.drop_menu:
+    #meaning the inventory wasn't actually closed, just a new one was opened
+    - if <player.has_flag[fort.drop_menu.changed_qty]>:
+      - flag player fort.drop_menu.changed_qty:!
+      - stop
     - flag player fort.drop_menu:!
 
     on block drops item from breaking:
@@ -71,21 +113,30 @@ fort_global_handler:
     on player heals:
     - determine cancelled
 
-fort_drop_menu:
-  debug: false
-  type: inventory
-  inventory: CHEST
-  title: Drop Items »
-  size: 9
-  definitions:
-    drop: <item[gold_nugget].with[flag=action:drop;display=<list[<&r><n><&9><&l>Left-Click <&f>to drop.<n><&c><&l>Right-Click <&f>to drop cancel.]>]>
-    min: <item[red_wool].with[flag=action:min;display=<&c><&l>Minimum]>
-    less_1: <item[red_stained_glass_pane].with[flag=qty:-1;display=<&c><&l>-1]>
-    less_10: <item[red_stained_glass_pane].with[flag=qty:-10;display=<&c><&l>-10]>
-    less_100: <item[red_stained_glass_pane].with[flag=qty:-10;display=<&c><&l>-100]>
-    more_1: <item[red_stained_glass_pane].with[flag=qty:+1;display=<&a><&l>+1]>
-    more_10: <item[red_stained_glass_pane].with[flag=qty:+10;display=<&a><&l>+10]>
-    more_100: <item[red_stained_glass_pane].with[flag=qty:+1;display=<&a><&l>+100]>
-    max: <item[lime_wool].with[flag=action:min;display=<&a><&l>Maximum]>
-  slots:
-    - [min] [less_100] [less_10] [less_1] [drop] [more_1] [more_10] [more_100] [max]
+  open_drop_menu:
+  #required definitions: <[icon]>, <[qty]>, and much more..
+
+    - flag player fort.drop_menu.qty:<[qty]>
+    - flag player fort.drop_menu.total:<[total]>
+    - flag player fort.drop_menu.type:<[type]>
+    - flag player fort.drop_menu.sub_type:<[sub_type]>
+
+    - define size 9
+    - define custom_gui <&f><proc[spacing].context[-8]><&chr[0007].font[icons]>
+    - define title "<[custom_gui]><proc[spacing].context[-119]><&f><[icon]> <&7><[qty]><&f>/<[total]>"
+    - define blank     <item[paper].with[custom_model_data=17]>
+    - define drop      <[blank].with[flag=action:drop;display=<&f>Drop <&b>0 <&f><[name]> <[icon]><&f> ?;lore=<list[<n><&9><&l>Left-Click <&f>to drop.|<&c><&l>Right-Click <&f>to drop cancel.]>]>
+    - define min       <[blank].with[flag=action:min;display=<&c><&l>Minimum;lore=<&e>Click to set.]>
+    - define less_1    <[blank].with[flag=action:-1;display=<&c><&l>-1;lore=<&e>Click to subtract.]>
+    - define less_10   <[blank].with[flag=action:-10;display=<&c><&l>-10;lore=<&e>Click to subtract.]>
+    - define less_100  <[blank].with[flag=action:-100;display=<&c><&l>-100;lore=<&e>Click to subtract.]>
+    - define more_1    <[blank].with[flag=action:+1;display=<&a><&l>+1;lore=<&e>Click to add.]>
+    - define more_10   <[blank].with[flag=action:+10;display=<&a><&l>+10;lore=<&e>Click to add.]>
+    - define more_100  <[blank].with[flag=action:+100;display=<&a><&l>+100;lore=<&e>Click to add.]>
+    - define max       <[blank].with[flag=action:max;display=<&a><&l>Maximum;lore=<&e>Click to set.]>
+
+    - define contents <list[<[min]>|<[less_100]>|<[less_10]>|<[less_1]>|<[drop]>|<[more_1]>|<[more_10]>|<[more_100]>|<[max]>]>
+    - define inv <inventory[generic[title=<[title]>;size=<[size]>;contents=<[contents]>]]>
+
+    - inventory open d:<[inv]>
+
