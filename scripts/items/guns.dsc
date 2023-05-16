@@ -80,6 +80,17 @@ fort_gun_handler:
     - inject update_hud
 
     after player drops gun_*:
+    - define gun  <context.item>
+    - define drop <context.entity>
+
+    - define name   <[gun].display.strip_color>
+    - define rarity <[gun].flag[rarity]>
+
+    - define text <&l><[name].to_titlecase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=#ffaf24].get[<[rarity]>]>]>
+
+    - adjust <[drop]> custom_name:<[text]>
+    - adjust <[drop]> custom_name_visible:true
+
     - inject update_hud
 
     # - [ scope ] - #
