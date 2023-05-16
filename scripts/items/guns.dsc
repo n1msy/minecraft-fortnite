@@ -166,7 +166,7 @@ fort_gun_handler:
       - flag player fort.<[gun_name]>.cooldown duration:<[gun].flag[cooldown]>s
 
     - flag player is_shooting
-    - while <player.has_flag[gun_holding_down]> && <player.is_online> && <player.item_in_hand> == <[gun]>:
+    - while <player.has_flag[gun_holding_down]> && <player.is_online> && <player.item_in_hand.flag[uuid]||null> == <[gun_uuid]>:
       #do 1 instead of 0 so there's no delay on the first shot
       - if <[loop_index].mod[<[ticks_between_shots]>]> == <[mod_value]>:
 
@@ -387,7 +387,7 @@ fort_gun_handler:
     - repeat <[reload_time].div[3]>:
 
       #if they hold it and it's, it'll auto reload
-      - if <player.item_in_hand> != <[gun]>:
+      - if <player.item_in_hand.flag[uuid]||null> != <[gun_uuid]>:
         - define cancelled True
         - repeat stop
 

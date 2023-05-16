@@ -3,7 +3,16 @@ fort_global_handler:
   debug: false
   events:
 
-    ####just pre-apply the font for the inventory for the drop in the slot and click
+    #since you only have access to 1-6 slots
+    on player clicks in inventory slot:7|8|9:
+    - determine passively cancelled
+
+    on player drags in inventory:
+    - if <context.slots.contains_any[7|8|9]>:
+      - determine cancelled
+
+    on player clicks in inventory action:PLACE_SOME:
+    - determine cancelled
 
     on player clicks in inventory flagged:fort.drop_menu:
     - define i <context.item>
