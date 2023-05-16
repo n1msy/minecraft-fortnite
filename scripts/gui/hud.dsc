@@ -131,22 +131,24 @@ hud_handler:
 
   #resources
   - foreach <list[wood|brick|metal]> as:mat:
+    - define slot <[loop_index].add[18]>
     - if !<player.has_flag[fort.<[mat]>.qty]> || <player.flag[fort.<[mat]>.qty]> == 0:
+      - inventory set o:air slot:<[slot]>
       - foreach next
     - define name <[mat].to_uppercase.bold>
     - define lore <list[<&7>Qty: <&f><player.flag[fort.<[mat]>.qty]>|<[drop_text]>]>
     - define item <item[paper].with[display=<[name]>;lore=<[lore]>;custom_model_data=<[loop_index].add[7]>;flag=type:material;flag=mat:<[mat]>]>
-    - define slot <[loop_index].add[18]>
     - inventory set o:<[item]> slot:<[slot]>
 
   #ammo
   - foreach <list[light|medium|heavy|shells|rockets]> as:ammo_type:
+    - define slot <[loop_index].add[22]>
     - if !<player.has_flag[fort.ammo.<[ammo_type]>]> || <player.flag[fort.ammo.<[ammo_type]>]> == 0:
+      - inventory set o:air slot:<[slot]>
       - foreach next
     - define name <[ammo_type].to_uppercase.bold>
     - define lore <list[<&7>Qty: <&f><player.flag[fort.ammo.<[ammo_type]>]>|<[drop_text]>]>
     - define item <item[paper].with[display=<[name]>;lore=<[lore]>;custom_model_data=<[loop_index].add[11]>;flag=type:ammo;flag=ammo_type:<[ammo_type]>]>
-    - define slot <[loop_index].add[22]>
     - inventory set o:<[item]> slot:<[slot]>
 
 

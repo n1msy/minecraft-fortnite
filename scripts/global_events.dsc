@@ -10,6 +10,7 @@ fort_global_handler:
     - if !<[i].has_flag[action]>:
       - stop
     - determine passively cancelled
+
     - define total    <player.flag[fort.drop_menu.total]>
     - define type     <player.flag[fort.drop_menu.type]>
     - define sub_type <player.flag[fort.drop_menu.sub_type].to_titlecase>
@@ -18,6 +19,7 @@ fort_global_handler:
     - choose <[i].flag[action]>:
       - case drop:
         - if <context.click> == LEFT:
+          - playsound <player> sound:BLOCK_NOTE_BLOCK_BASS pitch:2
           - if <[current_qty]> > 0:
             - choose <[type]>:
               - case ammo:
@@ -29,16 +31,18 @@ fort_global_handler:
               - default:
                 - narrate "<&c>Oops... that wasn't supposed to happen. Whatever..."
           - inventory close
-          - inject hud_handler.update_inventory
           - inject update_hud
         - else if <context.click> == RIGHT:
           - inventory close
         - stop
       - case max:
+        - playsound <player> sound:BLOCK_NOTE_BLOCK_HAT
         - define qty <[total]>
       - case min:
+        - playsound <player> sound:BLOCK_NOTE_BLOCK_HAT
         - define qty 1
       - default:
+        - playsound <player> sound:BLOCK_NOTE_BLOCK_HAT
         - define add_qty     <[i].flag[action].as_decimal>
         - define qty <[current_qty].add[<[add_qty]>]>
         - if <[current_qty].add[<[add_qty]>]> > <[total]>:
@@ -48,7 +52,7 @@ fort_global_handler:
 
     - choose <[type]>:
       - case ammo:
-        - define icon <&chr[E0<map[light=11;medium=22;heavy=33;shells=44;rockets=55].get[<[sub_type]>]>].font[icons]>
+        - define icon <&chr[E<map[light=111;medium=122;heavy=133;shells=144;rockets=155].get[<[sub_type]>]>].font[icons]>
         - define name "<[sub_type]> Ammo"
       - case material:
         - define icon <&chr[A<map[wood=112;brick=223;metal=334].get[<[sub_type]>]>].font[icons]>
@@ -65,26 +69,39 @@ fort_global_handler:
     - if !<[i].has_flag[type]>:
       - stop
 
-    #i they were already in the drop menu, dont erase the flags when it closes
-    - if <player.has_flag[fort.drop_menu]>:
-      - flag player fort.drop_menu.changed_qty
-
     - define type <[i].flag[type]>
     #-drop menu
     - choose <[type]>:
       - case ammo:
-        - define sub_type <[i].flag[ammo_type].to_titlecase>
-        - define total <player.flag[fort.ammo.<[sub_type]>]>
-        - define icon <&chr[E0<map[light=11;medium=22;heavy=33;shells=44;rockets=55].get[<[sub_type]>]>].font[icons]>
-        - define name "<[sub_type]> Ammo"
+        - define type_name ammo_type
+        - define sub_type      <[i].flag[ammo_type].to_titlecase>
+        - define total         <player.flag[fort.ammo.<[sub_type]>]>
+        - define icon          <&chr[E<map[light=111;medium=122;heavy=133;shells=144;rockets=155].get[<[sub_type]>]>].font[icons]>
+        - define name         "<[sub_type]> Ammo"
+        - define script_path   fort_gun_handler.drop_ammo
+        - define flag_path     fort.ammo.<[sub_type]>
       - case material:
-        - define sub_type <[i].flag[mat].to_titlecase>
-        - define total <player.flag[fort.<[sub_type]>.qty]>
-        - define icon <&chr[A<map[wood=112;brick=223;metal=334].get[<[sub_type]>]>].font[icons]>
-        - define name <[sub_type]>
+        - define type_name mat
+        - define sub_type      <[i].flag[mat].to_titlecase>
+        - define total         <player.flag[fort.<[sub_type]>.qty]>
+        - define icon          <&chr[A<map[wood=112;brick=223;metal=334].get[<[sub_type]>]>].font[icons]>
+        - define name          <[sub_type]>
+        - define script_path   fort_pic_handler.drop_mat
+        - define flag_path     fort.<[sub_type]>.qty
 
-    - define qty 0
-    - inject fort_global_handler.open_drop_menu
+    - if <context.click> == RIGHT:
+      - playsound <player> sound:BLOCK_NOTE_BLOCK_HAT
+      #i they were already in the drop menu, dont erase the flags when it closes
+      - if <player.has_flag[fort.drop_menu]>:
+        - flag player fort.drop_menu.changed_qty
+
+      - define qty 0
+      - inject fort_global_handler.open_drop_menu
+    - else if <context.click> == LEFT:
+      - playsound <player> sound:BLOCK_NOTE_BLOCK_BASS pitch:2
+      - flag player <[flag_path]>:--
+      - run <[script_path]> def:<map[<[type_name]>=<[sub_type]>;qty=1]>
+      - inject update_hud
 
     on player closes inventory flagged:fort.drop_menu:
     #meaning the inventory wasn't actually closed, just a new one was opened
