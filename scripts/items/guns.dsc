@@ -48,10 +48,34 @@ fort_gun_handler:
     - adjust <[target]> custom_name:<[text]>
 
     after player picks up gun_*:
-    - define gun_uuid <context.item.flag[uuid]>
-    - define mag_size <context.item.flag[mag_size]>
+    - define gun      <context.item>
+    - define gun_uuid <[gun].flag[uuid]>
+    - define mag_size <[gun].flag[mag_size]>
+
+    #when initialize the gun
     - if !<server.has_flag[fort.temp.<[gun_uuid]>.loaded_ammo]>:
       - flag server fort.temp.<[gun_uuid]>.loaded_ammo:<[mag_size]>
+
+      - define rarity <[gun].flag[rarity]>
+      - define rarity_line <[rarity].to_titlecase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=#ffaf24].get[<[rarity]>]>]>
+
+      - define stars_line <&f><map[Common=★;Uncommon=★★;Rare=★★★;Epic=★★★★;Legendary=★★★★★].get[<[rarity]>]><n>
+
+      - define damage              <[gun].flag[rarities.<[rarity]>.damage]>
+      - define pellets             <[gun].flag[pellets]>
+      - define ticks_between_shots <[gun].flag[ticks_between_shots]>
+      - define dps <[damage].mul[20].div[<[ticks_between_shots]>].div[<[pellets]>]>
+      - define ammo_icon <&chr[E0<map[light=11;medium=22;heavy=33;shells=44;rockets=55].get[<[gun].flag[ammo_type]>]>].font[icons]>
+      - define dps_line "<[ammo_icon]> <&7>DPS <&f><&l><[dps]><n>"
+
+      - define fire_rate       <element[20].div[<[ticks_between_shots]>].round_to[1]>
+      - define fire_rate_line "<&7>Fire Rate <&f><[fire_rate]>"
+
+      - define mag_line       "<&7>Magazine Size <&f><[gun].flag[mag_size]>"
+
+      - define reload_line    "<&7>Reload Time <&f><[gun].flag[rarities.<[rarity]>.reload_time]>"
+      - define lore <list[<[rarity_line]>|<[stars_line]>|<[dps_line]>|<[fire_rate_line]>|<[mag_line]>|<[reload_line]>]>
+      - inventory adjust slot:<player.inventory.find_item[<[gun]>]> lore:<[lore]>
 
     - inject update_hud
 
