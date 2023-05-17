@@ -429,7 +429,8 @@ fort_gun_handler:
 
     #checking for value so it doesn't repeat the same amount of pellets
     - if <[value]> == 1:
-      - if <[custom_recoil_fx]>:
+      #shotguns aren't autos, so the muzzle flash should pop up every time
+      - if <[custom_recoil_fx]> || <[gun_name]> == pump_shotgun:
         - run fort_gun_handler.custom_recoil_fx.<[gun_name]> def:<map[particle_origin=<[particle_origin]>]>
       - else:
         - run fort_gun_handler.default_recoil_fx def:<map[particle_origin=<[particle_origin]>]>
@@ -474,7 +475,6 @@ fort_gun_handler:
 
       - spawn <entity[armor_stand].with[custom_name=<[text]>;custom_name_visible=true;gravity=false;collidable=false;invulnerable=true;visible=false]> <[particle_origin].below[2.5]> save:flash
       - define flash <entry[flash].spawned_entity>
-
       - wait 2t
       - remove <[flash]>
       - playeffect at:<[particle_origin]> effect:SMOKE_NORMAL offset:0.05 quantity:1 visibility:500
