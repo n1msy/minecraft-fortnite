@@ -15,7 +15,7 @@ fort_item_handler:
     - define rarity <[item].flag[rarity]>
     - define qty    <[item].quantity>
 
-    - define text <&l><[name].to_titlecase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=#ffaf24].get[<[rarity]>]>]><&f><&l>x<[qty]>
+    - define text <&l><[name].to_uppercase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=#ffaf24].get[<[rarity]>]>]><&f><&l>x<[qty]>
 
     - adjust <[drop]> custom_name:<[text]>
     - adjust <[drop]> custom_name_visible:true
