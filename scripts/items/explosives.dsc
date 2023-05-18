@@ -28,7 +28,7 @@ fort_explosive_handler:
 
     - playsound <player> sound:ENTITY_SNOWBALL_THROW pitch:0.9
 
-    #- take item:<[i]>
+    - take item:<[i]>
     - drop gold_nugget <[origin]> delay:9999s save:grenade
     - define grenade <entry[grenade].dropped_entity>
 
