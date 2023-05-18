@@ -4,6 +4,9 @@ fort_heal_handler:
   definitions: data
   events:
     on player left clicks block with:fort_item_bandages|fort_item_medkit|fort_item_small_shield_potion|fort_item_shield_potion flagged:!fort.healing:
+    - determine passively cancelled
+    - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
+
     - define health <player.health.mul[5].round>
     - define real_shield <player.armor_bonus>
     - define shield <[real_shield].mul[5].round>
@@ -99,7 +102,7 @@ fort_item_bandages:
   material: gold_nugget
   display name: <&f><&l>BANDAGES
   mechanisms:
-    custom_model_data: 1
+    custom_model_data: 8
     hides: ALL
   flags:
     rarity: uncommon
@@ -113,7 +116,7 @@ fort_item_medkit:
   material: gold_nugget
   display name: <&f><&l>MED KIT
   mechanisms:
-    custom_model_data: 1
+    custom_model_data: 9
     hides: ALL
   flags:
     rarity: uncommon
@@ -126,7 +129,7 @@ fort_item_small_shield_potion:
   material: gold_nugget
   display name: <&f><&l>SMALL SHIELD POTION
   mechanisms:
-    custom_model_data: 1
+    custom_model_data: 10
     hides: ALL
   flags:
     rarity: uncommon
@@ -139,7 +142,7 @@ fort_item_shield_potion:
   material: gold_nugget
   display name: <&f><&l>SHIELD POTION
   mechanisms:
-    custom_model_data: 1
+    custom_model_data: 11
     hides: ALL
   flags:
     rarity: rare

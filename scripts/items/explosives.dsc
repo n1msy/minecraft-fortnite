@@ -29,7 +29,7 @@ fort_explosive_handler:
     - playsound <player> sound:ENTITY_SNOWBALL_THROW pitch:0.9
 
     - take item:<[i]>
-    - drop gold_nugget <[origin]> delay:9999s save:grenade
+    - drop <item[gold_nugget].with[custom_model_data=7]> <[origin]> delay:9999s save:grenade
     - define grenade <entry[grenade].dropped_entity>
 
     - foreach <[points]> as:p:
@@ -46,7 +46,7 @@ fort_explosive_handler:
     - define grenade_loc <[grenade].location>
     - remove <[grenade]>
 
-    - spawn <entity[item_display].with[item=<item[gold_nugget]>]> <[grenade_loc]> save:e
+    - spawn <entity[item_display].with[item=<item[gold_nugget].with[custom_model_data=7]>]> <[grenade_loc]> save:e
     - define e <entry[e].spawned_entity>
 
 
@@ -73,7 +73,7 @@ fort_explosive_handler:
     - playsound <player> sound:ENTITY_SNOWBALL_THROW pitch:0.9
 
     - take item:<[i]>
-    - drop gold_nugget <[origin]> delay:10s save:grenade
+    - drop <item[gold_nugget].with[custom_model_data=6]> <[origin]> delay:10s save:grenade
     - define grenade <entry[grenade].dropped_entity>
     - run fort_explosive_handler.primed def:<map[grenade=<[grenade]>]>
 
@@ -81,7 +81,7 @@ fort_explosive_handler:
     - foreach <[points]> as:p:
       - define move_loc    <[p].below[<[loop_index].sub[4].power[2].div[95]>]>
       - define grenade_loc <[grenade].location>
-      - playeffect effect:CLOUD at:<[grenade_loc]> quantity:1 offset:0 visibility:300
+      - playeffect effect:CLOUD at:<[grenade_loc].above[0.3]> quantity:1 offset:0 visibility:300
       - adjust <[grenade]> velocity:<[move_loc].sub[<[grenade_loc]>]>
       #max repeat is 30 no matter what OR they hit a wall
       - if <[grenade].is_on_ground>:
@@ -185,7 +185,7 @@ fort_item_grenade:
   material: gold_nugget
   display name: <&f><&l>GRENADE
   mechanisms:
-    custom_model_data: 1
+    custom_model_data: 6
     hides: ALL
   flags:
     rarity: common
@@ -198,7 +198,7 @@ fort_item_impulse_grenade:
   material: gold_nugget
   display name: <&f><&l>IMPULSE GRENADE
   mechanisms:
-    custom_model_data: 1
+    custom_model_data: 7
     hides: ALL
   flags:
     rarity: rare

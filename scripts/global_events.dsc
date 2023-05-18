@@ -3,6 +3,8 @@ fort_global_handler:
   debug: false
   definitions: data
   events:
+    on player swaps items:
+    - determine cancelled
 
     on entity damaged:
 

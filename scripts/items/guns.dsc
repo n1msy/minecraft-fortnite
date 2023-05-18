@@ -79,7 +79,12 @@ fort_gun_handler:
 
     - inject update_hud
 
-    after player drops gun_*:
+    on player drops gun_*:
+    - if <player.has_flag[fort.gun_scoped]>:
+      - determine passively cancelled
+      - stop
+
+    - wait 1t
     - define gun  <context.item>
     - define drop <context.entity>
 
@@ -97,15 +102,25 @@ fort_gun_handler:
     after player starts sneaking:
     - if <player.item_in_hand.script.name.starts_with[gun_].not||true>:
       - stop
-    - define gun <player.item_in_hand>
+    - define gun      <player.item_in_hand>
+    - define gun_uuid <[gun].flag[uuid]>
+    - define slot     <player.held_item_slot>
+    - define cmd      <[gun].custom_model_data>
 
     - flag player fort.gun_scoped
+
+    #scope model
+    - inventory adjust slot:<[slot]> custom_model_data:<[cmd].add[1]>
 
     #zoom in
     - cast SPEED amplifier:-4 duration:9999s no_icon no_ambient hide_particles
 
     #wait until anything stops them from scoping
-    - waituntil !<player.is_online> || !<player.is_sneaking> || <player.gamemode> == SPECTATOR || <player.item_in_hand> != <[gun]> rate:1t
+    - waituntil !<player.is_online> || !<player.is_sneaking> || <player.gamemode> == SPECTATOR || <player.item_in_hand.flag[uuid]||null> != <[gun_uuid]> rate:1t
+
+    #in case they dropped it
+    - if <player.item_in_hand.flag[uuid]||null> == <[gun_uuid]>:
+      - inventory adjust slot:<[slot]> custom_model_data:<[cmd]>
 
     - cast SPEED remove
     - flag player fort.gun_scoped:!
@@ -566,23 +581,23 @@ gun_pump_shotgun:
       common:
         damage: 92
         reload_time: 5.1
-        custom_model_data: x
+        custom_model_data: 1
       uncommon:
         damage: 101
         reload_time: 4.8
-        custom_model_data: x
+        custom_model_data: 1
       rare:
         damage: 110
         reload_time: 4.4
-        custom_model_data: x
+        custom_model_data: 1
       epic:
         damage: 119
         reload_time: 4.0
-        custom_model_data: x
+        custom_model_data: 1
       legendary:
         damage: 128
         reload_time: 3.7
-        custom_model_data: x
+        custom_model_data: 1
     #(in meters/blocks)
     #value is in percentage of damage
     #max means it wont deal any damage past that
@@ -605,7 +620,7 @@ gun_assault_rifle:
   material: wooden_hoe
   display name: <&f><&l>ASSAULT RIFLE
   mechanisms:
-    custom_model_data: 2
+    custom_model_data: 3
     hides: ALL
   flags:
     #this value can be changed
@@ -628,23 +643,23 @@ gun_assault_rifle:
       common:
         damage: 30
         reload_time: 2.7
-        custom_model_data: x
+        custom_model_data: 3
       uncommon:
         damage: 31
         reload_time: 2.6
-        custom_model_data: x
+        custom_model_data: 3
       rare:
         damage: 33
         reload_time: 2.5
-        custom_model_data: x
+        custom_model_data: 3
       epic:
         damage: 35
         reload_time: 2.4
-        custom_model_data: x
+        custom_model_data: 5
       legendary:
         damage: 36
         reload_time: 2.2
-        custom_model_data: x
+        custom_model_data: 5
     #(in meters)
     #value is in percentage of damage
     damage_falloff:
@@ -662,7 +677,7 @@ gun_tactical_smg:
   material: wooden_hoe
   display name: <&f><&l>TACTICAL SMG
   mechanisms:
-    custom_model_data: 3
+    custom_model_data: 7
     hides: ALL
   flags:
     #this value can be changed
@@ -686,19 +701,19 @@ gun_tactical_smg:
       uncommon:
         damage: 18
         reload_time: 2.2
-        custom_model_data: x
+        custom_model_data: 7
       rare:
         damage: 19
         reload_time: 2.1
-        custom_model_data: x
+        custom_model_data: 7
       epic:
         damage: 20
         reload_time: 2.0
-        custom_model_data: x
+        custom_model_data: 7
       legendary:
         damage: 21
         reload_time: 1.9
-        custom_model_data: x
+        custom_model_data: 7
     #(in meters)
     #value is in percentage of damage
     #no damage falloff was found, so im using same as AR
