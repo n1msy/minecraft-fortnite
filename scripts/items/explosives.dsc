@@ -4,7 +4,7 @@ fort_explosive_handler:
   definitions: data
   events:
     #guide lines
-    on player right clicks block with:fort_item_grenade:
+    on player right clicks block with:fort_item_grenade|fort_item_impulse_grenade:
     - repeat 4:
       - define eye_loc <player.eye_location>
       - define origin <[eye_loc].relative[-0.25,0,0.35]>
@@ -19,7 +19,50 @@ fort_explosive_handler:
       - wait 1t
 
 
-    #TODO: remove the item from hand, do damage to entities and structures
+    on player left clicks block with:fort_item_impulse_grenade:
+    - define i       <context.item>
+    - define eye_loc <player.eye_location>
+    - define origin <[eye_loc].relative[-0.25,0,0.35]>
+    - define target_loc <[eye_loc].ray_trace[default=air;range=100]>
+    - define points <[origin].points_between[<[target_loc]>].distance[0.75]>
+
+    - playsound <player> sound:ENTITY_SNOWBALL_THROW pitch:0.9
+
+    #- take item:<[i]>
+    - drop gold_nugget <[origin]> delay:9999s save:grenade
+    - define grenade <entry[grenade].dropped_entity>
+
+    - foreach <[points]> as:p:
+      - define move_loc    <[p].below[<[loop_index].sub[4].power[2].div[95]>]>
+      - define grenade_loc <[grenade].location>
+      - playeffect effect:CLOUD at:<[grenade_loc]> quantity:1 offset:0 visibility:300
+      - adjust <[grenade]> velocity:<[move_loc].sub[<[grenade_loc]>]>
+      #max repeat is 30 no matter what OR they hit a wall
+      - if <[grenade].is_on_ground> || <[grenade_loc].find_blocks.within[0.1].any>:
+        - foreach stop
+
+      - wait 1t
+
+    - define grenade_loc <[grenade].location>
+    - remove <[grenade]>
+
+    - spawn <entity[item_display].with[item=<item[gold_nugget]>]> <[grenade_loc]> save:e
+    - define e <entry[e].spawned_entity>
+
+
+    - playsound <player> sound:BLOCK_NOTE_BLOCK_BIT pitch:1.6
+    - wait 4t
+    - playsound <player> sound:BLOCK_NOTE_BLOCK_BIT pitch:1.6
+    - wait 4t
+
+    - remove <[e]>
+    - playsound <[grenade_loc]> sound:ENTITY_GENERIC_EXPLODE pitch:2 volume:1.6
+    - run fort_explosive_handler.impulse_explosion_fx def:<map[grenade_loc=<[grenade_loc]>]>
+
+    - define entities <[grenade_loc].find_entities.within[3.2]>
+    - foreach <[entities]> as:e:
+      - adjust <[e]> velocity:<[e].location.above[1].sub[<[grenade_loc]>].mul[1.5]>
+
     on player left clicks block with:fort_item_grenade:
     - define i       <context.item>
     - define eye_loc <player.eye_location>
@@ -29,6 +72,7 @@ fort_explosive_handler:
 
     - playsound <player> sound:ENTITY_SNOWBALL_THROW pitch:0.9
 
+    - take item:<[i]>
     - drop gold_nugget <[origin]> delay:10s save:grenade
     - define grenade <entry[grenade].dropped_entity>
     - run fort_explosive_handler.primed def:<map[grenade=<[grenade]>]>
@@ -112,11 +156,28 @@ fort_explosive_handler:
       - else:
         - define Color <color[250,191,27]>
 
-        #(so below doesn't break)
       - playeffect effect:REDSTONE at:<[inside]> offset:0.3 quantity:2 visibility:300 special_data:2|<[Color]>
       - playeffect effect:SMOKE_NORMAL at:<[outline]> offset:0.3 quantity:8 visibility:300
       #- playeffect effect:REDSTONE at:<[outline]> offset:0.5 quantity:5 visibility:300 special_data:1.5|BLACK
       - playeffect effect:EXPLOSION_LARGE at:<[grenade_loc]> quantity:20 offset:<[value].div[3]> visibility:300
+      - wait 1t
+
+  impulse_explosion_fx:
+    - define grenade_loc <[data].get[grenade_loc]>
+    - define size 3
+    - repeat <[size]>:
+      - foreach inside|outside as:sphere:
+        - define <[sphere]> <list[]>
+        - repeat 18 as:circle_value:
+          - define angle <[circle_value].mul[10]>
+          - define circle <util.list_numbers_to[15].parse_tag[<[grenade_loc].add[<location[0,<[value].add[<[circle_value].sub[1]>]>,0].rotate_around_z[<[Parse_Value].to_radians.mul[24]>].rotate_around_x[0].rotate_around_y[<[angle].to_radians>]>]>]>
+          - define <[sphere]> <[<[sphere]>].include[<[circle]>]>
+
+      - define outline <[grenade_loc].to_ellipsoid[<[value].add[1]>,<[value].add[1]>,<[value].add[1]>].shell>
+      - define inside  <[grenade_loc].to_ellipsoid[<[value]>,<[value]>,<[value]>].shell>
+
+      - playeffect effect:REDSTONE at:<[inside]> offset:0.25 quantity:2 visibility:300 special_data:1.5|<color[#7aebff]>
+      - playeffect effect:REDSTONE at:<[outline]> offset:0.25 quantity:5 visibility:300 special_data:1|WHITE
       - wait 1t
 
 fort_item_grenade:
@@ -131,3 +192,14 @@ fort_item_grenade:
     stack_size: 6
     body_damage: 100
     structure_damage: 375
+
+fort_item_impulse_grenade:
+  type: item
+  material: gold_nugget
+  display name: <&f><&l>IMPULSE GRENADE
+  mechanisms:
+    custom_model_data: 1
+    hides: ALL
+  flags:
+    rarity: rare
+    stack_size: 9

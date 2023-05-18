@@ -89,6 +89,8 @@ fort_heal_handler:
         - playeffect at:<[particle_loc]> offset:0.3,0.5,0.3 quantity:25 effect:REDSTONE special_data:1.5|AQUA
         - playsound <player> sound:BLOCK_NOTE_BLOCK_CHIME pitch:1.5
 
+    - take item:<[i]>
+
     - inject update_hud
     - flag player fort.healing:!
 
