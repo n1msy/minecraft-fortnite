@@ -1,23 +1,27 @@
 fort_explosive_handler:
   type: world
   debug: false
+  definitions: data
   events:
     #guide lines
     on player right clicks block with:fort_item_grenade:
-    - define eye_loc <player.eye_location>
-    - define origin <[eye_loc].relative[-0.25,0,0.35]>
-    - define target_loc <[eye_loc].ray_trace[default=air;range=100]>
-    - define points <[origin].points_between[<[target_loc]>].distance[0.75]>
-    - foreach <[points]> as:p:
-      - define particle_loc <[p].below[<[loop_index].sub[4].power[2].div[95]>]>
-      - playeffect effect:REDSTONE at:<[particle_loc]> quantity:1 offset:0 visibility:300 special_data:0.75|AQUA targets:<player>
-      #max repeat is 30 no matter what OR they hit a wall
-      - if <[particle_loc].material.name> != AIR:
-        - foreach stop
+    - repeat 4:
+      - define eye_loc <player.eye_location>
+      - define origin <[eye_loc].relative[-0.25,0,0.35]>
+      - define target_loc <[eye_loc].ray_trace[default=air;range=100]>
+      - define points <[origin].points_between[<[target_loc]>].distance[0.75].exclude[<[origin]>]>
+      - foreach <[points]> as:p:
+        - define particle_loc <[p].below[<[loop_index].sub[4].power[2].div[95]>]>
+        - playeffect effect:REDSTONE at:<[particle_loc]> quantity:1 offset:0 visibility:300 special_data:0.5|AQUA targets:<player>
+        #max repeat is 30 no matter what OR they hit a wall
+        - if <[particle_loc].material.name> != AIR:
+          - foreach stop
+      - wait 1t
 
 
     #TODO: remove the item from hand, do damage to entities and structures
     on player left clicks block with:fort_item_grenade:
+    - define i       <context.item>
     - define eye_loc <player.eye_location>
     - define origin <[eye_loc].relative[-0.25,0,0.35]>
     - define target_loc <[eye_loc].ray_trace[default=air;range=100]>
@@ -47,6 +51,40 @@ fort_explosive_handler:
 
     - define grenade_loc <[grenade].location>
     - remove <[grenade]>
+
+    - playsound <[grenade_loc]> sound:ENTITY_GENERIC_EXPLODE pitch:1 volume:1.2
+    - run fort_explosive_handler.explosion_fx def:<map[grenade_loc=<[grenade_loc]>]>
+
+    - define body_damage      <[i].flag[body_damage]>
+    - define structure_damage <[i].flag[structure_damage]>
+
+    - define radius 4
+
+    - define nearby_tiles <[grenade_loc].find_blocks_flagged[build.center].within[<[radius]>].parse[flag[build.center].flag[build.structure]].deduplicate>
+    - foreach <[nearby_tiles]> as:tile:
+      - define center   <[tile].center.flag[build.center]>
+      - define hp       <[center].flag[build.health]>
+      - define mat_type <[center].flag[build.material]>
+      #filtering so connected blocks aren't affected
+      - define blocks   <[center].flag[build.structure].blocks.filter[flag[build.center].equals[<[center]>]]>
+      - define max_health <script[nimnite_config].data_key[materials.<[mat_type]>.hp]>
+      - define new_health <[hp].sub[<[structure_damage]>]>
+      - if <[new_health]> > 0:
+        - flag <[center]> build.health:<[new_health]>
+        - define progress <element[10].sub[<[new_health].div[<[max_health]>].mul[10]>]>
+        - foreach <[blocks]> as:b:
+          - blockcrack <[b]> progress:<[progress]> players:<server.online_players>
+        - foreach next
+
+      #otherwise, break the tile and anything else connected to it
+      - foreach <[blocks]> as:b:
+        - blockcrack <[b]> progress:0 players:<server.online_players>
+        - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
+      - inject build_system_handler.break
+
+
+  explosion_fx:
+    - define grenade_loc <[data].get[grenade_loc]>
     - define size 3
     - repeat <[size]>:
       - define outline <[grenade_loc].to_ellipsoid[<[value].add[1]>,<[value].add[1]>,<[value].add[1]>].shell>

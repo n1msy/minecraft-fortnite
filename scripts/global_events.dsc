@@ -7,12 +7,12 @@ fort_global_handler:
     #WAY better way of doing this but my brain is too tired to think rn
     on player clicks in inventory slot:7|8|9|10|11|12|13|14|15|16|17|18|28|29|30|31|32|33|34|35|36|19|20|21|22|23|24|25|26|27:
     #19-27 are the resources/ammo slots
-    - if <util.list_numbers[27].parse[add[19]].contains[<context.slot>]> && <context.item.material.name> != air:
+    - if <util.list_numbers[from=19;to=27].contains[<context.slot>]> && <context.item.material.name> != air:
       - stop
     - determine cancelled
 
     on player drags in inventory:
-    - if <context.slots.contains[<util.list_numbers[27].parse[add[19]]>]> && <context.item.material.name> != air:
+    - if <context.slots.contains[<util.list_numbers[from=19;to=27]>]> && <context.item.material.name> != air:
       - stop
     - if <context.slots.contains_any[7|8|9|10|11|12|13|14|15|16|17|18|28|29|30|31|32|33|34|35|36|19|20|21|22|23|24|25|26|27]>:
       - determine passively cancelled
