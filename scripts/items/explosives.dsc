@@ -61,7 +61,7 @@ fort_explosive_handler:
 
     - define entities <[grenade_loc].find_entities.within[3.2]>
     - foreach <[entities]> as:e:
-      - adjust <[e]> velocity:<[e].location.above[1].sub[<[grenade_loc]>].mul[1.5]>
+      - adjust <[e]> velocity:<[e].location.above[1].sub[<[grenade_loc]>]>
 
     on player left clicks block with:fort_item_grenade:
     - define i       <context.item>
