@@ -10,9 +10,19 @@ fort_global_handler:
     - define damage <context.damage>
     - define shield <[e].armor_bonus>
 
-    #fall damage ignores shield
-    #if not shield, just use regular damage system
-    - if <context.cause> != FALL && <[shield]> > 0:
+    #-fall damage ignores shield
+    - if <context.cause> == FALL:
+      #you take half the fall damage now
+      - define damage <[damage].div[2]>
+      #that way the annoying head thing doesn't happen when falling by the smallest amount
+      - if <[damage]> < 2:
+        - determine passively cancelled
+          #(stop the damage indicator from continuing)
+        - stop
+      - else:
+        - determine passively <[damage]>
+    #-if not shield, just use regular damage system
+    - else if <[shield]> > 0:
       #not cancelling, so animation can play
       - determine passively 0
 
@@ -24,6 +34,7 @@ fort_global_handler:
         - define damage <[damage].sub[<[shield]>]>
         - adjust <[e]> health:<[e].health.sub[<[damage]>]>
 
+    - if <[e].is_player>:
       - inject update_hud
 
     #guns handle damage indicators a little differently
@@ -155,16 +166,6 @@ fort_global_handler:
     on block drops item from breaking:
     - stop if:<context.location.world.name.equals[fortnite_map].not>
     - determine cancelled
-
-    on player damaged by FALL:
-    #you take half the fall damage now
-    - define damage <context.damage.div[2]>
-    #that way the annoying head thing doesn't happen when falling by the smallest amount
-    - if <[damage]> < 2:
-      - determine passively cancelled
-      - stop
-
-    - determine <[damage]>
 
     on player changes food level:
     - determine cancelled
