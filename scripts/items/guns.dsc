@@ -605,7 +605,7 @@ gun_assault_rifle:
   material: wooden_hoe
   display name: <&f><&l>ASSAULT RIFLE
   mechanisms:
-    custom_model_data: 1
+    custom_model_data: 2
     hides: ALL
   flags:
     #this value can be changed
@@ -662,7 +662,7 @@ gun_tactical_smg:
   material: wooden_hoe
   display name: <&f><&l>TACTICAL SMG
   mechanisms:
-    custom_model_data: 1
+    custom_model_data: 3
     hides: ALL
   flags:
     #this value can be changed
