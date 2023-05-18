@@ -256,7 +256,7 @@ fort_pic_handler:
 
   - define qty <util.random.int[5].to[6].mul[<[mult]>]>
   - define total_qty <[qty]>
-  - define loc <player.eye_location.forward[2].left[1].below[2.5]>
+  - define loc <player.eye_location.forward[2].left[1]>
 
   - run fort_pic_handler.mat_count def:<map[qty=<[qty]>;mat=wood;action=add]>
 
@@ -268,19 +268,21 @@ fort_pic_handler:
     - if <player.flag[fort.harvest_display].is_spawned> && <player.flag[fort.harvest_display].location> == <[loc]>:
       - define harvest_display <player.flag[fort.harvest_display]>
 
-  - define neg  <proc[spacing].context[-50]>
-  - define text <[neg]><[icon]><&f><&l>+<[total_qty]><[neg]>
+
+  - define text <[icon]><&f><&l>+<[total_qty]>
 
   - if !<[harvest_display].exists>:
-    - spawn <entity[armor_stand].with[custom_name=<[text]>;custom_name_visible=true;gravity=false;collidable=false;invulnerable=true;visible=false]> <[loc]> save:harvest_display
+    - spawn <entity[text_display].with[text=<[text]>;pivot=center;scale=1,1,1]> <[loc]> save:harvest_display
     - define harvest_display <entry[harvest_display].spawned_entity>
+    - run fort_pic_handler.bounce_anim def:<map[e=<[harvest_display]>]>
     - adjust <[harvest_display]> hide_from_players
     - adjust <player> show_entity:<[harvest_display]>
 
   - flag <[harvest_display]> qty:<[total_qty]>
   - flag player fort.harvest_display:<[harvest_display]> duration:2s
-  - adjust <[harvest_display]> custom_name:<[text]>
+  - adjust <[harvest_display]> text:<[text]>
 
+  #probably better way of doing this using whiles?
   - waituntil !<player.has_flag[fort.harvest_display]> || <player.flag[fort.harvest_display]> != <[harvest_display]> max:15s
 
   #this way, waituntils wont stack
@@ -288,10 +290,27 @@ fort_pic_handler:
     #this way, it only plays scroll animation after player stops farming
     - if !<player.has_flag[fort.harvest_display]>:
       - flag <[harvest_display]> remove_animation
-      - repeat 20:
-        - teleport <[harvest_display]> <[harvest_display].location.above[0.015]>
-        - wait 1t
+      - adjust <[harvest_display]> interpolation_start:0
+      - adjust <[harvest_display]> translation:<location[0,0.3,0]>
+      - adjust <[harvest_display]> opacity:0
+      - adjust <[harvest_display]> interpolation_duration:1s
+      - wait 1s
     - remove <[harvest_display]>
+
+  bounce_anim:
+  - define e <[data].get[e]>
+
+  - wait 2t
+  - adjust <[e]> interpolation_start:0
+  - adjust <[e]> scale:<location[2,2,2]>
+  - adjust <[e]> interpolation_duration:2t
+
+  - wait 1t
+
+  - adjust <[e]> interpolation_start:0
+  - adjust <[e]> scale:<location[1,1,1]>
+  - adjust <[e]> interpolation_duration:2t
+
 
   display_build_health:
     - define yaw <map[North=0;South=180;West=-90;East=90].get[<player.location.yaw.simple>]>
@@ -314,12 +333,11 @@ fort_pic_handler:
 
     - flag player fort.build_health:<[health_display]> duration:3s
 
-    ##make sure to remove the backdrop of the health bar after spigot aint so borked anymore
     #-once custom fonts start working on text displays, replace this health bar system with the shader version
     #- define neg <proc[spacing].context[-1]>
     #- define health_text <&a><element[▋].repeat[<[hp].div[15].round_down>]><&8><element[▋].repeat[<[max_hp].sub[<[hp]>].div[15].round_down>]><&r><[hp]>｜<[max_hp]>
     - define health_text "<&f><[hp]> <&7><&l>| <&f><[max_hp]>"
-    - adjust <[health_display]> text=<[health_text]>
+    - adjust <[health_display]> text:<[health_text]>
 
     - waituntil !<player.has_flag[fort.build_health]> || <player.flag[fort.build_health]> != <[health_display]> max:15s
 
