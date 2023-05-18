@@ -499,7 +499,7 @@ ammo_medium:
   material: gold_nugget
   display name: MEDIUM
   mechanisms:
-    custom_model_data: 1
+    custom_model_data: 2
     hides: ALL
   flags:
     qty: 1
@@ -509,7 +509,7 @@ ammo_heavy:
   material: gold_nugget
   display name: HEAVY
   mechanisms:
-    custom_model_data: 1
+    custom_model_data: 3
     hides: ALL
   flags:
     qty: 1
@@ -519,7 +519,7 @@ ammo_shells:
   material: gold_nugget
   display name: SHELLS
   mechanisms:
-    custom_model_data: 1
+    custom_model_data: 4
     hides: ALL
   flags:
     qty: 1
@@ -529,7 +529,7 @@ ammo_rockets:
   material: gold_nugget
   display name: ROCKETS
   mechanisms:
-    custom_model_data: 1
+    custom_model_data: 5
     hides: ALL
   flags:
     qty: 1
