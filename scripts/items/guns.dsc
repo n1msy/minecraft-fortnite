@@ -286,11 +286,14 @@ fort_gun_handler:
             - define body_part <list[Legs|Body|Head].get[<[Loop_Index]>]>
             - foreach stop
 
+        #shot flag is for damage indicator
+        - flag <[target]> fort.shot duration:1t
         - define damage <[damage].mul[<[headshot_multiplier]>].round_down> if:<[body_part].equals[Head]>
+        - hurt <[damage]> <[target]> source:<player>
 
-        - narrate <[damage]>
+        - define color <[body_part].equals[head].if_true[<&e>].if_false[<&f>]>
+        - run fort_global_handler.damage_indicator def:<map[damage=<[damage]>;entity=<[target]>;color=<[color]>]>
 
-        #- hurt <[damage]> <[target]> source:<player>
         - if <[target].is_living>:
           - adjust <[target]> no_damage_duration:0
 

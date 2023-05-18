@@ -1,34 +1,35 @@
 fort_global_handler:
   type: world
   debug: false
+  definitions: data
   events:
 
-    ##make sure to test that the damage reduction is the same when getting hit both for shield and health
-    on player damaged:
-    #fall damage ignores shield
-    - if <context.cause> == FALL:
-      - stop
+    on entity damaged:
 
-    - define shield <player.armor_bonus>
-    #use regular damage system
-    - if <[shield]> == 0:
-      - stop
-
-    #definining it before the determine
+    - define e      <context.entity>
     - define damage <context.damage>
+    - define shield <[e].armor_bonus>
 
-    #not cancelling, so animation can play
-    - determine passively 0
+    #fall damage ignores shield
+    #if not shield, just use regular damage system
+    - if <context.cause> != FALL && <[shield]> > 0:
+      #not cancelling, so animation can play
+      - determine passively 0
 
-    - if <[shield]> >= <[damage]>:
-      - adjust <player> armor_bonus:<[shield].sub[<[damage]>]>
-    - else:
-      #if shield is less than damage
-      - adjust <player> armor_bonus:0
-      - define damage <[damage].sub[<[shield]>]>
-      - adjust <player> health:<player.health.sub[<[damage]>]>
+      - if <[shield]> >= <[damage]>:
+        - adjust <[e]> armor_bonus:<[shield].sub[<[damage]>]>
+      - else:
+        #if shield is less than damage
+        - adjust <[e]> armor_bonus:0
+        - define damage <[damage].sub[<[shield]>]>
+        - adjust <[e]> health:<[e].health.sub[<[damage]>]>
 
-    - inject update_hud
+      - inject update_hud
+
+    #guns handle damage indicators a little differently
+    - if !<[e].has_flag[fort.shot]>:
+      - run fort_global_handler.damage_indicator def:<map[damage=<[damage]>;entity=<context.entity>;color=<&f>]>
+
     #since you only have access to 1-6 slots, and the other slots are category names
     #WAY better way of doing this but my brain is too tired to think rn
     on player clicks in inventory slot:7|8|9|10|11|12|13|14|15|16|17|18|28|29|30|31|32|33|34|35|36|19|20|21|22|23|24|25|26|27:
@@ -170,6 +171,40 @@ fort_global_handler:
 
     on player heals:
     - determine cancelled
+
+  damage_indicator:
+
+    - define damage <[data].get[damage]>
+    - define entity <[data].get[entity]>
+    - define color  <[data].get[color]>
+
+    - define text          <[color]><&l><[damage]>
+    - define pivot         center
+    - define scale         <location[1,1,1]>
+    - define text_shadowed true
+    - define opacity 255
+
+    - define loc <[entity].location.forward_flat[0.5].with_pose[0,0].add[<util.random.decimal[-2].to[2]>,2,<util.random.decimal[-2].to[2]>]>
+
+    - spawn <entity[text_display].with[text=<[text]>;pivot=<[pivot]>;scale=<[scale]>;text_shadowed=<[text_shadowed]>;opacity=<[opacity]>]> <[loc]> save:e
+    - define e <entry[e].spawned_entity>
+
+    - wait 2t
+    - adjust <[e]> interpolation_start:0
+    - adjust <[e]> scale:<location[2,2,2]>
+    - adjust <[e]> interpolation_duration:3t
+    - adjust <[e]> opacity:255
+
+    - wait 1s
+
+    #zoom disappear effect, or opacity effect?
+    - adjust <[e]> interpolation_start:0
+    - adjust <[e]> scale:<location[0,0,0]>
+    - adjust <[e]> interpolation_duration:3t
+    - adjust <[e]> opacity:255
+
+    - wait 3t
+    - remove <[e]>
 
   open_drop_menu:
   #required definitions: <[icon]>, <[qty]>, and much more..

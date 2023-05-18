@@ -307,7 +307,7 @@ fort_pic_handler:
     - if <player.has_flag[fort.build_health]> && <player.flag[fort.build_health].location> == <[loc]>:
       - define health_display <player.flag[fort.build_health]>
     - else:
-      - spawn <entity[text_display].with[display_entity_data=<map[billboard=center]>]> <[loc]> save:health_display
+      - spawn <entity[text_display].with[pivot=center]> <[loc]> save:health_display
       - define health_display <entry[health_display].spawned_entity>
       - adjust <[health_display]> hide_from_players
       - adjust <player> show_entity:<[health_display]>
@@ -319,7 +319,7 @@ fort_pic_handler:
     #- define neg <proc[spacing].context[-1]>
     #- define health_text <&a><element[▋].repeat[<[hp].div[15].round_down>]><&8><element[▋].repeat[<[max_hp].sub[<[hp]>].div[15].round_down>]><&r><[hp]>｜<[max_hp]>
     - define health_text "<&f><[hp]> <&7><&l>| <&f><[max_hp]>"
-    - adjust <[health_display]> display_entity_data:<map[text=<[health_text]>]>
+    - adjust <[health_display]> text=<[health_text]>
 
     - waituntil !<player.has_flag[fort.build_health]> || <player.flag[fort.build_health]> != <[health_display]> max:15s
 
