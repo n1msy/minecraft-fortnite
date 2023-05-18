@@ -26,8 +26,13 @@ fort_explosive_handler:
     - define origin <[eye_loc].relative[-0.25,0,0.35]>
     - define target_loc <[eye_loc].ray_trace[default=air;range=100]>
     - define points <[origin].points_between[<[target_loc]>].distance[0.75]>
+
+    - playsound <player> sound:ENTITY_SNOWBALL_THROW pitch:0.9
+
     - drop gold_nugget <[origin]> delay:10s save:grenade
     - define grenade <entry[grenade].dropped_entity>
+    - run fort_explosive_handler.primed def:<map[grenade=<[grenade]>]>
+
     - flag server fort.grenade.<queue> duration:3s
     - foreach <[points]> as:p:
       - define move_loc    <[p].below[<[loop_index].sub[4].power[2].div[95]>]>
@@ -37,6 +42,7 @@ fort_explosive_handler:
       #max repeat is 30 no matter what OR they hit a wall
       - if <[grenade].is_on_ground>:
         - foreach stop
+
       - if !<server.has_flag[fort.grenade.<queue>]>:
         - define explode True
         - foreach stop
@@ -52,7 +58,7 @@ fort_explosive_handler:
     - define grenade_loc <[grenade].location>
     - remove <[grenade]>
 
-    - playsound <[grenade_loc]> sound:ENTITY_GENERIC_EXPLODE pitch:1 volume:1.2
+    - playsound <[grenade_loc]> sound:ENTITY_GENERIC_EXPLODE pitch:1 volume:1.8
     - run fort_explosive_handler.explosion_fx def:<map[grenade_loc=<[grenade_loc]>]>
 
     - define body_damage      <[i].flag[body_damage]>
@@ -82,6 +88,13 @@ fort_explosive_handler:
         - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
       - inject build_system_handler.break
 
+    - define nearby_entities <[grenade_loc].find_entities.within[<[radius]>]>
+    - hurt <[body_damage]> <[nearby_entities]> source:<player>
+
+  primed:
+    - define grenade <[data].get[grenade]>
+    - wait 1.5s
+    - playsound <[grenade].location> sound:ENTITY_TNT_PRIMED pitch:1.5 volume:1.2
 
   explosion_fx:
     - define grenade_loc <[data].get[grenade_loc]>
