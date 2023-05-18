@@ -85,8 +85,9 @@ fort_gun_handler:
       - stop
 
     - wait 1t
-    - define gun  <context.item>
-    - define drop <context.entity>
+    - define gun    <context.item>
+    - define drop   <context.entity>
+    - define rarity <[gun].flag[rarity]>
 
     - define name   <[gun].display.strip_color>
     - define rarity <[gun].flag[rarity]>
@@ -95,6 +96,9 @@ fort_gun_handler:
 
     - adjust <[drop]> custom_name:<[text]>
     - adjust <[drop]> custom_name_visible:true
+
+    - team name:<[rarity]> add:<[drop]> color:<map[Common=GRAY;Uncommon=GREEN;Rare=AQUA;Epic=LIGHT_PURPLE;Legendary=GOLD].get[<[rarity]>]>
+    - adjust <[drop]> glowing:true
 
     - inject update_hud
 
@@ -383,6 +387,9 @@ fort_gun_handler:
     - adjust <[drop]> custom_name:<[text]>
     - adjust <[drop]> custom_name_visible:true
 
+    - team name:ammo add:<[drop]> color:GRAY
+    - adjust <[drop]> glowing:true
+
   reload:
     - define gun         <[data].get[gun]>
     - define gun_uuid    <[gun].flag[uuid]>
@@ -438,12 +445,8 @@ fort_gun_handler:
 
 
   shoot_fx:
-    - if <player.is_sneaking> && <[gun].has_flag[has_scope]>:
-      #scoped origin
-      - define particle_origin <[eye_loc].forward[1.8].below[0.25]>
-    - else:
-      #default origin
-      - define particle_origin <[eye_loc].forward.relative[-0.33,-0.2,0.3]>
+    #default origin
+    - define particle_origin <proc[gun_particle_origin].context[<[gun_name]>]>
 
     #checking for value so it doesn't repeat the same amount of pellets
     - if <[value]> == 1:
@@ -478,6 +481,7 @@ fort_gun_handler:
     - define neg  <proc[spacing].context[-50]>
     - define text <[neg]><&chr[000<util.random.int[4].to[6]>].font[muzzle_flash]><[neg]>
     - spawn <entity[armor_stand].with[custom_name=<[text]>;custom_name_visible=true;gravity=false;collidable=false;invulnerable=true;visible=false]> <[particle_origin].below[2.4]> save:flash
+    #- spawn <entity[text_display].with[text=<[text]>;pivot=FIXED;scale=1,1,1]> <[particle_origin]> save:flash
     - define flash <entry[flash].spawned_entity>
 
     - wait 2t
@@ -496,6 +500,33 @@ fort_gun_handler:
       - wait 2t
       - remove <[flash]>
       - playeffect at:<[particle_origin]> effect:SMOKE_NORMAL offset:0.05 quantity:1 visibility:500
+
+gun_particle_origin:
+  type: procedure
+  debug: false
+  definitions: gun
+  script:
+  - define eye_loc <player.eye_location>
+  - if !<player.has_flag[fort.gun_scoped]>:
+    - choose <[gun]>:
+      - case tactical_smg:
+        - determine <[eye_loc].forward[0.85].relative[-0.3,-0.2,0.3]>
+      - case pump_shotgun:
+        - determine <[eye_loc].forward.relative[-0.33,0.05,0.3]>
+      - case assault_rifle:
+        - determine <[eye_loc].forward.relative[-0.33,-0.168,0.3]>
+      - default:
+        - determine <[eye_loc].forward.relative[-0.33,-0.2,0.3]>
+  - else:
+    - choose <[gun]>:
+      - case tactical_smg:
+        - determine <[eye_loc].forward[1.8].below[0.2].right[0.03]>
+      - case pump_shotgun:
+        - determine <[eye_loc].forward[1.8].above[0.13].right[0.03]>
+      - case assault_rifle:
+        - determine <[eye_loc].forward[1.8].below[0.065].right[0.03]>
+      - default:
+        - determine <[eye_loc].forward[1.8].below[0.25]>
 
 #@ [ Gun Data ] @#
 
