@@ -89,7 +89,7 @@ fort_explosive_handler:
       - inject build_system_handler.break
 
     - define nearby_entities <[grenade_loc].find_entities.within[<[radius]>]>
-    - hurt <[body_damage]> <[nearby_entities]> source:<player>
+    - hurt <[body_damage].div[5]> <[nearby_entities]> source:<player>
 
   primed:
     - define grenade <[data].get[grenade]>

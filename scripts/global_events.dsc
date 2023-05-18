@@ -3,6 +3,32 @@ fort_global_handler:
   debug: false
   events:
 
+    ##make sure to test that the damage reduction is the same when getting hit both for shield and health
+    on player damaged:
+    #fall damage ignores shield
+    - if <context.cause> == FALL:
+      - stop
+
+    - define shield <player.armor_bonus>
+    #use regular damage system
+    - if <[shield]> == 0:
+      - stop
+
+    #definining it before the determine
+    - define damage <context.damage>
+
+    #not cancelling, so animation can play
+    - determine passively 0
+
+    - if <[shield]> >= <[damage]>:
+      - adjust <player> armor_bonus:<[shield].sub[<[damage]>]>
+    - else:
+      #if shield is less than damage
+      - adjust <player> armor_bonus:0
+      - define damage <[damage].sub[<[shield]>]>
+      - adjust <player> health:<player.health.sub[<[damage]>]>
+
+    - inject update_hud
     #since you only have access to 1-6 slots, and the other slots are category names
     #WAY better way of doing this but my brain is too tired to think rn
     on player clicks in inventory slot:7|8|9|10|11|12|13|14|15|16|17|18|28|29|30|31|32|33|34|35|36|19|20|21|22|23|24|25|26|27:
