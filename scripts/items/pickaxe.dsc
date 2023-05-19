@@ -2,6 +2,8 @@ fort_pic:
   type: item
   material: netherite_pickaxe
   display name: <&f><&l>PICKAXE
+  enchantments:
+  - efficiency:5
   mechanisms:
     custom_model_data: 1
     hides: ALL

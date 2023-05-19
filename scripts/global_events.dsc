@@ -3,8 +3,18 @@ fort_global_handler:
   debug: false
   definitions: data
   events:
-    on player swaps items:
-    - determine cancelled
+
+    on player death:
+    #so clickable shit in the inventory doesn't drop
+    - define drops <context.drops.filter[has_flag[action].not].filter[has_flag[type].not]>
+
+    - if <player.has_flag[fort.gun_scoped]>:
+      - define gun_in_hand <player.item_in_hand>
+      - define cmd         <[gun_in_hand].custom_model_data>
+      - define drops <[drops].exclude[<[gun_in_hand]>].include[<[gun_in_hand].with[custom_model_data=<[cmd].sub[1]>]>]>
+
+    - determine <[drops]>
+
 
     on entity damaged:
 

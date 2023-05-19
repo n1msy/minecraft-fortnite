@@ -510,7 +510,7 @@ gun_particle_origin:
   - if !<player.has_flag[fort.gun_scoped]>:
     - choose <[gun]>:
       - case tactical_smg:
-        - determine <[eye_loc].forward[0.85].relative[-0.3,-0.2,0.3]>
+        - determine <[eye_loc].forward[0.6].relative[-0.3,-0.2,0.3]>
       - case pump_shotgun:
         - determine <[eye_loc].forward.relative[-0.33,0.05,0.3]>
       - case assault_rifle:
