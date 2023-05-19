@@ -192,8 +192,12 @@ fort_gun_handler:
     - define gun_uuid        <[gun].flag[uuid]>
     - define ammo_type       <[gun].flag[ammo_type]>
 
+    #for special exceptions like grenade/rocket launchers
+    - define custom_shoot    <[gun].has_flag[custom_shoot]>
+
     - define rarity              <[gun].flag[rarity]>
     - define base_damage         <[gun].flag[rarities.<[rarity]>.damage]>
+    - define structure_damage    <[gun].flag[rarities.<[rarity]>.structure_damage]||0>
     - define pellets             <[gun].flag[pellets]>
     - define base_bloom          <[gun].flag[base_bloom]>
     - define bloom_multiplier    <[gun].flag[bloom_multiplier]>
@@ -215,7 +219,12 @@ fort_gun_handler:
 
         - define times_shot <[ticks_between_shots].equals[1].if_true[<[loop_index]>].if_false[<[loop_index].div[<[ticks_between_shots]>].round_down.add[1]>]>
         - run fort_gun_handler.recoil def:<map[gun_name=<[gun_name]>]>
-        - inject fort_gun_handler.fire
+
+        - if <[custom_shoot]>:
+          #structure_damage since both rocket launchers and grenade launchers use it
+          - run fort_gun_handler.custom_shoot.<[gun_name]> def:<map[damage=<[base_damage]>;structure_damage=<[structure_damage]>]>
+        - else:
+          - inject fort_gun_handler.fire
 
         #sound
         - foreach <[gun].flag[Sounds].keys> as:sound:
@@ -355,6 +364,37 @@ fort_gun_handler:
 
         - adjust <player> reset_attack_cooldown
 
+  custom_shoot:
+    grenade_launcher:
+
+      - define body_damage      <[data].get[damage]>
+      - define structure_damage <[data].get[structure_damage]>
+
+      - define particle_origin <proc[gun_particle_origin].context[grenade_launcher]>
+      - run fort_gun_handler.default_recoil_fx def:<map[particle_origin=<[particle_origin]>]>
+
+      - define eye_loc    <player.eye_location>
+      - define origin     <[eye_loc].forward>
+      - define origin     <[origin].below[0.2]> if:<player.has_flag[fort.gun_scoped]>
+
+      - define ignored_entities <server.online_players.filter[gamemode.equals[SPECTATOR]].include[<player>].include[<player.world.entities[armor_stand]>]>
+      - define target_loc       <[origin].ray_trace[range=200;entities=*;ignore=<[ignored_entities]>;default=air]>
+
+      - define e          <entity[snowball].with[item=<item[gold_nugget].with[custom_model_data=13]>]>
+      - shoot <[e]> origin:<[origin]> height:0.2 save:grenade
+
+      - define grenade <entry[grenade].shot_entity>
+      - while <[grenade].is_spawned> && !<[grenade].is_on_ground>:
+        - define grenade_loc <[grenade].location>
+        - if <[loop_index]> > 5:
+          - playeffect effect:CLOUD at:<[grenade_loc].above[0.3]> quantity:1 offset:0 visibility:300
+        - if <[loop_index].div[20]> == 5:
+          - while stop
+        - wait 1t
+
+      - wait 3t
+      - run fort_explosive_handler.explosion_fx def:<map[grenade_loc=<[grenade_loc]>]>
+      - run fort_explosive_handler.explosion_damage def:<map[radius=4;body_damage=<[body_damage]>;structure_damage=<[structure_damage]>;grenade_loc=<[grenade_loc]>]>
 
   camera_shake:
     #default: 0.094
@@ -368,6 +408,25 @@ fort_gun_handler:
 
     - define gun_name <[data].get[gun_name]>
     - choose <[gun_name]>:
+      - case grenade_launcher:
+        - run fort_gun_handler.camera_shake def:<map[mult=0.08]>
+        - define base   1.5
+        - define smooth 0.15
+        - define up     <[base]>
+        - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[base]>]> offthread_repeat:3
+        #smoother effect
+        - repeat 3:
+          - define up <[up].add[<[smooth]>]>
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[smooth]>]> offthread_repeat:3
+          - wait 1t
+        #meaning go down (original amount + smooth amount)
+        #higher = slower
+        - define speed          6
+        - define down_increment <[up].div[<[speed]>]>
+        - repeat <[speed]>:
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.add[<[down_increment]>]> offthread_repeat:3
+          - wait 1t
+
       - case bolt_action_sniper_rifle:
         - run fort_gun_handler.camera_shake def:<map[mult=0.08]>
         - define recoil 2
@@ -558,6 +617,8 @@ gun_particle_origin:
   - define eye_loc <player.eye_location>
   - if !<player.has_flag[fort.gun_scoped]>:
     - choose <[gun]>:
+      - case grenade_launcher:
+        - determine <[eye_loc].forward[0.65].relative[-0.33,-0.055,0.3].right[0.02]>
       - case pistol:
         - determine <[eye_loc].forward[0.6].relative[-0.33,-0.2,0.3].right[0.055]>
       - case revolver:
@@ -574,6 +635,8 @@ gun_particle_origin:
         - determine <[eye_loc].forward.relative[-0.33,-0.2,0.3]>
   - else:
     - choose <[gun]>:
+      - case grenade_launcher:
+        - determine <[eye_loc].forward[1.8].above[0.08].right[0.03]>
       - case pistol:
         - determine <[eye_loc].forward[1.8].below[0.1].right[0.03]>
       - case revolver:
@@ -1048,3 +1111,63 @@ gun_pistol:
       ENTITY_FIREWORK_ROCKET_BLAST_FAR:
         pitch: 1.7
         volume: 1.2
+
+gun_grenade_launcher:
+  type: item
+  material: wooden_hoe
+  display name: <&f><&l>GRENADE LAUNCHER
+  mechanisms:
+    custom_model_data: 18
+    hides: ALL
+  flags:
+    #this value can be changed
+    rarity: rare
+    #meaning it's not a conventional gun
+    custom_shoot: true
+    icon_chr: 1
+    #global stats
+    #min is 5 if you want singular shots
+    ticks_between_shots: 5
+    ammo_type: rockets
+    mag_size: 6
+    #in seconds
+    cooldown: 0.8
+    pellets: 1
+    #no bloom really
+    base_bloom: 1
+    bloom_multiplier: 1
+    #cannot headshot
+    headshot_multiplier: 1
+    custom_recoil_fx: false
+    uuid: <util.random_uuid>
+    rarities:
+      rare:
+        damage: 70
+        structure_damage: 200
+        reload_time: 1.4
+        custom_model_data: 18
+      epic:
+        damage: 74
+        structure_damage: 210
+        reload_time: 1.33
+        custom_model_data: 18
+      legendary:
+        damage: 77
+        structure_damage: 220
+        reload_time: 1.26
+        custom_model_data: 18
+    #-no damage falloff
+
+    sounds:
+      ENTITY_FIREWORK_ROCKET_BLAST:
+        pitch: 0
+        volume: 1.2
+      ENTITY_SHULKER_SHOOT:
+        pitch: 0.65
+        volume: 1.2
+
+#playsound <player> sound:ENTITY_SHULKER_SHOOT pitch:0.6
+#playsound <player> sound:ITEM_CROSSBOW_SHOOT pitch:0.65
+#playsound <player> sound:ENTITY_FIREWORK_ROCKET_BLAST pitch:0
+#playsound <player> sound:ENTITY_WITHER_SHOOT pitch:1
+#playsound <player> sound:ENTITY_FIREWORK_ROCKET_LAUNCH pitch:0.6

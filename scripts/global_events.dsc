@@ -15,9 +15,6 @@ fort_global_handler:
 
     - determine <[drops]>
 
-
-    on npc damaged:
-    - determine cancelled
     on entity damaged:
     - define e      <context.entity>
     - define damage <context.damage>
@@ -53,7 +50,7 @@ fort_global_handler:
 
     #guns handle damage indicators a little differently
     - if !<[e].has_flag[fort.shot]>:
-      - run fort_global_handler.damage_indicator def:<map[damage=<[damage]>;entity=<context.entity>;color=<&f>]>
+      - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round>;entity=<context.entity>;color=<&f>]>
 
     #since you only have access to 1-6 slots, and the other slots are category names
     #WAY better way of doing this but my brain is too tired to think rn
@@ -214,6 +211,7 @@ fort_global_handler:
 
     - wait 1s
 
+    #i like this effect, but fortnite's is the same as when the harvest disappears (go up + fade)
     #zoom disappear effect, or opacity effect?
     - adjust <[e]> interpolation_start:0
     - adjust <[e]> scale:<location[0,0,0]>

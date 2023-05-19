@@ -35,7 +35,7 @@ fort_explosive_handler:
     - foreach <[points]> as:p:
       - define move_loc    <[p].below[<[loop_index].sub[4].power[2].div[95]>]>
       - define grenade_loc <[grenade].location>
-      - playeffect effect:CLOUD at:<[grenade_loc]> quantity:1 offset:0 visibility:300
+      - playeffect effect:CLOUD at:<[grenade_loc].above[0.3]> quantity:1 offset:0 visibility:300
       - adjust <[grenade]> velocity:<[move_loc].sub[<[grenade_loc]>]>
       #max repeat is 30 no matter what OR they hit a wall
       - if <[grenade].is_on_ground> || <[grenade_loc].find_blocks.within[0.1].any>:
@@ -102,13 +102,23 @@ fort_explosive_handler:
     - define grenade_loc <[grenade].location>
     - remove <[grenade]>
 
-    - playsound <[grenade_loc]> sound:ENTITY_GENERIC_EXPLODE pitch:1 volume:1.8
     - run fort_explosive_handler.explosion_fx def:<map[grenade_loc=<[grenade_loc]>]>
 
     - define body_damage      <[i].flag[body_damage]>
     - define structure_damage <[i].flag[structure_damage]>
-
     - define radius 4
+    - run fort_explosive_handler.explosion_damage def:<map[radius=<[radius]>;body_damage=<[body_damage]>;structure_damage=<[structure_damage]>;grenade_loc=<[grenade_loc]>]>
+
+  primed:
+    - define grenade <[data].get[grenade]>
+    - wait 1.5s
+    - playsound <[grenade].location> sound:ENTITY_TNT_PRIMED pitch:1.5 volume:1.2
+
+  explosion_damage:
+    - define radius           <[data].get[radius]>
+    - define body_damage      <[data].get[body_damage]>
+    - define structure_damage <[data].get[structure_damage]>
+    - define grenade_loc      <[data].get[grenade_loc]>
 
     - define nearby_tiles <[grenade_loc].find_blocks_flagged[build.center].within[<[radius]>].parse[flag[build.center].flag[build.structure]].deduplicate>
     - foreach <[nearby_tiles]> as:tile:
@@ -121,13 +131,9 @@ fort_explosive_handler:
     - define nearby_entities <[grenade_loc].find_entities.within[<[radius]>]>
     - hurt <[body_damage].div[5]> <[nearby_entities]> source:<player>
 
-  primed:
-    - define grenade <[data].get[grenade]>
-    - wait 1.5s
-    - playsound <[grenade].location> sound:ENTITY_TNT_PRIMED pitch:1.5 volume:1.2
-
   explosion_fx:
     - define grenade_loc <[data].get[grenade_loc]>
+    - playsound <[grenade_loc]> sound:ENTITY_GENERIC_EXPLODE pitch:1 volume:2.5
     - define size 3
     - repeat <[size]>:
       - define outline <[grenade_loc].to_ellipsoid[<[value].add[1]>,<[value].add[1]>,<[value].add[1]>].shell>
