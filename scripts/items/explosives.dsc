@@ -46,7 +46,7 @@ fort_explosive_handler:
     - define grenade_loc <[grenade].location>
     - remove <[grenade]>
 
-    - spawn <entity[item_display].with[item=<item[gold_nugget].with[custom_model_data=7]>]> <[grenade_loc]> save:e
+    - spawn <entity[item_display].with[item=<item[gold_nugget].with[custom_model_data=7]>;scale=2,2,2]> <[grenade_loc].above[0.25]> save:e
     - define e <entry[e].spawned_entity>
 
 
