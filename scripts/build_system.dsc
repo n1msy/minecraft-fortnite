@@ -1,3 +1,10 @@
+a:
+  type: task
+  debug: false
+  script:
+  - foreach <script[build_system_handler].queues> as:q:
+    - queue <[q]> clear
+
 build_tiles:
   type: task
   debug: false
@@ -177,6 +184,10 @@ build_system_handler:
   structure_damage:
     - define center           <[data].get[center]>
     - define structure_damage <[data].get[damage]>
+
+    - if <[center].as[location]||null> == null:
+      - narrate "<&c>An error occured during structure damage."
+      - stop
 
     - define hp       <[center].flag[build.health]>
     - define mat_type <[center].flag[build.material]>

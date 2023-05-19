@@ -165,6 +165,9 @@ fort_gun_handler:
     - if <player.has_flag[fort.<[gun_name]>.cooldown]>:
       - stop
 
+    - if <[gun].has_flag[first_shot_accuracy]> && !<player.has_flag[gun_holding_down]>:
+      - define gun <[gun].with[flag=base_bloom:0]>
+
     - flag player gun_holding_down duration:5t
 
     - if <player.has_flag[is_shooting]>:
@@ -212,7 +215,6 @@ fort_gun_handler:
 
         - define times_shot <[ticks_between_shots].equals[1].if_true[<[loop_index]>].if_false[<[loop_index].div[<[ticks_between_shots]>].round_down.add[1]>]>
         - run fort_gun_handler.recoil def:<map[gun_name=<[gun_name]>]>
-
         - inject fort_gun_handler.fire
 
         #sound
@@ -1013,9 +1015,10 @@ gun_pistol:
     #in seconds
     cooldown: 0.1
     pellets: 1
-    base_bloom: 1.2
-    bloom_multiplier: 1.5
+    base_bloom: 1.35
+    bloom_multiplier: 1.8
     headshot_multiplier: 2
+    first_shot_accuracy: true
     custom_recoil_fx: false
     uuid: <util.random_uuid>
     rarities:
