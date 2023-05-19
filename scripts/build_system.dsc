@@ -579,10 +579,10 @@ build_toggle:
         - inventory clear
         - equip offhand:<item[paper].with[custom_model_data=<[slot].add[3]>]>
         #slot hand changes, so give it to the next slot
-        - give <item[gold_nugget].with[custom_model_data=10]> slot:<[slot]>
+        - give <item[gold_nugget].with[display=<&sp>;custom_model_data=10]> slot:<[slot]>
 
       - if <[type]> != null:
-        - actionbar <[type]>
+        #- actionbar <[type]>
         - flag player build.type:<[type]>
         - inject build_tiles.<[type]>
 
