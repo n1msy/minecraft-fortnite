@@ -30,7 +30,11 @@ fort_heal_handler:
       - playsound <player> sound:ENTITY_VILLAGER_NO pitch:1.5
       - stop
 
-    - playsound <player> sound:ITEM_ARMOR_EQUIP_LEATHER pitch:1
+    - if <list[bandages|medkit].contains[<[name]>]>:
+      - playsound <player> sound:ITEM_ARMOR_EQUIP_LEATHER pitch:1
+    - else:
+      - playsound <player> sound:ENTITY_GENERIC_DRINK
+
     #to ticks
     - define use_time <[i].flag[use_time].mul[20]>
 
