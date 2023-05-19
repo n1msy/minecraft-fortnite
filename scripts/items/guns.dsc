@@ -256,13 +256,19 @@ fort_gun_handler:
       - define particle_origin <[origin].forward.relative[-0.33,-0.2,0.3]>
       - define ignored_entities <server.online_players.filter[gamemode.equals[SPECTATOR]].include[<player>].include[<[world].entities[armor_stand]>]>
 
+      #entity
       - define target          <[origin].ray_trace_target[ignore=<[ignored_entities]>;ray_size=1;range=200]||null>
+      #impact before block (air)
       - define target_loc      <[origin].ray_trace[range=200;entities=*;ignore=<[ignored_entities]>;default=air]>
+      #block
+      - define target_block    <[origin].ray_trace[range=200;entities=*;ignore=<[ignored_entities]>;default=air;return=block]>
 
       - inject fort_gun_handler.shoot_fx
 
       # - [ Damage ] - #
       #structure damage (damagefalloff doesn't apply)
+      - if <[target_block].has_flag[build.center]>:
+        - run build_system_handler.structure_damage def:<map[center=<[target_block].flag[build.center]>;damage=<[base_damage]>]>
 
       - if <[target]> != null && <[target].is_spawned>:
 
@@ -470,7 +476,7 @@ fort_gun_handler:
     - playeffect at:<[particle_dest]> effect:sweep_attack offset:0 quantity:1 visibility:500 velocity:1.65,1.65,1.65
 
     # - Blood / Material hit
-    - define mat <player.cursor_on.material.name||null>
+    - define mat <[target_block].material.name||null>
     - if <[target]> != null:
       #splatter: red_glazed_terracotta
       - playeffect at:<[particle_dest]> effect:BLOCK_CRACK offset:0 quantity:3 visibility:500 special_data:red_wool

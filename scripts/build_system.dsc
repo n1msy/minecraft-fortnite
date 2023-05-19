@@ -174,7 +174,29 @@ build_system_handler:
           - define effect_loc <[b].center.above>
         - playeffect effect:BLOCK_CRACK at:<[effect_loc]> offset:0 special_data:<[b].material> quantity:5 visibility:100
 
-    #-break
+  structure_damage:
+    - define center           <[data].get[center]>
+    - define structure_damage <[data].get[damage]>
+
+    - define hp       <[center].flag[build.health]>
+    - define mat_type <[center].flag[build.material]>
+    #filtering so connected blocks aren't affected
+    - define blocks   <[center].flag[build.structure].blocks.filter[flag[build.center].equals[<[center]>]]>
+    - define max_health <script[nimnite_config].data_key[materials.<[mat_type]>.hp]>
+    - define new_health <[hp].sub[<[structure_damage]>]>
+    - if <[new_health]> > 0:
+      - flag <[center]> build.health:<[new_health]>
+      - define progress <element[10].sub[<[new_health].div[<[max_health]>].mul[10]>]>
+      - foreach <[blocks]> as:b:
+        - blockcrack <[b]> progress:<[progress]> players:<server.online_players>
+      - stop
+
+    #otherwise, break the tile and anything else connected to it
+    - foreach <[blocks]> as:b:
+      - blockcrack <[b]> progress:0 players:<server.online_players>
+      - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
+    - inject build_system_handler.break
+
   break:
   #required definitions:
   # - <[center]>
