@@ -133,7 +133,7 @@ fort_item_small_shield_potion:
   material: gold_nugget
   display name: <&f><&l>SMALL SHIELD POTION
   mechanisms:
-    custom_model_data: 10
+    custom_model_data: 11
     hides: ALL
   flags:
     rarity: uncommon
@@ -146,7 +146,7 @@ fort_item_shield_potion:
   material: gold_nugget
   display name: <&f><&l>SHIELD POTION
   mechanisms:
-    custom_model_data: 11
+    custom_model_data: 12
     hides: ALL
   flags:
     rarity: rare

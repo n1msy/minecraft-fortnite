@@ -556,6 +556,8 @@ gun_particle_origin:
   - define eye_loc <player.eye_location>
   - if !<player.has_flag[fort.gun_scoped]>:
     - choose <[gun]>:
+      - case pistol:
+        - determine <[eye_loc].forward[0.6].relative[-0.33,-0.2,0.3].right[0.055]>
       - case revolver:
         - determine <[eye_loc].forward[0.5].relative[-0.33,-0.08,0.3].right[0.01]>
       - case bolt_action_sniper_rifle:
@@ -570,6 +572,8 @@ gun_particle_origin:
         - determine <[eye_loc].forward.relative[-0.33,-0.2,0.3]>
   - else:
     - choose <[gun]>:
+      - case pistol:
+        - determine <[eye_loc].forward[1.8].below[0.1].right[0.03]>
       - case revolver:
         - determine <[eye_loc].forward[1.8].above[0.08].right[0.03]>
       - case bolt_action_sniper_rifle:
@@ -989,3 +993,55 @@ gun_revolver:
       ENTITY_FIREWORK_ROCKET_LARGE_BLAST_FAR:
         pitch: 1.4
         volume: 4
+
+gun_pistol:
+  type: item
+  material: wooden_hoe
+  display name: <&f><&l>PISTOL
+  mechanisms:
+    custom_model_data: 16
+    hides: ALL
+  flags:
+    #this value can be changed
+    rarity: common
+    icon_chr: 1
+    #global stats
+    #min is 5 if you want singular shots
+    ticks_between_shots: 5
+    ammo_type: light
+    mag_size: 16
+    #in seconds
+    cooldown: 0.1
+    pellets: 1
+    base_bloom: 1.2
+    bloom_multiplier: 1.5
+    headshot_multiplier: 2
+    custom_recoil_fx: false
+    uuid: <util.random_uuid>
+    rarities:
+      common:
+        damage: 24
+        reload_time: 1.54
+        custom_model_data: 16
+      uncommon:
+        damage: 25
+        reload_time: 1.47
+        custom_model_data: 16
+      rare:
+        damage: 26
+        reload_time: 1.4
+        custom_model_data: 16
+      epic:
+        damage: 28
+        reload_time: 1.33
+        custom_model_data: 16
+      legendary:
+        damage: 29
+        reload_time: 1.26
+        custom_model_data: 16
+    #-no damage falloff (?)
+
+    sounds:
+      ENTITY_FIREWORK_ROCKET_BLAST_FAR:
+        pitch: 1.7
+        volume: 1.2
