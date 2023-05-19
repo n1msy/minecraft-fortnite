@@ -19,9 +19,9 @@ fort_global_handler:
     on npc damaged:
     - determine cancelled
     on entity damaged:
-
     - define e      <context.entity>
     - define damage <context.damage>
+    - determine passively cancelled
     - define shield <[e].armor_bonus>
 
     #-fall damage ignores shield

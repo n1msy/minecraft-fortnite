@@ -337,7 +337,7 @@ fort_pic_handler:
     #-once custom fonts start working on text displays, replace this health bar system with the shader version
     #- define neg <proc[spacing].context[-1]>
     #- define health_text <&a><element[▋].repeat[<[hp].div[15].round_down>]><&8><element[▋].repeat[<[max_hp].sub[<[hp]>].div[15].round_down>]><&r><[hp]>｜<[max_hp]>
-    - define health_text "<&f><[hp]> <&7><&l>| <&f><[max_hp]>"
+    - define health_text "<&f><[hp].format_number> <&7>/ <&f><[max_hp].format_number>"
     - adjust <[health_display]> text:<[health_text]>
 
     - waituntil !<player.has_flag[fort.build_health]> || <player.flag[fort.build_health]> != <[health_display]> max:15s

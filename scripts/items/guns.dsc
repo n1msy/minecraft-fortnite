@@ -111,22 +111,35 @@ fort_gun_handler:
     - define slot     <player.held_item_slot>
     - define cmd      <[gun].custom_model_data>
 
+    - if <[gun].has_flag[sniper]> && <player.has_flag[fort.reloading_gun]>:
+      - stop
+
     - flag player fort.gun_scoped
 
-    #scope model
-    - inventory adjust slot:<[slot]> custom_model_data:<[cmd].add[1]>
 
-    #zoom in
-    - cast SPEED amplifier:-4 duration:9999s no_icon no_ambient hide_particles
+    - if <[gun].has_flag[sniper]>:
+      - equip head:carved_pumpkin
+      - adjust <player> fov_multiplier:1
+      #hide the gun
+      - cast SLOW_DIGGING amplifier:255 duration:9999999s no_icon no_ambient hide_particles
+    - else:
+      #scope model
+      - inventory adjust slot:<[slot]> custom_model_data:<[cmd].add[1]>
+      #zoom in
+      - cast SPEED amplifier:-4 duration:9999s no_icon no_ambient hide_particles
 
     #wait until anything stops them from scoping
     - waituntil !<player.is_online> || !<player.is_sneaking> || <player.gamemode> == SPECTATOR || <player.item_in_hand.flag[uuid]||null> != <[gun_uuid]> rate:1t
 
+    ##make sure players dont drop pumpkins if they're scoped in and die
     #in case they dropped it
     - if <player.item_in_hand.flag[uuid]||null> == <[gun_uuid]>:
-      - inventory adjust slot:<[slot]> custom_model_data:<[cmd]>
+      - if <[gun].has_flag[sniper]>:
+        - inject fort_gun_handler.reset_sniper_scope
+      - else:
+        - inventory adjust slot:<[slot]> custom_model_data:<[cmd]>
+        - cast SPEED remove
 
-    - cast SPEED remove
     - flag player fort.gun_scoped:!
 
     #"disable" left clicking with guns
@@ -157,7 +170,15 @@ fort_gun_handler:
     - if <player.has_flag[is_shooting]>:
       - stop
 
+    - if <[gun].has_flag[sniper]> && <player.has_flag[fort.gun_scoped]>:
+      - inject fort_gun_handler.reset_sniper_scope
+
     - run fort_gun_handler.shoot def:<map[gun=<[gun]>]>
+
+  reset_sniper_scope:
+    - equip head:air
+    - adjust <player> fov_multiplier
+    - cast SLOW_DIGGING remove
 
   ## - [ Shoot Stuff ] - ##
   shoot:
@@ -235,6 +256,8 @@ fort_gun_handler:
 
       # - [ Simple bloom calculator ] - #
       - define bloom <[base_bloom]>
+      - if <[gun].has_flag[sniper]> && <player.has_flag[fort.gun_scoped]>:
+        - define bloom 0
       #if the player is in the air
       - if !<player.location.y.mul[16].is_integer>:
         - define bloom:+:0.75
@@ -278,31 +301,35 @@ fort_gun_handler:
         #1 = no damage falloff
         #0 = all damage gone
         #start off with 100% damage falloff
-        - define damage_falloff 0
-        - define distance_condensor 1.5
-        - foreach <[gun].flag[damage_falloff].keys> as:max_dist:
+        - if !<[gun].has_flag[damage_falloff]>:
+          #for snipers basically
+          - define damage_falloff 1
+        - else:
+          - define damage_falloff 0
+          - define distance_condensor 1.5
+          - foreach <[gun].flag[damage_falloff].keys> as:max_dist:
 
-          #since the distance from fortnite lengths doesn't exactly translate to mc lengths
-          - define actual_max_dist <[max_dist].div[<[distance_condensor]>]>
-          - if <[distance]> < <[actual_max_dist]>:
-            - if <[loop_index]> == 1:
-              - define damage_falloff 1
+            #since the distance from fortnite lengths doesn't exactly translate to mc lengths
+            - define actual_max_dist <[max_dist].div[<[distance_condensor]>]>
+            - if <[distance]> < <[actual_max_dist]>:
+              - if <[loop_index]> == 1:
+                - define damage_falloff 1
+                - foreach stop
+
+              - define max_falloff   <[gun].flag[damage_falloff.<[max_dist]>]>
+
+              - if <[max_falloff]> == 0:
+                - define damage_falloff 0
+                - foreach stop
+
+              - define min_dist        <[gun].flag[damage_falloff].keys.get[<[loop_index].sub[1]>]>
+              - define actual_min_dist <[min_dist].div[<[distance_condensor]>]>
+              - define min_falloff     <[gun].flag[damage_falloff.<[min_dist]>]>
+
+              - define progress     <[distance].sub[<[actual_min_dist]>].div[<[actual_max_dist].sub[<[actual_min_dist]>]>]>
+
+              - define damage_falloff <[min_falloff].sub[<[min_falloff].sub[<[max_falloff]>].mul[<[progress]>]>].div[100]>
               - foreach stop
-
-            - define max_falloff   <[gun].flag[damage_falloff.<[max_dist]>]>
-
-            - if <[max_falloff]> == 0:
-              - define damage_falloff 0
-              - foreach stop
-
-            - define min_dist        <[gun].flag[damage_falloff].keys.get[<[loop_index].sub[1]>]>
-            - define actual_min_dist <[min_dist].div[<[distance_condensor]>]>
-            - define min_falloff     <[gun].flag[damage_falloff.<[min_dist]>]>
-
-            - define progress     <[distance].sub[<[actual_min_dist]>].div[<[actual_max_dist].sub[<[actual_min_dist]>]>]>
-
-            - define damage_falloff <[min_falloff].sub[<[min_falloff].sub[<[max_falloff]>].mul[<[progress]>]>].div[100]>
-            - foreach stop
 
         - define damage <[base_damage].div[<[pellets]>].mul[<[damage_falloff]>].round_down>
 
@@ -339,7 +366,19 @@ fort_gun_handler:
 
     - define gun_name <[data].get[gun_name]>
     - choose <[gun_name]>:
-      - case pump_shotgun:
+      - case bolt_action_sniper_rifle:
+        - run fort_gun_handler.camera_shake def:<map[mult=0.08]>
+        - define recoil 2
+        - repeat <[recoil]>:
+          - define pitch_sub <[value].div[1.5]>
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[pitch_sub]>]> offthread_repeat:3
+          - wait 1t
+        - repeat <[recoil].mul[3]>:
+          - define pitch_sub <element[6].sub[<[value]>].sub[4].div[4.5]>
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[pitch_sub]>]> offthread_repeat:3
+          - wait 1t
+      #they're similar enough recoils
+      - case revolver pump_shotgun:
         - run fort_gun_handler.camera_shake def:<map[mult=0.08]>
         - define recoil 2
         - repeat <[recoil]>:
@@ -517,6 +556,10 @@ gun_particle_origin:
   - define eye_loc <player.eye_location>
   - if !<player.has_flag[fort.gun_scoped]>:
     - choose <[gun]>:
+      - case revolver:
+        - determine <[eye_loc].forward[0.5].relative[-0.33,-0.08,0.3].right[0.01]>
+      - case bolt_action_sniper_rifle:
+        - determine <[eye_loc].forward.relative[-0.33,-0.04,0.3].left[0.04]>
       - case tactical_smg:
         - determine <[eye_loc].forward[0.6].relative[-0.3,-0.2,0.3]>
       - case pump_shotgun:
@@ -527,6 +570,10 @@ gun_particle_origin:
         - determine <[eye_loc].forward.relative[-0.33,-0.2,0.3]>
   - else:
     - choose <[gun]>:
+      - case revolver:
+        - determine <[eye_loc].forward[1.8].above[0.08].right[0.03]>
+      - case bolt_action_sniper_rifle:
+        - determine <[eye_loc].forward[1.8].above[0.17].right[0.015]>
       - case smg:
         - determine <[eye_loc].forward[1.8].below[0.15].right[0.03]>
       - case tactical_smg:
@@ -669,11 +716,11 @@ gun_assault_rifle:
     icon_chr: 1
     #global stats
     #min is 5 if you want singular shots
-    ticks_between_shots: 4
+    ticks_between_shots: 5
     ammo_type: medium
     mag_size: 30
     #in seconds
-    #cooldown: 0
+    cooldown: 0
     pellets: 1
     base_bloom: 1.2
     bloom_multiplier: 1
@@ -829,3 +876,116 @@ gun_smg:
       UI_BUTTON_CLICK:
         pitch: 1.9
         volume: 0.4
+
+gun_bolt_action_sniper_rifle:
+  type: item
+  material: wooden_hoe
+  display name: <&f><&l>BOLT-ACTION SNIPER RIFLE
+  mechanisms:
+    custom_model_data: 11
+    hides: ALL
+  flags:
+    #this value can be changed
+    rarity: common
+    sniper: true
+    icon_chr: 1
+    #global stats
+    #min is 5 if you want singular shots
+    ticks_between_shots: 5
+    ammo_type: heavy
+    mag_size: 1
+    #in seconds
+    cooldown: 1
+    #how many pellets in one shot
+    pellets: 1
+    base_bloom: 2.5
+    bloom_multiplier: 1.2
+    headshot_multiplier: 2.5
+    #if there's a slightly different shoot effect alongside the base ones
+    custom_recoil_fx: false
+    uuid: <util.random_uuid>
+    #rarity-based states
+    rarities:
+      common:
+        damage: 99
+        reload_time: 3.3
+        custom_model_data: 11
+      uncommon:
+        damage: 105
+        reload_time: 3.15
+        custom_model_data: 11
+      rare:
+        damage: 110
+        reload_time: 3
+        custom_model_data: 11
+      epic:
+        damage: 116
+        reload_time: 2.5
+        custom_model_data: 11
+      legendary:
+        damage: 121
+        reload_time: 2.35
+        custom_model_data: 11
+    #-no damage falloff
+    sounds:
+      ENTITY_FIREWORK_ROCKET_BLAST:
+        pitch: 2
+        volume: 4
+      ENTITY_FIREWORK_ROCKET_LARGE_BLAST_FAR:
+        pitch: 1.9
+        volume: 2
+
+gun_revolver:
+  type: item
+  material: wooden_hoe
+  display name: <&f><&l>REVOLVER
+  mechanisms:
+    custom_model_data: 12
+    hides: ALL
+  flags:
+    #this value can be changed
+    rarity: common
+    icon_chr: 1
+    #global stats
+    #min is 5 if you want singular shots
+    ticks_between_shots: 5
+    ammo_type: medium
+    mag_size: 6
+    #in seconds
+    cooldown: 0.75
+    pellets: 1
+    base_bloom: 1.3
+    bloom_multiplier: 1
+    headshot_multiplier: 1.5
+    custom_recoil_fx: false
+    uuid: <util.random_uuid>
+    rarities:
+      common:
+        damage: 54
+        reload_time: 2.2
+        custom_model_data: 12
+      uncommon:
+        damage: 57
+        reload_time: 2.1
+        custom_model_data: 12
+      rare:
+        damage: 60
+        reload_time: 2
+        custom_model_data: 12
+      epic:
+        damage: 94.5
+        reload_time: 1.9
+        custom_model_data: 14
+      legendary:
+        damage: 99
+        reload_time: 1.8
+        custom_model_data: 14
+    #-no damage falloff (?)
+
+    sounds:
+      ENTITY_FIREWORK_ROCKET_LARGE_BLAST:
+        pitch: 1.47
+        volume: 4
+      ENTITY_FIREWORK_ROCKET_LARGE_BLAST_FAR:
+        pitch: 1.4
+        volume: 4
