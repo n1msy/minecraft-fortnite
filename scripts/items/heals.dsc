@@ -30,6 +30,7 @@ fort_heal_handler:
       - playsound <player> sound:ENTITY_VILLAGER_NO pitch:1.5
       - stop
 
+    - playsound <player> sound:ITEM_ARMOR_EQUIP_LEATHER pitch:1
     #to ticks
     - define use_time <[i].flag[use_time].mul[20]>
 
@@ -42,6 +43,7 @@ fort_heal_handler:
         - stop
 
       - if <[loop_index]> == <[use_time]>:
+        - actionbar <&sp>
         - while stop
 
       - define bar  <&chr[<[loop_index].mul[16].div[<[use_time]>].round_down.add[1]>].font[load]>
@@ -69,12 +71,12 @@ fort_heal_handler:
         - else:
           - heal 3
         - playeffect at:<[particle_loc]> offset:0.3,0.5,0.3 quantity:25 effect:REDSTONE special_data:1.5|LIME
-        - playsound <player> sound:BLOCK_NOTE_BLOCK_PLING pitch:1.5
+        - playsound <player> sound:ENTITY_EXPERIENCE_ORB_PICKUP pitch:1
 
       - case medkit:
         - heal
         - playeffect at:<[particle_loc]> offset:0.3,0.5,0.3 quantity:25 effect:REDSTONE special_data:1.5|LIME
-        - playsound <player> sound:BLOCK_NOTE_BLOCK_PLING pitch:1.5
+        - playsound <player> sound:ENTITY_EXPERIENCE_ORB_PICKUP pitch:1
 
       - case small_shield_potion:
         - if <[shield].add[25]> > 50:
