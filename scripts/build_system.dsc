@@ -549,6 +549,16 @@ build_toggle:
       - define type <map[1=wall;2=floor;3=stair;4=pyramid].get[<player.held_item_slot>]||null>
       - define material <player.flag[build.material]>
 
+      #sometimes the pencil isn't in the right slot when too fast
+      - define slot <player.held_item_slot>
+      - if <[slot]> == 5:
+        - equip offhand:air hand:air
+      - else:
+        - inventory clear
+        - equip offhand:<item[paper].with[custom_model_data=<[slot].add[3]>]>
+        #slot hand changes, so give it to the next slot
+        - give <item[gold_nugget].with[custom_model_data=10]> slot:<[slot]>
+
       - if <[type]> != null:
         - actionbar <[type]>
         - flag player build.type:<[type]>

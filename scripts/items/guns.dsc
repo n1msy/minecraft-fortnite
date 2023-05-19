@@ -262,6 +262,8 @@ fort_gun_handler:
       - inject fort_gun_handler.shoot_fx
 
       # - [ Damage ] - #
+      #structure damage (damagefalloff doesn't apply)
+
       - if <[target]> != null && <[target].is_spawned>:
 
         # - [ Damage Falloff ] - #
@@ -342,7 +344,7 @@ fort_gun_handler:
           - define pitch_sub <element[8].sub[<[value]>].sub[6].div[10]>
           - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[pitch_sub]>]> offthread_repeat:3
           - wait 1t
-      - case tactical_smg:
+      - case tactical_smg smg:
         - run fort_gun_handler.camera_shake def:<map[mult=0.094;ticks=3]>
         - define size 0.1
         - if <player.has_flag[gun.<[gun_name]>.recoil]> && <player.flag[gun.<[gun_name]>.recoil].div[<[size]>].round_down> > 10:
@@ -519,6 +521,8 @@ gun_particle_origin:
         - determine <[eye_loc].forward.relative[-0.33,-0.2,0.3]>
   - else:
     - choose <[gun]>:
+      - case smg:
+        - determine <[eye_loc].forward[1.8].below[0.15].right[0.03]>
       - case tactical_smg:
         - determine <[eye_loc].forward[1.8].below[0.2].right[0.03]>
       - case pump_shotgun:
@@ -752,6 +756,65 @@ gun_tactical_smg:
       50: 100
       75: 80
       95: 66
+
+    sounds:
+      ENTITY_FIREWORK_ROCKET_BLAST:
+        pitch: 1.2
+        volume: 0.3
+      UI_BUTTON_CLICK:
+        pitch: 2
+        volume: 1.2
+gun_smg:
+  type: item
+  material: wooden_hoe
+  display name: <&f><&l>SMG
+  mechanisms:
+    custom_model_data: 9
+    hides: ALL
+  flags:
+    #this value can be changed
+    rarity: common
+    icon_chr: 1
+    #global stats
+    #min is 5 if you want singular shots
+    ticks_between_shots: 2
+    ammo_type: light
+    mag_size: 30
+    #in seconds
+    #cooldown: 0
+    pellets: 1
+    base_bloom: 1.15
+    bloom_multiplier: 1.5
+    headshot_multiplier: 1.75
+    custom_recoil_fx: false
+    uuid: <util.random_uuid>
+    rarities:
+      common:
+        damage: 16
+        reload_time: 2.31
+        custom_model_data: 9
+      uncommon:
+        damage: 17
+        reload_time: 2.2
+        custom_model_data: 9
+      rare:
+        damage: 18
+        reload_time: 2.1
+        custom_model_data: 9
+      epic:
+        damage: 19
+        reload_time: 2.0
+        custom_model_data: 9
+      legendary:
+        damage: 20
+        reload_time: 1.89
+        custom_model_data: 9
+    #(in meters)
+    #value is in percentage of damage
+    #no damage falloff was found, so im using same as AR
+    damage_falloff:
+      20: 100
+      40: 45
 
     sounds:
       ENTITY_FIREWORK_ROCKET_BLAST_FAR:

@@ -43,12 +43,10 @@ fort_heal_handler:
 
     - while <player.has_flag[fort.healing]>:
       - if <player.location.simple> != <[loc]> || !<player.is_online> || <player.item_in_hand> != <[i]>:
+        - playsound <player> sound:ENTITY_VILLAGER_NO pitch:1.5
+        - actionbar <&sp>
         - flag player fort.healing:!
         - stop
-
-      - if <[loop_index]> == <[use_time]>:
-        - actionbar <&sp>
-        - while stop
 
       - define bar  <&chr[<[loop_index].mul[16].div[<[use_time]>].round_down.add[1]>].font[load]>
       - define time <[use_time].sub[<[loop_index]>].div[20].round_to[1]>
@@ -92,7 +90,7 @@ fort_heal_handler:
 
       - case shield_potion:
         - if <[shield].add[50]> > 100:
-          - adjust <player> armor_bonus:100
+          - adjust <player> armor_bonus:20
         - else:
           - adjust <player> armor_bonus:<[real_shield].add[10]>
         - playeffect at:<[particle_loc]> offset:0.3,0.5,0.3 quantity:25 effect:REDSTONE special_data:1.5|AQUA

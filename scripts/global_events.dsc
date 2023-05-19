@@ -16,6 +16,8 @@ fort_global_handler:
     - determine <[drops]>
 
 
+    on npc damaged:
+    - determine cancelled
     on entity damaged:
 
     - define e      <context.entity>
@@ -27,7 +29,7 @@ fort_global_handler:
       #you take half the fall damage now
       - define damage <[damage].div[2]>
       #that way the annoying head thing doesn't happen when falling by the smallest amount
-      - if <[damage]> < 2:
+      - if <[damage]> < 5:
         - determine passively cancelled
           #(stop the damage indicator from continuing)
         - stop

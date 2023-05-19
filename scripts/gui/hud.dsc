@@ -108,17 +108,6 @@ hud_handler:
     - if <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]> == 0:
       - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
 
-    #sometimes the pencil isn't in the right slot when too fast
-    - wait 1t
-    - if <player.has_flag[build]> && <player.item_in_hand.material.name> == air:
-      - if <[new_slot]> == 5:
-        - equip offhand:air hand:air
-      - else:
-        - inventory clear
-        - equip offhand:<item[paper].with[custom_model_data=<[new_slot].add[3]>]>
-        #slot hand changes, so give it to the next slot
-        - give <item[gold_nugget].with[custom_model_data=10]> slot:<[new_slot]>
-
     on player swaps items:
     - stop if:<player.world.name.equals[fortnite_map].not>
     - determine passively cancelled
@@ -203,13 +192,14 @@ hud_handler:
       - define build_         <[build_slots].space_separated.color[<color[30,0,0]>]>
       - define slots_         <[unselected_slot].repeat_as_list[6].space_separated.color[<color[20,0,0]>]>
 
+      #being handled in build_toggle now
       #trap
-      - if <[slot]> == 5:
-        - equip offhand:air hand:air
-      - else:
-        - inventory clear
-        - equip offhand:<item[paper].with[custom_model_data=<[slot].add[3]>]>
+      #- if <[slot]> == 5:
+        #- equip offhand:air hand:air
+      #- else:
+        #- inventory clear
+        #- equip offhand:<item[paper].with[custom_model_data=<[slot].add[3]>]>
         #slot hand changes, so give it to the next slot
-        - give <item[gold_nugget].with[custom_model_data=10]> slot:<[slot]>
+        #- give <item[gold_nugget].with[custom_model_data=10]> slot:<[slot]>
 
     #- sidebar set_line scores:8|9 values:<[slots_]>|<[build_]>
