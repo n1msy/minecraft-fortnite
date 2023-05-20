@@ -102,7 +102,7 @@ fort_explosive_handler:
     - define grenade_loc <[grenade].location>
     - remove <[grenade]>
 
-    - run fort_explosive_handler.explosion_fx def:<map[grenade_loc=<[grenade_loc]>]>
+    - run fort_explosive_handler.explosion_fx def:<map[grenade_loc=<[grenade_loc]>;size=3]>
 
     - define body_damage      <[i].flag[body_damage]>
     - define structure_damage <[i].flag[structure_damage]>
@@ -133,8 +133,8 @@ fort_explosive_handler:
 
   explosion_fx:
     - define grenade_loc <[data].get[grenade_loc]>
+    - define size        <[data].get[size]>
     - playsound <[grenade_loc]> sound:ENTITY_GENERIC_EXPLODE pitch:1 volume:2.5
-    - define size 3
     - repeat <[size]>:
       - define outline <[grenade_loc].to_ellipsoid[<[value].add[1]>,<[value].add[1]>,<[value].add[1]>].shell>
       - define inside  <[grenade_loc].to_ellipsoid[<[value]>,<[value]>,<[value]>].shell>

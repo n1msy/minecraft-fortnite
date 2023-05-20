@@ -20,6 +20,9 @@ fort_item_handler:
     - adjust <[drop]> custom_name:<[text]>
     - adjust <[drop]> custom_name_visible:true
 
+    - team name:<[rarity]> add:<[drop]> color:<map[Common=GRAY;Uncommon=GREEN;Rare=AQUA;Epic=LIGHT_PURPLE;Legendary=GOLD].get[<[rarity]>]>
+    - adjust <[drop]> glowing:true
+
     - inject update_hud
 
     on fort_item_* merges:

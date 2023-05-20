@@ -18,6 +18,7 @@ fort_global_handler:
     on entity damaged:
     - define e      <context.entity>
     - define damage <context.damage>
+    #################temp
     - determine passively cancelled
     - define shield <[e].armor_bonus>
 

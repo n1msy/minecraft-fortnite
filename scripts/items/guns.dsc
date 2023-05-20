@@ -8,6 +8,14 @@ fort_gun_handler:
   definitions: data
   events:
 
+    on entity exits vehicle flagged:rocket_riding:
+    - define rocket <context.vehicle>
+      #waiting 5t so they dont instantly get hit when they get off the rocket
+    - flag <context.entity> rocket_riding:!
+    - wait 15t
+    - if <[rocket].is_spawned>:
+      - flag <[rocket]> riders:<-:<context.entity>
+
     on player picks up ammo_*:
     - determine passively cancelled
     - define add_qty    <context.item.quantity>
@@ -114,6 +122,10 @@ fort_gun_handler:
     - if <[gun].has_flag[sniper]> && <player.has_flag[fort.reloading_gun]>:
       - stop
 
+    #because it has two models (one with and one without a rocket)
+    - if <[gun].script.name.after[gun_]> == rocket_launcher && <player.has_flag[fort.reloading_gun]>:
+      - stop
+
     - flag player fort.gun_scoped
 
 
@@ -129,7 +141,7 @@ fort_gun_handler:
       - cast SPEED amplifier:-4 duration:9999s no_icon no_ambient hide_particles
 
     #wait until anything stops them from scoping
-    - waituntil !<player.is_online> || !<player.is_sneaking> || <player.gamemode> == SPECTATOR || <player.item_in_hand.flag[uuid]||null> != <[gun_uuid]> rate:1t
+    - waituntil !<player.has_flag[fort.gun_scoped]> || !<player.is_online> || !<player.is_sneaking> || <player.gamemode> == SPECTATOR || <player.item_in_hand.flag[uuid]||null> != <[gun_uuid]> rate:1t
 
     ##make sure players dont drop pumpkins if they're scoped in and die
     #in case they dropped it
@@ -393,8 +405,73 @@ fort_gun_handler:
         - wait 1t
 
       - wait 3t
-      - run fort_explosive_handler.explosion_fx def:<map[grenade_loc=<[grenade_loc]>]>
+      - run fort_explosive_handler.explosion_fx def:<map[grenade_loc=<[grenade_loc]>;size=3]>
       - run fort_explosive_handler.explosion_damage def:<map[radius=4;body_damage=<[body_damage]>;structure_damage=<[structure_damage]>;grenade_loc=<[grenade_loc]>]>
+
+    rocket_launcher:
+      - define body_damage      <[data].get[damage]>
+      - define structure_damage <[data].get[structure_damage]>
+
+      #safety so scope is gone since it updates every tick
+      - if <player.has_flag[fort.gun_scoped]>:
+        - flag player fort.gun_scoped:!
+        - wait 1t
+
+      - inventory adjust slot:<player.held_item_slot> custom_model_data:21
+
+      - define particle_origin <proc[gun_particle_origin].context[rocket_launcher]>
+      - run fort_gun_handler.default_recoil_fx def:<map[particle_origin=<[particle_origin]>]>
+
+      - playeffect effect:CLOUD at:<[particle_origin]> offset:0.3 quantity:8 visibility:300 velocity:<[particle_origin].backward[1.5].sub[<[particle_origin]>].div[3.5]>
+      - playeffect effect:SMOKE_NORMAL at:<[particle_origin]> offset:0.5 quantity:25 visibility:300
+      - playeffect effect:REDSTONE at:<[particle_origin]> offset:0.3 quantity:15 visibility:300 special_data:1|<color[255,157,59]>
+
+      - define eye_loc    <player.eye_location>
+      - define origin     <[eye_loc].forward[1.5]>
+      #- define origin     <[origin].below[0.2]> if:<player.has_flag[fort.gun_scoped]>
+
+      #- spawn <entity[item_display].with[item=<item[gold_nugget].with[custom_model_data=14]>;scale=1,1,1]> <[origin]> save:e
+      - spawn <entity[armor_stand].with[equipment=<map.with[helmet].as[<item[gold_nugget].with[custom_model_data=14]>]>;gravity=false;collidable=false;invulnerable=true;visible=false]> <[origin].below[1.685]> save:e
+      - define rocket <entry[e].spawned_entity>
+      - define rocket_loc <[rocket].location.above[1.685]>
+
+      #default = 0.65
+      - define speed 0.65
+      #this lets multiple people ride one rocket
+      - define total_riders <list[]>
+      - flag <[rocket]> riders:<list[]>
+      - while <[rocket].is_spawned> && <[rocket_loc].material.name> == air:
+        - define rocket_loc <[rocket].location.above[1.685]>
+        - teleport <[rocket]> <[rocket_loc].below[1.685].forward[<[speed]>]>
+
+        - if <[loop_index]> > 5:
+          - playeffect effect:SMOKE_NORMAL at:<[rocket_loc]> offset:0.25 quantity:12 visibility:300
+          - playeffect effect:REDSTONE at:<[rocket_loc]> offset:0.1 quantity:4 visibility:300 special_data:1.3|<list[<color[255,157,59]>|<color[250,191,27]>].random>
+          - playeffect effect:FLAME at:<[rocket_loc]> offset:0.1 quantity:1 visibility:300
+
+          - define entities <[rocket_loc].find_entities.within[0.2].exclude[<[rocket]>].exclude[<[rocket].flag[riders]>]>
+          - foreach <[entities]> as:e:
+            - if <[e].location.y.add[0.2]> > <[rocket_loc].y>:
+              - flag <[e]> rocket_riding:<[rocket]>
+              - flag <[rocket]> riders:->:<[e]>
+              - define total_riders:->:<[e]>
+              - mount <[e]>|<[rocket]>
+            - else:
+              #if just 1 person is in front, it' ll explode, otherwise it'll continue
+              - while stop
+        #max it can stay in air is x sec
+        - if <[loop_index].div[20]> == 15:
+          - while stop
+
+        - wait 1t
+
+      - flag <[total_riders]> rocket_riding:!
+      - if <[rocket].is_spawned>:
+        - define rocket_loc <[rocket].location.above[1.685]>
+        - remove <[rocket]>
+
+      - run fort_explosive_handler.explosion_fx def:<map[grenade_loc=<[rocket_loc]>;size=4]>
+      - run fort_explosive_handler.explosion_damage def:<map[radius=5;body_damage=<[body_damage]>;structure_damage=<[structure_damage]>;grenade_loc=<[rocket_loc]>]>
 
   camera_shake:
     #default: 0.094
@@ -408,6 +485,13 @@ fort_gun_handler:
 
     - define gun_name <[data].get[gun_name]>
     - choose <[gun_name]>:
+      - case rocket_launcher:
+        - run fort_gun_handler.camera_shake def:<map[mult=0.0965]>
+        - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[1]> offthread_repeat:3
+        - repeat 8:
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.add[0.125]> offthread_repeat:3
+          - wait 1t
+
       - case grenade_launcher:
         - run fort_gun_handler.camera_shake def:<map[mult=0.08]>
         - define base   1.5
@@ -543,6 +627,10 @@ fort_gun_handler:
       - flag server fort.temp.<[gun_uuid]>.loaded_ammo:<[new_loaded_ammo]>
       - flag player fort.ammo.<[ammo_type]>:<[new_total_ammo]>
 
+      #"return" rocket into gun
+      - if <[gun].script.name.after[gun_]> == rocket_launcher:
+        - inventory adjust slot:<player.held_item_slot> custom_model_data:19
+
       - inject update_hud
       - playsound <player.location> sound:BLOCK_NOTE_BLOCK_BIT pitch:1 volume:1.2
       #- actionbar <&a>Reloaded
@@ -617,6 +705,8 @@ gun_particle_origin:
   - define eye_loc <player.eye_location>
   - if !<player.has_flag[fort.gun_scoped]>:
     - choose <[gun]>:
+      - case rocket_launcher:
+        - determine <[eye_loc].forward[0.8].relative[-0.33,0.027,0.3].right[0.17]>
       - case grenade_launcher:
         - determine <[eye_loc].forward[0.65].relative[-0.33,-0.055,0.3].right[0.02]>
       - case pistol:
@@ -1166,8 +1256,69 @@ gun_grenade_launcher:
         pitch: 0.65
         volume: 1.2
 
-#playsound <player> sound:ENTITY_SHULKER_SHOOT pitch:0.6
-#playsound <player> sound:ITEM_CROSSBOW_SHOOT pitch:0.65
-#playsound <player> sound:ENTITY_FIREWORK_ROCKET_BLAST pitch:0
-#playsound <player> sound:ENTITY_WITHER_SHOOT pitch:1
-#playsound <player> sound:ENTITY_FIREWORK_ROCKET_LAUNCH pitch:0.6
+gun_rocket_launcher:
+  type: item
+  material: wooden_hoe
+  display name: <&f><&l>ROCKET LAUNCHER
+  mechanisms:
+    custom_model_data: 19
+    hides: ALL
+  flags:
+    #this value can be changed
+    rarity: common
+    #meaning it's not a conventional gun
+    custom_shoot: true
+    icon_chr: 1
+    #global stats
+    #min is 5 if you want singular shots
+    ticks_between_shots: 5
+    ammo_type: rockets
+    mag_size: 1
+    #in seconds
+    cooldown: 1
+    pellets: 1
+    #no bloom really
+    base_bloom: 1
+    bloom_multiplier: 1
+    #cannot headshot
+    headshot_multiplier: 1
+    custom_recoil_fx: false
+    uuid: <util.random_uuid>
+    rarities:
+      uncommon:
+        damage: 70
+        structure_damage: 270
+        reload_time: 4.68
+        custom_model_data: 18
+      common:
+        damage: 85
+        structure_damage: 285
+        reload_time: 4.14
+        custom_model_data: 18
+      rare:
+        damage: 100
+        structure_damage: 300
+        reload_time: 3.60
+        custom_model_data: 18
+      epic:
+        damage: 115
+        structure_damage: 315
+        reload_time: 3.06
+        custom_model_data: 18
+      legendary:
+        damage: 130
+        structure_damage: 330
+        reload_time: 2.52
+        custom_model_data: 18
+    #-no damage falloff
+
+    sounds:
+      ENTITY_FIREWORK_ROCKET_BLAST:
+        pitch: 0
+        volume: 1.2
+      ENTITY_BLAZE_SHOOT:
+        pitch: 1
+        volume: 1.2
+      ENTITY_FIREWORK_ROCKET_LAUNCH:
+        pitch: 0.6
+        volume: 1.2
