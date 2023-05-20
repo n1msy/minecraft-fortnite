@@ -4,6 +4,9 @@ fort_global_handler:
   definitions: data
   events:
 
+    on player picks up item flagged:build:
+    - determine cancelled
+
     #make one task for dropping all items?
     ###make sure to remove the flag, since they technically can't play after they die
     on player death:
