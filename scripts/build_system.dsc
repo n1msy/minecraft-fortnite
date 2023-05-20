@@ -140,8 +140,17 @@ build_system_handler:
       - define build_type <player.flag[build.type]>
       - define material <player.flag[build.material]>
 
+        #automatically switch mats if you're out of the current material
       - if <player.flag[fort.<[material]>.qty]||0> < 10:
-        - stop
+        - define other_mats <list[wood|brick|metal].exclude[<[material]>]>
+        - foreach <[other_mats]> as:mat:
+          - if <player.flag[fort.<[mat]>.qty]||0> > 10:
+            - define switched True
+            - flag player build.material:<[mat]>
+            - define material <[mat]>
+            - inject update_hud
+            - foreach stop
+        - stop if:<[switched].exists.not>
 
       - run fort_pic_handler.mat_count def:<map[qty=10;mat=<[material]>;action=remove]>
 
@@ -534,7 +543,7 @@ stair_blocks_gen:
     - define start_corner <[center].below[3].left[2].backward_flat[3].round>
     - repeat 5:
       - define corner <[start_corner].above[<[value]>].forward_flat[<[value]>].round>
-      - define stair_blocks <[stair_blocks].include[<[corner].points_between[<[corner].right[4]>]>]>
+      - define stair_blocks <[stair_blocks].include[<[corner].points_between[<[corner].right[4].round>]>]>
     - determine <[stair_blocks]>
 
 pyramid_blocks_gen:
@@ -614,14 +623,15 @@ build_toggle:
           - if !<[final_center].has_flag[build.center]> || !<list[pyramid|stair].contains[<[final_center].flag[build.center].flag[build.type]>]> || <list[pyramid|stair].contains[<[type]>]>:
             - define can_build False
 
+        - define build_color 45,167,237,150
         - if <player.flag[fort.<[material]>.qty]||0> < 10:
-          - define can_build False
+          - define build_color 219,55,55,150
 
         - if <[can_build]>:
           #-set flags
           - flag player build.struct:<[tile]>
           - flag player build.center:<[final_center]>
-          - debugblock <[display_blocks]> d:2t color:45,167,237,150
+          - debugblock <[display_blocks]> d:2t color:<[build_color]>
         - else:
           - flag player build.struct:!
           - debugblock <[display_blocks]> d:2t color:219,55,55,150
