@@ -2,11 +2,16 @@
 #   rarity: x
 #   stack_size: x
 
+#create a universal dropping/pick up system for items ? (because of text displays)
+
 fort_item_handler:
   type: world
   debug: false
   definitions: data
   events:
+    on gun_*|ammo_*|fort_item_* despawns:
+    - determine cancelled
+
     after player drops fort_item_*:
     - define item  <context.item>
     - define drop  <context.entity>
@@ -17,8 +22,7 @@ fort_item_handler:
 
     - define text <&l><[name].to_uppercase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=#ffaf24].get[<[rarity]>]>]><&f><&l>x<[qty]>
 
-    - adjust <[drop]> custom_name:<[text]>
-    - adjust <[drop]> custom_name_visible:true
+    - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>]>
 
     - team name:<[rarity]> add:<[drop]> color:<map[Common=GRAY;Uncommon=GREEN;Rare=AQUA;Epic=LIGHT_PURPLE;Legendary=GOLD].get[<[rarity]>]>
     - adjust <[drop]> glowing:true
@@ -40,9 +44,14 @@ fort_item_handler:
       - determine passively cancelled
       - stop
 
+    - define target <context.target>
+    - if <context.entity.has_flag[text_display]>:
+      - remove <context.entity.flag[text_display]>
+
     - define rarity <[item].flag[rarity]>
     - define text <&l><[item].display.strip_color.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=#ffaf24].get[<[rarity]>]>]><&f><&l>x<[qty]>
-    - adjust <context.target> custom_name:<[text]>
+    - if <[target].has_flag[text_display]>:
+      - adjust <[target].flag[text_display]> text:<[text]>
 
     on player picks up fort_item_*:
     - determine passively cancelled
@@ -73,9 +82,22 @@ fort_item_handler:
       - define add_qty   <[add_qty].sub[<[left_over]>]>
       - run fort_item_handler.drop_item def:<map[heal_item=<[i].script.name>;qty=<[left_over]>]>
 
-    - adjust <player> fake_pickup:<context.entity>
-    - remove <context.entity>
+    - define e <context.entity>
+    - adjust <player> fake_pickup:<[e]>
+    - if <[e].has_flag[text_display]>:
+      - remove <[e].flag[text_display]>
+    - remove <[e]>
     - give <[i].with[quantity=<[add_qty]>]> slot:<[slot]>
+
+  item_text:
+    - define text <[data].get[text]>
+    - define drop <[data].get[drop]>
+
+    - spawn <entity[text_display].with[text=<[text]>;pivot=center;scale=1,1,1;translation=0,0.75,0]> <[drop].location> save:txt
+    - define txt <entry[txt].spawned_entity>
+    - mount <[txt]>|<[drop]>
+
+    - flag <[drop]> text_display:<[txt]>
 
   drop_item:
 

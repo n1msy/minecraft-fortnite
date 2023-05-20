@@ -31,8 +31,11 @@ fort_gun_handler:
       - define add_qty   <[add_qty].sub[<[left_over]>]>
       - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[left_over]>]>
 
-    - adjust <player> fake_pickup:<context.entity>
-    - remove <context.entity>
+    - define e <context.entity>
+    - adjust <player> fake_pickup:<[e]>
+    - if <[e].has_flag[text_display]>:
+      - remove <[e].flag[text_display]>
+    - remove <[e]>
 
     - flag player fort.ammo.<[ammo_type]>:+:<[add_qty]>
     - inject update_hud
@@ -42,20 +45,31 @@ fort_gun_handler:
     - define target <context.target>
     - define other_item <[target].item>
 
-    #if they're different ammot ypes
+    #if they're different ammo types
     - if <[item].script.name> != <[other_item].script.name>:
       - determine passively cancelled
       - stop
+
+    - if <context.entity.has_flag[text_display]>:
+      - remove <context.entity.flag[text_display]>
 
     - define new_qty   <[other_item].quantity>
 
     - define ammo_type <[item].script.name.after_last[_]>
     - define ammo_icon <&chr[E0<map[light=11;medium=22;heavy=33;shells=44;rockets=55].get[<[ammo_type]>]>].font[icons]>
+
     - define text <[ammo_icon]><&f><&l>x<[new_qty]>
+    - if <[target].has_flag[text_display]>:
+      - adjust <[target].flag[text_display]> text:<[text]>
 
-    - adjust <[target]> custom_name:<[text]>
+    on player picks up gun_*:
 
-    after player picks up gun_*:
+    - if <context.entity.has_flag[text_display]>:
+      - remove <context.entity.flag[text_display]>
+
+    #safety
+    - wait 1t
+
     - define gun      <context.item>
     - define gun_uuid <[gun].flag[uuid]>
     - define mag_size <[gun].flag[mag_size]>
@@ -102,8 +116,10 @@ fort_gun_handler:
 
     - define text <&l><[name].to_titlecase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=#ffaf24].get[<[rarity]>]>]>
 
-    - adjust <[drop]> custom_name:<[text]>
-    - adjust <[drop]> custom_name_visible:true
+    - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>]>
+
+    #- adjust <[drop]> custom_name:<[text]>
+    #- adjust <[drop]> custom_name_visible:true
 
     - team name:<[rarity]> add:<[drop]> color:<map[Common=GRAY;Uncommon=GREEN;Rare=AQUA;Epic=LIGHT_PURPLE;Legendary=GOLD].get[<[rarity]>]>
     - adjust <[drop]> glowing:true
@@ -574,10 +590,8 @@ fort_gun_handler:
     - define icon <&chr[E0<map[light=11;medium=22;heavy=33;shells=44;rockets=55].get[<[ammo_type]>]>].font[icons]>
 
     - define text <[icon]><&f><&l>x<[qty]>
-    - define loc <[drop].location>
 
-    - adjust <[drop]> custom_name:<[text]>
-    - adjust <[drop]> custom_name_visible:true
+    - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>]>
 
     - team name:ammo add:<[drop]> color:GRAY
     - adjust <[drop]> glowing:true
