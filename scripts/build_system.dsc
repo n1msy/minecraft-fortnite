@@ -576,7 +576,7 @@ build_toggle:
     - flag player build.last_inventory:<player.inventory.list_contents>
     - inventory clear
 
-    - while <player.is_online> && <player.has_flag[build]>:
+    - while <player.is_online> && <player.has_flag[build]> && <player.is_spawned>:
       - define eye_loc <player.eye_location>
       - define loc <player.location>
       - define type <map[1=wall;2=floor;3=stair;4=pyramid].get[<player.held_item_slot>]||null>

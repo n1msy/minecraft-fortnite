@@ -13,6 +13,8 @@ fort_pic_handler:
   debug: false
   definitions: data
   events:
+    on player fort_pic takes damage:
+    - determine cancelled
 
     #each swing is 50 hp, each crit is 100
     on player breaks block with:fort_pic:
@@ -134,7 +136,8 @@ fort_pic_handler:
   drop_mat:
     - define qty  <[data].get[qty]>
     - define mat  <[data].get[mat]>
-    - define loc  <player.eye_location.forward[1.5].sub[0,0.5,0]>
+    - define loc  <[data].get[loc]||null>
+    - define loc  <player.eye_location.forward[1.5].sub[0,0.5,0]> if:<[loc].equals[null]>
 
     - define item <map[wood=oak_log;brick=bricks;metal=iron_block].get[<[mat]>]>
 

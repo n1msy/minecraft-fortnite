@@ -4,28 +4,64 @@ fort_global_handler:
   definitions: data
   events:
 
+    #make one task for dropping all items?
+    ###make sure to remove the flag, since they technically can't play after they die
     on player death:
-    #so clickable shit in the inventory doesn't drop
-    - define drops <context.drops.filter[has_flag[action].not].filter[has_flag[type].not]>
+    - define cause  <context.cause||null>
+    - define killer <context.damager||null>
+    - define loc    <player.location>
 
+    - define drops <context.drops>
+    - if <player.has_flag[build]>:
+      - define drops <player.flag[build.last_inventory]>
+      #dont really need to remove this flag, since the while also checks if the player is alive but oh well
+      - flag player build:!
+
+    #so clickable shit in the inventory doesn't drop
+    - define drops <[drops].filter[has_flag[action].not].filter[has_flag[type].not]>
+
+    #turn any scoped guns back into unscoped
     - if <player.has_flag[fort.gun_scoped]>:
       - define gun_in_hand <player.item_in_hand>
       - define cmd         <[gun_in_hand].custom_model_data>
       - define drops <[drops].exclude[<[gun_in_hand]>].include[<[gun_in_hand].with[custom_model_data=<[cmd].sub[1]>]>]>
+      - flag player fort.gun_scoped:!
 
-    - determine <[drops]>
+    #-drop ammo
+    - foreach <list[light|medium|heavy|shells|rockets]> as:ammo_type:
+      - if <player.flag[fort.ammo.<[ammo_type]>]> > 0:
+        - define qty <player.flag[fort.ammo.<[ammo_type]>]>
+        - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[qty]>;loc=<[loc]>]>
+        - flag player fort.ammo.<[ammo_type]>:0
+
+    #-drop mats
+    - foreach <list[wood|brick|metal]> as:mat:
+      - if <player.flag[fort.<[mat]>.qty]> > 0:
+        - define qty <player.flag[fort.<[mat]>.qty]>
+        - run fort_pic_handler.drop_mat def:<map[mat=<[mat]>;qty=<[qty]>]>
+        - flag player fort.<[mat]>.qty:0
+
+    #-drop guns
+    - foreach <[drops].filter[script.name.starts_with[gun_]]> as:gun:
+      - run fort_gun_handler.drop_gun def:<map[gun=<[gun]>]>
+
+    #-drop all items (consumables)
+    - foreach <[drops].filter[script.name.starts_with[fort_item_]]> as:item:
+      - run fort_item_handler.drop_item def:<map[item=<[item].script.name>;qty=<[item].quantity>;loc=<[loc]>]>
+
+    #no need to exclude the fort_pic, since it's not being dropped by any of these
+    #clearing inventory in case players were holding the pencil and blueprint while building
+    - inventory clear
 
     on entity damaged:
     - define e      <context.entity>
     - define damage <context.damage>
-    #################temp
-    - determine passively cancelled
-    - define shield <[e].armor_bonus>
+    - define shield <[e].armor_bonus||null>
 
     #-fall damage ignores shield
     - if <context.cause> == FALL:
       #you take half the fall damage now
-      - define damage <[damage].div[2]>
+      - define damage <[damage].div[1.5]>
       #that way the annoying head thing doesn't happen when falling by the smallest amount
       - if <[damage]> < 5:
         - determine passively cancelled
@@ -34,7 +70,7 @@ fort_global_handler:
       - else:
         - determine passively <[damage]>
     #-if not shield, just use regular damage system
-    - else if <[shield]> > 0:
+    - else if <[shield]> != null && <[shield]> > 0:
       #not cancelling, so animation can play
       - determine passively 0
 
@@ -44,14 +80,20 @@ fort_global_handler:
         #if shield is less than damage
         - adjust <[e]> armor_bonus:0
         - define damage <[damage].sub[<[shield]>]>
-        - adjust <[e]> health:<[e].health.sub[<[damage]>]>
+        - if <[e].health.sub[<[damage]>]> <= 0:
+          - adjust <[e]> health:0
 
     - if <[e].is_player>:
-      - inject update_hud
+      - playsound <[e]> sound:ITEM_ARMOR_EQUIP_LEATHER pitch:2
 
     #guns handle damage indicators a little differently
     - if !<[e].has_flag[fort.shot]>:
       - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round>;entity=<context.entity>;color=<&f>]>
+
+    - if <[e].is_player>:
+      - wait 1t
+      - adjust <queue> linked_player:<[e]>
+      - inject update_hud
 
     #since you only have access to 1-6 slots, and the other slots are category names
     #WAY better way of doing this but my brain is too tired to think rn
@@ -188,6 +230,8 @@ fort_global_handler:
     - determine cancelled
 
   damage_indicator:
+
+    ##make sure to make the damage indicators blue if shield
 
     - define damage <[data].get[damage]>
     - define entity <[data].get[entity]>

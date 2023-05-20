@@ -122,9 +122,6 @@ hud_handler:
 
     - inject update_hud
 
-    after player damaged:
-    - inject update_hud
-
   update_inventory:
 
   - define drop_text "<&r><n><&9><&l>Left-Click <&f>to drop one.<n><&c><&l>Right-Click <&f>to drop multiple."

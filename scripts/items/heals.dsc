@@ -138,7 +138,7 @@ fort_item_small_shield_potion:
   flags:
     rarity: uncommon
     shield: 25
-    stack_size: 6
+    stack_size: 9
     use_time: 2
 
 fort_item_shield_potion:

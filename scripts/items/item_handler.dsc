@@ -9,6 +9,10 @@ fort_item_handler:
   debug: false
   definitions: data
   events:
+    on entity removed from world:
+    - if <context.entity.has_flag[text_display]> && <context.entity.flag[text_display].is_spawned>:
+      - remove <context.entity.flag[text_display]>
+
     on gun_*|ammo_*|fort_item_* despawns:
     - determine cancelled
 
@@ -80,7 +84,7 @@ fort_item_handler:
     - if <[new_qty]> > <[stack_size]>:
       - define left_over <[new_qty].sub[<[stack_size]>]>
       - define add_qty   <[add_qty].sub[<[left_over]>]>
-      - run fort_item_handler.drop_item def:<map[heal_item=<[i].script.name>;qty=<[left_over]>]>
+      - run fort_item_handler.drop_item def:<map[item=<[i].script.name>;qty=<[left_over]>]>
 
     - define e <context.entity>
     - adjust <player> fake_pickup:<[e]>
@@ -101,18 +105,20 @@ fort_item_handler:
 
   drop_item:
 
-    - define item   <[data].get[heal_item].as[item]>
+    - define item   <[data].get[item].as[item]>
     - define qty    <[data].get[qty]>
+    - define loc    <[data].get[loc]||null>
+    - define loc    <player.eye_location.forward[1.5].sub[0,0.5,0]> if:<[loc].equals[null]>
+
     - define rarity <[item].flag[rarity]>
-
-    - define loc    <player.eye_location.forward[1.5].sub[0,0.5,0]>
-
-    - define item <[item].with[quantity=<[qty]>]>
+    - define item   <[item].with[quantity=<[qty]>]>
 
     - drop <[item]> <[loc]> delay:1s save:drop
     - define drop <entry[drop].dropped_entity>
 
     - define text <&l><[item].display.strip_color.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=#ffaf24].get[<[rarity]>]>]><&f><&l>x<[qty]>
 
-    - adjust <[drop]> custom_name:<[text]>
-    - adjust <[drop]> custom_name_visible:true
+    - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>]>
+
+    - team name:<[rarity]> add:<[drop]> color:<map[Common=GRAY;Uncommon=GREEN;Rare=AQUA;Epic=LIGHT_PURPLE;Legendary=GOLD].get[<[rarity]>]>
+    - adjust <[drop]> glowing:true

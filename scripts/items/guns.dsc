@@ -2,6 +2,16 @@
 #When you pick up a gun from the ground, the gun you bought in the buy phase is removed and money is recovered
 #instead of dropped too.
 
+drop_all_items:
+  type: task
+  debug: false
+  script:
+  - foreach <util.scripts.filter[name.starts_with[gun_]].parse[name.as[item]]> as:i:
+    - drop <[i]> <player.location.random_offset[10,0,10]>
+
+  - foreach <util.scripts.filter[name.starts_with[fort_item_]].parse[name.as[item]]> as:i:
+    - drop <[i]> <player.location.random_offset[10,0,10]>
+
 fort_gun_handler:
   type: world
   debug: false
@@ -18,7 +28,7 @@ fort_gun_handler:
 
     on player picks up ammo_*:
     - determine passively cancelled
-    - define add_qty    <context.item.quantity>
+    - define add_qty    <context.entity.flag[quantity]>
     - define ammo_type  <context.item.script.name.after_last[_]>
     - define total_ammo <player.flag[fort.ammo.<[ammo_type]>]||0>
     - if <[total_ammo]> >= 999:
@@ -40,27 +50,31 @@ fort_gun_handler:
     - flag player fort.ammo.<[ammo_type]>:+:<[add_qty]>
     - inject update_hud
 
-    after ammo_* merges:
-    - define item <context.item>
-    - define target <context.target>
-    - define other_item <[target].item>
+    on ammo_* merges:
+    - determine passively cancelled
+    - define old_drop <context.entity>
+    - define new_drop <context.target>
 
-    #if they're different ammo types
-    - if <[item].script.name> != <[other_item].script.name>:
-      - determine passively cancelled
+    #if different ammo types
+    - if <[old_drop].item.script.name> != <[new_drop].item.script.name>:
       - stop
 
-    - if <context.entity.has_flag[text_display]>:
-      - remove <context.entity.flag[text_display]>
+    - define new_qty   <[new_drop].flag[quantity]>
+    - define old_qty   <[old_drop].flag[quantity]>
+    - define total_qty <[old_qty].add[<[new_qty]>]>
 
-    - define new_qty   <[other_item].quantity>
+    #- if <[old_drop].has_flag[text_display]>:
+      #- remove <[old_drop].flag[text_display]> if:<[old_drop].flag[text_display].is_spawned>
 
-    - define ammo_type <[item].script.name.after_last[_]>
+    - define ammo_type <[new_drop].item.script.name.after_last[_]>
     - define ammo_icon <&chr[E0<map[light=11;medium=22;heavy=33;shells=44;rockets=55].get[<[ammo_type]>]>].font[icons]>
+    - define text <[ammo_icon]><&f><&l>x<[total_qty]>
 
-    - define text <[ammo_icon]><&f><&l>x<[new_qty]>
-    - if <[target].has_flag[text_display]>:
-      - adjust <[target].flag[text_display]> text:<[text]>
+    #no need to remove text display, since it removes when the item is removed too
+    - remove <[old_drop]>
+    - flag <[new_drop]> quantity:<[total_qty]>
+    - if <[new_drop].has_flag[text_display]>:
+      - adjust <[new_drop].flag[text_display]> text:<[text]>
 
     on player picks up gun_*:
 
@@ -71,6 +85,10 @@ fort_gun_handler:
     - wait 1t
 
     - define gun      <context.item>
+
+    - if <player.inventory.find_item[<[gun]>]> == -1:
+      - stop
+
     - define gun_uuid <[gun].flag[uuid]>
     - define mag_size <[gun].flag[mag_size]>
 
@@ -101,6 +119,11 @@ fort_gun_handler:
 
     - inject update_hud
 
+    #if gun is empty when picking it up, reload
+    - define loaded_ammo <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
+    - if <[loaded_ammo]> == 0:
+      - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
+
     on player drops gun_*:
     - if <player.has_flag[fort.gun_scoped]>:
       - determine passively cancelled
@@ -109,20 +132,8 @@ fort_gun_handler:
     - wait 1t
     - define gun    <context.item>
     - define drop   <context.entity>
-    - define rarity <[gun].flag[rarity]>
 
-    - define name   <[gun].display.strip_color>
-    - define rarity <[gun].flag[rarity]>
-
-    - define text <&l><[name].to_titlecase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=#ffaf24].get[<[rarity]>]>]>
-
-    - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>]>
-
-    #- adjust <[drop]> custom_name:<[text]>
-    #- adjust <[drop]> custom_name_visible:true
-
-    - team name:<[rarity]> add:<[drop]> color:<map[Common=GRAY;Uncommon=GREEN;Rare=AQUA;Epic=LIGHT_PURPLE;Legendary=GOLD].get[<[rarity]>]>
-    - adjust <[drop]> glowing:true
+    - run fort_gun_handler.drop_gun def:<map[gun=<[gun]>;drop=<[drop]>]>
 
     - inject update_hud
 
@@ -160,13 +171,12 @@ fort_gun_handler:
     - waituntil !<player.has_flag[fort.gun_scoped]> || !<player.is_online> || !<player.is_sneaking> || <player.gamemode> == SPECTATOR || <player.item_in_hand.flag[uuid]||null> != <[gun_uuid]> rate:1t
 
     ##make sure players dont drop pumpkins if they're scoped in and die
-    #in case they dropped it
+    #in case they dropped it (which is not possible)
     - if <player.item_in_hand.flag[uuid]||null> == <[gun_uuid]>:
-      - if <[gun].has_flag[sniper]>:
-        - inject fort_gun_handler.reset_sniper_scope
-      - else:
         - inventory adjust slot:<[slot]> custom_model_data:<[cmd]>
-        - cast SPEED remove
+    - if <[gun].has_flag[sniper]>:
+      - inject fort_gun_handler.reset_sniper_scope
+    - cast SPEED remove
 
     - flag player fort.gun_scoped:!
 
@@ -224,8 +234,9 @@ fort_gun_handler:
     - define custom_shoot    <[gun].has_flag[custom_shoot]>
 
     - define rarity              <[gun].flag[rarity]>
-    - define base_damage         <[gun].flag[rarities.<[rarity]>.damage]>
-    - define structure_damage    <[gun].flag[rarities.<[rarity]>.structure_damage]||0>
+    #divide by 5, since the damage is based on the 100 scale
+    - define base_damage         <[gun].flag[rarities.<[rarity]>.damage].div[5]>
+    - define structure_damage    <[gun].flag[rarities.<[rarity]>.structure_damage]||<[base_damage]>>
     - define pellets             <[gun].flag[pellets]>
     - define base_bloom          <[gun].flag[base_bloom]>
     - define bloom_multiplier    <[gun].flag[bloom_multiplier]>
@@ -253,6 +264,17 @@ fort_gun_handler:
           - run fort_gun_handler.custom_shoot.<[gun_name]> def:<map[damage=<[base_damage]>;structure_damage=<[structure_damage]>]>
         - else:
           - inject fort_gun_handler.fire
+
+        - if <[total_damage].exists>:
+          - define color <&f>
+          #player hit
+          - playsound <player> sound:ITEM_ARMOR_EQUIP_LEATHER pitch:2
+          - if <[hit_head].exists>:
+            - define color <&e>
+            #crisp headshot sound effect
+            - playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:1.5
+            #multiply the damage to show visually that it's in the 100 scale
+          - run fort_global_handler.damage_indicator def:<map[damage=<[total_damage].mul[5].round>;entity=<[target]>;color=<[color]>]>
 
         #sound
         - foreach <[gun].flag[Sounds].keys> as:sound:
@@ -329,8 +351,9 @@ fort_gun_handler:
 
       # - [ Damage ] - #
       #structure damage (damagefalloff doesn't apply)
-      - if <[target_block].has_flag[build.center]>:
-        - run build_system_handler.structure_damage def:<map[center=<[target_block].flag[build.center]>;damage=<[base_damage]>]>
+      #fallback, in case chunk isn't loaded
+      - if <[target_block].has_flag[build.center]||false>:
+        - run build_system_handler.structure_damage def:<map[center=<[target_block].flag[build.center]>;damage=<[structure_damage].div[<[pellets]>]>]>
 
       - if <[target]> != null && <[target].is_spawned>:
 
@@ -379,13 +402,24 @@ fort_gun_handler:
             - define body_part <list[Legs|Body|Head].get[<[Loop_Index]>]>
             - foreach stop
 
+        #used for damage inidcator
+        - if <[body_part]> == Head && !<[hit_head].exists>:
+          - define hit_head true
+
         #shot flag is for damage indicator
         - flag <[target]> fort.shot duration:1t
         - define damage <[damage].mul[<[headshot_multiplier]>].round_down> if:<[body_part].equals[Head]>
         - hurt <[damage]> <[target]> source:<player>
-
-        - define color <[body_part].equals[head].if_true[<&e>].if_false[<&f>]>
-        - run fort_global_handler.damage_indicator def:<map[damage=<[damage]>;entity=<[target]>;color=<[color]>]>
+        #total damage to consider all damage combined if multiple pellets are used per shot
+        - if <[pellets]> > 1:
+          - define total_damage:+:<[damage]>
+        - else:
+          - define color <&f>
+          - playsound <player> sound:ITEM_ARMOR_EQUIP_LEATHER pitch:2
+          - if <[hit_head].exists>:
+            - define color <&e>
+            - playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:1.5
+          - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round_down>;entity=<[target]>;color=<[color]>]>
 
         - if <[target].is_living>:
           - adjust <[target]> no_damage_duration:0
@@ -425,6 +459,7 @@ fort_gun_handler:
       - run fort_explosive_handler.explosion_damage def:<map[radius=4;body_damage=<[body_damage]>;structure_damage=<[structure_damage]>;grenade_loc=<[grenade_loc]>]>
 
     rocket_launcher:
+      ##minor visual problem: armor stand can't have same pitch as origin location?
       - define body_damage      <[data].get[damage]>
       - define structure_damage <[data].get[structure_damage]>
 
@@ -433,7 +468,7 @@ fort_gun_handler:
         - flag player fort.gun_scoped:!
         - wait 1t
 
-      - inventory adjust slot:<player.held_item_slot> custom_model_data:21
+      - inventory adjust slot:<player.held_item_slot> custom_model_data:22
 
       - define particle_origin <proc[gun_particle_origin].context[rocket_launcher]>
       - run fort_gun_handler.default_recoil_fx def:<map[particle_origin=<[particle_origin]>]>
@@ -450,7 +485,6 @@ fort_gun_handler:
       - spawn <entity[armor_stand].with[equipment=<map.with[helmet].as[<item[gold_nugget].with[custom_model_data=14]>]>;gravity=false;collidable=false;invulnerable=true;visible=false]> <[origin].below[1.685]> save:e
       - define rocket <entry[e].spawned_entity>
       - define rocket_loc <[rocket].location.above[1.685]>
-
       #default = 0.65
       - define speed 0.65
       #this lets multiple people ride one rocket
@@ -577,15 +611,19 @@ fort_gun_handler:
       - while stop
 
   drop_ammo:
+    #make my own quantity system for ammo, so it can cap at 999 and not 350?
 
     - define ammo_type <[data].get[ammo_type]>
     - define qty       <[data].get[qty]>
-    - define loc       <player.eye_location.forward[1.5].sub[0,0.5,0]>
+    - define loc       <[data].get[loc]||null>
+    - define loc       <player.eye_location.forward[1.5].sub[0,0.5,0]> if:<[loc].equals[null]>
 
-    - define item <item[ammo_<[ammo_type]>].with[quantity=<[qty]>]>
+    - define item <item[ammo_<[ammo_type]>]>
 
     - drop <[item]> <[loc]> delay:1s save:drop
     - define drop <entry[drop].dropped_entity>
+
+    - flag <[drop]> quantity:<[qty]>
 
     - define icon <&chr[E0<map[light=11;medium=22;heavy=33;shells=44;rockets=55].get[<[ammo_type]>]>].font[icons]>
 
@@ -596,8 +634,28 @@ fort_gun_handler:
     - team name:ammo add:<[drop]> color:GRAY
     - adjust <[drop]> glowing:true
 
+  drop_gun:
+    - define gun  <[data].get[gun]>
+    - define drop <[data].get[drop]||null>
+    - if <[drop]> == null:
+      - drop <[gun]> <player.location> save:drop
+      - define drop <entry[drop].dropped_entity>
+
+    - define rarity <[gun].flag[rarity]>
+
+    - define name   <[gun].display.strip_color>
+    - define rarity <[gun].flag[rarity]>
+
+    - define text <&l><[name].to_uppercase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=#ffaf24].get[<[rarity]>]>]>
+
+    - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>]>
+
+    - team name:<[rarity]> add:<[drop]> color:<map[Common=GRAY;Uncommon=GREEN;Rare=AQUA;Epic=LIGHT_PURPLE;Legendary=GOLD].get[<[rarity]>]>
+    - adjust <[drop]> glowing:true
+
   reload:
     - define gun         <[data].get[gun]>
+    - define gun_name    <[gun].script.name.after[gun_]>
     - define gun_uuid    <[gun].flag[uuid]>
     - define rarity      <[gun].flag[rarity]>
     - define ammo_type   <[gun].flag[ammo_type]>
@@ -607,14 +665,13 @@ fort_gun_handler:
     - if <[total_ammo]> == 0:
       - stop
 
-
     - flag player fort.reloading_gun
 
     #to ticks
     - define reload_time <[gun].flag[rarities.<[rarity]>.reload_time].mul[20]>
     - define text <element[Reloading...].to_list>
 
-    - cast SLOW_DIGGING amplifier:255 duration:9999999s no_icon no_ambient hide_particles
+    - cast SLOW_DIGGING amplifier:255 duration:9999999s no_icon no_ambient hide_particles if:<[gun_name].equals[rocket_launcher].not>
     - repeat <[reload_time].div[3]>:
 
       #if they hold it and it's, it'll auto reload
@@ -622,7 +679,7 @@ fort_gun_handler:
         - define cancelled True
         - repeat stop
 
-      - define completed <[value].mul[12].div[<[reload_time].div[3]>].round>
+      - define completed <[value].mul[12].div[<[reload_time].div[3]>].round_up>
       - define reloading_text <&c><[text].get[1].to[<[completed]>].unseparated||<empty>><&7><[text].get[<[completed].add[1]>].to[12].unseparated||<empty>>
 
       #- actionbar <[completed].equals[12].if_true[<&c><[text].unseparated>].if_false[<[reloading_text]>]>
@@ -643,12 +700,14 @@ fort_gun_handler:
 
       #"return" rocket into gun
       - if <[gun].script.name.after[gun_]> == rocket_launcher:
-        - inventory adjust slot:<player.held_item_slot> custom_model_data:19
+        - inventory adjust slot:<player.held_item_slot> custom_model_data:20
 
       - inject update_hud
       - playsound <player.location> sound:BLOCK_NOTE_BLOCK_BIT pitch:1 volume:1.2
       #- actionbar <&a>Reloaded
       - title subtitle:<&a>Reloaded fade_in:0 fade_out:0.5 stay:5t
+    - else:
+      - title subtitle:<&sp>
 
     - cast SLOW_DIGGING remove
     - flag player fort.reloading_gun:!
@@ -841,22 +900,27 @@ gun_pump_shotgun:
     rarities:
       common:
         damage: 92
+        structure_damage: 45
         reload_time: 5.1
         custom_model_data: 1
       uncommon:
         damage: 101
+        structure_damage: 49
         reload_time: 4.8
         custom_model_data: 1
       rare:
         damage: 110
+        structure_damage: 50
         reload_time: 4.4
         custom_model_data: 1
       epic:
         damage: 119
+        structure_damage: 54
         reload_time: 4.0
         custom_model_data: 1
       legendary:
         damage: 128
+        structure_damage: 55
         reload_time: 3.7
         custom_model_data: 1
     #(in meters/blocks)
@@ -1275,7 +1339,7 @@ gun_rocket_launcher:
   material: wooden_hoe
   display name: <&f><&l>ROCKET LAUNCHER
   mechanisms:
-    custom_model_data: 19
+    custom_model_data: 20
     hides: ALL
   flags:
     #this value can be changed
@@ -1303,27 +1367,27 @@ gun_rocket_launcher:
         damage: 70
         structure_damage: 270
         reload_time: 4.68
-        custom_model_data: 18
+        custom_model_data: 20
       common:
         damage: 85
         structure_damage: 285
         reload_time: 4.14
-        custom_model_data: 18
+        custom_model_data: 20
       rare:
         damage: 100
         structure_damage: 300
         reload_time: 3.60
-        custom_model_data: 18
+        custom_model_data: 20
       epic:
         damage: 115
         structure_damage: 315
         reload_time: 3.06
-        custom_model_data: 18
+        custom_model_data: 20
       legendary:
         damage: 130
         structure_damage: 330
         reload_time: 2.52
-        custom_model_data: 18
+        custom_model_data: 20
     #-no damage falloff
 
     sounds:
