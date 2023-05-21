@@ -119,21 +119,69 @@ build_system_handler:
   debug: false
   definitions: data
   events:
+    #-editing
+    #Q to enter/exit edit mode, Left click block to edit, Right click block to unedit,
+    ##F to reset (find a button to press to reset?, for now, we wont have any)
     on player drops item flagged:build:
-    - determine cancelled
+    - determine passively cancelled
+    #to prevent build from placing, since it considers dropping as clicking a block
+    - flag player build.dropped duration:1t
+    - if <player.has_flag[build.edit_mode]>:
+      #apply the edits
+      - define tile          <player.flag[build.edit_mode.tile]>
+      - define edited_blocks <[tile].blocks.filter[has_flag[build.edited]]>
+      - playsound <[tile].center> sound:<[tile].center.material.block_sound_data.get[break_sound]> pitch:0.8
+      - foreach <[edited_blocks]> as:b:
+        - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:5 visibility:100
+        - modifyblock <[b]> air
+      - flag player build.edit_mode:!
+      - stop
+
+    - define eye_loc      <player.eye_location>
+    - define target_block <[eye_loc].ray_trace[return=block;range=4.5;default=air]>
+    - if !<[target_block].has_flag[build.center]>:
+      - stop
+
+    - define tile_center <[target_block].flag[build.center]>
+    - define tile        <[tile_center].flag[build.structure]>
+    - define build_type  <[tile_center].flag[build.type]>
+    - define material    <[tile_center].flag[build.material]>
+
+    - definemap tile_data:
+        tile: <[tile]>
+        center: <[tile_center]>
+        build_type: <[build_type]>
+        material: <[material]>
+    #"reset" the tile while in edit mode to let players be able to click the blocks the wanna edit
+    - run build_system_handler.place def:<[tile_data]>
+    - flag player build.edit_mode.tile:<[tile]>
 
     on player clicks in inventory flagged:build:
     - determine cancelled
 
-    #-material switch
+    #-material switch/remove edit
     on player right clicks block flagged:build.material:
+    - if <player.has_flag[build.edit_mode]>:
+      - run build_system_handler.edit def:<map[click=right]>
+      - stop
     - flag player build.material:<map[wood=brick;brick=metal;metal=wood].get[<player.flag[build.material]>]>
     #- flag player build.
     - inject update_hud
 
     #-place
-    on player left clicks block flagged:build.struct:
+    on player left clicks block flagged:build:
       - determine passively cancelled
+
+      #so builds dont place when pressing Q or "drop"
+      - if <player.has_flag[build.dropped]>:
+        - stop
+
+      - if <player.has_flag[build.edit_mode]>:
+        - run build_system_handler.edit def:<map[click=left]>
+        - stop
+
+      - if !<player.has_flag[build.struct]>:
+        - stop
 
       - define tile <player.flag[build.struct]>
       - define center <player.flag[build.center]>
@@ -189,6 +237,40 @@ build_system_handler:
         - else:
           - define effect_loc <[b].center.above>
         - playeffect effect:BLOCK_CRACK at:<[effect_loc]> offset:0 special_data:<[b].material> quantity:5 visibility:100
+
+  edit:
+
+    - define click <[data].get[click]>
+
+    - define edit_tile    <player.flag[build.edit_mode.tile]>
+    - define eye_loc      <player.eye_location>
+    - define target_block <[eye_loc].ray_trace[return=block;range=4.5;default=air]>
+    #if they're not even looking at an edit block
+    - if !<[target_block].has_flag[build.center]>:
+      - stop
+    #if they're looking at a different tile instead of the target tile
+    - if <[target_block].flag[build.center].flag[build.structure]> != <[edit_tile]>:
+      - stop
+
+    #in case the target_block is air because pyramids and stairs use full 5x5x5 grids
+    - if <[target_block].material.name> == air:
+      - stop
+
+    - if <[click]> == left:
+      #if it's already edited
+      - if <[target_block].has_flag[build.edited]>:
+        - stop
+      - playsound <player> sound:BLOCK_GRAVEL_BREAK pitch:1.5
+      - flag <[target_block]> build.edited
+      #this flag is for checking which blocks the player edited during the session, in case they toggle
+      #build without "saving" their edit (it's not really necessary to do this, but it's good for safety and good practice it feels like)
+      - flag player build.edit_mode.blocks:->:<[target_block]>
+    - else if <[click]> == right:
+      #removing the edit
+      - if !<[target_block].has_flag[build.edited]>:
+        - stop
+      - playsound <player> sound:BLOCK_GRAVEL_BREAK pitch:1.25
+      - flag <[target_block]> build.edited:!
 
   structure_damage:
     - define center           <[data].get[center]>
@@ -575,6 +657,9 @@ build_toggle:
     - if <player.has_flag[build]>:
       - inventory clear
       - inventory set o:<player.flag[build.last_inventory]> d:<player.inventory>
+      #it means these "edits" weren't saved
+      - if <player.has_flag[build.edit_mode.blocks]>:
+        - flag <player.flag[build.edit_mode.blocks]> build.edited:!
       - flag player build:!
       - stop
 
@@ -601,7 +686,16 @@ build_toggle:
         #slot hand changes, so give it to the next slot
         - give <item[gold_nugget].with[display=<&sp>;custom_model_data=10]> slot:<[slot]>
 
-      - if <[type]> != null:
+      - if <player.has_flag[build.edit_mode]>:
+        - define tile             <player.flag[build.edit_mode.tile]>
+        - define tile_blocks      <[tile].blocks.filter[material.name.equals[air].not]>
+        - define edited_blocks    <[tile_blocks].filter[has_flag[build.edited]]>
+        - define nonedited_blocks <[tile_blocks].exclude[<[edited_blocks]>]>
+
+        - debugblock <[edited_blocks]>    d:2t color:0,0,0,175
+        - debugblock <[nonedited_blocks]> d:2t color:45,167,237,150
+
+      - else if <[type]> != null:
         #- actionbar <[type]>
         - flag player build.type:<[type]>
         - inject build_tiles.<[type]>
