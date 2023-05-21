@@ -73,10 +73,12 @@ fort_global_handler:
       - else:
         - determine passively <[damage]>
     #-if not shield, just use regular damage system
+    ##check this some time: in fort, is the damage indicator blue, even if the target takes damage
+    ##for both shield and white health?
     - else if <[shield]> != null && <[shield]> > 0:
       #not cancelling, so animation can play
       - determine passively 0
-
+      - define color <&b>
       - if <[shield]> >= <[damage]>:
         - adjust <[e]> armor_bonus:<[shield].sub[<[damage]>]>
       - else:
@@ -85,13 +87,16 @@ fort_global_handler:
         - define damage <[damage].sub[<[shield]>]>
         - if <[e].health.sub[<[damage]>]> <= 0:
           - adjust <[e]> health:0
+        #-shield break sfx
+        - playsound <player> sound:BLOCK_GLASS_BREAK pitch:1.5
 
     - if <[e].is_player>:
       - playsound <[e]> sound:ITEM_ARMOR_EQUIP_LEATHER pitch:2
 
     #guns handle damage indicators a little differently
     - if !<[e].has_flag[fort.shot]>:
-      - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round>;entity=<context.entity>;color=<&f>]>
+      - define color <&f> if:<[color].exists.not>
+      - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round>;entity=<context.entity>;color=<[color]>]>
 
     - if <[e].is_player>:
       - wait 1t

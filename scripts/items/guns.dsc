@@ -419,6 +419,8 @@ fort_gun_handler:
           - if <[hit_head].exists>:
             - define color <&e>
             - playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:1.5
+          - if <[target].armor_bonus||0> > 0:
+            - define color <&b>
           - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round_down>;entity=<[target]>;color=<[color]>]>
 
         - if <[target].is_living>:
