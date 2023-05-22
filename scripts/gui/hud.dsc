@@ -167,18 +167,21 @@ hud_handler:
     - define stair               <&chr[D003].font[icons]>
     - define pyramid             <&chr[D004].font[icons]>
 
+    - define backdrop <&chr[A000].font[buttons]>
+
     - if <[inv_type]> == inv:
       - if <[new_slot]> > 6:
         - define slot <[old_slot].is_more_than[3].if_true[1].if_false[6]>
         - adjust <player> item_slot:<[slot]>
       - define slots  <[unselected_slot].repeat_as_list[6]>
-
+      - define backdrop <&chr[A000].font[buttons]>
       - define keys:!
       - define count 6
-      - define spacing 34
+      - define spacing 37
       - repeat <[count]>:
-        - define keys:->:<&chr[<[value]>].font[buttons]>
-      - define keys <proc[spacing].context[18]><proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>].sub[10]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[69,0,0]>]>
+        - define keys:->:<[backdrop]><proc[spacing].context[-14]><&l><&keybind[key.hotbar.<[value]>].font[visitor]><&r>
+      - define keys <proc[spacing].context[47]><proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[69,0,0]>]><proc[spacing].context[2]>
+      #- define keys <proc[spacing].context[41]><proc[spacing].context[-<[spacing].add[14].mul[<[count]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[69,0,0]>]><proc[spacing].context[42]>
 
       - define build_toggle <&chr[A001].font[buttons].color[<color[68,0,0]>]>
 
@@ -198,10 +201,10 @@ hud_handler:
 
       - define keys:!
       - define count 5
-      - define spacing 34
+      - define spacing 37
       - repeat <[count]>:
-        - define keys:->:<&chr[<[value]>].font[buttons]>
-      - define keys <proc[spacing].context[71]><proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[67,0,0]>]>
+        - define keys:->:<[backdrop]><proc[spacing].context[-14]><&l><&keybind[key.hotbar.<[value]>].font[visitor]><&r>
+      - define keys <proc[spacing].context[87]><proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[67,0,0]>]><proc[spacing].context[2]>
 
       - define inv_toggle   <&chr[A001].font[buttons].color[<color[70,0,0]>]>
 
