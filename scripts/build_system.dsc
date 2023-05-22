@@ -660,6 +660,7 @@ build_toggle:
       #it means these "edits" weren't saved
       - if <player.has_flag[build.edit_mode.blocks]>:
         - flag <player.flag[build.edit_mode.blocks]> build.edited:!
+      - adjust <player> item_slot:<player.flag[build.last_slot]>
       - flag player build:!
       - stop
 
@@ -668,6 +669,9 @@ build_toggle:
 
     - flag player build.material:wood
     - flag player build.last_inventory:<player.inventory.list_contents>
+    - flag player build.last_slot:<player.held_item_slot>
+
+    - adjust <player> item_slot:1
     - inventory clear
 
     #text color
@@ -693,7 +697,7 @@ build_toggle:
     - define mat_txt     "<[r_button]> <element[<&l>MATERIAL].color[<[tc]>]>"
     - define edit_txt    "<[drop_button]> <element[<&l>EDIT].color[<[tc]>]>"
     - define confirm_txt "<[drop_button]> <element[<&l>CONFIRM].color[<[tc]>]>"
-    - define reset_txt   "<[l_button]> <element[<&l>RESET].color[<[tc]>]>"
+    - define reset_txt   "<[r_button]> <element[<&l>RESET].color[<[tc]>]>"
 
     - while <player.is_online> && <player.has_flag[build]> && <player.is_spawned>:
       - define eye_loc <player.eye_location>

@@ -114,10 +114,6 @@ hud_handler:
     - define new_type <map[inv=build;build=inv].get[<player.flag[fort.inv_type]||inv>]>
     - flag player fort.inv_type:<[new_type]>
 
-    - define old_slot <player.held_item_slot>
-    - adjust <player> item_slot:1
-    - define new_slot 1
-
     - run build_toggle
 
     - inject update_hud
@@ -177,12 +173,14 @@ hud_handler:
       - define backdrop <&chr[A000].font[buttons]>
       - define keys:!
       - define count 6
-      - define spacing 37
+      - define spacing 42
       - repeat <[count]>:
-        - define keys:->:<[backdrop]><proc[spacing].context[-14]><&l><&keybind[key.hotbar.<[value]>].font[visitor]><&r>
-      - define keys <proc[spacing].context[47]><proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[69,0,0]>]><proc[spacing].context[2]>
-      #- define keys <proc[spacing].context[41]><proc[spacing].context[-<[spacing].add[14].mul[<[count]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[69,0,0]>]><proc[spacing].context[42]>
+        - define k <&keybind[key.hotbar.<[value]>]>
+        - define keys:->:<[backdrop]><proc[spacing].context[-9]><[k].font[neg_half_c]><&l><[k].font[visitor]><&r><[k].font[neg_half_f]>
 
+      - define keys <proc[spacing].context[127]><proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>].add[43]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[69,0,0]>]>
+
+      #- define keys <proc[spacing].context[47]><proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[69,0,0]>]><proc[spacing].context[2]>
       - define build_toggle <&chr[A001].font[buttons].color[<color[68,0,0]>]>
 
       - define slots_ <[slots].set[<[selected_slot]>].at[<[slot]>].space_separated.color[<color[20,0,0]>]><[keys]>
@@ -201,10 +199,15 @@ hud_handler:
 
       - define keys:!
       - define count 5
-      - define spacing 37
+      - define spacing 42
       - repeat <[count]>:
-        - define keys:->:<[backdrop]><proc[spacing].context[-14]><&l><&keybind[key.hotbar.<[value]>].font[visitor]><&r>
-      - define keys <proc[spacing].context[87]><proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[67,0,0]>]><proc[spacing].context[2]>
+        - define k <&keybind[key.hotbar.<[value]>]>
+        - define keys:->:<[backdrop]><proc[spacing].context[-9]><[k].font[neg_half_c]><&l><[k].font[visitor]><&r><[k].font[neg_half_f]>
+      #- define keys <proc[spacing].context[47]><proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[69,0,0]>]><proc[spacing].context[2]>
+      - define keys <proc[spacing].context[111]><proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[67,0,0]>]>
+
+
+      #- define keys <proc[spacing].context[87]><proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[67,0,0]>]><proc[spacing].context[2]>
 
       - define inv_toggle   <&chr[A001].font[buttons].color[<color[70,0,0]>]>
 
