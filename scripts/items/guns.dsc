@@ -125,12 +125,18 @@ fort_gun_handler:
       - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
 
     on player drops gun_*:
+    - define gun    <context.item>
+
     - if <player.has_flag[fort.gun_scoped]>:
       - determine passively cancelled
+      - define loaded_ammo <server.flag[fort.temp.<[gun].flag[uuid]>.loaded_ammo]>
+      - if <[loaded_ammo]> < <[gun].flag[mag_size]>:
+        - wait 1t
+        - flag player fort.gun_scoped:!
+        - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
       - stop
 
     - wait 1t
-    - define gun    <context.item>
     - define drop   <context.entity>
 
     - run fort_gun_handler.drop_gun def:<map[gun=<[gun]>;drop=<[drop]>]>
@@ -236,7 +242,8 @@ fort_gun_handler:
     - define rarity              <[gun].flag[rarity]>
     #divide by 5, since the damage is based on the 100 scale
     - define base_damage         <[gun].flag[rarities.<[rarity]>.damage].div[5]>
-    - define structure_damage    <[gun].flag[rarities.<[rarity]>.structure_damage]||<[base_damage]>>
+    #mul base_damage by 5, since tiles use 100 hp scale and not 20
+    - define structure_damage    <[gun].flag[rarities.<[rarity]>.structure_damage]||<[base_damage].mul[5]>>
     - define pellets             <[gun].flag[pellets]>
     - define base_bloom          <[gun].flag[base_bloom]>
     - define bloom_multiplier    <[gun].flag[bloom_multiplier]>
