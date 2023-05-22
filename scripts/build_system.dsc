@@ -120,8 +120,7 @@ build_system_handler:
   definitions: data
   events:
     #-editing
-    #Q to enter/exit edit mode, Left click block to edit, Right click block to unedit,
-    ##F to reset (find a button to press to reset?, for now, we wont have any)
+    #Q to enter/exit edit mode, Left-Click to edit, click again to remove edit, right-click to reset
     on player drops item flagged:build:
     - determine passively cancelled
     #to prevent build from placing, since it considers dropping as clicking a block
@@ -130,7 +129,8 @@ build_system_handler:
       #apply the edits
       - define tile          <player.flag[build.edit_mode.tile]>
       - define edited_blocks <[tile].blocks.filter[has_flag[build.edited]]>
-      - playsound <[tile].center> sound:<[tile].center.material.block_sound_data.get[break_sound]> pitch:0.8
+      - if <[edited_blocks].any>:
+        - playsound <[tile].center> sound:<[tile].center.material.block_sound_data.get[break_sound]> pitch:0.8
       - foreach <[edited_blocks]> as:b:
         - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:5 visibility:100
         - modifyblock <[b]> air
@@ -162,7 +162,13 @@ build_system_handler:
     #-material switch/remove edit
     on player right clicks block flagged:build.material:
     - if <player.has_flag[build.edit_mode]>:
-      - run build_system_handler.edit def:<map[click=right]>
+      #-reset edits
+      - define edited_blocks <player.flag[build.edit_mode.tile].blocks.filter[has_flag[build.edited]]>
+      - if <[edited_blocks].is_empty>:
+        - stop
+      - playsound <player> sound:BLOCK_GRAVEL_BREAK pitch:1
+      - flag <[edited_blocks]> build.edited:!
+      - flag player build.edit_mode.blocks:!
       - stop
     - flag player build.material:<map[wood=brick;brick=metal;metal=wood].get[<player.flag[build.material]>]>
     #- flag player build.
@@ -177,7 +183,7 @@ build_system_handler:
         - stop
 
       - if <player.has_flag[build.edit_mode]>:
-        - run build_system_handler.edit def:<map[click=left]>
+        - run build_system_handler.edit
         - stop
 
       - if !<player.has_flag[build.struct]>:
@@ -240,8 +246,6 @@ build_system_handler:
 
   edit:
 
-    - define click <[data].get[click]>
-
     - define edit_tile    <player.flag[build.edit_mode.tile]>
     - define eye_loc      <player.eye_location>
     - define target_block <[eye_loc].ray_trace[return=block;range=4.5;default=air]>
@@ -256,19 +260,15 @@ build_system_handler:
     - if <[target_block].material.name> == air:
       - stop
 
-    - if <[click]> == left:
-      #if it's already edited
-      - if <[target_block].has_flag[build.edited]>:
-        - stop
+    #-add edit
+    - if !<[target_block].has_flag[build.edited]>:
       - playsound <player> sound:BLOCK_GRAVEL_BREAK pitch:1.5
       - flag <[target_block]> build.edited
       #this flag is for checking which blocks the player edited during the session, in case they toggle
       #build without "saving" their edit (it's not really necessary to do this, but it's good for safety and good practice it feels like)
       - flag player build.edit_mode.blocks:->:<[target_block]>
-    - else if <[click]> == right:
-      #removing the edit
-      - if !<[target_block].has_flag[build.edited]>:
-        - stop
+    #-remove edit
+    - else:
       - playsound <player> sound:BLOCK_GRAVEL_BREAK pitch:1.25
       - flag <[target_block]> build.edited:!
 
@@ -692,7 +692,7 @@ build_toggle:
         - define edited_blocks    <[tile_blocks].filter[has_flag[build.edited]]>
         - define nonedited_blocks <[tile_blocks].exclude[<[edited_blocks]>]>
 
-        - debugblock <[edited_blocks]>    d:2t color:0,0,0,175
+        - debugblock <[edited_blocks]>    d:2t color:0,0,0,150
         - debugblock <[nonedited_blocks]> d:2t color:45,167,237,150
 
       - else if <[type]> != null:
