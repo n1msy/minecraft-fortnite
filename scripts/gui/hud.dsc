@@ -84,7 +84,7 @@ update_hud:
   - define small_bar <[small_health_bar].color[<color[<[health_r]>,1,0]>]><proc[spacing].context[-106]><[small_shield_bar].color[<color[<[shield_r]>,1,1]>]>
   - define team_bars <[small_bar]><element[<proc[spacing].context[-106]><[name]>].color[<color[61,0,0]>]>
 
-  - sidebar set title:<empty> values:<[ammo_]>|<[shield_]>|<[health_]>|<[build_]>|<[slots_]>|<[wood_]>|<[brick_]>|<[metal_]>|<[time_]>|<[alive_]>|<[kills_]>|<[team_bars]>|<&sp>
+  - sidebar set title:<empty> values:<[ammo_]>|<[shield_]>|<[health_]>|<[build_]>|<[slots_]>|<[wood_]>|<[brick_]>|<[metal_]>|<[time_]>|<[alive_]>|<[kills_]>|<[team_bars]>
 
   - inject hud_handler.update_inventory
 
@@ -173,6 +173,7 @@ hud_handler:
         - adjust <player> item_slot:<[slot]>
       - define slots  <[unselected_slot].repeat_as_list[6]>
 
+      - define keys:!
       - define count 6
       - define spacing 34
       - repeat <[count]>:
@@ -195,6 +196,7 @@ hud_handler:
       - define selection      <map[1=<[wall_sel]>;2=<[floor_sel]>;3=<[stair_sel]>;4=<[pyramid_sel]>;5=<[selected_slot]>].get[<[slot]>]>
       - define build_slots    <list[<[wall]>|<[floor]>|<[stair]>|<[pyramid]>|<[unselected_slot]>].set[<[selection]>].at[<[slot]>]>
 
+      - define keys:!
       - define count 5
       - define spacing 34
       - repeat <[count]>:
