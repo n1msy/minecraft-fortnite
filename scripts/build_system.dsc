@@ -670,6 +670,31 @@ build_toggle:
     - flag player build.last_inventory:<player.inventory.list_contents>
     - inventory clear
 
+    #text color
+    - define tc <color[71,0,0]>
+    #bracket color
+    - define bc <color[72,0,0]>
+    #left click color
+    - define lc <color[73,0,0]>
+    #right click color
+    - define rc <color[74,0,0]>
+    #drop color
+    - define dt <color[75,0,0]>
+
+    - define lb <element[<&l><&lb>].color[<[bc]>]>
+    - define rb <element[<&l><&rb>].color[<[bc]>]>
+
+    - define l_button     <[lb]><element[<&l>L].color[<[lc]>]><[rb]>
+    - define r_button     <[lb]><element[<&l>R].color[<[rc]>]><[rb]>
+    - define drop_key     <&keybind[key.drop].font[build_text]>
+    - define drop_button  <[lb]><element[<&l><[drop_key]>].color[<[dt]>]><[rb]>
+
+    - define build_txt   "<[l_button]> <element[<&l>BUILD].color[<[tc]>]>"
+    - define mat_txt     "<[r_button]> <element[<&l>MATERIAL].color[<[tc]>]>"
+    - define edit_txt    "<[drop_button]> <element[<&l>EDIT].color[<[tc]>]>"
+    - define confirm_txt "<[drop_button]> <element[<&l>CONFIRM].color[<[tc]>]>"
+    - define reset_txt   "<[l_button]> <element[<&l>RESET].color[<[tc]>]>"
+
     - while <player.is_online> && <player.has_flag[build]> && <player.is_spawned>:
       - define eye_loc <player.eye_location>
       - define loc <player.location>
@@ -693,7 +718,7 @@ build_toggle:
         - define edited_blocks    <[tile_blocks].filter[has_flag[build.edited]]>
         - define nonedited_blocks <[tile_blocks].exclude[<[edited_blocks]>]>
 
-        - define build_text "<&7><&l>[<&e><&l>DROP<&7><&l>] <&f><&l>CONFIRM <&7><&l>[<&c><&l>R<&7><&l>] <&f><&l>RESET"
+        - define text "<[confirm_txt]> <[reset_txt]>"
 
         - debugblock <[edited_blocks]>    d:2t color:0,0,0,150
         - debugblock <[nonedited_blocks]> d:2t color:45,167,237,150
@@ -701,9 +726,9 @@ build_toggle:
       - else if <[type]> != null:
 
         - if <player.eye_location.ray_trace[return=block;range=4.5;default=air].has_flag[build.center]>:
-          - define build_text "<&7><&l>[<&e><&l>DROP<&7><&l>] <&f><&l>EDIT <&7><&l>[<&c><&l>R<&7><&l>] <&f><&l>MATERIAL"
+          - define text "<[edit_txt]> <[mat_txt]>"
         - else:
-          - define build_text "<&7><&l>[<&9><&l>L<&7><&l>] <&f><&l>BUILD <&7><&l>[<&c><&l>R<&7><&l>] <&f><&l>MATERIAL"
+          - define text "<[build_txt]> <[mat_txt]>"
 
         - flag player build.type:<[type]>
         - inject build_tiles.<[type]>
@@ -738,7 +763,7 @@ build_toggle:
           - flag player build.struct:!
           - debugblock <[display_blocks]> d:2t color:219,55,55,150
 
-      - actionbar <[build_text].font[build_text]>
+      - actionbar <[text]>
 
       - wait 1t
 
