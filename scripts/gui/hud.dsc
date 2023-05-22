@@ -84,7 +84,7 @@ update_hud:
   - define small_bar <[small_health_bar].color[<color[<[health_r]>,1,0]>]><proc[spacing].context[-106]><[small_shield_bar].color[<color[<[shield_r]>,1,1]>]>
   - define team_bars <[small_bar]><element[<proc[spacing].context[-106]><[name]>].color[<color[61,0,0]>]>
 
-  - sidebar set title:<empty> values:<[ammo_]>|<[shield_]>|<[health_]>|<[build_]>|<[slots_]>|<[wood_]>|<[brick_]>|<[metal_]>|<[time_]>|<[alive_]>|<[kills_]>|<[team_bars]>
+  - sidebar set title:<empty> values:<[ammo_]>|<[shield_]>|<[health_]>|<[build_]>|<[slots_]>|<[wood_]>|<[brick_]>|<[metal_]>|<[time_]>|<[alive_]>|<[kills_]>|<[team_bars]>|<&sp>
 
   - inject hud_handler.update_inventory
 
@@ -151,6 +151,7 @@ hud_handler:
 
 
   update_slots:
+  #-have a icon for opening the full map?
   #required definitions:
   # <[new_slot]>
   # <[old_slot]>
@@ -170,10 +171,18 @@ hud_handler:
       - if <[new_slot]> > 6:
         - define slot <[old_slot].is_more_than[3].if_true[1].if_false[6]>
         - adjust <player> item_slot:<[slot]>
-      - define slots               <[unselected_slot].repeat_as_list[6]>
+      - define slots  <[unselected_slot].repeat_as_list[6]>
 
-      - define slots_              <[slots].set[<[selected_slot]>].at[<[slot]>].space_separated.color[<color[20,0,0]>]>
-      - define build_ <element[<[wall]> <[floor]> <[stair]> <[pyramid]> <[unselected_slot]>].color[<color[30,0,0]>]>
+      - define count 6
+      - define spacing 34
+      - repeat <[count]>:
+        - define keys:->:<&chr[<[value]>].font[buttons]>
+      - define keys <proc[spacing].context[18]><proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>].sub[10]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[69,0,0]>]>
+
+      - define build_toggle <&chr[A001].font[buttons].color[<color[68,0,0]>]>
+
+      - define slots_ <[slots].set[<[selected_slot]>].at[<[slot]>].space_separated.color[<color[20,0,0]>]><[keys]>
+      - define build_ <[build_toggle]><proc[spacing].context[-17]><element[<[wall]> <[floor]> <[stair]> <[pyramid]> <[unselected_slot]>].color[<color[30,0,0]>]>
 
     - else if <[inv_type]> == build:
       - if <[new_slot]> > 5:
@@ -186,8 +195,16 @@ hud_handler:
       - define selection      <map[1=<[wall_sel]>;2=<[floor_sel]>;3=<[stair_sel]>;4=<[pyramid_sel]>;5=<[selected_slot]>].get[<[slot]>]>
       - define build_slots    <list[<[wall]>|<[floor]>|<[stair]>|<[pyramid]>|<[unselected_slot]>].set[<[selection]>].at[<[slot]>]>
 
-      - define build_         <[build_slots].space_separated.color[<color[30,0,0]>]>
-      - define slots_         <[unselected_slot].repeat_as_list[6].space_separated.color[<color[20,0,0]>]>
+      - define count 5
+      - define spacing 34
+      - repeat <[count]>:
+        - define keys:->:<&chr[<[value]>].font[buttons]>
+      - define keys <proc[spacing].context[71]><proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[67,0,0]>]>
+
+      - define inv_toggle   <&chr[A001].font[buttons].color[<color[70,0,0]>]>
+
+      - define build_         <[build_slots].space_separated.color[<color[30,0,0]>]><[keys]>
+      - define slots_         <[inv_toggle]><proc[spacing].context[-17]><[unselected_slot].repeat_as_list[6].space_separated.color[<color[20,0,0]>]>
 
       #being handled in build_toggle now
       #trap

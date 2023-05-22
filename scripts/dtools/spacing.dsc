@@ -6,7 +6,7 @@ spacing:
     - if !<[int].is_integer>:
       - narrate "Not an integer"
       - determine "Not an integer"
-    
+
     - define spacing <list>
     - define prefixA 0
     - define prefixB E
@@ -45,7 +45,7 @@ spacing:
     - if <[int]> >= 32:
       - define spacing:->:<&chr[<[prefixA]>006].font[spacing]>
       - define int:-:32
-    
+
     - if <[int].mod[2]> == 1:
       - define spacing:->:<&chr[<[prefixA]>001].font[spacing]>
 
