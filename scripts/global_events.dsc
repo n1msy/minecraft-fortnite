@@ -15,6 +15,9 @@ fort_global_handler:
     - define loc    <player.location>
 
     - define drops <context.drops>
+
+    - determine passively <list[]>
+
     - if <player.has_flag[build]>:
       - define drops <player.flag[build.last_inventory]>
       #dont really need to remove this flag, since the while also checks if the player is alive but oh well
