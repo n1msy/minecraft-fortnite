@@ -145,6 +145,10 @@ fort_gun_handler:
 
     # - [ scope ] - #
     after player starts sneaking:
+    - define look_loc <player.eye_location.ray_trace[return=block;range=2.7;default=air]>
+    - if <[look_loc].has_flag[fort.chest]> && !<[look_loc].has_flag[fort.opened]>:
+      - inject fort_chest_handler.open
+      - stop
     - if <player.item_in_hand.script.name.starts_with[gun_].not||true>:
       - stop
     - define gun      <player.item_in_hand>
