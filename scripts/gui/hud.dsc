@@ -182,10 +182,11 @@ hud_handler:
 
       - define keys <proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing].add[1]>]>].color[<color[69,0,0]>]>
 
-      - define build_toggle <&chr[A001].font[buttons].color[<color[68,0,0]>]>
+      - define k <&keybind[key.swapOffhand]>
+      - define build_toggle <[backdrop]><proc[spacing].context[-9]><[k].font[neg_half_f]><[k].font[visitor]><[k].font[neg_half_c]><proc[spacing].context[9]>
 
       - define slots_ <[slots].set[<[selected_slot]>].at[<[slot]>].space_separated.color[<color[20,0,0]>]><[keys]>
-      - define build_ <[build_toggle]><proc[spacing].context[-17]><element[<[wall]> <[floor]> <[stair]> <[pyramid]> <[unselected_slot]>].color[<color[30,0,0]>]>
+      - define build_ <[build_toggle].color[68,0,0]><proc[spacing].context[-17]><element[<[wall]> <[floor]> <[stair]> <[pyramid]> <[unselected_slot]>].color[<color[30,0,0]>]>
 
     - else if <[inv_type]> == build:
       - if <[new_slot]> > 5:
