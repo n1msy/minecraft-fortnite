@@ -3,6 +3,27 @@ fort_chest_handler:
   debug: false
   definitions: data
   events:
+    on player right clicks block with:fort_chest:
+    - determine passively cancelled
+    - ratelimit <player> 1t
+    - define loc <context.location.above.center.above[0.1]>
+    - if <[loc].material.name> != air:
+      - narrate "<&c>Invalid spot."
+      - stop
+    - define text "<&7><&l>[<&e><&l>Sneak<&7><&l>] <&f><&l>Search"
+    - define angle <player.location.yaw.add[180].to_radians>
+    - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
+    - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=15]>;scale=1.25,1.25,1.25;left_rotation=<[left_rotation]>] <[loc]> save:chest
+    - spawn TEXT_DISPLAY[text=<[text]>;pivot=center;scale=1,1,1;view_range=0.035;see_through=true] <[loc].above[0.75]> save:chest_text
+    - modifyblock <[loc]> barrier
+    - define loc <context.location.above.center>
+    - flag <[loc]> fort.chest.model:<entry[chest].spawned_entity>
+    - flag <[loc]> fort.chest.text:<entry[chest_text].spawned_entity>
+    #so it's not using the fx constantly when not in use
+    - flag <[loc]> fort.chest.opened
+    - flag server fort.chests:->:<[loc]>
+    - narrate "<&a>Set chest at <&f><[loc].simple>"
+
     on player breaks block location_flagged:fort.chest:
     - define loc <context.location.center>
     - remove <[loc].flag[fort.chest.model]> if:<[loc].flag[fort.chest.model].is_spawned>
@@ -130,3 +151,13 @@ fort_chest_handler:
         - flag <[loc]> fort.chest.text:<entry[chest_text].spawned_entity>
       - flag <[loc]> fort.chest.opened:!
       - run fort_chest_handler.chest_fx def:<map[loc=<[loc]>]>
+
+fort_chest:
+  type: item
+  material: gold_nugget
+  display name: LIGHT
+  mechanisms:
+    custom_model_data: 15
+    hides: ALL
+  flags:
+    qty: 1
