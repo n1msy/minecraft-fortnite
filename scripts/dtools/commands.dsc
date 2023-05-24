@@ -10,6 +10,7 @@ fort_commands:
   script:
   - choose <context.args.first||null>:
     - case chest:
+      #-much better to use the item instead and place them down
       - define loc <player.location.center.above[0.1]>
       - if <[loc].material.name> != air:
         - narrate "<&c>Invalid spot."
@@ -23,6 +24,7 @@ fort_commands:
       - define loc <player.location.center>
       - flag <[loc]> fort.chest.model:<entry[chest].spawned_entity>
       - flag <[loc]> fort.chest.text:<entry[chest_text].spawned_entity>
+      - flag <[loc]> fort.chest.yaw:<player.location.yaw.add[180].to_radians>
       #so it's not using the fx constantly when not in use
       - flag <[loc]> fort.chest.opened
       - flag server fort.chests:->:<[loc]>

@@ -1,3 +1,13 @@
+fort_chest:
+  type: item
+  material: gold_nugget
+  display name: Chest
+  mechanisms:
+    custom_model_data: 15
+    hides: ALL
+  flags:
+    qty: 1
+
 fort_chest_handler:
   type: world
   debug: false
@@ -19,6 +29,7 @@ fort_chest_handler:
     - define loc <context.location.above.center>
     - flag <[loc]> fort.chest.model:<entry[chest].spawned_entity>
     - flag <[loc]> fort.chest.text:<entry[chest_text].spawned_entity>
+    - flag <[loc]> fort.chest.yaw:<player.location.yaw.add[180]>
     #so it's not using the fx constantly when not in use
     - flag <[loc]> fort.chest.opened
     - flag server fort.chests:->:<[loc]>
@@ -77,19 +88,14 @@ fort_chest_handler:
   - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[ammo_qty]>;loc=<[drop_loc]>]>
 
   chest_fx:
-  - define loc <[data].get[loc]>
-  - define p_loc <[loc].above[0.1]>
-  - define circle_center <[p_loc].below[0.5]>
-  - define circle        <[circle_center].points_around_y[radius=1;points=45]>
-  - define gold_shine    <[p_loc].forward[0.4].below[0.1]>
+  - define loc        <[data].get[loc]>
+  - define p_loc      <[loc].with_yaw[<[loc].flag[fort.chest.yaw]>].forward[0.4]>
+  - define gold_shine <[p_loc].left[0.5].points_between[<[p_loc].right[0.55]>].distance[0.1]>
   - while !<[loc].has_flag[fort.chest.opened]> && <[loc].has_flag[fort.chest]>:
     - if <[loop_index].mod[5]> == 0:
       - playsound <[loc]> sound:BLOCK_AMETHYST_BLOCK_CHIME pitch:1.5 volume:0.5
-    #- if <[loop_index].mod[2]> == 0:
-    - playeffect at:<[gold_shine]> effect:DUST_COLOR_TRANSITION offset:0.22,0,0 quantity:15 special_data:1|<color[#ffc02e]>|<color[#fff703]>
+    - playeffect at:<[gold_shine].random[15]> effect:DUST_COLOR_TRANSITION offset:0 quantity:1 special_data:1|<color[#ffc02e]>|<color[#fff703]>
     - wait 4t
-    #- playeffect effect:INSTANT_SPELL at:<[circle].get[<[loop_index].mod[45].add[1]>]> offset:0 visibility:10
-    #- wait 2t
 
   fill_chest:
     #required definitions:
@@ -151,13 +157,3 @@ fort_chest_handler:
         - flag <[loc]> fort.chest.text:<entry[chest_text].spawned_entity>
       - flag <[loc]> fort.chest.opened:!
       - run fort_chest_handler.chest_fx def:<map[loc=<[loc]>]>
-
-fort_chest:
-  type: item
-  material: gold_nugget
-  display name: LIGHT
-  mechanisms:
-    custom_model_data: 15
-    hides: ALL
-  flags:
-    qty: 1

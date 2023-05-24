@@ -61,6 +61,8 @@ fort_global_handler:
 
     on entity damaged:
     - define e      <context.entity>
+    - if !<[e].is_living>:
+      - stop
     - define damage <context.damage>
     - define shield <[e].armor_bonus||null>
 

@@ -257,7 +257,10 @@ fort_gun_handler:
     #phantom / vandal = 2
     #
     - define ticks_between_shots <[gun].flag[ticks_between_shots]||3>
+    #for any gun like the burst
+    - define shots_between_wait  <[gun].flag[shots_between_wait]||0>
     - define mod_value           <[ticks_between_shots].equals[1].if_true[0].if_false[1]>
+    - define times_shot          0
 
     - if <[gun].has_flag[cooldown]>:
       - flag player fort.<[gun_name]>.cooldown duration:<[gun].flag[cooldown]>s
@@ -276,16 +279,17 @@ fort_gun_handler:
         - else:
           - inject fort_gun_handler.fire
 
-        - if <[total_damage].exists>:
-          - define color <&f>
-          #player hit
-          - playsound <player> sound:ITEM_ARMOR_EQUIP_LEATHER pitch:2
-          - if <[hit_head].exists>:
-            - define color <&e>
-            #crisp headshot sound effect
-            - playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:1.5
-            #multiply the damage to show visually that it's in the 100 scale
-          - run fort_global_handler.damage_indicator def:<map[damage=<[total_damage].mul[5].round>;entity=<[target]>;color=<[color]>]>
+        - if <[hit_targets].exists>:
+          - foreach <[hit_targets]> as:h_target:
+            - define color <&f>
+            #player hit
+            - playsound <player> sound:ITEM_ARMOR_EQUIP_LEATHER pitch:2
+            - if <[hit_data.<[h_target]>.hit_head]>:
+              - define color <&e>
+              #crisp headshot sound effect
+              - playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:1.5
+              #multiply the damage to show visually that it's in the 100 scale
+            - run fort_global_handler.damage_indicator def:<map[damage=<[hit_data.<[h_target]>.damage].mul[5].round>;entity=<[h_target]>;color=<[color]>]>
 
         #sound
         - foreach <[gun].flag[Sounds].keys> as:sound:
@@ -298,6 +302,10 @@ fort_gun_handler:
         - flag player is_shooting.loc:<player.location>
         - if <[gun].has_flag[cooldown]> && <[times_shot]> == 1:
           - while stop
+
+      - if <[shots_between_wait]> != 0 && <[times_shot].mod[<[shots_between_wait]>]> == 0:
+        #this can become its own flag eventually too if needed
+        - wait 3t
 
       - wait 0.5t
     - flag player is_shooting:!
@@ -349,7 +357,7 @@ fort_gun_handler:
       #where the particle effect starts from
       #make it a procedure for each gun in the future?
       - define particle_origin <[origin].forward.relative[-0.33,-0.2,0.3]>
-      - define ignored_entities <server.online_players.filter[gamemode.equals[SPECTATOR]].include[<player>].include[<[world].entities[armor_stand]>]>
+      - define ignored_entities <server.online_players.filter[gamemode.equals[SPECTATOR]].include[<player>].include[<[world].entities[armor_stand|dropped_item]>]>
 
       #entity
       - define target          <[origin].ray_trace_target[ignore=<[ignored_entities]>;ray_size=1;range=200]||null>
@@ -366,7 +374,7 @@ fort_gun_handler:
       - if <[target_block].has_flag[build.center]||false>:
         - run build_system_handler.structure_damage def:<map[center=<[target_block].flag[build.center]>;damage=<[structure_damage].div[<[pellets]>]>]>
 
-      - if <[target]> != null && <[target].is_spawned>:
+      - if <[target]> != null && <[target].is_spawned> && <[target].is_living>:
 
         # - [ Damage Falloff ] - #
         #maybe for future: to calculate distances, use the tiles provided in the wiki for distances and convert to tile sizes in mc for 1:1
@@ -413,25 +421,28 @@ fort_gun_handler:
             - define body_part <list[Legs|Body|Head].get[<[Loop_Index]>]>
             - foreach stop
 
-        #used for damage inidcator
-        - if <[body_part]> == Head && !<[hit_head].exists>:
-          - define hit_head true
-
         #shot flag is for damage indicator
         - flag <[target]> fort.shot duration:1t
         - define damage <[damage].mul[<[headshot_multiplier]>].round_down> if:<[body_part].equals[Head]>
         - hurt <[damage]> <[target]> source:<player>
         #total damage to consider all damage combined if multiple pellets are used per shot
         - if <[pellets]> > 1:
-          - define total_damage:+:<[damage]>
+          #multiple list support in case pellets hit multiple people
+          - define total_damage 0
+          - if <[hit_data.<[target]>.damage].exists>:
+            - define total_damage <[hit_data.<[target]>.damage]>
+          - define hit_data.<[target]>.damage:<[total_damage].add[<[damage]>]>
+          - define hit_data.<[target]>.hit_head:<[body_part].equals[Head]>
+          - define hit_targets:->:<[target]> if:<[hit_targets].contains[<[target]>].not||true>
         - else:
           - define color <&f>
           - playsound <player> sound:ITEM_ARMOR_EQUIP_LEATHER pitch:2
-          - if <[hit_head].exists>:
+          - if <[body_part]> == Head:
             - define color <&e>
             - playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:1.5
           - if <[target].armor_bonus||0> > 0:
             - define color <&b>
+          #-show damage indicator even if it's 0?
           - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round_down>;entity=<[target]>;color=<[color]>]>
 
         - if <[target].is_living>:
@@ -548,6 +559,30 @@ fort_gun_handler:
 
     - define gun_name <[data].get[gun_name]>
     - choose <[gun_name]>:
+      - case burst_assault_rifle:
+        - run fort_gun_handler.camera_shake def:<map[mult=0.0965]>
+        - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[0.6]> offthread_repeat:3
+        - repeat 4:
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.add[0.15]> offthread_repeat:3
+          - wait 1t
+      - case tactical_shotgun:
+        - run fort_gun_handler.camera_shake def:<map[mult=0.083]>
+        - define base   0.6
+        - define smooth 0.15
+        - define up     <[base]>
+        - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[base]>]> offthread_repeat:3
+        #smoother effect
+        - repeat 3:
+          - define up <[up].add[<[smooth]>]>
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[smooth]>]> offthread_repeat:3
+          - wait 1t
+        #meaning go down (original amount + smooth amount)
+        #higher = slower
+        - define speed          8
+        - define down_increment <[up].div[<[speed]>]>
+        - repeat <[speed]>:
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.add[<[down_increment]>]> offthread_repeat:3
+          - wait 1t
       - case rocket_launcher:
         - run fort_gun_handler.camera_shake def:<map[mult=0.0965]>
         - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[1]> offthread_repeat:3
@@ -670,6 +705,9 @@ fort_gun_handler:
     - adjust <[drop]> glowing:true
 
   reload:
+    #TODO: divide the bullets so you can load a certain amount of bullets, then stop (it doesn't have to be fully reloaded before you can shoot again)
+    ##only works for some, like tactical shotgun, maybe it's shotties only?
+
     - define gun         <[data].get[gun]>
     - define gun_name    <[gun].script.name.after[gun_]>
     - define gun_uuid    <[gun].flag[uuid]>
@@ -701,6 +739,7 @@ fort_gun_handler:
       #- actionbar <[completed].equals[12].if_true[<&c><[text].unseparated>].if_false[<[reloading_text]>]>
       - title subtitle:<[completed].equals[12].if_true[<&c><[text].unseparated>].if_false[<[reloading_text]>]> fade_in:0
       - playsound <player.location> sound:BLOCK_NOTE_BLOCK_HAT pitch:<[value].div[<[reload_time].div[2]>].add[1]> volume:1.2
+
       - wait 3t
 
     - if !<[cancelled].exists>:
@@ -835,6 +874,12 @@ gun_particle_origin:
 
 #@ [ Gun Data ] @#
 
+# [ Do this ? ] #
+
+#4.3 Content Update (June 5, 2018)
+
+#Damage fall-off vs. structures removed for Rifles, SMGs, Pistols, and LMGs.
+
 #-check how much ammo each ammo type drops from chests?
 ammo_light:
   type: item
@@ -968,6 +1013,85 @@ gun_pump_shotgun:
         pitch: 1.8
         volume: 1.2
 
+gun_tactical_shotgun:
+  type: item
+  material: wooden_hoe
+  display name: <&f><&l>TACTICAL SHOTGUN
+  mechanisms:
+    ##custom_model_data: 23
+    hides: ALL
+  flags:
+    type: shotgun
+    #this value can be changed
+    rarity: common
+    icon_chr: 1
+    #global stats
+    #min is 5 if you want singular shots
+    ticks_between_shots: 5
+    ammo_type: shells
+    mag_size: 8
+    #in seconds
+    cooldown: 0.55
+    #how many pellets in one shot
+    pellets: 10
+    base_bloom: 2.8
+    bloom_multiplier: 1
+    headshot_multiplier: 1.75
+    #if there's a slightly different shoot effect alongside the base ones
+    custom_recoil_fx: false
+    uuid: <util.random_uuid>
+    #rarity-based states
+    rarities:
+      common:
+        chance: 22
+        damage: 77
+        structure_damage: 50
+        reload_time: 6.27
+        custom_model_data: 25
+      uncommon:
+        chance: 34
+        damage: 81
+        structure_damage: 52
+        reload_time: 5.99
+        custom_model_data: 25
+      rare:
+        chance: 8
+        damage: 85
+        structure_damage: 55
+        reload_time: 5.7
+        custom_model_data: 25
+      epic:
+        chance: 1.36
+        damage: 89
+        structure_damage: 75
+        reload_time: 5.41
+        custom_model_data: 25
+      legendary:
+        chance: 0.34
+        damage: 94
+        structure_damage: 78
+        reload_time: 5.13
+        custom_model_data: 25
+    #(in meters/blocks)
+    #value is in percentage of damage
+    #max means it wont deal any damage past that
+    damage_falloff:
+      8: 100
+      10: 90
+      15: 70
+      30: 0
+
+    sounds:
+      ENTITY_FIREWORK_ROCKET_BLAST:
+        pitch: 1.8
+        volume: 1.2
+      ENTITY_DRAGON_FIREBALL_EXPLODE:
+        pitch: 2
+        volume: 1.2
+      BLOCK_SAND_BREAK:
+        pitch: 0.5
+        volume: 1.4
+
 gun_assault_rifle:
   type: item
   material: wooden_hoe
@@ -1029,6 +1153,71 @@ gun_assault_rifle:
     sounds:
       ENTITY_FIREWORK_ROCKET_BLAST_FAR:
         pitch: 1.07
+        volume: 1.2
+
+gun_burst_assault_rifle:
+  type: item
+  material: wooden_hoe
+  display name: <&f><&l>BURST ASSAULT RIFLE
+  mechanisms:
+    ##custom_model_data: 26
+    hides: ALL
+  flags:
+    type: ar
+    #this value can be changed
+    rarity: common
+    icon_chr: 1
+    #global stats
+    #min is 5 if you want singular shots
+    ticks_between_shots: 2
+    ammo_type: medium
+    mag_size: 30
+    #in seconds
+    #cooldown: 0
+    #sorta as a way to offset the timing, specifically for the burst
+    shots_between_wait: 3
+    pellets: 1
+    base_bloom: 1.3
+    bloom_multiplier: 1
+    headshot_multiplier: 1.5
+    custom_recoil_fx: false
+    uuid: <util.random_uuid>
+    rarities:
+      common:
+        chance: 43
+        damage: 27
+        reload_time: 2.9
+        custom_model_data: 26
+      uncommon:
+        chance: 39
+        damage: 29
+        reload_time: 2.7
+        custom_model_data: 26
+      rare:
+        chance: 39
+        damage: 30
+        reload_time: 2.6
+        custom_model_data: 26
+      epic:
+        chance: 2
+        damage: 32
+        reload_time: 2.5
+        custom_model_data: 28
+      legendary:
+        chance: 0.5
+        damage: 33
+        reload_time: 2.3
+        custom_model_data: 28
+    #(in meters)
+    #value is in percentage of damage
+    damage_falloff:
+      50: 100
+      75: 80
+      95: 66
+
+    sounds:
+      ENTITY_FIREWORK_ROCKET_BLAST_FAR:
+        pitch: 1.3
         volume: 1.2
 
 gun_tactical_smg:
