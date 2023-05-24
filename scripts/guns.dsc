@@ -180,12 +180,11 @@ fort_gun_handler:
     #wait until anything stops them from scoping
     - waituntil !<player.has_flag[fort.gun_scoped]> || !<player.is_online> || !<player.is_sneaking> || <player.gamemode> == SPECTATOR || <player.item_in_hand.flag[uuid]||null> != <[gun_uuid]> rate:1t
 
-    ##make sure players dont drop pumpkins if they're scoped in and die
-    #in case they dropped it (which is not possible)
-    - if <player.item_in_hand.flag[uuid]||null> == <[gun_uuid]>:
-        - inventory adjust slot:<[slot]> custom_model_data:<[cmd]>
     - if <[gun].has_flag[sniper]>:
       - inject fort_gun_handler.reset_sniper_scope
+    - else:
+    #no need to check if they dropped, since they can't drop when scoped
+      - inventory adjust slot:<[slot]> custom_model_data:<[cmd]>
     - cast SPEED remove
 
     - flag player fort.gun_scoped:!
@@ -833,6 +832,8 @@ gun_particle_origin:
   - define eye_loc <player.eye_location>
   - if !<player.has_flag[fort.gun_scoped]>:
     - choose <[gun]>:
+      - case burst_assault_rifle:
+        - determine <[eye_loc].forward.relative[-0.35,-0.17,0.3]>
       - case rocket_launcher:
         - determine <[eye_loc].forward[0.8].relative[-0.33,0.027,0.3].right[0.17]>
       - case grenade_launcher:
@@ -853,6 +854,8 @@ gun_particle_origin:
         - determine <[eye_loc].forward.relative[-0.33,-0.2,0.3]>
   - else:
     - choose <[gun]>:
+      - case burst_assault_rifle:
+        - determine <[eye_loc].forward[1.8].below[0.09].right[0.03]>
       - case grenade_launcher:
         - determine <[eye_loc].forward[1.8].above[0.08].right[0.03]>
       - case pistol:
@@ -1018,7 +1021,7 @@ gun_tactical_shotgun:
   material: wooden_hoe
   display name: <&f><&l>TACTICAL SHOTGUN
   mechanisms:
-    ##custom_model_data: 23
+    custom_model_data: 23
     hides: ALL
   flags:
     type: shotgun
@@ -1047,31 +1050,33 @@ gun_tactical_shotgun:
         damage: 77
         structure_damage: 50
         reload_time: 6.27
-        custom_model_data: 25
+        custom_model_data: 23
       uncommon:
         chance: 34
         damage: 81
         structure_damage: 52
         reload_time: 5.99
-        custom_model_data: 25
+        custom_model_data: 23
       rare:
         chance: 8
         damage: 85
         structure_damage: 55
         reload_time: 5.7
-        custom_model_data: 25
+        custom_model_data: 23
       epic:
         chance: 1.36
         damage: 89
         structure_damage: 75
         reload_time: 5.41
-        custom_model_data: 25
+        ##25
+        custom_model_data: 23
       legendary:
         chance: 0.34
         damage: 94
         structure_damage: 78
         reload_time: 5.13
-        custom_model_data: 25
+        ##25
+        custom_model_data: 23
     #(in meters/blocks)
     #value is in percentage of damage
     #max means it wont deal any damage past that
@@ -1160,7 +1165,8 @@ gun_burst_assault_rifle:
   material: wooden_hoe
   display name: <&f><&l>BURST ASSAULT RIFLE
   mechanisms:
-    ##custom_model_data: 26
+    ##26
+    custom_model_data: 28
     hides: ALL
   flags:
     type: ar
@@ -1187,16 +1193,19 @@ gun_burst_assault_rifle:
         chance: 43
         damage: 27
         reload_time: 2.9
+        ##26
         custom_model_data: 26
       uncommon:
         chance: 39
         damage: 29
         reload_time: 2.7
+        ##26
         custom_model_data: 26
       rare:
         chance: 39
         damage: 30
         reload_time: 2.6
+        ##26
         custom_model_data: 26
       epic:
         chance: 2
