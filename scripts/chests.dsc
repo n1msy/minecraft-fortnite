@@ -4,42 +4,129 @@ fort_chest_handler:
   definitions: data
   events:
     on player breaks block location_flagged:fort.chest:
-    - define loc <context.location>
-    - remove <[loc].flag[fort.chest]> if:<[loc].flag[fort.chest].is_spawned>
-    - remove <[loc].flag[fort.chest_text]> if:<[loc].flag[fort.chest_text].is_spawned>
+    - define loc <context.location.center>
+    - remove <[loc].flag[fort.chest.model]> if:<[loc].flag[fort.chest.model].is_spawned>
+    - remove <[loc].flag[fort.chest.text]> if:<[loc].flag[fort.chest.text].is_spawned>
     #is this safe to do? (what if there was another flag in the same loc?)
     - flag <[loc]> fort:!
+    - flag server fort.chests:<-:<[loc]>
 
   open:
   #required definitions: look_loc
-  - define text_display <[look_loc].flag[fort.chest_text]>
-  - define chest        <[look_loc].flag[fort.chest]>
-  - spawn TEXT_DISPLAY[text=■;pivot=center;display=left;scale=1,1,1;view_range=0.035;see_through=true;width=10;hide_from_players=true] <[text_display].location.below[0.022]> save:load_bar
-  - define bar <entry[load_bar].spawned_entity>
-  - adjust <player> show_entity:<[bar]>
-  - while <player.is_online> && <player.is_sneaking> && <[look_loc].has_flag[fort.chest]> && !<[look_loc].has_flag[fort.opened]> && <[text_display].is_spawned>:
+  - define loc <[look_loc]>
+  - define text_display <[loc].flag[fort.chest.text]>
+  - define text         <[text_display].text>
+  - define chest        <[loc].flag[fort.chest.model]>
+  - adjust <[text_display]> see_through:false
+  - while <player.is_online> && <player.is_sneaking> && <[loc].has_flag[fort.chest]> && !<[loc].has_flag[fort.chest.opened]> && <[text_display].is_spawned>:
     - define look_loc <player.eye_location.ray_trace[return=block;range=2.7;default=air]>
-    - adjust <[bar]> scale:<[loop_index]>,0.25,0.25
+    - define bar <&chr[8].font[icons].color[<color[<[loop_index]>,0,1]>]>
+    - adjust <[text_display]> text:<[text]><&r><proc[spacing].context[-92]><[bar]><proc[spacing].context[-1]>
     - if <[loop_index]> == 10:
-      - define open_chest True
+      - define open_the_chest True
       - while stop
     - wait 1t
-  - remove <[bar]> if:<[bar].is_spawned>
-  - stop if:<[open_chest].exists.not>
+  - adjust <[text_display]> see_through:true
+  - adjust <[text_display]> text:<[text]>
+  - stop if:<[open_the_chest].exists.not>
+
+  - flag <[loc]> fort.chest.opened
+
+  - remove <[text_display]> if:<[text_display].is_spawned>
+
+  - adjust <[chest]> item:<item[gold_nugget].with[custom_model_data=16]>
 
   - playsound <[chest].location> sound:BLOCK_CHEST_OPEN volume:0.5 pitch:1
   - playsound <[chest].location> sound:BLOCK_AMETHYST_CLUSTER_BREAK pitch:0.85 volume:2
 
+  - define drop_loc <[chest].location.forward>
+
+  - define mat       <[loc].flag[fort.chest.loot.mat]>
+  - define item      <[loc].flag[fort.chest.loot.item]>
+  - define item_qty  <[item].flag[drop_quantity]>
+  - define gun       <[loc].flag[fort.chest.loot.gun]>
+  - define ammo_type <[gun].flag[ammo_type]>
+  - define ammo_qty  <[gun].flag[mag_size]>
+  - if <item[ammo_<[ammo_type]>].has_flag[drop_quantity]>:
+    - define ammo_qty <item[ammo_<[ammo_type]>].flag[drop_quantity]>
+
+  - run fort_pic_handler.drop_mat def:<map[mat=<[mat]>;qty=30;loc=<[drop_loc]>]>
+  - run fort_item_handler.drop_item def:<map[item=<[item]>;qty=<[item_qty]>;loc=<[drop_loc]>]>
+  - run fort_gun_handler.drop_gun def:<map[gun=<[gun]>;loc=<[drop_loc]>]>
+  - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[ammo_qty]>;loc=<[drop_loc]>]>
+
   chest_fx:
   - define loc <[data].get[loc]>
-  - define circle_center <[loc].below[0.5]>
+  - define p_loc <[loc].above[0.1]>
+  - define circle_center <[p_loc].below[0.5]>
   - define circle        <[circle_center].points_around_y[radius=1;points=45]>
-  - define gold_shine    <[loc].forward[0.4].below[0.1]>
-  - while <[loc].has_flag[fort.chest]>:
+  - define gold_shine    <[p_loc].forward[0.4].below[0.1]>
+  - while !<[loc].has_flag[fort.chest.opened]> && <[loc].has_flag[fort.chest]>:
     - if <[loop_index].mod[5]> == 0:
-      - playsound <[loc]> sound:BLOCK_AMETHYST_BLOCK_CHIME pitch:1.5 volume:0.75
+      - playsound <[loc]> sound:BLOCK_AMETHYST_BLOCK_CHIME pitch:1.5 volume:0.5
     #- if <[loop_index].mod[2]> == 0:
     - playeffect at:<[gold_shine]> effect:DUST_COLOR_TRANSITION offset:0.22,0,0 quantity:15 special_data:1|<color[#ffc02e]>|<color[#fff703]>
     - wait 4t
     #- playeffect effect:INSTANT_SPELL at:<[circle].get[<[loop_index].mod[45].add[1]>]> offset:0 visibility:10
     #- wait 2t
+
+  fill_chest:
+    #required definitions:
+    # - <[loc]> - #
+
+    ## - [ Item Drops ] - ##
+    - define rarity_priority <map[common=1;uncommon=2;rare=3;epic=4;legendary=5]>
+    # - [ Materials ] - #
+    - define mat_to_drop <list[wood|brick|metal].random>
+
+    # - [ Items ] - #
+    #try to find out the same system as guns with the subtypes?
+    - define items <util.scripts.filter[name.starts_with[fort_item_]].exclude[<script[fort_item_handler]>].parse[name.as[item]].parse_tag[<[parse_value]>/<[rarity_priority].get[<[parse_value].flag[rarity]>]>].sort_by_number[after[/]].parse[before[/]]>
+    - while !<[item_to_drop].exists>:
+      - foreach <[items]> as:i:
+        - if <util.random_chance[<[i].flag[chance]>]>:
+          - define item_to_drop <[i]>
+          - foreach stop
+      - wait 1t
+
+    # - [ Guns ] - #
+    #im not so sure about the chance for the common guns?
+    #right now, they use the same values of as the category
+    - define gun_categories <map[ar=43;shotgun=22;smg=14;pistol=11;sniper=10;rpg=5]>
+    - while !<[gun_type].exists>:
+      - define type <[gun_categories].keys.get[<[loop_index].mod[6].add[1]>]>
+      - if <util.random_chance[<[gun_categories].get[<[type]>]>]>:
+        - define gun_type <[type]>
+        - while stop
+      - wait 1t
+
+    - define guns <util.scripts.filter[name.starts_with[gun_]].exclude[<script[gun_particle_origin]>].parse[name.as[item]].parse_tag[<[parse_value]>/<[rarity_priority].get[<[parse_value].flag[rarity]>]>].sort_by_number[after[/]].parse[before[/]].filter[flag[type].equals[<[gun_type]>]]>
+    - foreach <[guns]> as:g:
+      - define rarities <[g].flag[rarities]>
+        #excluding, since common is the default if none other pass
+      - foreach <[rarities].keys> as:r:
+        - if <util.random_chance[<[g].flag[rarities.<[r]>.chance]>]>:
+          - define rarity <[r]>
+          - foreach stop
+      - if <[rarity].exists>:
+        - define gun <[g].with[flag=rarity:<[rarity]>]>
+        - foreach stop
+    #default rarity is already the lowest
+    - define gun  <[guns].first> if:!<[gun].exists>
+
+    - flag <[loc]> fort.chest.loot.mat:<[mat_to_drop]>
+    - flag <[loc]> fort.chest.loot.item:<[item_to_drop]>
+    - flag <[loc]> fort.chest.loot.gun:<[gun]>
+
+    - if <[loc].has_flag[fort.chest.opened]>:
+      - define text "<&7><&l>[<&e><&l>Sneak<&7><&l>] <&f><&l>Search"
+      - if !<[loc].flag[fort.chest.model].is_spawned>:
+        - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=15]>;scale=1.25,1.25,1.25;left_rotation=0,1,0,0] <[loc]> save:chest
+        - flag <[loc]> fort.chest.model:<entry[chest].spawned_entity>
+      - else:
+        - adjust <[loc].flag[fort.chest.model]> item:<item[gold_nugget].with[custom_model_data=15]>
+      - if !<[loc].flag[fort.chest.text].is_spawned>:
+        - spawn TEXT_DISPLAY[text=<[text]>;pivot=center;scale=1,1,1;view_range=0.035;see_through=true] <[loc].above[0.75]> save:chest_text
+        - flag <[loc]> fort.chest.text:<entry[chest_text].spawned_entity>
+      - flag <[loc]> fort.chest.opened:!
+      - run fort_chest_handler.chest_fx def:<map[loc=<[loc]>]>

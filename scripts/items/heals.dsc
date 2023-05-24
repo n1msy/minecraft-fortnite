@@ -110,6 +110,8 @@ fort_item_bandages:
     hides: ALL
   flags:
     rarity: uncommon
+    chance: 17.6
+    drop_quantity: 5
     health: 15
     stack_size: 15
     #in seconds
@@ -124,6 +126,8 @@ fort_item_medkit:
     hides: ALL
   flags:
     rarity: uncommon
+    chance: 16
+    drop_quantity: 1
     health: 100
     stack_size: 3
     use_time: 9.9
@@ -137,6 +141,8 @@ fort_item_small_shield_potion:
     hides: ALL
   flags:
     rarity: uncommon
+    chance: 17.6
+    drop_quantity: 3
     shield: 25
     stack_size: 9
     use_time: 2
@@ -150,6 +156,8 @@ fort_item_shield_potion:
     hides: ALL
   flags:
     rarity: rare
+    chance: 17.6
+    drop_quantity: 1
     shield: 50
     stack_size: 3
     use_time: 5

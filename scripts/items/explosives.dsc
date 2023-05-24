@@ -181,6 +181,8 @@ fort_item_grenade:
     hides: ALL
   flags:
     rarity: common
+    chance: 14.4
+    drop_quantity: 3
     stack_size: 6
     body_damage: 100
     structure_damage: 375
@@ -194,4 +196,7 @@ fort_item_impulse_grenade:
     hides: ALL
   flags:
     rarity: rare
+    #actual chance unknown
+    chance: 10
+    drop_quantity: 3
     stack_size: 9

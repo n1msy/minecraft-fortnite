@@ -143,10 +143,10 @@ fort_gun_handler:
 
     - inject update_hud
 
-    # - [ scope ] - #
+    # - [ Scope ] - #
     after player starts sneaking:
-    - define look_loc <player.eye_location.ray_trace[return=block;range=2.7;default=air]>
-    - if <[look_loc].has_flag[fort.chest]> && !<[look_loc].has_flag[fort.opened]>:
+    - define look_loc <player.eye_location.ray_trace[return=block;range=2.7;default=air].center>
+    - if <[look_loc].has_flag[fort.chest]> && !<[look_loc].has_flag[fort.chest.opened]>:
       - inject fort_chest_handler.open
       - stop
     - if <player.item_in_hand.script.name.starts_with[gun_].not||true>:
@@ -650,8 +650,11 @@ fort_gun_handler:
   drop_gun:
     - define gun  <[data].get[gun]>
     - define drop <[data].get[drop]||null>
+    - define loc  <[data].get[loc]||null>
+    - define loc  <player.location> if:<[loc].equals[null]>
+
     - if <[drop]> == null:
-      - drop <[gun]> <player.location> save:drop
+      - drop <[gun]> <[loc]> save:drop
       - define drop <entry[drop].dropped_entity>
 
     - define rarity <[gun].flag[rarity]>
@@ -832,6 +835,7 @@ gun_particle_origin:
 
 #@ [ Gun Data ] @#
 
+#-check how much ammo each ammo type drops from chests?
 ammo_light:
   type: item
   material: gold_nugget
@@ -861,6 +865,8 @@ ammo_heavy:
     hides: ALL
   flags:
     qty: 1
+    #how much it should drop by chests
+    drop_quantity: 6
 
 ammo_shells:
   type: item
@@ -871,6 +877,7 @@ ammo_shells:
     hides: ALL
   flags:
     qty: 1
+    drop_quantity: 6
 
 ammo_rockets:
   type: item
@@ -881,6 +888,7 @@ ammo_rockets:
     hides: ALL
   flags:
     qty: 1
+    drop_quantity: 3
 
 
 gun_pump_shotgun:
@@ -891,6 +899,7 @@ gun_pump_shotgun:
     custom_model_data: 1
     hides: ALL
   flags:
+    type: shotgun
     #this value can be changed
     rarity: common
     icon_chr: 1
@@ -910,28 +919,34 @@ gun_pump_shotgun:
     custom_recoil_fx: true
     uuid: <util.random_uuid>
     #rarity-based states
+    #-you can't get pumps from chests apparently
     rarities:
       common:
+        chance: 22
         damage: 92
         structure_damage: 45
         reload_time: 5.1
         custom_model_data: 1
       uncommon:
+        chance: 34
         damage: 101
         structure_damage: 49
         reload_time: 4.8
         custom_model_data: 1
       rare:
+        chance: 8
         damage: 110
         structure_damage: 50
         reload_time: 4.4
         custom_model_data: 1
       epic:
+        chance: 1.36
         damage: 119
         structure_damage: 54
         reload_time: 4.0
         custom_model_data: 1
       legendary:
+        chance: 0.34
         damage: 128
         structure_damage: 55
         reload_time: 3.7
@@ -961,6 +976,7 @@ gun_assault_rifle:
     custom_model_data: 3
     hides: ALL
   flags:
+    type: ar
     #this value can be changed
     rarity: common
     icon_chr: 1
@@ -979,22 +995,27 @@ gun_assault_rifle:
     uuid: <util.random_uuid>
     rarities:
       common:
+        chance: 43
         damage: 30
         reload_time: 2.7
         custom_model_data: 3
       uncommon:
+        chance: 39
         damage: 31
         reload_time: 2.6
         custom_model_data: 3
       rare:
+        chance: 39
         damage: 33
         reload_time: 2.5
         custom_model_data: 3
       epic:
+        chance: 2
         damage: 35
         reload_time: 2.4
         custom_model_data: 5
       legendary:
+        chance: 0.5
         damage: 36
         reload_time: 2.2
         custom_model_data: 5
@@ -1018,6 +1039,7 @@ gun_tactical_smg:
     custom_model_data: 7
     hides: ALL
   flags:
+    type: smg
     #this value can be changed
     rarity: uncommon
     icon_chr: 1
@@ -1037,18 +1059,22 @@ gun_tactical_smg:
     rarities:
       #no common tac smgs
       uncommon:
+        chance: 22
         damage: 18
         reload_time: 2.2
         custom_model_data: 7
       rare:
+        chance: 34
         damage: 19
         reload_time: 2.1
         custom_model_data: 7
       epic:
+        chance: 1.36
         damage: 20
         reload_time: 2.0
         custom_model_data: 7
       legendary:
+        chance: 0.34
         damage: 21
         reload_time: 1.9
         custom_model_data: 7
@@ -1075,6 +1101,7 @@ gun_smg:
     custom_model_data: 9
     hides: ALL
   flags:
+    type: smg
     #this value can be changed
     rarity: common
     icon_chr: 1
@@ -1093,22 +1120,27 @@ gun_smg:
     uuid: <util.random_uuid>
     rarities:
       common:
+        chance: 14
         damage: 16
         reload_time: 2.31
         custom_model_data: 9
       uncommon:
+        chance: 39.7
         damage: 17
         reload_time: 2.2
         custom_model_data: 9
       rare:
+        chance: 9.33
         damage: 18
         reload_time: 2.1
         custom_model_data: 9
       epic:
+        chance: 1.59
         damage: 19
         reload_time: 2.0
         custom_model_data: 9
       legendary:
+        chance: 0.4
         damage: 20
         reload_time: 1.89
         custom_model_data: 9
@@ -1135,6 +1167,7 @@ gun_bolt_action_sniper_rifle:
     custom_model_data: 11
     hides: ALL
   flags:
+    type: sniper
     #this value can be changed
     rarity: common
     sniper: true
@@ -1156,23 +1189,29 @@ gun_bolt_action_sniper_rifle:
     uuid: <util.random_uuid>
     #rarity-based states
     rarities:
+      #idk about common uncommon?
       common:
+        chance: 10
         damage: 99
         reload_time: 3.3
         custom_model_data: 11
       uncommon:
+        chance: 51.72
         damage: 105
         reload_time: 3.15
         custom_model_data: 11
       rare:
+        chance: 25.86
         damage: 110
         reload_time: 3
         custom_model_data: 11
       epic:
+        chance: 2.76
         damage: 116
         reload_time: 2.5
         custom_model_data: 11
       legendary:
+        chance: 0.69
         damage: 121
         reload_time: 2.35
         custom_model_data: 11
@@ -1193,6 +1232,7 @@ gun_revolver:
     custom_model_data: 12
     hides: ALL
   flags:
+    type: pistol
     #this value can be changed
     rarity: common
     icon_chr: 1
@@ -1211,22 +1251,27 @@ gun_revolver:
     uuid: <util.random_uuid>
     rarities:
       common:
+        chance: 11
         damage: 54
         reload_time: 2.2
         custom_model_data: 12
       uncommon:
+        chance: 61.3
         damage: 57
         reload_time: 2.1
         custom_model_data: 12
       rare:
+        chance: 24.5
         damage: 60
         reload_time: 2
         custom_model_data: 12
       epic:
+        chance: 24.5
         damage: 94.5
         reload_time: 1.9
         custom_model_data: 14
       legendary:
+        chance: 4.4
         damage: 99
         reload_time: 1.8
         custom_model_data: 14
@@ -1248,6 +1293,7 @@ gun_pistol:
     custom_model_data: 16
     hides: ALL
   flags:
+    type: pistol
     #this value can be changed
     rarity: common
     icon_chr: 1
@@ -1267,22 +1313,27 @@ gun_pistol:
     uuid: <util.random_uuid>
     rarities:
       common:
+        chance: 11
         damage: 24
         reload_time: 1.54
         custom_model_data: 16
       uncommon:
+        chance: 61.3
         damage: 25
         reload_time: 1.47
         custom_model_data: 16
       rare:
+        chance: 24.5
         damage: 26
         reload_time: 1.4
         custom_model_data: 16
       epic:
+        chance: 9.8
         damage: 28
         reload_time: 1.33
         custom_model_data: 16
       legendary:
+        chance: 4.4
         damage: 29
         reload_time: 1.26
         custom_model_data: 16
@@ -1293,6 +1344,9 @@ gun_pistol:
         pitch: 1.7
         volume: 1.2
 
+#using chances from a different chart, but it doesn't matter since it's all within the same subcategory (rpgs),
+#meaning their drop rates are still balances somewhat
+
 gun_grenade_launcher:
   type: item
   material: wooden_hoe
@@ -1301,6 +1355,7 @@ gun_grenade_launcher:
     custom_model_data: 18
     hides: ALL
   flags:
+    type: rpg
     #this value can be changed
     rarity: rare
     #meaning it's not a conventional gun
@@ -1323,16 +1378,19 @@ gun_grenade_launcher:
     uuid: <util.random_uuid>
     rarities:
       rare:
+        chance: 1.84
         damage: 70
         structure_damage: 200
         reload_time: 1.4
         custom_model_data: 18
       epic:
+        chance: 0.25
         damage: 74
         structure_damage: 210
         reload_time: 1.33
         custom_model_data: 18
       legendary:
+        chance: 0.0608
         damage: 77
         structure_damage: 220
         reload_time: 1.26
@@ -1355,8 +1413,9 @@ gun_rocket_launcher:
     custom_model_data: 20
     hides: ALL
   flags:
+    type: rpg
     #this value can be changed
-    rarity: common
+    rarity: rare
     #meaning it's not a conventional gun
     custom_shoot: true
     icon_chr: 1
@@ -1376,27 +1435,20 @@ gun_rocket_launcher:
     custom_recoil_fx: false
     uuid: <util.random_uuid>
     rarities:
-      uncommon:
-        damage: 70
-        structure_damage: 270
-        reload_time: 4.68
-        custom_model_data: 20
-      common:
-        damage: 85
-        structure_damage: 285
-        reload_time: 4.14
-        custom_model_data: 20
       rare:
+        chance: 2
         damage: 100
         structure_damage: 300
         reload_time: 3.60
         custom_model_data: 20
       epic:
+        chance: 0.752
         damage: 115
         structure_damage: 315
         reload_time: 3.06
         custom_model_data: 20
       legendary:
+        chance: 0.1056
         damage: 130
         structure_damage: 330
         reload_time: 2.52

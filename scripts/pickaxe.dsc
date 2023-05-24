@@ -153,20 +153,8 @@ fort_pic_handler:
     - adjust <[drop]> custom_name:<[text]>
     - adjust <[drop]> custom_name_visible:true
 
-    #- waituntil !<[drop].is_spawned> || <[drop].is_on_ground> rate:5t
-    #- if !<[drop].is_spawned>:
-      #- stop
-
-    #- spawn chicken[has_ai=false;gravity=false;collidable=false;invulnerable=true;silent=true] <[loc].backward_flat[0.5]> save:chicken
-    #- define chicken <entry[chicken].spawned_entity>
-    #- adjust <[chicken]> custom_name:<[text]>
-    #- adjust <[chicken]> custom_name_visible:false
-
-    #- spawn <entity[text_display].with[display_entity_data=<map[billboard=center;text=<[text]>]>]> <[loc]> save:count_display
-    #- define count_display <entry[count_display].spawned_entity>
-
-    #- flag <[count_display]> drop:<[drop]>
-    #- flag <[drop]>    name_entity:<[count_display]>
+    - team name:ammo add:<[drop]> color:GRAY
+    - adjust <[drop]> glowing:true
 
   #-increase/decrease materials after mining/placing
   mat_count:

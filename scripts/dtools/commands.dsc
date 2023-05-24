@@ -18,9 +18,18 @@ fort_commands:
       - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=15]>;scale=1.25,1.25,1.25;left_rotation=0,1,0,0] <[loc]> save:chest
       - spawn TEXT_DISPLAY[text=<[text]>;pivot=center;scale=1,1,1;view_range=0.035;see_through=true] <[loc].above[0.75]> save:chest_text
       - modifyblock <[loc]> barrier
-      - flag <[loc]> fort.chest:<entry[chest].spawned_entity>
-      - flag <[loc]> fort.chest_text:<entry[chest_text].spawned_entity>
-      - run fort_chest_handler.chest_fx def:<map[loc=<[loc]>]>
+      - define loc <player.location.center>
+      - flag <[loc]> fort.chest.model:<entry[chest].spawned_entity>
+      - flag <[loc]> fort.chest.text:<entry[chest_text].spawned_entity>
+      #so it's not using the fx constantly when not in use
+      - flag <[loc]> fort.chest.opened
+      - flag server fort.chests:->:<[loc]>
       - narrate "<&a>Set chest at <&f><[loc].simple>"
+    - case fill_chests:
+      - define chests <server.flag[fort.chests]||0>
+      - narrate "<&7>Filling all chests..."
+      - foreach <[chests]> as:loc:
+        - inject fort_chest_handler.fill_chest
+      - narrate "<&a>All chests have been filled <&7>(<[chests].size>)<&a>."
     - default:
       - narrate "<&c>Invalid arg."
