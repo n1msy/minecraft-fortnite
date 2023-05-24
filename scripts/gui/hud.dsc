@@ -208,7 +208,8 @@ hud_handler:
 
       - define keys <proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[67,0,0]>]>
 
-      - define inv_toggle   <&chr[A001].font[buttons].color[<color[70,0,0]>]>
+      - define k            <&keybind[key.swapOffhand]>
+      - define inv_toggle   <element[<[backdrop]><proc[spacing].context[-9]><[k].font[neg_half_f]><[k].font[visitor]><[k].font[neg_half_c]><proc[spacing].context[9]>].color[70,0,0]>
 
       - define build_         <[build_slots].space_separated.color[<color[30,0,0]>]><[keys]>
       - define slots_         <[inv_toggle]><proc[spacing].context[-17]><[unselected_slot].repeat_as_list[6].space_separated.color[<color[20,0,0]>]>
