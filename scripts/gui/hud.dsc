@@ -13,12 +13,14 @@ update_hud:
   #depends on what gun you're holding
   - define ammo_ <empty>
   - if <player.item_in_hand.script.name.starts_with[gun_]||false>:
-    - define gun_uuid    <player.item_in_hand.flag[uuid]>
-    - define ammo_type   <player.item_in_hand.flag[ammo_type]>
-    - define loaded_ammo <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
-    - define total_ammo  <player.flag[fort.ammo.<[ammo_type]>]||0>
-    - define ammo_icon   <&chr[E00<map[light=1;medium=2;heavy=3;shells=4;rockets=5].get[<[ammo_type]>]>].font[icons]>
-    - define ammo_       <element[<element[<[loaded_ammo]> / <[total_ammo]>].font[ammo_text]> <[ammo_icon]>].color[<color[12,0,0]>]>
+    - define gun_uuid      <player.item_in_hand.flag[uuid]>
+    - define ammo_type     <player.item_in_hand.flag[ammo_type]>
+    - define loaded_ammo   <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
+    - define total_ammo    <player.flag[fort.ammo.<[ammo_type]>]||0>
+    - define ammo_icon     <&chr[E00<map[light=1;medium=2;heavy=3;shells=4;rockets=5].get[<[ammo_type]>]>].font[icons]>
+    - define ammo_text    "<element[<[loaded_ammo]> / <[total_ammo]>].font[ammo_text]> <[ammo_icon]>"
+    #- define ammo_centered <element[<[loaded_ammo]> / <[total_ammo]>].font[neg_half_c]><[ammo_text]><element[<[loaded_ammo]> / <[total_ammo]>].font[neg_half_f]>
+    - define ammo_         <[ammo_text].color[<color[12,0,0]>]>
 
   - define empty_bar <&chr[C000].font[icons]>
 
@@ -84,7 +86,7 @@ update_hud:
   - define small_bar <[small_health_bar].color[<color[<[health_r]>,1,0]>]><proc[spacing].context[-106]><[small_shield_bar].color[<color[<[shield_r]>,1,1]>]>
   - define team_bars <[small_bar]><element[<proc[spacing].context[-106]><[name]>].color[<color[61,0,0]>]>
 
-  - sidebar set title:<empty> values:<[ammo_]>|<[shield_]>|<[health_]>|<[build_]>|<[slots_]>|<[wood_]>|<[brick_]>|<[metal_]>|<[time_]>|<[alive_]>|<[kills_]>|<[team_bars]>|<&sp>
+  - sidebar set title:<empty> values:<[ammo_]>|<[shield_]>|<[health_]>|<[build_]>|<[slots_]>|<[wood_]>|<[brick_]>|<[metal_]>|<[time_]>|<[alive_]>|<[kills_]>|<[team_bars]>|<proc[spacing].context[500]>
 
   - inject hud_handler.update_inventory
 
@@ -178,9 +180,8 @@ hud_handler:
         - define k <&keybind[key.hotbar.<[value]>]>
         - define keys:->:<[backdrop]><proc[spacing].context[-9]><[k].font[neg_half_c]><&l><[k].font[visitor]><&r><[k].font[neg_half_f]>
 
-      - define keys <proc[spacing].context[127]><proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>].add[43]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[69,0,0]>]>
+      - define keys <proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[69,0,0]>]>
 
-      #- define keys <proc[spacing].context[47]><proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[69,0,0]>]><proc[spacing].context[2]>
       - define build_toggle <&chr[A001].font[buttons].color[<color[68,0,0]>]>
 
       - define slots_ <[slots].set[<[selected_slot]>].at[<[slot]>].space_separated.color[<color[20,0,0]>]><[keys]>
@@ -203,11 +204,8 @@ hud_handler:
       - repeat <[count]>:
         - define k <&keybind[key.hotbar.<[value]>]>
         - define keys:->:<[backdrop]><proc[spacing].context[-9]><[k].font[neg_half_c]><&l><[k].font[visitor]><&r><[k].font[neg_half_f]>
-      #- define keys <proc[spacing].context[47]><proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[69,0,0]>]><proc[spacing].context[2]>
-      - define keys <proc[spacing].context[111]><proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[67,0,0]>]>
 
-
-      #- define keys <proc[spacing].context[87]><proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[67,0,0]>]><proc[spacing].context[2]>
+      - define keys <proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[67,0,0]>]>
 
       - define inv_toggle   <&chr[A001].font[buttons].color[<color[70,0,0]>]>
 
