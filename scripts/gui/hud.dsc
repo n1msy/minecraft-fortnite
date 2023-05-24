@@ -178,9 +178,9 @@ hud_handler:
       - define spacing 42
       - repeat <[count]>:
         - define k <&keybind[key.hotbar.<[value]>]>
-        - define keys:->:<[backdrop]><proc[spacing].context[-9]><[k].font[neg_half_c]><&l><[k].font[visitor]><&r><[k].font[neg_half_f]>
+        - define keys:->:<[backdrop]><proc[spacing].context[-9]><[k].font[neg_half_f]><[k].font[visitor]><[k].font[neg_half_c]>
 
-      - define keys <proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing]>]>].color[<color[69,0,0]>]>
+      - define keys <proc[spacing].context[-<[count].mul[16].add[<[spacing].mul[<[count]>]>]>]><[keys].separated_by[<proc[spacing].context[<[spacing].add[1]>]>].color[<color[69,0,0]>]>
 
       - define build_toggle <&chr[A001].font[buttons].color[<color[68,0,0]>]>
 
