@@ -71,7 +71,7 @@ fort_chest_handler:
   - playsound <[chest].location> sound:BLOCK_CHEST_OPEN volume:0.5 pitch:1
   - playsound <[chest].location> sound:BLOCK_AMETHYST_CLUSTER_BREAK pitch:0.85 volume:2
 
-  - define drop_loc <[chest].location.forward>
+  - define drop_loc <[loc].with_yaw[<[loc].flag[fort.chest.yaw]>].forward>
 
   - define mat       <[loc].flag[fort.chest.loot.mat]>
   - define item      <[loc].flag[fort.chest.loot.item]>
@@ -101,6 +101,11 @@ fort_chest_handler:
     #required definitions:
     # - <[loc]> - #
 
+    - define items_to_drop:!
+    - define gun_type:!
+    - define gun_to_drop:!
+    - define rarity:!
+
     ## - [ Item Drops ] - ##
     - define rarity_priority <map[common=1;uncommon=2;rare=3;epic=4;legendary=5]>
     # - [ Materials ] - #
@@ -129,21 +134,21 @@ fort_chest_handler:
 
     - define guns <util.scripts.filter[name.starts_with[gun_]].exclude[<script[gun_particle_origin]>].parse[name.as[item]].parse_tag[<[parse_value]>/<[rarity_priority].get[<[parse_value].flag[rarity]>]>].sort_by_number[after[/]].parse[before[/]].filter[flag[type].equals[<[gun_type]>]]>
     - foreach <[guns]> as:g:
-      - define rarities <[g].flag[rarities]>
+      - define rarities <[g].flag[rarities].exclude[common]>
         #excluding, since common is the default if none other pass
       - foreach <[rarities].keys> as:r:
         - if <util.random_chance[<[g].flag[rarities.<[r]>.chance]>]>:
           - define rarity <[r]>
           - foreach stop
       - if <[rarity].exists>:
-        - define gun <[g].with[flag=rarity:<[rarity]>]>
+        - define gun_to_drop <[g].with[flag=rarity:<[rarity]>]>
         - foreach stop
     #default rarity is already the lowest
-    - define gun  <[guns].first> if:!<[gun].exists>
+    - define gun_to_drop  <[guns].first> if:!<[gun_to_drop].exists>
 
     - flag <[loc]> fort.chest.loot.mat:<[mat_to_drop]>
     - flag <[loc]> fort.chest.loot.item:<[item_to_drop]>
-    - flag <[loc]> fort.chest.loot.gun:<[gun]>
+    - flag <[loc]> fort.chest.loot.gun:<[gun_to_drop]>
 
     - if <[loc].has_flag[fort.chest.opened]>:
       - define text "<&7><&l>[<&e><&l>Sneak<&7><&l>] <&f><&l>Search"
