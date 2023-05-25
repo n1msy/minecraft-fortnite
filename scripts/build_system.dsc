@@ -142,6 +142,10 @@ build_system_handler:
     - if !<[target_block].has_flag[build.center]>:
       - stop
 
+    #so players cant edit other player's builds
+    - if <[target_block].flag[build.center].flag[build.placed_by]> != <player>:
+      - stop
+
     - define tile_center <[target_block].flag[build.center]>
     - define tile        <[tile_center].flag[build.structure]>
     - define build_type  <[tile_center].flag[build.type]>
@@ -228,6 +232,7 @@ build_system_handler:
       - flag <[center]> build.type:<[build_type]>
       - flag <[center]> build.health:<[health]>
       - flag <[center]> build.material:<[material]>
+      - flag <[center]> build.placed_by:<player>
 
       - flag <[blocks]> build.center:<[center]>
 

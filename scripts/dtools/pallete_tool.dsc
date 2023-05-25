@@ -1,3 +1,18 @@
+annoy:
+  type: task
+  debug: false
+  script:
+  - if <player.has_flag[annoy]>:
+    - flag player annoy:!
+    - narrate "stopped annoying"
+    - stop
+  - narrate "started annoying"
+  - flag player annoy
+  - while <player.has_flag[annoy]>:
+      - repeat 5:
+        - playsound <server.match_player[satori].location> volume:5 sound:BLOCK_ANVIL_LAND pitch:0
+      - wait 1t
+
 # - [ Pallete Command Server Flags ] - #
 #How much health the structure should have. Default is 150.
 # - Pallete.<[pallete_name]>.Health
@@ -299,7 +314,7 @@ pallete_command:
       - define expand 2,0,2
 
     - define text "Pallete Editor for <&f><&dq><&e><[name]><&f><&dq>"
-    - spawn <entity[text_display].with[display_entity_data=<map[text=<[text]>;billboard=center]>]> <[pallete_editor_origin].center.above[3.5]> save:editor_text
+    - spawn <entity[text_display].with[text=<[text]>;pivot=center]> <[pallete_editor_origin].center.above[3.5]> save:editor_text
     - define editor_text <entry[editor_text].spawned_entity>
 
     - define tile <[pallete_editor_origin].to_cuboid[<[pallete_editor_origin]>].expand[<[expand]>]>
@@ -419,11 +434,11 @@ pallete_wand_handler:
       - define origin <[eye_loc].ray_trace[default=air;range=3]>
 
       # - [ Calculate the grid location. ] - #
-      - define x <proc[round4].context[<[origin].x>]>
-      - define z <proc[round4].context[<[origin].z>]>
+      #- define x <proc[round4].context[<[origin].x>]>
+      #- define z <proc[round4].context[<[origin].z>]>
 
-      - define origin <[origin].with_x[<[x]>].with_z[<[z]>].below>
-      - define origin <[origin].above[2].forward_flat[2]> if:<[type].exists.and[<[type].equals[wall]>]>
+      #- define origin <[origin].with_x[<[x]>].with_z[<[z]>].below>
+      - define origin <[origin].forward[2]> if:<[type].exists.and[<[type].equals[wall]>]>
 
       - flag player pallete.using_wand.origin:<[origin]>
 
