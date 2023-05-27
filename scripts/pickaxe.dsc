@@ -35,6 +35,9 @@ fort_pic_handler:
     - define mat_type <[center].flag[build.material]>
     #filtering so connected blocks aren't affected
     - define blocks   <[center].flag[build.structure].blocks.filter[flag[build.center].equals[<[center]>]]>
+    #so you can see the entirety of the floor/wall break
+    - if <list[wall|floor].contains[<[center].flag[build.type]>]>:
+      - define blocks <[center].flag[build.structure].blocks>
 
     - define damage 50
 
