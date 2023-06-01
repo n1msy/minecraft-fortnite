@@ -167,7 +167,7 @@ fort_pic_handler:
 
   - define weak_point <[blocks].filter[center.with_yaw[<[yaw]>].forward[1].line_of_sight[<[p_loc]>]].random>
 
-  - define loc   <[weak_point].center.with_yaw[<[yaw]>].forward_flat[1]>
+  - define loc   <[weak_point].center.with_yaw[<[yaw]>].forward_flat[0.9].above[0.27]>
 
   #-play weak point ENTER animation
   #the spiny animation was simplified. in the original, the inner ring goes clock wise and outer goes counter
