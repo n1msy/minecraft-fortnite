@@ -1165,8 +1165,7 @@ gun_burst_assault_rifle:
   material: wooden_hoe
   display name: <&f><&l>BURST ASSAULT RIFLE
   mechanisms:
-    ##26
-    custom_model_data: 28
+    custom_model_data: 26
     hides: ALL
   flags:
     type: ar
@@ -1193,19 +1192,16 @@ gun_burst_assault_rifle:
         chance: 43
         damage: 27
         reload_time: 2.9
-        ##26
         custom_model_data: 26
       uncommon:
         chance: 39
         damage: 29
         reload_time: 2.7
-        ##26
         custom_model_data: 26
       rare:
         chance: 39
         damage: 30
         reload_time: 2.6
-        ##26
         custom_model_data: 26
       epic:
         chance: 2
