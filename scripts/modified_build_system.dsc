@@ -20,7 +20,7 @@ tile_visualiser_command:
     - if <[target_block]> != null && <[target_block].has_flag[build.center]>:
       - define center <[target_block].flag[build.center]>
       - define blocks <[center].flag[build.structure].blocks.filter[flag[build.center].equals[<[center]>]]>
-      - debugblock <[blocks]> d:2t color:0,0,0,150
+      - debugblock <[blocks]> d:2t color:0,0,0,75
     - wait 1t
   - narrate "tile visualiser program terminated"
 
@@ -44,6 +44,7 @@ save_build:
     - narrate "<&c>Invalid schematic name."
     - stop
 
+  #-instead of having the player make a selection, just add each tile to a cuboid?
   - define selection <player.we_selection||null>
   - if <[selection]> == null:
     - narrate "<&c>You must make a selection!"
@@ -53,9 +54,11 @@ save_build:
     - ~schematic unload name:<[name]>
 
   - if <util.has_file[schematics/<[name]>.schem]>:
+    - narrate "<&7>Overwriting current <&dq><&f><[name]>.schem<&7><&dq> file..."
     - adjust system delete_file:schematics/<[name]>.schem
 
   - narrate "<&7>Calculating structure's tile size..."
+  - narrate "<&c>Don't move."
 
   - define center <[target_block].flag[build.center]>
   - define tile   <[center].flag[build.structure]>
@@ -82,6 +85,12 @@ save_build:
       - teleport <player> <[tile].center>
       - narrate "<&c>This tile structure's center returned null. Please fix it and try again."
       - stop
+
+    - if <[center].flag[build.structure]||null> == null:
+      - teleport <player> <[tile].center>
+      - narrate "<&c>This tile structure's center returned null. Please fix it and try again."
+      - stop
+
     - define blocks      <[tile].blocks.filter[flag[build.center].equals[<[center]>]]>
     - foreach <[blocks]> as:b:
       - define vector <[center].sub[<[b]>]>
@@ -91,7 +100,7 @@ save_build:
 
   - schematic create name:<[name]> area:<player.we_selection> <player.location> flags
 
-  - narrate "<&7>Saving schematic..."
+  - narrate "<&7>Saving schematic as <&dq><&f><[name]>.schem<&7><&dq>..."
   - ~schematic save name:<[name]>
   - narrate <&a>Done!
 
@@ -162,6 +171,7 @@ paste_build:
     - narrate "<&a>Schematic loaded."
 
   - define origin <player.location>
+  - define world  <[origin].world>
   - narrate "<&7>Applying vector data to new locations..."
 
   #- narrate <[name]>
@@ -174,14 +184,15 @@ paste_build:
   - foreach <[total_blocks]> as:b:
     - define center_vector <[b].flag[build.center_vector]||null>
     - if <[center_vector]> == null:
-      - announce <&c><[b]>/<[center_vector]>/<[new_center]> to_console
-    - define new_center    <[b].add[<[center_vector]>]>
+      - announce <&c><[b]>/<[center_vector]> to_console
+      #- foreach next
+    - define new_center    <[b].add[<[center_vector].with_world[<[world]>]>]>
     - flag <[b]> build.center:<[new_center]>
     #also get the new cuboid tags for structure data
     - if <[new_center].simple> == <[b].simple>:
-      - define min_vector <[b].flag[build.min_vector]>
+      - define min_vector <[b].flag[build.min_vector].with_world[<[world]>]>
       - define min        <[new_center].add[<[min_vector]>]>
-      - define max_vector <[b].flag[build.max_vector]>
+      - define max_vector <[b].flag[build.max_vector].with_world[<[world]>]>
       - define max        <[new_center].add[<[max_vector]>]>
       - define struct     <[min].to_cuboid[<[max]>]>
       - flag <[b]> build.structure:<[struct]>
@@ -505,11 +516,31 @@ build_system_handler:
 
     - flag <[blocks]> build:!
 
+    ###MAKE SURE WHEN A WOOD/FLOOR IS REPLACED, THE CORRECT MATERIAL THERE IS REPLACED TOO
+
+    ####OR JUST CANCEL REPLACING TILES (EITHER WORKS, BUT REMOVING TILE REPLACE MAKES IT LOOK A LITTLE WORSE)
+
+    ##########SLABS ALSO WORK FOR FLOORS
+
+
+    #Here's a quick oversight of what you'll need to know though. Each "tile" is a 5x5 cuboid that overlaps each other, so they're basically 4x4s that look like this.
+    #All you have to do is *replace* the already-placed materials with blocks that are similar to the ones in Fortnite, and I recommend creating some sort of pallete for 5x5
+    #tiles to have some sort of consistency between all the buildings, in case you notice some tiles are being re-used. You'll have to have Fortite open as well to look
+    #at the correct textures of the map.
+    #You also have to add the doors and windows, and feel free to break any already-placed blocks too if you find it necessary.
+    # **Also, I'd appreciate it so so much if you or one of your builders used replay mod**
+
+  #if you type /tv and hover over a "tile", you can see what blocks it occupies. you can place blocks in any of the regions that the tile occupies, just make sure it makes sense for example if you broke it
+
+    #TODO: CHANGE HEALTH VALUES OF WORLD TILES TO ACCURATE ONES USING "GET ALL TILES" SYSTEM (MAKE IT ALL 450?)
+
+
     #order: first placed -> last placed
     - define priority_order <list[wall|floor|stair|pyramid]>
     - foreach <[replace_tiles_data].parse_tag[<[parse_value]>/<[priority_order].find[<[parse_value].get[build_type]>]>].sort_by_number[after[/]].parse[before[/]]> as:tile_data:
       #don't replace world blocks
       - if <[tile_data].get[center].flag[build.placed_by]> == WORLD && <list[stair|pyramid].contains[<[tile_data].get[build_type]>]>:
+        #&& <list[stair|pyramid].contains[<[tile_data].get[build_type]>]>
         - foreach next
       - run build_system_handler.place def:<[tile_data]>
 

@@ -7,6 +7,10 @@ update_hud:
   debug: false
   script:
 
+
+  ###################################################################REMOVE THIS
+  #- stop
+
   #falling icon turns to clock icon after bus is done dropping
 
   # - [ Ammo ] - #
@@ -44,6 +48,7 @@ update_hud:
   - if !<[new_slot].exists> || !<[old_slot].exists>:
     - define new_slot <player.held_item_slot>
     - define old_slot <[new_slot]>
+
   - inject hud_handler.update_slots
 
   # - [ Materials ] - #
@@ -111,7 +116,9 @@ hud_handler:
       - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
 
     on player swaps items:
-    - stop if:<player.world.name.equals[fortnite_map].not>
+    #- stop if:<player.world.name.equals[fortnite_map].not>
+    - if <player.name> != Nimsy:
+      - stop
     - determine passively cancelled
     - define new_type <map[inv=build;build=inv].get[<player.flag[fort.inv_type]||inv>]>
     - flag player fort.inv_type:<[new_type]>

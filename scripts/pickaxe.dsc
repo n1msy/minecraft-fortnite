@@ -41,6 +41,23 @@ fort_pic_handler:
 
     - define damage 50
 
+    - if <[block].has_flag[build.weak_point]>:
+      - flag player fort.weak_point:++ duration:2s
+      - define damage <[damage].mul[2]>
+      - flag <[block].flag[build.weak_point]> broken if:<[block].flag[build.weak_point].is_spawned>
+      - flag <[block]> build.weak_point:!
+
+      #-weak point sfx
+    #                         G   A    B    C    D   E    F#   G
+    #what i found out by ear: 0.53|0.6|0.685|0.72|0.8|0.9|1.0|1.07
+    #from the actual table:   0.529732|0.594604|0.667420|0.707107|0.793701|0.890899|1.0|1.059463
+      - define # <player.flag[fort.weak_point].mod[8]>
+      - define # 8 if:<[#].equals[0]>
+      - define pitch <list[0.529732|0.594604|0.667420|0.707107|0.793701|0.890899|1.0|1.059463].get[<[#]>]>
+      #make amethyst sfx non randomized by going through the rp?
+      #- playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:0 volume:0.25
+      - playsound <player> sound:BLOCK_NOTE_BLOCK_PLING pitch:<[pitch]> volume:0.4
+
     - define max_health <script[nimnite_config].data_key[materials.<[mat_type]>.hp]>
     - define new_health <[hp].sub[<[damage]>]>
 
@@ -52,6 +69,11 @@ fort_pic_handler:
       - define progress <element[10].sub[<[new_health].div[<[max_health]>].mul[10]>]>
       - foreach <[blocks]> as:b:
         - blockcrack <[b]> progress:<[progress]> players:<server.online_players>
+
+      #weak points only appear if it takes more than two swings to break the structure
+      #only show up if a previous one isn't existing
+      - if <[blocks].filter[has_flag[build.weak_point]].is_empty>:
+        - run fort_pic_handler.weak_point def:<map[center=<[center]>]>
 
       - stop
 
@@ -135,6 +157,73 @@ fort_pic_handler:
 
     - flag <[target]> qty:<[new_qty]>
     - adjust <[target]> custom_name:<[text]>
+
+  weak_point:
+  - define center <[data].get[center]>
+  - define blocks <[center].flag[build.structure].blocks.filter[flag[build.center].equals[<[center]>]]>
+
+  - define p_loc <player.location>
+  - define yaw   <map[North=0;South=180;West=-90;East=90].get[<[p_loc].yaw.simple>]>
+
+  - define weak_point <[blocks].filter[center.with_yaw[<[yaw]>].forward[1].line_of_sight[<[p_loc]>]].random>
+
+  - define loc   <[weak_point].center.with_yaw[<[yaw]>].forward_flat[1]>
+
+  #-play weak point ENTER animation
+  #the spiny animation was simplified. in the original, the inner ring goes clock wise and outer goes counter
+
+  - define text          <&chr[0009].font[icons]>
+  - define pivot         center
+  - define scale         <location[0.5,0.5,0.5]>
+  - define translation   <location[0,-0.25,0]>
+  - define text_shadowed true
+  - define opacity 255
+  - spawn <entity[text_display].with[text=<[text]>;pivot=<[pivot]>;scale=<[scale]>;text_shadowed=<[text_shadowed]>;opacity=<[opacity]>;translation=<[translation]>]> <[loc]> save:e
+  - define e <entry[e].spawned_entity>
+
+  - wait 2t
+
+  - adjust <[e]> interpolation_start:0
+  - adjust <[e]> scale:<location[1,1,1]>
+  - adjust <[e]> interpolation_duration:3t
+  - adjust <[e]> opacity:255
+
+  #eh, i dont think so actually
+  #- run fort_pic_handler.weak_spot_rotate def:<map[entity=<[e]>]>
+
+  - flag <[weak_point]> build.weak_point:<[e]>
+
+  #i think optimally we should wait 2/3 ticks before the waituntil, in case the player somehow gets the weak point in less than 2 ticks but nah
+  - waituntil !<[weak_point].has_flag[build.weak_point]> max:2s
+
+  - flag <[weak_point]> build.weak_point:!
+
+  #-play weak point EXIT animation
+  #"break/pop" from hit
+  - if <[e].has_flag[broken]>:
+    - adjust <[e]> interpolation_start:0
+    - adjust <[e]> scale:<location[5,5,5]>
+    - adjust <[e]> interpolation_duration:3t
+    - adjust <[e]> opacity:0
+  - else:
+    #naturally exit (not hit)
+    - adjust <[e]> interpolation_start:0
+    - adjust <[e]> scale:<location[0,0,0]>
+    - adjust <[e]> interpolation_duration:3t
+    - adjust <[e]> opacity:255
+
+  - wait 3t
+  - remove <[e]>
+
+  weak_spot_rotate:
+  - define e <[data].get[entity]>
+  - wait 3t
+  - if <[e].is_spawned>:
+    - adjust <[e]> interpolation_start:0
+    - adjust <[e]> scale:<location[1,1,1]>
+    - adjust <[e]> left_rotation:0,0,-1,0
+    - adjust <[e]> interpolation_duration:2s
+
 
   drop_mat:
     - define qty  <[data].get[qty]>

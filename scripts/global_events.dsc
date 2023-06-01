@@ -4,6 +4,9 @@ fort_global_handler:
   definitions: data
   events:
 
+    on block falls:
+    - determine cancelled
+
     on player picks up item flagged:build:
     - determine cancelled
 
@@ -113,6 +116,10 @@ fort_global_handler:
     on player clicks in inventory slot:7|8|9|10|11|12|13|14|15|16|17|18|28|29|30|31|32|33|34|35|36|19|20|21|22|23|24|25|26|27:
     #19-27 are the resources/ammo slots
     #in case it's part of the drop menu
+
+    ################REMOVE THIS
+    - stop
+
     - stop if:<context.item.has_flag[action]||false>
     - if <util.list_numbers[from=19;to=27].contains[<context.slot>]> && <context.item.material.name> != air:
       - stop
