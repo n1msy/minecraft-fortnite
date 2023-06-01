@@ -908,8 +908,8 @@ build_toggle:
     - define lb <element[<&l><&lb>].color[<[bc]>]>
     - define rb <element[<&l><&rb>].color[<[bc]>]>
 
-    - define l_button     <[lb]><element[<&l>L].color[<[lc]>]><[rb]>
-    - define r_button     <[lb]><element[<&l>R].color[<[rc]>]><[rb]>
+    - define l_button     <[lb]><&keybind[key.attack].color[<[lc]>]><[rb]>
+    - define r_button     <[lb]><&keybind[key.use].color[<[rc]>]><[rb]>
     - define drop_key     <&keybind[key.drop].font[build_text]>
     - define drop_button  <[lb]><element[<&l><[drop_key]>].color[<[dt]>]><[rb]>
 
