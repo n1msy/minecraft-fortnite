@@ -160,7 +160,7 @@ fort_pic_handler:
 
   weak_point:
   - define center <[data].get[center]>
-  - define blocks <[center].flag[build.structure].blocks.filter[flag[build.center].equals[<[center]>]]>
+  - define blocks <[center].flag[build.structure].blocks.filter[flag[build.center].equals[<[center]>]].filter[material.name.equals[air].not]>
 
   - define p_loc <player.location>
   - define yaw   <map[North=0;South=180;West=-90;East=90].get[<[p_loc].yaw.simple>]>
@@ -213,7 +213,7 @@ fort_pic_handler:
     - adjust <[e]> opacity:255
 
   - wait 3t
-  - remove <[e]>
+  - remove <[e]> if:<[e].is_spawned>
 
   weak_spot_rotate:
   - define e <[data].get[entity]>
