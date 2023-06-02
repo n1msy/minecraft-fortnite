@@ -89,7 +89,7 @@ minimap:
     - define whole_map <[tiles].unseparated>
 
     # compass display
-    - define curRotation     <player.location.yaw.div[360].mul[1024].round>
+    - define curRotation     <player.location.yaw.div[360].mul[1024].round_down>
     - define gameTime        <player.world.duration_since_created.in_ticks.mod[24000].mod[4]>
     - define rotation_color  <color[<[curRotation].mod[256]>,<[oldRotation].mod[256]>,<[curRotation].div[256].round_down.add[<[oldRotation].div[256].round_down.mul[4]>].add[<[gameTime].mul[16]>]>]>
     - define oldRotation     <[curRotation]>
