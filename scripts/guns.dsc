@@ -795,7 +795,7 @@ fort_gun_handler:
     - if <[target]> != null:
       #splatter: red_glazed_terracotta
       - playeffect at:<[particle_dest]> effect:BLOCK_CRACK offset:0 quantity:3 visibility:500 special_data:red_wool
-    - else if <[mat]> != null:
+    - else if <[mat]> != null && <[mat]> != barrier:
       - playeffect at:<[particle_dest]> effect:BLOCK_CRACK offset:0 quantity:8 visibility:500 special_data:<[mat]>
 
   default_recoil_fx:
