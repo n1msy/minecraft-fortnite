@@ -101,7 +101,7 @@ fort_chest_handler:
     #required definitions:
     # - <[loc]> - #
 
-    - define items_to_drop:!
+    - define item_to_drop:!
     - define gun_type:!
     - define gun_to_drop:!
     - define rarity:!
