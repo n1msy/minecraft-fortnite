@@ -159,13 +159,19 @@ fort_pic_handler:
     - adjust <[target]> custom_name:<[text]>
 
   weak_point:
-  - define center <[data].get[center]>
-  - define blocks <[center].flag[build.structure].blocks.filter[flag[build.center].equals[<[center]>]].filter[material.name.equals[air].not]>
+  - if <[data].contains[tree_blocks]>:
+    - define blocks <[data].get[tree_blocks]>
+  - else:
+    - define center <[data].get[center]>
+    - define blocks <[center].flag[build.structure].blocks.filter[flag[build.center].equals[<[center]>]].filter[material.name.equals[air].not]>
 
   - define p_loc <player.location>
   - define yaw   <map[North=0;South=180;West=-90;East=90].get[<[p_loc].yaw.simple>]>
 
-  - define weak_point <[blocks].filter[center.with_yaw[<[yaw]>].forward[1].line_of_sight[<[p_loc]>]].random>
+  - define available_weak_points <[blocks].filter[center.with_yaw[<[yaw]>].forward[1].line_of_sight[<[p_loc]>]].filter[distance[<[p_loc]>].is[OR_LESS].than[5]]>
+  - if <[available_weak_points].is_empty>:
+    - stop
+  - define weak_point <[available_weak_points].random>
 
   - define loc   <[weak_point].center.with_yaw[<[yaw]>].forward_flat[0.9].above[0.27]>
 
@@ -291,6 +297,17 @@ fort_pic_handler:
 
     - define damage 50
 
+    #-weak point
+    - if <[block].has_flag[build.weak_point]>:
+      - flag player fort.weak_point:++ duration:2s
+      - define damage <[damage].mul[2]>
+      - flag <[block].flag[build.weak_point]> broken if:<[block].flag[build.weak_point].is_spawned>
+      - flag <[block]> build.weak_point:!
+      - define # <player.flag[fort.weak_point].mod[8]>
+      - define # 8 if:<[#].equals[0]>
+      - define pitch <list[0.529732|0.594604|0.667420|0.707107|0.793701|0.890899|1.0|1.059463].get[<[#]>]>
+      - playsound <player> sound:BLOCK_NOTE_BLOCK_PLING pitch:<[pitch]> volume:0.4
+
     #-tree
     - run fort_pic_handler.harvest def:<map[structure=tree;type=wood]>
 
@@ -314,6 +331,9 @@ fort_pic_handler:
       - define progress <element[10].sub[<[new_health].div[<[max_health]>].mul[10]>]>
       - foreach <[tree_blocks]> as:b:
         - blockcrack <[b]> progress:<[progress]> players:<server.online_players>
+
+      - if <[tree_blocks].filter[has_flag[build.weak_point]].is_empty>:
+        - run fort_pic_handler.weak_point def:<map.with[tree_blocks].as[<[tree_blocks]>]>
 
       - stop
 
