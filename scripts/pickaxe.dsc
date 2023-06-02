@@ -178,7 +178,7 @@ fort_pic_handler:
   - define translation   <location[0,-0.25,0]>
   - define text_shadowed true
   - define opacity 255
-  - spawn <entity[text_display].with[text=<[text]>;pivot=<[pivot]>;scale=<[scale]>;text_shadowed=<[text_shadowed]>;opacity=<[opacity]>;translation=<[translation]>]> <[loc]> save:e
+  - spawn <entity[text_display].with[text=<[text]>;background_color=transparent;pivot=<[pivot]>;scale=<[scale]>;text_shadowed=<[text_shadowed]>;opacity=<[opacity]>;translation=<[translation]>]> <[loc]> save:e
   - define e <entry[e].spawned_entity>
 
   - wait 2t
@@ -356,7 +356,7 @@ fort_pic_handler:
   - define text <[icon]><&f><&l>+<[total_qty]>
 
   - if !<[harvest_display].exists>:
-    - spawn <entity[text_display].with[text=<[text]>;pivot=center;scale=1,1,1]> <[loc]> save:harvest_display
+    - spawn <entity[text_display].with[text=<[text]>;pivot=center;scale=1,1,1;background_color=transparent]> <[loc]> save:harvest_display
     - define harvest_display <entry[harvest_display].spawned_entity>
     - run fort_pic_handler.bounce_anim def:<map[e=<[harvest_display]>]>
     - adjust <[harvest_display]> hide_from_players
