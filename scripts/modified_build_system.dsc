@@ -24,8 +24,6 @@ tile_visualiser_command:
     - wait 1t
   - narrate "tile visualiser program terminated"
 
-
-#######MAKE SURE TO LOOK AT A TILE THAT'S CONNECTED TO EVERYTHING (OUTSIDE TILE) TO GET ALL TILES!
 save_build:
   type: command
   name: save_build
@@ -34,20 +32,19 @@ save_build:
   usage: /save_build (name)
   script:
 
-  - define target_block <player.cursor_on||null>
-  - if <[target_block]> == null || !<[target_block].has_flag[build.center]>:
-    - narrate "<&c>You must look at a tile!"
-    - stop
-
   - define name <context.args.first||null>
   - if <[name]> == null:
     - narrate "<&c>Invalid schematic name."
     - stop
 
-  #-instead of having the player make a selection, just add each tile to a cuboid?
   - define selection <player.we_selection||null>
   - if <[selection]> == null:
     - narrate "<&c>You must make a selection!"
+    - stop
+
+  - define structure <player.we_selection.blocks_flagged[build.structure].parse[flag[build.structure]]||null>
+  - if <[structure].is_empty> || <[structure]> == null:
+    - narrate "<&c>Invalid selection!"
     - stop
 
   - if <schematic.list.contains[<[name]>]>:
@@ -56,26 +53,6 @@ save_build:
   - if <util.has_file[schematics/<[name]>.schem]>:
     - narrate "<&7>Overwriting current <&dq><&f><[name]>.schem<&7><&dq> file..."
     - adjust system delete_file:schematics/<[name]>.schem
-
-  - narrate "<&7>Calculating structure's tile size..."
-  - narrate "<&c>Don't move."
-
-  - define center <[target_block].flag[build.center]>
-  - define tile   <[center].flag[build.structure]>
-  - define branches           <proc[get_surrounding_tiles].context[<[tile]>|<[center]>]>
-  - foreach <[branches]> as:starting_tile:
-      - define tiles_to_check <list[<[starting_tile]>]>
-      - define structure <list[<[starting_tile]>]>
-      - while <[tiles_to_check].any>:
-          - define tile <[tiles_to_check].last>
-          - foreach next if:!<[tile].center.has_flag[build.center]>
-          - define center <[tile].center.flag[build.center]>
-          - define type   <[center].flag[build.type]>
-          - define tiles_to_check:<-:<[tile]>
-          - define surrounding_tiles <proc[get_surrounding_tiles].context[<[tile]>|<[center]>].exclude[<[structure]>]>
-          - define structure:|:<[surrounding_tiles]>
-          - define tiles_to_check:|:<[surrounding_tiles]>
-          - wait 1t
 
   - narrate "<&7>Finding vector data for <&a><[structure].size> <&7>tiles..."
 
@@ -104,6 +81,40 @@ save_build:
   - ~schematic save name:<[name]>
   - narrate <&a>Done!
 
+rotate_build:
+  type: command
+  name: rotate_build
+  debug: false
+  description: Rotate a build by 90 degrees.
+  usage: /rotate_build (name)
+  tab complete:
+  - determine <schematic.list>
+  script:
+
+  - define name <context.args.first||null>
+  - if <[name]> == null:
+    - narrate "<&c>Invalid schematic name."
+    - stop
+
+  - if !<util.has_file[schematics/<[name]>.schem]>:
+    - narrate "<&c>This schematic doesn't exist!"
+    - stop
+
+  - if !<schematic.list.contains[<[name]>]>:
+    - narrate "<&7>Loading schematic..."
+    - ~schematic load name:<[name]>
+    - narrate "<&a>Schematic loaded."
+
+  - narrate "<&7>Rotating structure by <&a>90 <&7>degrees..."
+  #- schematic rotate name:<[name]> angle:90
+
+  - define total_blocks <schematic[<[name]>].cuboid[<player.location>].blocks_flagged[build]>
+  - narrate <[total_blocks].size>
+
+  #- narrate "<&7>Finding vector data for <&a><[structure].size> <&7>tiles..."
+
+  - narrate <&a>Done!
+
 remove_build:
   type: command
   name: remove_build
@@ -112,31 +123,15 @@ remove_build:
   usage: /remove_build
   script:
 
-  - define target_block <player.cursor_on||null>
-  - if <[target_block]> == null || !<[target_block].has_flag[build.center]>:
-    - narrate "<&c>You must look at a tile!"
+  - define selection <player.we_selection||null>
+  - if <[selection]> == null:
+    - narrate "<&c>You must make a selection!"
     - stop
 
-  - narrate "<&7>Calculating structure's tile size..."
-
-  - define center <[target_block].flag[build.center]>
-  - define tile   <[center].flag[build.structure]>
-  - define branches           <proc[get_surrounding_tiles].context[<[tile]>|<[center]>]>
-  - foreach <[branches]> as:starting_tile:
-      - define tiles_to_check <list[<[starting_tile]>]>
-      - define structure <list[<[starting_tile]>]>
-      - while <[tiles_to_check].any>:
-          - define tile <[tiles_to_check].last>
-          - foreach next if:!<[tile].center.has_flag[build.center]>
-          - define center <[tile].center.flag[build.center]>
-          - define type   <[center].flag[build.type]>
-          - define tiles_to_check:<-:<[tile]>
-          - define surrounding_tiles <proc[get_surrounding_tiles].context[<[tile]>|<[center]>].exclude[<[structure]>]>
-          - define structure:|:<[surrounding_tiles]>
-          - define tiles_to_check:|:<[surrounding_tiles]>
-          - if <[loop_index].mod[200]> == 0:
-            - narrate "<&7>Still calculating..."
-          - wait 1t
+  - define structure <player.we_selection.blocks_flagged[build.structure].parse[flag[build.structure]]||null>
+  - if <[structure].is_empty> || <[structure]> == null:
+    - narrate "<&c>Invalid selection!"
+    - stop
 
   - narrate "<&7>Removing <&a><[structure].size> <&7>tiles..."
 

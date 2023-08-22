@@ -117,8 +117,6 @@ hud_handler:
 
     on player swaps items:
     #- stop if:<player.world.name.equals[fortnite_map].not>
-    - if <player.name> != Nimsy:
-      - stop
     - determine passively cancelled
     - define new_type <map[inv=build;build=inv].get[<player.flag[fort.inv_type]||inv>]>
     - flag player fort.inv_type:<[new_type]>
