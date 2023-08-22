@@ -7,6 +7,8 @@ fort_commands:
   permission: fort.setup
   aliases:
   - fort
+  tab completions:
+    1: <list[fill_chests|fill_ammo_boxes]>
   script:
   - choose <context.args.first||null>:
     - case chest:
@@ -29,11 +31,14 @@ fort_commands:
       - flag <[loc]> fort.chest.opened
       - flag server fort.chests:->:<[loc]>
       - narrate "<&a>Set chest at <&f><[loc].simple>"
-    - case fill_chests:
-      - define chests <server.flag[fort.chests]||0>
-      - narrate "<&7>Filling all chests..."
-      - foreach <[chests]> as:loc:
-        - inject fort_chest_handler.fill_chest
-      - narrate "<&a>All chests have been filled <&7>(<[chests].size>)<&a>."
+    - case fill_chests fill_ammo_boxes:
+      - define type <map[fill_chests=chests;fill_ammo_boxes=ammo_boxes].get[<context.args.first>]>
+      - define containers <server.flag[fort.<[type]>]||<list[]>>
+      - narrate "<&7>Filling all <[type].replace[_].with[ ]>..."
+
+      - foreach <[containers]> as:loc:
+        - inject fort_chest_handler.fill_<map[chests=chest;ammo_boxes=ammo_box].get[<[type]>]>
+
+      - narrate "<&a>All <[type].replace[_].with[ ]> have been filled <&7>(<[containers].size>)<&a>."
     - default:
       - narrate "<&c>Invalid arg."
