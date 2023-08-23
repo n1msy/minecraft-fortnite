@@ -48,7 +48,8 @@ storm:
     - define new_circle <[center].points_around_y[radius=<[to]>;points=<[new_plane_qty]>]>
 
     - define circle_mul <[plane_qty].div[<[new_plane_qty]>]>
-    - define start_size 5.2
+    - define start_size <[new_plane_qty].div[<[radius]>].mul[<[size]>].div[5].mul[14]>
+    - narrate <[start_size]>
     #<[size].mul[<[circle_mul].add[1]>].round_up>
 
     - repeat <[new_plane_qty]>:
@@ -57,6 +58,8 @@ storm:
       #account for extra plane removals
       - adjust <[p]> scale:<[start_size]>,<[height]>,<[start_size]>
 
+    - narrate old:<[planes].size>
+    - narrate new:<[new_planes].size>
     #wait 1t for scale to change
     - wait 1t
 
