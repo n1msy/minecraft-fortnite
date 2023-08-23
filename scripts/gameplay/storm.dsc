@@ -23,14 +23,14 @@ storm:
     - define plane_qty <[radius].mul[5]>
     - define size 1.259
 
+    - define view_range 2
+
     - define circle <[center].points_around_y[radius=<[radius]>;points=<[plane_qty]>]>
     - foreach <[circle]> as:loc:
 
       - define i <item[paper].with[custom_model_data=18]>
       #when plane quantity is 50, the perfect size is "1.343"
       #1.343/50=0.02686, which means multiply plane qty by 0.02686
-      #- define opacity 153
-      - define view_range 3
 
       - define angle <[loc].face[<[center]>].yaw.to_radians>
       - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
@@ -44,31 +44,10 @@ storm:
 
     - wait 1s
 
-    - define new_plane_qty <[to].mul[5]>
-    - define new_circle <[center].points_around_y[radius=<[to]>;points=<[new_plane_qty]>]>
-
-    - define circle_mul <[plane_qty].div[<[new_plane_qty]>]>
-    - define start_size <[new_plane_qty].div[<[radius]>].mul[<[size]>].div[5].mul[14]>
-    - narrate <[start_size]>
-    #<[size].mul[<[circle_mul].add[1]>].round_up>
-
-    - repeat <[new_plane_qty]>:
-      - define p             <[planes].get[<[value].mul[<[circle_mul]>].round_up>]>
-      - define new_planes:->:<[p]>
-      #account for extra plane removals
-      - adjust <[p]> scale:<[start_size]>,<[height]>,<[start_size]>
-
-    - narrate old:<[planes].size>
-    - narrate new:<[new_planes].size>
-    #wait 1t for scale to change
-    - wait 1t
-
-    #remove extra planes
-    - define remove_planes <[planes].exclude[<[new_planes]>]>
-    - remove <[remove_planes]>
+    - define new_circle <[center].points_around_y[radius=<[to]>;points=<[plane_qty]>]>
 
     - foreach <[new_circle]> as:new_loc:
-      - define p           <[new_planes].get[<[loop_index]>]>
+      - define p           <[planes].get[<[loop_index]>]>
       - define plane_loc   <[p].location>
       - define translation <[new_loc].sub[<[plane_loc]>]>
 
@@ -81,6 +60,26 @@ storm:
       - adjust <[p]> scale:<[size]>,<[height]>,<[size]>
       - adjust <[p]> interpolation_duration:<[time]>t
 
-    ##other option: spiral (coils around a point and whatever overlaps the circle is removed)
-    ##other option: just animate the entire thing and then spawn another circle batch and remove the old one (simplest one, but only problem is from the outside, the textures might get screwed)
+    #wait for animation to complete
+    - wait <[time]>t
 
+    - define new_plane_qty     <[to].mul[5]>
+    - define actual_new_circle <[center].points_around_y[radius=<[to]>;points=<[new_plane_qty]>]>
+
+    - foreach <[actual_new_circle]> as:loc:
+
+      - define i <item[paper].with[custom_model_data=18]>
+
+      - define angle <[loc].face[<[center]>].yaw.to_radians>
+      - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
+
+      - spawn <entity[ITEM_DISPLAY].with[item=<[i]>;scale=<[size]>,<[height]>,<[size]>;view_range=<[view_range]>;left_rotation=<[left_rotation]>]> <[loc]> save:plane
+      #- define new_plane     <entry[plane].spawned_entity>
+      #- define new_planes:->:<entry[plane].spawned_entity>
+
+    #wait for new planes to spawn first
+    - wait 1t
+    #remove the old planes
+    - remove <[planes]>
+
+    ##other option: spiral (coils around a point and whatever overlaps the circle is removed) (idk how)
