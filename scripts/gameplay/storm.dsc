@@ -9,7 +9,7 @@ storm:
     #make circle size server flag
     #time for it to change sizes (ticks)
     - define time   5
-    - define height 1500
+    - define height 4000
 
     - define from <[data].get[from]>
     - define to   <[data].get[to]||null>
