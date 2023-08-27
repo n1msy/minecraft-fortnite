@@ -3,10 +3,6 @@ fort_global_handler:
   debug: false
   definitions: data
   events:
-    # - [ EMOTES ]
-    on player clicks in inventory slot:2|3|4|5:
-    - narrate <context.slot>
-
 
     on block falls:
     - determine cancelled
