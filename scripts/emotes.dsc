@@ -9,7 +9,8 @@ fort_emote_handler:
     - if <[emote]> == none || <player.has_flag[fort.emote]>:
       - stop
 
-    - run dmodels_spawn_model def.model_name:emotes def.location:<player.location.above[2]> save:result
+    #- run pmodels_spawn_model def.location:<player.location.above[2]> def.player:<player> def.scale:<location[1.87,1.87,1.87]> save:result
+    - run dmodels_spawn_model def.player:<player> def.model_name:emotes def.location:<player.location.above[2]> save:result
     - define spawned <entry[result].created_queue.determination.first||null>
     - if !<[spawned].is_truthy>:
         - narrate "<&[error]>Emote spawning failed?"
