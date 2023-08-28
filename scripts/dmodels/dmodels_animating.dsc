@@ -114,7 +114,6 @@ dmodels_move_to_frame:
                     - case catmullrom:
                         - if <[channel]> == rotation:
                             # TODO: Actual impl? If this even exists in blockbench.
-                            - narrate yes
                             - define data <[before_frame.data].as[quaternion].slerp[end=<[after_frame.data]>;amount=<[time_percent]>]>
                         - else:
                             - define before_extra <[relevant_frames].filter[get[time].is_less_than[<[before_frame.time]>]].last||null>
@@ -148,6 +147,7 @@ dmodels_move_to_frame:
 
         - define rot_offset <[orientation].mul[<[parent_rot]>].transform[<[rel_offset]>]>
         - define new_pos <[parent_rot].transform[<[framedata.position]>].add[<[rot_offset]>].proc[dmodels_mul_vecs].context[<[global_scale]>].add[<[parent_pos]>]>
+        - narrate <[pose]>
         - define new_rot <[parent_rot].mul[<[pose]>].mul[<[framedata.rotation]>].normalize>
         - define new_scale <[framedata.scale].proc[dmodels_mul_vecs].context[<[parent_scale]>]>
         - define parentage.<[part_id]>.position <[new_pos]>
