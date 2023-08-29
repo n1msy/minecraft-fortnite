@@ -24,7 +24,7 @@ fort_item_handler:
     - define rarity <[item].flag[rarity]>
     - define qty    <[item].quantity>
 
-    - define text <&l><[name].to_uppercase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=#ffaf24].get[<[rarity]>]>]><&f><&l>x<[qty]>
+    - define text <&l><[name].to_uppercase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]><&f><&l>x<[qty]>
 
     - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>]>
 
@@ -53,7 +53,7 @@ fort_item_handler:
       - remove <context.entity.flag[text_display]>
 
     - define rarity <[item].flag[rarity]>
-    - define text <&l><[item].display.strip_color.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=#ffaf24].get[<[rarity]>]>]><&f><&l>x<[qty]>
+    - define text <&l><[item].display.strip_color.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]><&f><&l>x<[qty]>
     - if <[target].has_flag[text_display]>:
       - adjust <[target].flag[text_display]> text:<[text]>
 
@@ -97,7 +97,13 @@ fort_item_handler:
     - define text <[data].get[text]>
     - define drop <[data].get[drop]>
 
-    - spawn <entity[text_display].with[text=<[text]>;pivot=center;scale=1,1,1;translation=0,0.75,0]> <[drop].location> save:txt
+    - choose <[drop].item.script.name.after[fort_item_]>:
+      - case bush:
+        - define translation 0,1,0
+      - default:
+        - define translation 0,0.75,0
+
+    - spawn <entity[text_display].with[text=<[text]>;pivot=center;scale=1,1,1;translation=<[translation]>]> <[drop].location> save:txt
     - define txt <entry[txt].spawned_entity>
     - mount <[txt]>|<[drop]>
 
@@ -116,7 +122,7 @@ fort_item_handler:
     - drop <[item]> <[loc]> delay:1s save:drop
     - define drop <entry[drop].dropped_entity>
 
-    - define text <&l><[item].display.strip_color.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=#ffaf24].get[<[rarity]>]>]><&f><&l>x<[qty]>
+    - define text <&l><[item].display.strip_color.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]><&f><&l>x<[qty]>
 
     - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>]>
 

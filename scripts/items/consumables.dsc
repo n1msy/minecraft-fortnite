@@ -1,9 +1,18 @@
-fort_heal_handler:
+fort_consumable_handler:
   type: world
   debug: false
   definitions: data
   events:
-    on player left clicks block with:fort_item_bandages|fort_item_medkit|fort_item_small_shield_potion|fort_item_shield_potion flagged:!fort.healing:
+
+    ##make sure the bush doesn't cause performance issues? it updates every tick instead of being mounted on the player
+    #-Bush handler (any damage they take is negated once)
+    on player damaged flagged:fort.bush priority:-10:
+    - narrate "<&c>Player damage was negated. This is a debug message. If you see this still, please remind Nimsy to change it."
+    - define bush <player.flag[fort.bush]>
+    - remove <[bush]>
+    - flag player fort.bush:!
+
+    on player left clicks block with:fort_item_bush|fort_item_bandages|fort_item_medkit|fort_item_small_shield_potion|fort_item_shield_potion flagged:!fort.consuming:
     - determine passively cancelled
     - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
 
@@ -30,7 +39,16 @@ fort_heal_handler:
       - playsound <player> sound:ENTITY_VILLAGER_NO pitch:1.5
       - stop
 
-    - if <list[bandages|medkit].contains[<[name]>]>:
+    - if <[name]> == small_shield_potion && <[shield]> >= 50:
+      - playsound <player> sound:ENTITY_VILLAGER_NO pitch:1.5
+      - stop
+
+    #so they can't reapply a bush if they're already wearing one
+    - if <[name]> == bush && <player.has_flag[fort.bush]>:
+      - playsound <player> sound:ENTITY_VILLAGER_NO pitch:1.5
+      - stop
+
+    - if <list[bandages|medkit|bush].contains[<[name]>]>:
       - playsound <player> sound:ITEM_ARMOR_EQUIP_LEATHER pitch:1
     - else:
       - playsound <player> sound:ENTITY_GENERIC_DRINK
@@ -38,14 +56,14 @@ fort_heal_handler:
     #to ticks
     - define use_time <[i].flag[use_time].mul[20]>
 
-    - flag player fort.healing
+    - flag player fort.consuming
     - define loc <player.location.simple>
 
-    - while <player.has_flag[fort.healing]>:
+    - while <player.has_flag[fort.consuming]>:
       - if <player.location.simple> != <[loc]> || !<player.is_online> || <player.item_in_hand> != <[i]>:
         - playsound <player> sound:ENTITY_VILLAGER_NO pitch:1.5
         - actionbar <&sp>
-        - flag player fort.healing:!
+        - flag player fort.consuming:!
         - stop
 
       - define bar  <&chr[<[loop_index].mul[16].div[<[use_time]>].round_down.add[1]>].font[load]>
@@ -67,6 +85,15 @@ fort_heal_handler:
     - define particle_loc <player.location.above.forward_flat[0.15]>
 
     - choose <[name]>:
+
+      - case bush:
+        - spawn <entity[item_display].with[item=<item[gold_nugget].with[custom_model_data=19]>;scale=1.2,1.2,1.2;translation=0,-0.75,0]> <player.location.with_pose[0,0].above> save:bush
+        - define bush <entry[bush].spawned_entity>
+        - mount <[bush]>|<player>
+        - run fort_consumable_handler.use_bush def:<[bush]>
+        - flag player fort.bush:<[bush]>
+        - playsound <player> sound:ENTITY_EXPERIENCE_ORB_PICKUP pitch:1
+
       - case bandages:
         - if <[health].add[15]> > 75:
           - adjust <player> health:15
@@ -99,8 +126,50 @@ fort_heal_handler:
     - take item:<[i]>
 
     - inject update_hud
-    - flag player fort.healing:!
+    - flag player fort.consuming:!
 
+  use_bush:
+    - define bush <[data]>
+
+    #reset pitch
+    - while <[bush].is_spawned> && <player.is_online>:
+
+      #player leaf particle effects when moving
+      - if <[p_loc].with_pose[0,0]||null> != <player.location.with_pose[0,0]>:
+        - define p_loc <player.location>
+        - playeffect effect:TOTEM at:<[bush].location.forward[0.5]> offset:0.3 quantity:1 data:0.2 visibility:100
+
+      #this way, it won't interpolate if the yaw was already the same
+      - if <[yaw]||null> != <player.location.yaw>:
+        - define yaw <player.location.yaw>
+        - define angle <[yaw].to_radians>
+        - define left_rotation <quaternion[0,0,0,1].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
+
+        - adjust <[bush]> interpolation_start:0
+        - adjust <[bush]> interpolation_duration:1t
+        - adjust <[bush]> left_rotation:<[left_rotation]>
+
+      - wait 1t
+    - flag player fort.bush:!
+    - remove <[bush]> if:<[bush].is_spawned>
+
+fort_item_bush:
+  type: item
+  material: gold_nugget
+  display name: <&f><&l>BUSH
+  mechanisms:
+    custom_model_data: 19
+    hides: ALL
+  flags:
+    rarity: legendary
+    #i can't find the actual drop chance?
+    #replaces other consumables from chests
+    chance: 5
+    drop_quantity: 2
+    stack_size: 2
+    use_time: 3
+
+## Heals
 fort_item_bandages:
   type: item
   material: gold_nugget
