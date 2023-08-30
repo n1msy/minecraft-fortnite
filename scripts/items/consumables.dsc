@@ -130,14 +130,15 @@ fort_consumable_handler:
 
   use_bush:
     - define bush <[data]>
+    - look <[bush]> pitch:0
 
     #reset pitch
     - while <[bush].is_spawned> && <player.is_online>:
 
       #player leaf particle effects when moving
-      - if <[p_loc].with_pose[0,0]||null> != <player.location.with_pose[0,0]>:
+      - if <[p_loc].with_pose[0,0]||null> != <player.location.with_pose[0,0]> && <[loop_index].mod[2]> == 0:
         - define p_loc <player.location>
-        - playeffect effect:TOTEM at:<[bush].location.forward[0.5]> offset:0.3 quantity:1 data:0.2 visibility:100
+        - playeffect effect:TOTEM at:<[p_loc].above.forward> offset:0.3 quantity:1 data:0.2 visibility:100
 
       #this way, it won't interpolate if the yaw was already the same
       - if <[yaw]||null> != <player.location.yaw>:

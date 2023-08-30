@@ -32,12 +32,12 @@ fort_commands:
       - flag server fort.chests:->:<[loc]>
       - narrate "<&a>Set chest at <&f><[loc].simple>"
     - case fill_chests fill_ammo_boxes:
-      - define type <map[fill_chests=chests;fill_ammo_boxes=ammo_boxes].get[<context.args.first>]>
-      - define containers <server.flag[fort.<[type]>]||<list[]>>
-      - narrate "<&7>Filling all <[type].replace[_].with[ ]>..."
+      - define container_type <map[fill_chests=chests;fill_ammo_boxes=ammo_boxes].get[<context.args.first>]>
+      - define containers <server.flag[fort.<[container_type]>]||<list[]>>
+      - narrate "<&7>Filling all <[container_type].replace[_].with[ ]>..."
 
       - foreach <[containers]> as:loc:
-        - inject fort_chest_handler.fill_<map[chests=chest;ammo_boxes=ammo_box].get[<[type]>]>
+        - inject fort_chest_handler.fill_<map[chests=chest;ammo_boxes=ammo_box].get[<[container_type]>]>
 
       - narrate "<&a>All <[type].replace[_].with[ ]> have been filled <&7>(<[containers].size>)<&a>."
     - default:

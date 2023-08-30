@@ -73,6 +73,7 @@ fort_item_handler:
       - stop
 
     - if <[item_to_stack_with]> == null:
+      #-excluding slot 1 because of pickaxe?
       #next empty slot
       - define slot <list[2|3|4|5|6].filter_tag[<player.inventory.slot[<[filter_value]>].material.name.equals[air]>].first>
     - else:
