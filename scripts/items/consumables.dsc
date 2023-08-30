@@ -4,11 +4,14 @@ fort_consumable_handler:
   definitions: data
   events:
 
-    ##make sure the bush doesn't cause performance issues? it updates every tick instead of being mounted on the player
     #-Bush handler (any damage they take is negated once)
     on player damaged flagged:fort.bush priority:-10:
     - narrate "<&c>Player damage was negated. This is a debug message. If you see this still, please remind Nimsy to change it."
     - define bush <player.flag[fort.bush]>
+    - define loc <[bush].location>
+
+    - playsound <[loc]> sound:BLOCK_SWEET_BERRY_BUSH_BREAK pitch:0.9 volume:1.5
+    - playeffect effect:TOTEM at:<[loc]> offset:0.3 quantity:15 data:0.35 visibility:100
     - remove <[bush]>
     - flag player fort.bush:!
 
@@ -135,9 +138,15 @@ fort_consumable_handler:
     #reset pitch
     - while <[bush].is_spawned> && <player.is_online>:
 
+      - define bush_loc <[bush].location>
       #player leaf particle effects when moving
       - if <[p_loc].with_pose[0,0]||null> != <player.location.with_pose[0,0]> && <[loop_index].mod[2]> == 0:
         - define p_loc <player.location>
+        #sneaking makes the sound loop interval get slower
+        - if !<player.is_sneaking> && <[loop_index].mod[4]> == 0:
+          - playsound <[p_loc]> sound:BLOCK_GRASS_STEP pitch:0.7 volume:0.5
+        - else if <player.is_sneaking> && <[loop_index].mod[7]> == 0:
+          - playsound <[p_loc]> sound:BLOCK_GRASS_STEP pitch:0.7 volume:0.5
         - playeffect effect:TOTEM at:<[p_loc].above.forward> offset:0.3 quantity:1 data:0.2 visibility:100
 
       #this way, it won't interpolate if the yaw was already the same
@@ -151,6 +160,7 @@ fort_consumable_handler:
         - adjust <[bush]> left_rotation:<[left_rotation]>
 
       - wait 1t
+
     - flag player fort.bush:!
     - remove <[bush]> if:<[bush].is_spawned>
 
