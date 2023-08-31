@@ -3,6 +3,24 @@
 # Refer to the header of "dmodels_main.dsc" for more information.
 ###########################
 
+q:
+    type: task
+    debug: false
+    script:
+    - define data <server.flag[dmodels_data.model_emotes]>
+    - foreach <[data].keys> as:ent:
+        - define name    <server.flag[dmodels_data.model_emotes.<[ent]>.name]>
+        - define rot     <server.flag[dmodels_data.model_emotes.<[ent]>.rotation]>
+        - define origin  <server.flag[dmodels_data.model_emotes.<[ent]>.origin]>
+        - announce <&a><[name]> to_console
+        - announce <[origin]> to_console
+       # - narrate <&7><server.flag[dmodels_data.model_emotes.<[ent]>.name]>
+       # - if <server.flag[dmodels_data.model_emotes.<[ent]>.name]> == RIGHT_ARM:
+        #    - announce ARM:<server.flag[dmodels_data.model_emotes.<[ent]>]> to_console
+       # - if <server.flag[dmodels_data.model_emotes.<[ent]>.name]> == CHEST:
+        #    - define chest_ent <[ent]>
+    #- announce CHEST:<server.flag[dmodels_data.model_emotes.<[chest_ent]>]> to_console
+
 dmodel_part_display:
     type: entity
     debug: false
@@ -34,7 +52,7 @@ dmodels_spawn_model:
     - define center <[location].with_pitch[0].below[1]>
     - define scale <[scale].if_null[<location[1,1,1]>].mul[<script[dmodels_config].parsed_key[default_scale]>]>
     - define rotation <[rotation].if_null[<quaternion[identity]>]>
-    - define yaw_quaternion <quaternion[0,1,0,0]>
+    - define yaw_quaternion <quaternion[0,-1,0,0]>
     #<location[0,1,0].to_axis_angle_quaternion[<[location].yaw.add[180].to_radians.mul[-1]>]>
     - define orientation <[yaw_quaternion].mul[<[rotation]>]>
     - if <[fake_to].exists>:
@@ -166,7 +184,9 @@ dmodels_reset_model_position:
 
         - teleport <[host]> <[center]>
         - invisible <[host]> false if:<[host].is_online>
+        #- adjust <[host]> gamemode:<[host].flag[fort.emote_gamemode]>
 
+        #- flag <[host]> fort.emote_gamemode:!
         - flag <[host]> fort.emote:!
 
         - remove <[cam]> if:<[cam].is_spawned>

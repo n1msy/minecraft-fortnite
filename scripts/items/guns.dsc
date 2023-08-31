@@ -698,7 +698,7 @@ fort_gun_handler:
     - define name   <[gun].display.strip_color>
     - define rarity <[gun].flag[rarity]>
 
-    - define text <&l><[name].to_uppercase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=#ffaf24].get[<[rarity]>]>]>
+    - define text <&l><[name].to_uppercase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]>
 
     - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>]>
 
@@ -952,7 +952,7 @@ gun_pump_shotgun:
     type: shotgun
     #this value can be changed
     rarity: common
-    icon_chr: 1
+    icon_chr: 13
     #global stats
     #min is 5 if you want singular shots
     ticks_between_shots: 5
@@ -1029,7 +1029,7 @@ gun_tactical_shotgun:
     type: shotgun
     #this value can be changed
     rarity: common
-    icon_chr: 1
+    icon_chr: 14
     #global stats
     #min is 5 if you want singular shots
     ticks_between_shots: 5
@@ -1144,11 +1144,13 @@ gun_assault_rifle:
         chance: 2
         damage: 35
         reload_time: 2.4
+        icon_chr: 2
         custom_model_data: 5
       legendary:
         chance: 0.5
         damage: 36
         reload_time: 2.2
+        icon_chr: 2
         custom_model_data: 5
     #(in meters)
     #value is in percentage of damage
@@ -1173,7 +1175,7 @@ gun_burst_assault_rifle:
     type: ar
     #this value can be changed
     rarity: common
-    icon_chr: 1
+    icon_chr: 3
     #global stats
     #min is 5 if you want singular shots
     ticks_between_shots: 2
@@ -1209,11 +1211,13 @@ gun_burst_assault_rifle:
         chance: 2
         damage: 32
         reload_time: 2.5
+        icon_chr: 4
         custom_model_data: 28
       legendary:
         chance: 0.5
         damage: 33
         reload_time: 2.3
+        icon_chr: 4
         custom_model_data: 28
     #(in meters)
     #value is in percentage of damage
@@ -1238,7 +1242,7 @@ gun_tactical_smg:
     type: smg
     #this value can be changed
     rarity: uncommon
-    icon_chr: 1
+    icon_chr: 12
     #global stats
     #min is 5 if you want singular shots
     ticks_between_shots: 2
@@ -1289,6 +1293,7 @@ gun_tactical_smg:
       UI_BUTTON_CLICK:
         pitch: 2
         volume: 1.2
+
 gun_smg:
   type: item
   material: wooden_hoe
@@ -1300,7 +1305,7 @@ gun_smg:
     type: smg
     #this value can be changed
     rarity: common
-    icon_chr: 1
+    icon_chr: 11
     #global stats
     #min is 5 if you want singular shots
     ticks_between_shots: 2
@@ -1367,7 +1372,7 @@ gun_bolt_action_sniper_rifle:
     #this value can be changed
     rarity: common
     sniper: true
-    icon_chr: 1
+    icon_chr: 8
     #global stats
     #min is 5 if you want singular shots
     ticks_between_shots: 5
@@ -1431,7 +1436,7 @@ gun_revolver:
     type: pistol
     #this value can be changed
     rarity: common
-    icon_chr: 1
+    icon_chr: 6
     #global stats
     #min is 5 if you want singular shots
     ticks_between_shots: 5
@@ -1465,11 +1470,13 @@ gun_revolver:
         chance: 24.5
         damage: 94.5
         reload_time: 1.9
+        icon_chr: 7
         custom_model_data: 14
       legendary:
         chance: 4.4
         damage: 99
         reload_time: 1.8
+        icon_chr: 7
         custom_model_data: 14
     #-no damage falloff (?)
 
@@ -1492,7 +1499,7 @@ gun_pistol:
     type: pistol
     #this value can be changed
     rarity: common
-    icon_chr: 1
+    icon_chr: 5
     #global stats
     #min is 5 if you want singular shots
     ticks_between_shots: 5
@@ -1556,7 +1563,7 @@ gun_grenade_launcher:
     rarity: rare
     #meaning it's not a conventional gun
     custom_shoot: true
-    icon_chr: 1
+    icon_chr: 9
     #global stats
     #min is 5 if you want singular shots
     ticks_between_shots: 5
@@ -1614,7 +1621,7 @@ gun_rocket_launcher:
     rarity: rare
     #meaning it's not a conventional gun
     custom_shoot: true
-    icon_chr: 1
+    icon_chr: 10
     #global stats
     #min is 5 if you want singular shots
     ticks_between_shots: 5

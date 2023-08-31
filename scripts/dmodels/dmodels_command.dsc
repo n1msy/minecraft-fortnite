@@ -92,7 +92,7 @@ dmodels_command:
             - if !<server.has_flag[dmodels_data.model_<[model]>]>:
                 - narrate "<&[error]>No such model exists, or that model has never been loaded."
                 - stop
-            - run dmodels_spawn_model def.model_name:<[model]> def.location:<player.location> save:result
+            - run dmodels_spawn_model def.model_name:<[model]> def.location:<player.location.above[2]> save:result
             - define spawned <entry[result].created_queue.determination.first||null>
             - if !<[spawned].is_truthy>:
                 - narrate "<&[error]>Spawning failed?"

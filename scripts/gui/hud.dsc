@@ -102,7 +102,7 @@ hud_handler:
 
 
     after player scrolls their hotbar:
-    - stop if:<player.world.name.equals[fortnite_map].not>
+    #- stop if:<player.world.name.equals[fortnite_map].not>
     - define new_slot <context.new_slot>
     - define old_slot <context.previous_slot>
 
@@ -162,6 +162,17 @@ hud_handler:
 
     - define inv_type <player.flag[fort.inv_type]||inv>
 
+    - define common              <&chr[0001].font[rarities]>
+    - define common_selected     <&chr[A001].font[rarities]>
+    - define uncommon            <&chr[0002].font[rarities]>
+    - define uncommon_selected   <&chr[A002].font[rarities]>
+    - define rare                <&chr[0003].font[rarities]>
+    - define rare_selected       <&chr[A003].font[rarities]>
+    - define epic                <&chr[0004].font[rarities]>
+    - define epic_selected       <&chr[A004].font[rarities]>
+    - define legendary           <&chr[0005].font[rarities]>
+    - define legendary_selected  <&chr[A005].font[rarities]>
+
     - define unselected_slot     <&chr[B000].font[icons]>
     - define selected_slot       <&chr[B001].font[icons]>
 
@@ -190,7 +201,38 @@ hud_handler:
       - define k <&keybind[key.swapOffhand]>
       - define build_toggle <[backdrop]><proc[spacing].context[-9]><[k].font[neg_half_f]><[k].font[visitor]><[k].font[neg_half_c]><proc[spacing].context[9]>
 
-      - define slots_ <[slots].set[<[selected_slot]>].at[<[slot]>].space_separated.color[<color[20,0,0]>]><[keys]>
+      - repeat 6:
+        #put in the item with the right rarity
+        - if <player.inventory.slot[<[value]>].has_flag[rarity]>:
+          - define item   <player.inventory.slot[<[value]>]>
+          - define icon_chr <[item].flag[icon_chr]>
+          - define rarity <[item].flag[rarity]>
+          #in case it's an item with different models per rarity
+          - if <[item].has_flag[rarities.<[rarity]>.icon_chr]>:
+            - define icon_chr <[item].flag[rarities.<[rarity]>.icon_chr]>
+
+          - if <[item].script.name.starts_with[gun_]>:
+            - define font_type guns
+          - else:
+            - define font_type items
+
+          #if the current selected slot is the item, make it the selected one
+          - if <[value]> == <[slot]>:
+            - define rarity_slot   <[<[rarity]>_selected]>
+            - define chr           A<element[0].repeat[<element[3].sub[<[icon_chr].length>]>]><[icon_chr]>
+            - define icon          <&chr[<[chr]>].font[<[font_type]>]>
+            - define item_selected True
+          - else:
+            - define icon          <&chr[<[icon_chr]>].font[<[font_type]>]>
+            - define rarity_slot <[<[rarity]>]>
+
+          - define item_slot <[rarity_slot]><proc[spacing].context[-46]><[icon]><proc[spacing].context[<map[1=3;2=2;3=1;4=3;5=2;6=0].get[<[value]>]||1>]>
+          - define slots <[slots].set[<[item_slot]>].at[<[value]>]>
+
+      #-in case the player is holding nothing (skip the "nothing" slot, or let them select it?)
+      - define slots <[slots].set[<[selected_slot]>].at[<[slot]>]> if:!<[item_selected].exists>
+
+      - define slots_ <[slots].space_separated.color[<color[20,0,0]>]><[keys]>
       - define build_ <[build_toggle].color[68,0,0]><proc[spacing].context[-17]><element[<[wall]> <[floor]> <[stair]> <[pyramid]> <[unselected_slot]>].color[<color[30,0,0]>]>
 
     - else if <[inv_type]> == build:

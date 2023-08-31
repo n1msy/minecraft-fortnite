@@ -42,6 +42,7 @@ dmodels_animate:
         - define host   <[root_entity].flag[emote_host]>
         - define center <[root_entity].location.with_pitch[0].below[1.1]>
 
+        #- flag <[host]> fort.emote_gamemode:<[host].gamemode>
         - flag <[host]> fort.emote:<[animation]>
         - invisible <[host]> true
 
@@ -52,6 +53,7 @@ dmodels_animate:
 
         - flag <[root_entity]> camera:<[cam]>
         - flag <[root_entity]> stand:<[stand]>
+        #- adjust <[host]> gamemode:spectator
         - mount <[host]>|<[cam]>
 
     - flag server dmodels_anim_active.<[root_entity].uuid>:<[root_entity]>
