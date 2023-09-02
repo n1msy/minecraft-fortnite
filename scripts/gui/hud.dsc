@@ -226,7 +226,8 @@ hud_handler:
             - define icon          <&chr[<[icon_chr]>].font[<[font_type]>]>
             - define rarity_slot <[<[rarity]>]>
 
-          - define item_slot <[rarity_slot]><proc[spacing].context[-46]><[icon]><proc[spacing].context[<map[1=3;2=2;3=1;4=3;5=2;6=0].get[<[value]>]||1>]>
+          #<map[1=3;2=2;3=1;4=3;5=2;6=0].get[<[value]>]||1>
+          - define item_slot <[rarity_slot]><proc[spacing].context[-47]><[icon]>
           - define slots <[slots].set[<[item_slot]>].at[<[value]>]>
 
       #-in case the player is holding nothing (skip the "nothing" slot, or let them select it?)

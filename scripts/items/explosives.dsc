@@ -182,6 +182,7 @@ fort_item_grenade:
   flags:
     rarity: common
     chance: 14.4
+    icon_chr: 5
     drop_quantity: 3
     stack_size: 6
     body_damage: 100
@@ -198,5 +199,6 @@ fort_item_impulse_grenade:
     rarity: rare
     #actual chance unknown
     chance: 10
+    icon_chr: 6
     drop_quantity: 3
     stack_size: 9

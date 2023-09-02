@@ -176,6 +176,7 @@ fort_item_bush:
     #i can't find the actual drop chance?
     #replaces other consumables from chests
     chance: 5
+    icon_chr: 7
     drop_quantity: 2
     stack_size: 2
     use_time: 3
@@ -191,6 +192,7 @@ fort_item_bandages:
   flags:
     rarity: uncommon
     chance: 17.6
+    icon_chr: 1
     drop_quantity: 5
     health: 15
     stack_size: 15
@@ -207,6 +209,7 @@ fort_item_medkit:
   flags:
     rarity: uncommon
     chance: 16
+    icon_chr: 2
     drop_quantity: 1
     health: 100
     stack_size: 3
@@ -222,6 +225,7 @@ fort_item_small_shield_potion:
   flags:
     rarity: uncommon
     chance: 17.6
+    icon_chr: 3
     drop_quantity: 3
     shield: 25
     stack_size: 9
@@ -237,6 +241,7 @@ fort_item_shield_potion:
   flags:
     rarity: rare
     chance: 17.6
+    icon_chr: 4
     drop_quantity: 1
     shield: 50
     stack_size: 3
