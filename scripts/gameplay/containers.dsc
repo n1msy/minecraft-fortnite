@@ -247,3 +247,210 @@ fort_chest_handler:
         - spawn TEXT_DISPLAY[text=<[text]>;pivot=center;scale=1,1,1;view_range=0.035;see_through=true] <[loc].above[0.75]> save:ammo_box_text
         - flag <[loc]> fort.ammo_box.text:<entry[ammo_box_text].spawned_entity>
       - flag <[loc]> fort.ammo_box.opened:!
+
+  send_supply_drop:
+
+    - define drop_loc <[data].get[loc].above[2.9]>
+
+    - define size 2
+    - define height 45
+
+    - define start_loc <[drop_loc].above[<[height]>]>
+
+    ## - [ SET SUPPLY DROP LOOT ] ##
+    #only one random factor, the gun
+
+    #75% chance for epic, 25 for legendary
+    - if <util.random_chance[25]>:
+      - define rarity legendary
+    - else:
+      - define rarity epic
+    - define guns <util.scripts.filter[name.starts_with[gun_]].exclude[<script[gun_particle_origin]>].parse[name.as[item]]>
+    - while !<[gun_to_drop].exists>:
+      - foreach <[guns]> as:g:
+        - if <util.random_chance[<[g].flag[rarities.<[rarity]>.chance]>]>:
+          - define gun_to_drop <[g].with[flag=rarity:<[rarity]>]>
+          - foreach stop
+
+    - spawn INTERACTION[height=6;width=2.5] <[start_loc].below[3]> save:hitbox
+    - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=20]>;scale=<[size]>,<[size]>,<[size]>] <[start_loc]> save:supply_drop
+    - define hb <entry[hitbox].spawned_entity>
+    - define sp <entry[supply_drop].spawned_entity>
+
+    - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=21]>;scale=3.25,3.25,3.25] <[drop_loc].below[1.25]> save:circle
+    - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=22]>;scale=2.25,2.25,2.25] <[drop_loc].below[1.76]> save:arrows
+    - define circle <entry[circle].spawned_entity>
+    - define arrows <entry[arrows].spawned_entity>
+
+    - flag <[hb]> fort.supply_drop.hitbox.model:<[sp]>
+    - flag <[hb]> fort.supply_drop.hitbox.health:150
+    - flag <[hb]> fort.supply_drop.hitbox.loot.gun:<[gun_to_drop]>
+
+    - run fort_chest_handler.supply_drop_activate_sfx def:<map[loc=<[drop_loc]>;hitbox=<[hb]>;volume_multiplier=3]>
+
+    - wait 2t
+
+    - adjust <[arrows]> interpolation_start:0
+    - adjust <[arrows]> scale:2.75,2.25,2.75
+    - adjust <[arrows]> interpolation_duration:2s
+
+    - define one_third <[height].div[3]>
+
+    - define points <[start_loc].points_between[<[drop_loc]>].distance[0.1]>
+    #updating each tick so players can see it "animated" even out of render distance
+    - foreach <[points]> as:loc:
+
+      - if !<[sp].is_spawned>:
+        - remove <[hb]>     if:<[hb].is_spawned>
+        - remove <[circle]> if:<[circle].is_spawned>
+        - remove <[arrows]> if:<[arrows].is_spawned>
+        - stop
+
+      - if <[loop_index].mod[20]> == 0:
+        - playsound <[loc].below[3]> sound:BLOCK_BEACON_AMBIENT pitch:1.5 volume:2
+
+      #second check is so smokes stop when the supply drop is 1/3 to the ground
+      - if <[loop_index].mod[5]> == 0 && <[loc].distance[<[start_loc]>]> < <[one_third]>:
+        - run fort_chest_handler.supply_drop_smoke_fx def:<map[loc=<[drop_loc]>]>
+
+      - teleport <[hb]> <[loc].below[3]>
+      - adjust <[sp]> interpolation_start:0
+      - adjust <[sp]> translation:<[loc].sub[<[sp].location>]>
+      - adjust <[sp]> interpolation_duration:1t
+
+      - adjust <[circle]> interpolation_start:0
+      - adjust <[circle]> left_rotation:<quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[loop_index].div[75]>]>]>
+      - adjust <[circle]> interpolation_duration:1t
+
+      - if <[loop_index].mod[40]> == 0:
+        - if <[loop_index].mod[80]> < 40:
+          - adjust <[arrows]> interpolation_start:0
+          - adjust <[arrows]> scale:2.75,2.25,2.75
+          - adjust <[arrows]> interpolation_duration:2s
+        - else:
+          - adjust <[arrows]> interpolation_start:0
+          - adjust <[arrows]> scale:2.25,2.25,2.25
+          - adjust <[arrows]> interpolation_duration:2s
+
+      #instantly take it down
+      - if !<[hb].has_flag[fort.supply_drop.hitbox.health]>:
+        - adjust <[sp]> interpolation_start:0
+        - adjust <[sp]> translation:<[drop_loc].sub[<[sp].location>]>
+        - adjust <[sp]> interpolation_duration:0
+        - teleport <[hb]> <[drop_loc].below[3]>
+        - foreach stop
+
+      - wait 1t
+
+    #so it can't be damaged anymore when landed
+    - flag <[hb]> fort.supply_drop.hitbox.health:!
+
+    - remove <[circle]> if:<[circle].is_spawned>
+    - remove <[arrows]> if:<[arrows].is_spawned>
+
+    - run fort_chest_handler.supply_drop_land_fx def:<map[loc=<[drop_loc]>]>
+
+    - adjust <[hb]> width:1.75
+    - adjust <[hb]> height:1.5
+
+    - foreach <[drop_loc].find_players_within[10]> as:p:
+      - adjust <[p]> stop_sound:minecraft:block.beacon.ambient
+
+    - playsound <[drop_loc]> sound:BLOCK_ANVIL_FALL pitch:0 volume:3
+    - playsound <[drop_loc]> sound:BLOCK_AMETHYST_BLOCK_FALL pitch:0.6 volume:3
+    - playsound <[drop_loc]> sound:BLOCK_BONE_BLOCK_STEP pitch:0.75 volume:3
+    - playsound <[drop_loc]> sound:BLOCK_NETHERITE_BLOCK_FALL pitch:0 volume:3.5
+
+    #-set the text displays
+    - define text "<&7><&l>[<&e><&l>Sneak<&7><&l>] <&f><&l>Search"
+    - spawn TEXT_DISPLAY[text=<[text]>;pivot=center;scale=1,1,1;view_range=0.04;see_through=false] <[hb].location.above[2]> save:text
+    - flag <[hb]> fort.supply_drop.hitbox.text:<entry[text].spawned_entity>
+
+    - wait 1t
+    - run fort_chest_handler.supply_drop_activate_sfx def:<map[loc=<[drop_loc]>;hitbox=<[hb]>]>
+
+  supply_drop_activate_sfx:
+    - define hb <[data].get[hitbox]>
+    - define drop_loc <[data].get[loc]>
+    - define vol_mult <[data].get[volume_multiplier]||1>
+    - repeat 15:
+      - playsound <[drop_loc]> sound:BLOCK_NOTE_BLOCK_XYLOPHONE pitch:1.575 volume:<element[16].sub[<[value]>].div[16].mul[<[vol_mult]>]>
+      - if !<[hb].is_spawned>:
+        - repeat stop
+      - wait 2t
+
+  supply_drop_smoke_fx:
+    - define drop_loc <[data].get[loc]>
+    - define smoke_points <[drop_loc].above[3].random_offset[0.1].points_between[<[drop_loc].above[<util.random.decimal[10].to[15]>].random_offset[1]>]>
+    - foreach <[smoke_points]> as:p:
+      - playeffect effect:REDSTONE offset:<util.random.decimal[0.05].to[0.075].mul[<[loop_index]>].mul[<util.random.decimal[0.5].to[1.5]>].add[0.05]> quantity:20 at:<[p]> visibility:100 special_data:<[loop_index].div[2].add[0.5]>|<list[<color[#33c2ff]>|<color[#1482ff]>].random>
+      - wait 3t
+
+  open_supply_drop:
+  #-used by "after player starts sneaking" event in guns.dsc
+    - define hb <player.eye_location.ray_trace_target[range=2.4;ignore=<player>]>
+
+    - define text_display <[hb].flag[fort.supply_drop.hitbox.text]>
+    - define text         <[text_display].text>
+    - define model        <[hb].flag[fort.supply_drop.hitbox.model]>
+    - define drop_loc     <[hb].location.above[0.5]>
+
+    - while <player.is_online> && <player.is_sneaking> && <[hb]||null> != null && !<[hb].has_flag[fort.supply_drop.hitbox.opened]> && <[text_display].is_spawned>:
+      - define hb <player.eye_location.ray_trace_target[range=2.4;ignore=<player>]||null>
+      - define bar <&chr[8].font[icons].color[<color[<[loop_index]>,0,1]>]>
+      - adjust <[text_display]> text:<[text]><&r><proc[spacing].context[-92]><[bar]><proc[spacing].context[-1]>
+      - if <[loop_index]> == 10:
+        - define open_the_container True
+        - while stop
+      - wait 1t
+    - adjust <[text_display]> text:<[text]>
+    - stop if:<[open_the_container].exists.not>
+
+    - define gun <[hb].flag[fort.supply_drop.hitbox.loot.gun]>
+    - define ammo_type <[gun].flag[ammo_type]>
+    - define ammo_qty  <[gun].flag[mag_size]>
+    - if <item[ammo_<[ammo_type]>].has_flag[drop_quantity]>:
+      - define ammo_qty <item[ammo_<[ammo_type]>].flag[drop_quantity]>
+
+    - remove <[text_display]> if:<[text_display].is_spawned>
+    - remove <[model]> if:<[model].is_spawned>
+    - remove <[hb]> if:<[hb].is_spawned>
+
+    # - [ DROP LOOT ] - #
+
+    - foreach <list[wood|brick|metal]> as:mat:
+      - run fort_pic_handler.drop_mat def:<map[mat=<[mat]>;qty=30;loc=<[drop_loc]>]>
+
+    - run fort_item_handler.drop_item def:<map[item=fort_item_medkit;qty=1;loc=<[drop_loc]>]>
+    - run fort_item_handler.drop_item def:<map[item=fort_item_small_shield_potion;qty=3;loc=<[drop_loc]>]>
+    - run fort_item_handler.drop_item def:<map[item=fort_item_shield_potion;qty=1;loc=<[drop_loc]>]>
+
+    - run fort_gun_handler.drop_gun def:<map[gun=<[gun]>;loc=<[drop_loc]>]>
+    - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[ammo_qty]>;loc=<[drop_loc]>]>
+
+    - run fort_chest_handler.supply_drop_open_fx def:<map[loc=<[drop_loc]>]>
+
+    - playsound <[drop_loc]> sound:ENTITY_FIREWORK_ROCKET_BLAST pitch:1 volume:2.5
+    - wait 4t
+    - playsound <[drop_loc]> sound:ENTITY_FIREWORK_ROCKET_BLAST pitch:0.6 volume:1.5
+    - playsound <[drop_loc]> sound:ENTITY_FIREWORK_ROCKET_TWINKLE pitch:1 volume:1.2
+
+  supply_drop_land_fx:
+  - define drop_loc <[data].get[loc].below[2.8]>
+  - playeffect effect:FLASH offset:0 at:<[drop_loc].below[2.8]>
+  - repeat 5:
+    - playeffect effect:CLOUD offset:0 at:<[drop_loc].points_around_y[radius=<[value].div[2]>;points=<[value].mul[5]>]> visibility:100
+    - wait 1t
+
+  supply_drop_open_fx:
+  - define drop_loc <[data].get[loc].above[0.5]>
+  - playeffect effect:FLASH offset:0 at:<[drop_loc]>
+  - repeat 3 as:radius:
+    - define sphere <list[]>
+    - repeat 18 as:circle_value:
+      - define angle <[circle_value].mul[10]>
+      - define circle <util.list_numbers_to[15].parse_tag[<[drop_loc].add[<location[0,<[radius]>,0].rotate_around_z[<[Parse_Value].to_radians.mul[24]>].rotate_around_x[0].rotate_around_y[<[angle].to_radians>]>]>]>
+      - define sphere <[sphere].include[<[circle]>]>
+
+    - playeffect effect:REDSTONE at:<[sphere]> offset:0.1 quantity:1 visibility:100 special_data:1|<color[#c9c9c9]>
+    - wait 1t

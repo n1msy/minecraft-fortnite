@@ -97,7 +97,7 @@ fort_gun_handler:
       - flag server fort.temp.<[gun_uuid]>.loaded_ammo:<[mag_size]>
 
       - define rarity <[gun].flag[rarity]>
-      - define rarity_line <[rarity].to_titlecase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=#ffaf24].get[<[rarity]>]>]>
+      - define rarity_line <[rarity].to_titlecase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]>
 
       - define stars_line <&f><map[Common=★;Uncommon=★★;Rare=★★★;Epic=★★★★;Legendary=★★★★★].get[<[rarity]>]><n>
 
@@ -150,6 +150,10 @@ fort_gun_handler:
       - if <[look_loc].has_flag[fort.<[container_type]>]> && !<[look_loc].has_flag[fort.chest.<[container_type]>]>:
         - inject fort_chest_handler.open
         - stop
+
+    - if <player.eye_location.ray_trace_target[range=2.4;ignore=<player>].has_flag[fort.supply_drop.hitbox]||false>:
+      - inject fort_chest_handler.open_supply_drop
+      - stop
 
     - if <player.item_in_hand.script.name.starts_with[gun_].not||true>:
       - stop
@@ -375,8 +379,7 @@ fort_gun_handler:
       - if <[target_block].has_flag[build.center]||false>:
         - run build_system_handler.structure_damage def:<map[center=<[target_block].flag[build.center]>;damage=<[structure_damage].div[<[pellets]>]>]>
 
-      - if <[target]> != null && <[target].is_spawned> && <[target].is_living>:
-
+      - if <[target]> != null && <[target].is_spawned>:
         # - [ Damage Falloff ] - #
         #maybe for future: to calculate distances, use the tiles provided in the wiki for distances and convert to tile sizes in mc for 1:1
         - define distance <[target_loc].distance[<[origin]>]>
@@ -415,41 +418,55 @@ fort_gun_handler:
 
         - define damage <[base_damage].div[<[pellets]>].mul[<[damage_falloff]>].round_down>
 
-        #if it's headshot, multiply damage by headshot multiplier
-        - define part_height <[target_loc].round_to[1].y.sub[<[target].location.y>]>
-        - foreach <list[0.7|1.4|1.9]> as:height:
-          - if <[part_height]> >= 0 && <[part_height]> <= <[height]>:
-            - define body_part <list[Legs|Body|Head].get[<[Loop_Index]>]>
-            - foreach stop
-
-        #shot flag is for damage indicator
-        - flag <[target]> fort.shot duration:1t
-        - define damage <[damage].mul[<[headshot_multiplier]>].round_down> if:<[body_part].equals[Head]>
-        - hurt <[damage]> <[target]> source:<player>
-        #total damage to consider all damage combined if multiple pellets are used per shot
-        - if <[pellets]> > 1:
-          #multiple list support in case pellets hit multiple people
-          - define total_damage 0
-          - if <[hit_data.<[target]>.damage].exists>:
-            - define total_damage <[hit_data.<[target]>.damage]>
-          - define hit_data.<[target]>.damage:<[total_damage].add[<[damage]>]>
-          - define hit_data.<[target]>.hit_head:<[body_part].equals[Head]>
-          - define hit_targets:->:<[target]> if:<[hit_targets].contains[<[target]>].not||true>
-        - else:
-          - define color <&f>
-          - playsound <player> sound:ITEM_ARMOR_EQUIP_LEATHER pitch:2
-          - if <[body_part]> == Head:
-            - define color <&e>
-            - playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:1.5
-          - if <[target].armor_bonus||0> > 0:
-            - define color <&b>
-          #-show damage indicator even if it's 0?
-          - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round_down>;entity=<[target]>;color=<[color]>]>
-
+        # - [ LIVING TARGETS ] - #
         - if <[target].is_living>:
+          #if it's headshot, multiply damage by headshot multiplier
+          - define part_height <[target_loc].round_to[1].y.sub[<[target].location.y>]>
+          - foreach <list[0.7|1.4|1.9]> as:height:
+            - if <[part_height]> >= 0 && <[part_height]> <= <[height]>:
+              - define body_part <list[Legs|Body|Head].get[<[Loop_Index]>]>
+              - foreach stop
+
+          #shot flag is for damage indicator
+          - flag <[target]> fort.shot duration:1t
+          - define damage <[damage].mul[<[headshot_multiplier]>].round_down> if:<[body_part].equals[Head]>
+          - hurt <[damage]> <[target]> source:<player>
+          #total damage to consider all damage combined if multiple pellets are used per shot
+          - if <[pellets]> > 1:
+            #multiple list support in case pellets hit multiple people
+            - define total_damage 0
+            - if <[hit_data.<[target]>.damage].exists>:
+              - define total_damage <[hit_data.<[target]>.damage]>
+            - define hit_data.<[target]>.damage:<[total_damage].add[<[damage]>]>
+            - define hit_data.<[target]>.hit_head:<[body_part].equals[Head]>
+            - define hit_targets:->:<[target]> if:<[hit_targets].contains[<[target]>].not||true>
+          - else:
+            - define color <&f>
+            - playsound <player> sound:ITEM_ARMOR_EQUIP_LEATHER pitch:2
+            - if <[body_part]> == Head:
+              - define color <&e>
+              - playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:1.5
+            - if <[target].armor_bonus||0> > 0:
+              - define color <&b>
+            - adjust <[target]> no_damage_duration:0
+
           - adjust <[target]> no_damage_duration:0
 
-        - adjust <player> reset_attack_cooldown
+          #-show damage indicator even if it's 0?
+          - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round_down>;entity=<[target]>;color=<[color]>]>
+          - adjust <player> reset_attack_cooldown
+
+        # - [ SUPPLY DROPS ] - #
+        - else if <[target].has_flag[fort.supply_drop.hitbox.health]>:
+          - define color <&f>
+          - flag <[target]> fort.supply_drop.hitbox.health:-:<[damage]>
+          - if <[target].flag[fort.supply_drop.hitbox.health]> <= 0:
+            - flag <[target]> fort.supply_drop.hitbox.health:!
+
+          #-show damage indicator even if it's 0?
+          - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round_down>;entity=<[target]>;color=<[color]>]>
+          - adjust <player> reset_attack_cooldown
+
 
   custom_shoot:
     grenade_launcher:
@@ -689,14 +706,14 @@ fort_gun_handler:
     - define loc  <[data].get[loc]||null>
     - define loc  <player.location> if:<[loc].equals[null]>
 
+    - define rarity <[gun].flag[rarity]>
+
     - if <[drop]> == null:
+      - define gun <[gun].with[custom_model_data=<[gun].flag[rarities.<[rarity]>.custom_model_data]>]> if:<[gun].flag[rarities.<[rarity]>.custom_model_data].is_truthy>
       - drop <[gun]> <[loc]> save:drop
       - define drop <entry[drop].dropped_entity>
 
-    - define rarity <[gun].flag[rarity]>
-
     - define name   <[gun].display.strip_color>
-    - define rarity <[gun].flag[rarity]>
 
     - define text <&l><[name].to_uppercase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]>
 

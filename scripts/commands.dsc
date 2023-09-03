@@ -8,7 +8,7 @@ fort_commands:
   aliases:
   - fort
   tab completions:
-    1: <list[fill_chests|fill_ammo_boxes]>
+    1: <list[fill_chests|fill_ammo_boxes|supply_drop]>
   script:
   - choose <context.args.first||null>:
     - case chest:
@@ -40,5 +40,10 @@ fort_commands:
         - inject fort_chest_handler.fill_<map[chests=chest;ammo_boxes=ammo_box].get[<[container_type]>]>
 
       - narrate "<&a>All <[type].replace[_].with[ ]> have been filled <&7>(<[containers].size>)<&a>."
+
+    - case supply_drop:
+      - define loc <player.location.with_pitch[0]>
+      - run fort_chest_handler.send_supply_drop def:<map[loc=<[loc]>]>
+      - narrate "<&a>Supply drop sent at <&f><[loc].simple><&a>."
     - default:
       - narrate "<&c>Invalid arg."
