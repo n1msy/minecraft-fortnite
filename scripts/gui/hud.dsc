@@ -207,27 +207,36 @@ hud_handler:
           - define item   <player.inventory.slot[<[value]>]>
           - define icon_chr <[item].flag[icon_chr]>
           - define rarity <[item].flag[rarity]>
+          - define qty    <[item].quantity>
+
           #in case it's an item with different models per rarity
           - if <[item].has_flag[rarities.<[rarity]>.icon_chr]>:
             - define icon_chr <[item].flag[rarities.<[rarity]>.icon_chr]>
 
           - if <[item].script.name.starts_with[gun_]>:
             - define font_type guns
+            - define gun_uuid  <[item].flag[uuid]>
+            - define qty       <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
           - else:
             - define font_type items
 
           #if the current selected slot is the item, make it the selected one
           - if <[value]> == <[slot]>:
+            - define qty_font_type item_qty_selected
             - define rarity_slot   <[<[rarity]>_selected]>
             - define chr           A<element[0].repeat[<element[3].sub[<[icon_chr].length>]>]><[icon_chr]>
             - define icon          <&chr[<[chr]>].font[<[font_type]>]>
             - define item_selected True
           - else:
+            - define qty_font_type item_qty
             - define icon          <&chr[<[icon_chr]>].font[<[font_type]>]>
             - define rarity_slot <[<[rarity]>]>
 
+          - define display_quantity <[qty].font[neg_half_f]><[qty].font[<[qty_font_type]>]><[qty].font[neg_half_c]>
           #<map[1=3;2=2;3=1;4=3;5=2;6=0].get[<[value]>]||1>
-          - define item_slot <[rarity_slot]><proc[spacing].context[-47]><[icon]>
+
+          - define qty_spacing <[qty].is[OR_MORE].than[10].if_true[12].if_false[8]>
+          - define item_slot <[rarity_slot]><proc[spacing].context[-47]><[icon]><proc[spacing].context[-<[qty_spacing]>]><[display_quantity]><proc[spacing].context[<[qty_spacing]>]>
           - define slots <[slots].set[<[item_slot]>].at[<[value]>]>
 
       #-in case the player is holding nothing (skip the "nothing" slot, or let them select it?)
