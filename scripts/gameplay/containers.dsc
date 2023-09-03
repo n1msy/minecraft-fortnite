@@ -332,6 +332,8 @@ fort_chest_handler:
           - adjust <[arrows]> scale:2.25,2.25,2.25
           - adjust <[arrows]> interpolation_duration:2s
 
+      - playeffect effect:REDSTONE offset:0 at:<[drop_loc].above[<[loop_index].mod[20].div[80].sub[2]>].points_around_y[radius=0.75;points=50]> special_data:0.3|<color[#38d1ff]>
+
       #instantly take it down
       - if !<[hb].has_flag[fort.supply_drop.hitbox.health]>:
         - adjust <[sp]> interpolation_start:0
