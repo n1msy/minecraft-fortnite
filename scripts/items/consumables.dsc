@@ -167,7 +167,7 @@ fort_consumable_handler:
 fort_item_bush:
   type: item
   material: gold_nugget
-  display name: <&f><&l>BUSH
+  display name: <&f><&l><element[BUSH].font[item_name]>
   mechanisms:
     custom_model_data: 19
     hides: ALL
@@ -185,7 +185,7 @@ fort_item_bush:
 fort_item_bandages:
   type: item
   material: gold_nugget
-  display name: <&f><&l>BANDAGES
+  display name: <&f><&l><element[BANDAGES].font[item_name]>
   mechanisms:
     custom_model_data: 8
     hides: ALL
@@ -202,7 +202,7 @@ fort_item_bandages:
 fort_item_medkit:
   type: item
   material: gold_nugget
-  display name: <&f><&l>MED KIT
+  display name: <&f><&l><element[MED KIT].font[item_name]>
   mechanisms:
     custom_model_data: 9
     hides: ALL
@@ -218,7 +218,7 @@ fort_item_medkit:
 fort_item_small_shield_potion:
   type: item
   material: gold_nugget
-  display name: <&f><&l>SMALL SHIELD POTION
+  display name: <&f><&l><element[SMALL SHIELD POTION].font[item_name]>
   mechanisms:
     custom_model_data: 11
     hides: ALL
@@ -234,7 +234,7 @@ fort_item_small_shield_potion:
 fort_item_shield_potion:
   type: item
   material: gold_nugget
-  display name: <&f><&l>SHIELD POTION
+  display name: <&f><&l><element[SHIELD POTION].font[item_name]>
   mechanisms:
     custom_model_data: 12
     hides: ALL

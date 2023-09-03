@@ -944,7 +944,7 @@ ammo_rockets:
 gun_pump_shotgun:
   type: item
   material: wooden_hoe
-  display name: <&f><&l>PUMP SHOTGUN
+  display name: <&f><&l><element[PUMP SHOTGUN].font[item_name]>
   mechanisms:
     custom_model_data: 1
     hides: ALL
@@ -1021,7 +1021,7 @@ gun_pump_shotgun:
 gun_tactical_shotgun:
   type: item
   material: wooden_hoe
-  display name: <&f><&l>TACTICAL SHOTGUN
+  display name: <&f><&l><element[TACTICAL SHOTGUN].font[item_name]>
   mechanisms:
     custom_model_data: 23
     hides: ALL
@@ -1102,7 +1102,7 @@ gun_tactical_shotgun:
 gun_assault_rifle:
   type: item
   material: wooden_hoe
-  display name: <&f><&l>ASSAULT RIFLE
+  display name: <&f><&l><element[ASSAULT RIFLE].font[item_name]>
   mechanisms:
     custom_model_data: 3
     hides: ALL
@@ -1167,7 +1167,7 @@ gun_assault_rifle:
 gun_burst_assault_rifle:
   type: item
   material: wooden_hoe
-  display name: <&f><&l>BURST ASSAULT RIFLE
+  display name: <&f><&l><element[BURST ASSAULT RIFLE].font[item_name]>
   mechanisms:
     custom_model_data: 26
     hides: ALL
@@ -1234,7 +1234,7 @@ gun_burst_assault_rifle:
 gun_tactical_smg:
   type: item
   material: wooden_hoe
-  display name: <&f><&l>TACTICAL SMG
+  display name: <&f><&l><element[TACTICAL SMG].font[item_name]>
   mechanisms:
     custom_model_data: 7
     hides: ALL
@@ -1297,7 +1297,7 @@ gun_tactical_smg:
 gun_smg:
   type: item
   material: wooden_hoe
-  display name: <&f><&l>SMG
+  display name: <&f><&l><element[SMG].font[item_name]>
   mechanisms:
     custom_model_data: 9
     hides: ALL
@@ -1363,7 +1363,7 @@ gun_smg:
 gun_bolt_action_sniper_rifle:
   type: item
   material: wooden_hoe
-  display name: <&f><&l>BOLT-ACTION SNIPER RIFLE
+  display name: <&f><&l><element[BOLT-ACTION SNIPER RIFLE].font[item_name]>
   mechanisms:
     custom_model_data: 11
     hides: ALL
@@ -1428,7 +1428,7 @@ gun_bolt_action_sniper_rifle:
 gun_revolver:
   type: item
   material: wooden_hoe
-  display name: <&f><&l>REVOLVER
+  display name: <&f><&l><element[REVOLVER].font[item_name]>
   mechanisms:
     custom_model_data: 12
     hides: ALL
@@ -1491,7 +1491,7 @@ gun_revolver:
 gun_pistol:
   type: item
   material: wooden_hoe
-  display name: <&f><&l>PISTOL
+  display name: <&f><&l><element[PISTOL].font[item_name]>
   mechanisms:
     custom_model_data: 16
     hides: ALL
@@ -1553,7 +1553,7 @@ gun_pistol:
 gun_grenade_launcher:
   type: item
   material: wooden_hoe
-  display name: <&f><&l>GRENADE LAUNCHER
+  display name: <&f><&l><element[GRENADE LAUNCHER].font[item_name]>
   mechanisms:
     custom_model_data: 18
     hides: ALL
@@ -1611,7 +1611,7 @@ gun_grenade_launcher:
 gun_rocket_launcher:
   type: item
   material: wooden_hoe
-  display name: <&f><&l>ROCKET LAUNCHER
+  display name: <&f><&l><element[ROCKET LAUNCHER].font[item_name]>
   mechanisms:
     custom_model_data: 20
     hides: ALL

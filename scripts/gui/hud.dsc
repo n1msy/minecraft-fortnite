@@ -161,6 +161,10 @@ hud_handler:
     - define slot <[new_slot]>
 
     - define inv_type <player.flag[fort.inv_type]||inv>
+    - if <[inv_type]> == inv:
+      - define inv_items <player.inventory.list_contents>
+    - else:
+      - define inv_items <player.flag[build.last_inventory]>
 
     - define common              <&chr[0001].font[rarities]>
     - define common_selected     <&chr[A001].font[rarities]>
@@ -183,11 +187,13 @@ hud_handler:
 
     - define backdrop <&chr[A000].font[buttons]>
 
+    - inject hud_handler.fill_slots
+
+    ## [ Inventory Mode ] ##
     - if <[inv_type]> == inv:
       - if <[new_slot]> > 6:
         - define slot <[old_slot].is_more_than[3].if_true[1].if_false[6]>
         - adjust <player> item_slot:<[slot]>
-      - define slots  <[unselected_slot].repeat_as_list[6]>
       - define backdrop <&chr[A000].font[buttons]>
       - define keys:!
       - define count 6
@@ -201,56 +207,13 @@ hud_handler:
       - define k <&keybind[key.swapOffhand]>
       - define build_toggle <[backdrop]><proc[spacing].context[-9]><[k].font[neg_half_f]><[k].font[visitor]><[k].font[neg_half_c]><proc[spacing].context[9]>
 
-      - repeat 6:
-        #put in the item with the right rarity
-        - if <player.inventory.slot[<[value]>].has_flag[rarity]>:
-          - define item   <player.inventory.slot[<[value]>]>
-          - define icon_chr <[item].flag[icon_chr]>
-          - define rarity <[item].flag[rarity]>
-          - define qty    <[item].quantity>
-          - define s_name <[item].script.name>
-
-          #in case it's an item with different models per rarity
-          - if <[item].has_flag[rarities.<[rarity]>.icon_chr]>:
-            - define icon_chr <[item].flag[rarities.<[rarity]>.icon_chr]>
-
-          - if <[s_name].starts_with[gun_]>:
-            - define font_type guns
-            - define gun_uuid  <[item].flag[uuid]>
-            - define qty       <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
-          - else if <[s_name].starts_with[fort_pickaxe_]>:
-            - define font_type pickaxes
-          - else:
-            - define font_type items
-
-          #if the current selected slot is the item, make it the selected one
-          - if <[value]> == <[slot]>:
-            - define qty_font_type item_qty_selected
-            - define rarity_slot   <[<[rarity]>_selected]>
-            - define chr           A<element[0].repeat[<element[3].sub[<[icon_chr].length>]>]><[icon_chr]>
-            - define icon          <&chr[<[chr]>].font[<[font_type]>]>
-            - define item_selected True
-          - else:
-            - define qty_font_type item_qty
-            - define icon          <&chr[<[icon_chr]>].font[<[font_type]>]>
-            - define rarity_slot <[<[rarity]>]>
-
-          - define display_quantity <[qty].font[neg_half_f]><[qty].font[<[qty_font_type]>]><[qty].font[neg_half_c]>
-          - if <[font_type]> == pickaxes:
-            - define display_quantity <empty>
-
-          #<map[1=3;2=2;3=1;4=3;5=2;6=0].get[<[value]>]||1>
-
-          - define qty_spacing <[qty].is[OR_MORE].than[10].if_true[12].if_false[8]>
-          - define item_slot <[rarity_slot]><proc[spacing].context[-47]><[icon]><proc[spacing].context[-<[qty_spacing]>]><[display_quantity]><proc[spacing].context[<[qty_spacing]>]>
-          - define slots <[slots].set[<[item_slot]>].at[<[value]>]>
-
       #-in case the player is holding nothing (skip the "nothing" slot, or let them select it?)
       - define slots <[slots].set[<[selected_slot]>].at[<[slot]>]> if:!<[item_selected].exists>
 
       - define slots_ <[slots].space_separated.color[<color[20,0,0]>]><[keys]>
       - define build_ <[build_toggle].color[68,0,0]><proc[spacing].context[-17]><element[<[wall]> <[floor]> <[stair]> <[pyramid]> <[unselected_slot]>].color[<color[30,0,0]>]>
 
+    ## [ Build Mode ] ##
     - else if <[inv_type]> == build:
       - if <[new_slot]> > 5:
         - define slot <[old_slot].is_more_than[3].if_true[1].if_false[5]>
@@ -275,7 +238,7 @@ hud_handler:
       - define inv_toggle   <element[<[backdrop]><proc[spacing].context[-9]><[k].font[neg_half_f]><[k].font[visitor]><[k].font[neg_half_c]><proc[spacing].context[9]>].color[70,0,0]>
 
       - define build_         <[build_slots].space_separated.color[<color[30,0,0]>]><[keys]>
-      - define slots_         <[inv_toggle]><proc[spacing].context[-17]><[unselected_slot].repeat_as_list[6].space_separated.color[<color[20,0,0]>]>
+      - define slots_         <[inv_toggle]><proc[spacing].context[-17]><[slots].space_separated.color[<color[20,0,0]>]>
 
       #being handled in build_toggle now
       #trap
@@ -288,3 +251,52 @@ hud_handler:
         #- give <item[gold_nugget].with[custom_model_data=10]> slot:<[slot]>
 
     #- sidebar set_line scores:8|9 values:<[slots_]>|<[build_]>
+
+  fill_slots:
+    - define slots <[unselected_slot].repeat_as_list[6]>
+    - repeat 6:
+      #in case there's nothing afterwards
+      - if <[inv_items].get[<[value]>]||null> == null:
+        - repeat stop
+      #put in the item with the right rarity
+      - if <[inv_items].get[<[value]>].has_flag[rarity]>:
+        - define item   <[inv_items].get[<[value]>]>
+        - define icon_chr <[item].flag[icon_chr]>
+        - define rarity <[item].flag[rarity]>
+        - define qty    <[item].quantity>
+        - define s_name <[item].script.name>
+
+        #in case it's an item with different models per rarity
+        - if <[item].has_flag[rarities.<[rarity]>.icon_chr]>:
+          - define icon_chr <[item].flag[rarities.<[rarity]>.icon_chr]>
+
+        - if <[s_name].starts_with[gun_]>:
+          - define font_type guns
+          - define gun_uuid  <[item].flag[uuid]>
+          - define qty       <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
+        - else if <[s_name].starts_with[fort_pickaxe_]>:
+          - define font_type pickaxes
+        - else:
+          - define font_type items
+
+        #if the current selected slot is the item, make it the selected one
+        - if <[value]> == <[slot]> && <[inv_type]> == inv:
+          - define qty_font_type item_qty_selected
+          - define rarity_slot   <[<[rarity]>_selected]>
+          - define chr           A<element[0].repeat[<element[3].sub[<[icon_chr].length>]>]><[icon_chr]>
+          - define icon          <&chr[<[chr]>].font[<[font_type]>]>
+          - define item_selected True
+        - else:
+          - define qty_font_type item_qty
+          - define icon          <&chr[<[icon_chr]>].font[<[font_type]>]>
+          - define rarity_slot <[<[rarity]>]>
+
+        - define display_quantity <[qty].font[neg_half_f]><[qty].font[<[qty_font_type]>]><[qty].font[neg_half_c]>
+        - if <[font_type]> == pickaxes:
+          - define display_quantity <empty>
+
+        #<map[1=3;2=2;3=1;4=3;5=2;6=0].get[<[value]>]||1>
+
+        - define qty_spacing <[qty].is[OR_MORE].than[10].if_true[12].if_false[8]>
+        - define item_slot <[rarity_slot]><proc[spacing].context[-47]><[icon]><proc[spacing].context[-<[qty_spacing]>]><[display_quantity]><proc[spacing].context[<[qty_spacing]>]>
+        - define slots <[slots].set[<[item_slot]>].at[<[value]>]>
