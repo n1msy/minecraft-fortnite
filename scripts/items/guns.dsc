@@ -420,6 +420,7 @@ fort_gun_handler:
 
         # - [ LIVING TARGETS ] - #
         - if <[target].is_living>:
+
           #if it's headshot, multiply damage by headshot multiplier
           - define part_height <[target_loc].round_to[1].y.sub[<[target].location.y>]>
           - foreach <list[0.7|1.4|1.9]> as:height:

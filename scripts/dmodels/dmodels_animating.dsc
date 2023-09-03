@@ -43,7 +43,7 @@ dmodels_animate:
         - define center <[root_entity].location.with_pitch[0].below[1.1]>
 
         #- flag <[host]> fort.emote_gamemode:<[host].gamemode>
-        - flag <[host]> fort.emote:<[animation]>
+        - flag <[host]> fort.emote.animation:<[animation]>
         - invisible <[host]> true
 
         - spawn ARMOR_STAND[gravity=false;collidable=false;invulnerable=true;visible=false] <[center].backward_flat[3].with_pitch[20]> save:cam

@@ -102,7 +102,8 @@ hud_handler:
 
 
     after player scrolls their hotbar:
-    #- stop if:<player.world.name.equals[fortnite_map].not>
+    ##########REMOVE THIS LINE
+    - stop
     - define new_slot <context.new_slot>
     - define old_slot <context.previous_slot>
 
