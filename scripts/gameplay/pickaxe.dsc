@@ -1,4 +1,4 @@
-fort_pic:
+fort_pickaxe_default:
   type: item
   material: netherite_pickaxe
   display name: <&f><&l>PICKAXE
@@ -7,6 +7,9 @@ fort_pic:
   mechanisms:
     custom_model_data: 1
     hides: ALL
+  flags:
+    rarity: common
+    icon_chr: 1
 
 fort_pic_handler:
   type: world

@@ -208,15 +208,18 @@ hud_handler:
           - define icon_chr <[item].flag[icon_chr]>
           - define rarity <[item].flag[rarity]>
           - define qty    <[item].quantity>
+          - define s_name <[item].script.name>
 
           #in case it's an item with different models per rarity
           - if <[item].has_flag[rarities.<[rarity]>.icon_chr]>:
             - define icon_chr <[item].flag[rarities.<[rarity]>.icon_chr]>
 
-          - if <[item].script.name.starts_with[gun_]>:
+          - if <[s_name].starts_with[gun_]>:
             - define font_type guns
             - define gun_uuid  <[item].flag[uuid]>
             - define qty       <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
+          - else if <[s_name].starts_with[fort_pickaxe_]>:
+            - define font_type pickaxes
           - else:
             - define font_type items
 
@@ -233,6 +236,9 @@ hud_handler:
             - define rarity_slot <[<[rarity]>]>
 
           - define display_quantity <[qty].font[neg_half_f]><[qty].font[<[qty_font_type]>]><[qty].font[neg_half_c]>
+          - if <[font_type]> == pickaxes:
+            - define display_quantity <empty>
+
           #<map[1=3;2=2;3=1;4=3;5=2;6=0].get[<[value]>]||1>
 
           - define qty_spacing <[qty].is[OR_MORE].than[10].if_true[12].if_false[8]>
