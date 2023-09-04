@@ -72,6 +72,11 @@ dmodels_move_to_frame:
 
     #second check is if the player cancelled the emote
     - if <[timespot]> > <[animation_data.length]> || <[root_entity].has_flag[emote_host]> && !<[root_entity].flag[emote_host].has_flag[fort.emote]>:
+        #-stop the music
+        - if <[root_entity].has_flag[emote_host]>:
+            - define sound <[root_entity].flag[emote_sound]>
+            - foreach <[root_entity].location.find_players_within[10]> as:p:
+                - adjust <[p]> stop_sound:<[sound]>
         - choose <[animation_data.loop]>:
             - case loop:
                 - define timespot <[timespot].mod[<[animation_data.length]>]>
@@ -132,7 +137,7 @@ dmodels_move_to_frame:
                             - define data <proc[dmodels_catmullrom_proc].context[<[p0]>|<[p1]>|<[p2]>|<[p3]>|<[time_percent]>]>
                     - case linear:
                         - if <[channel]> == rotation:
-                            - narrate before:<[before_frame.data]>/after:<[after_frame.data]>/time_percent:<[time_percent]>
+                            #- narrate before:<[before_frame.data]>/after:<[after_frame.data]>/time_percent:<[time_percent]>
                             - define data <[before_frame.data].as[quaternion].slerp[end=<[after_frame.data]>;amount=<[time_percent]>]>
                         - else:
                             - define data <[after_frame.data].as[location].sub[<[before_frame.data]>].mul[<[time_percent]>].add[<[before_frame.data]>]>

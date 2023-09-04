@@ -179,17 +179,20 @@ dmodels_reset_model_position:
     #-Third person viewer (removal)
     - if <[root_entity].has_flag[emote_host]> && <[root_entity].has_flag[camera]>:
         - define host  <[root_entity].flag[emote_host]>
+        - define hb    <[root_entity].flag[emote_hitbox]>
         - define cam   <[root_entity].flag[camera]>
         - define stand <[root_entity].flag[stand]>
 
         - teleport <[host]> <[center]>
         - invisible <[host]> false if:<[host].is_online>
+        - fakeequip <[host]> for:<server.online_players> reset if:<[host].is_online>
         #- adjust <[host]> gamemode:<[host].flag[fort.emote_gamemode]>
 
         #- flag <[host]> fort.emote_gamemode:!
         - flag <[host]> fort.emote:!
 
-        - remove <[cam]> if:<[cam].is_spawned>
+        - remove <[hb]>    if:<[hb].is_spawned>
+        - remove <[cam]>   if:<[cam].is_spawned>
         - remove <[stand]> if:<[stand].is_spawned>
         - run dmodels_delete def.root_entity:<[root_entity]>
 

@@ -229,6 +229,12 @@ fort_gun_handler:
     - if <[gun].has_flag[sniper]> && <player.has_flag[fort.gun_scoped]>:
       - inject fort_gun_handler.reset_sniper_scope
 
+    #cancel the emote if they're emoting
+    - if <player.has_flag[fort.emote]>:
+      - flag player fort.emote:!
+      #wait so the player shoots from where they were emoting and not spectating
+      - wait 1t
+
     - run fort_gun_handler.shoot def:<map[gun=<[gun]>]>
 
   reset_sniper_scope:
@@ -419,7 +425,7 @@ fort_gun_handler:
         - define damage <[base_damage].div[<[pellets]>].mul[<[damage_falloff]>].round_down>
 
         # - [ LIVING TARGETS ] - #
-        - if <[target].is_living>:
+        - if <[target].is_living> || <[target].has_flag[emote.hitbox.host]>:
 
           #if it's headshot, multiply damage by headshot multiplier
           - define part_height <[target_loc].round_to[1].y.sub[<[target].location.y>]>
@@ -427,6 +433,11 @@ fort_gun_handler:
             - if <[part_height]> >= 0 && <[part_height]> <= <[height]>:
               - define body_part <list[Legs|Body|Head].get[<[Loop_Index]>]>
               - foreach stop
+
+          #-should it automatically cancel the emote animation when hit?
+          - if <[target].has_flag[emote.hitbox.host]>:
+            - define target_hitbox <[target]>
+            - define target        <[target].flag[emote.hitbox.host]>
 
           #shot flag is for damage indicator
           - flag <[target]> fort.shot duration:1t
@@ -454,7 +465,7 @@ fort_gun_handler:
           - adjust <[target]> no_damage_duration:0
 
           #-show damage indicator even if it's 0?
-          - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round_down>;entity=<[target]>;color=<[color]>]>
+          - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round_down>;entity=<[target_hitbox].if_null[<[target]>]>;color=<[color]>]>
           - adjust <player> reset_attack_cooldown
 
         # - [ SUPPLY DROPS ] - #

@@ -129,6 +129,11 @@ fort_explosive_handler:
       - run build_system_handler.structure_damage def:<map[center=<[center]>;damage=<[structure_damage]>]>
 
     - define nearby_entities <[grenade_loc].find_entities.within[<[radius]>]>
+    - if <[nearby_entities].filter[entity_type.equals[interaction]].filter[has_flag[emote.hitbox.host]].any>:
+      - foreach <[nearby_entities].filter[entity_type.equals[interaction]].filter[has_flag[emote.hitbox.host]]> as:hb:
+        #deduplicating in case the player was already in the list
+        - define nearby_entities <[nearby_entities].include[<[hb].flag[emote.hitbox.host]>].deduplicate>
+
     - hurt <[body_damage].div[5]> <[nearby_entities]> source:<player>
 
   explosion_fx:

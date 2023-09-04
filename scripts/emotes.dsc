@@ -21,29 +21,43 @@ fort_emote_handler:
         - narrate "<&[error]>Emote spawning failed?"
         - stop
 
+    #"remove" everything for their hands
+    - fakeequip <player> for:<server.online_players> hand:air duration:10s
+
     #- run dmodels_set_yaw def.root_entity:<[spawned]> def.yaw:<player.location.yaw>
     - run dmodels_set_scale def.root_entity:<[spawned]> def.scale:1.87,1.87,1.87
+
+    - spawn INTERACTION[height=2;width=1] <player.location> save:hitbox
+    - define hb <entry[hitbox].spawned_entity>
+    - flag <[hb]> emote.hitbox.host:<player>
 
     - flag player fort.emote.sound:<[sound]>
     - flag player spawned_dmodel_emotes:<[spawned]>
     - flag <[spawned]> emote_host:<player>
+    - flag <[spawned]> emote_sound:<[sound]>
+    - flag <[spawned]> emote_hitbox:<[hb]>
     - run dmodels_animate def.root_entity:<[spawned]> def.animation:<[emote]>
+
+    on player clicks block flagged:fort.emote:
+    - flag player fort.emote:!
 
     #this flag is added in dmodels_animating.dsc for the third person viewer
     #this event also fires when the player goes offline (but doesnt work?)
     on player exits vehicle flagged:fort.emote:
-    - foreach <player.location.find_players_within[10]> as:p:
-      - adjust <[p]> stop_sound:<player.flag[fort.emote.sound]>
     - flag player fort.emote:!
 
     on player quits flagged:fort.emote:
-    - foreach <player.location.find_players_within[10]> as:p:
-      - adjust <[p]> stop_sound:<player.flag[fort.emote.sound]>
     - invisible <player> false
+    - fakeequip <player> for:<server.online_players> reset
     - if <player.has_flag[spawned_dmodel_emotes]>:
       - define model <player.flag[spawned_dmodel_emotes]>
       - define cam   <[model].flag[camera]>
       - define stand <[model].flag[stand]>
-      - remove <[cam]> if:<[cam].is_spawned>
+      - define hb    <[model].flag[emote_hitbox]>
+      - remove <[cam]>   if:<[cam].is_spawned>
       - remove <[stand]> if:<[stand].is_spawned>
+      - remove <[hb]>    if:<[hb].is_spawned>
+    - flag player fort.emote:!
+
+    on player death flagged:fort.emote:
     - flag player fort.emote:!
