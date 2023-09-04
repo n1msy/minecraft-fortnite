@@ -267,8 +267,14 @@ fort_chest_handler:
       - define rarity epic
     - define guns <util.scripts.filter[name.starts_with[gun_]].exclude[<script[gun_particle_origin]>].parse[name.as[item]]>
     - while !<[gun_to_drop].exists>:
+      - define cycles <[loop_index]>
       - foreach <[guns]> as:g:
         - if <util.random_chance[<[g].flag[rarities.<[rarity]>.chance]>]>:
+          #just because revolvers and pistols have such a high spawn rate
+          - narrate <[g].script.name.after[gun_]>/<[cycles]>
+          - if <list[revolver|pistol].contains[<[g].script.name.after[gun_]>]> && <[cycles]> <= 30:
+            - narrate nexted
+            - foreach next
           - define gun_to_drop <[g].with[flag=rarity:<[rarity]>]>
           - foreach stop
 
