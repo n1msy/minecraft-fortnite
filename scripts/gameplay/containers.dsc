@@ -271,7 +271,6 @@ fort_chest_handler:
       - foreach <[guns]> as:g:
         - if <util.random_chance[<[g].flag[rarities.<[rarity]>.chance]>]>:
           #just because revolvers and pistols have such a high spawn rate
-          - narrate <[g].script.name.after[gun_]>/<[cycles]>
           - if <list[revolver|pistol].contains[<[g].script.name.after[gun_]>]> && <[cycles]> <= 30:
             - narrate nexted
             - foreach next
