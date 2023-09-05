@@ -1131,7 +1131,7 @@ gun_tactical_shotgun:
 gun_assault_rifle:
   type: item
   material: wooden_hoe
-  display name: <&chr[1].font[item_name]><&chr[1].font[item_name]><&f><&l><element[ASSAULT RIFLE].font[item_name]>
+  display name: <&chr[1].font[item_name]><&f><&l><element[ASSAULT RIFLE].font[item_name]>
   mechanisms:
     custom_model_data: 3
     hides: ALL

@@ -100,10 +100,10 @@ hud_handler:
   debug: false
   events:
 
-
     after player scrolls their hotbar:
     ##########REMOVE THIS LINE
-    - stop
+    - if <player.name> != Nimsy:
+      - stop
     - define new_slot <context.new_slot>
     - define old_slot <context.previous_slot>
 

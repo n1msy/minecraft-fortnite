@@ -96,6 +96,8 @@ fort_item_handler:
 
   item_text:
     - define text <[data].get[text]>
+    #remove the control pixel
+    - define text <[text].replace_text[<[text].strip_color.to_list.first>].with[<empty>]>
     - define drop <[data].get[drop]>
 
     - choose <[drop].item.script.name.after[fort_item_]>:

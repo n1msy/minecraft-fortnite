@@ -58,6 +58,3 @@ fort_emote_handler:
       - remove <[stand]> if:<[stand].is_spawned>
       - remove <[hb]>    if:<[hb].is_spawned>
     - flag player fort.emote:!
-
-    on player death flagged:fort.emote:
-    - flag player fort.emote:!
