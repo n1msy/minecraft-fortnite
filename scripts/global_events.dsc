@@ -146,6 +146,11 @@ fort_global_handler:
       - determine passively cancelled
     - if <list[2|3|4|5].contains_any[<context.slots>]> && <context.clicked_inventory.inventory_type> == CRAFTING:
       - determine passively cancelled
+    #remove/re-add rarity bg
+    #if they're clicking WITH a fort item or ON one, update the rarity
+    - if <context.item.has_flag[rarity]>:
+      - wait 0.5t
+      - inject update_hud
 
     on player clicks in inventory action:PLACE_SOME:
     - determine cancelled
