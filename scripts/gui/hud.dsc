@@ -1,15 +1,8 @@
-
-###use shaders for health bar instead of repeating values (input the health in r values)
-
 #-basically everything that's not the map
 update_hud:
   type: task
   debug: false
   script:
-
-
-  ###################################################################REMOVE THIS
-  #- stop
 
   #falling icon turns to clock icon after bus is done dropping
 
@@ -99,6 +92,15 @@ hud_handler:
   type: world
   debug: false
   events:
+
+    #-INVENTORY LOCKS ADJUSTED IN "global_events.dsc"
+    #only let players change item locations within the 2-6 slots
+
+    after player picks up item:
+    - if <player.name> != Nimsy:
+      - stop
+
+    - inject update_hud
 
     after player scrolls their hotbar:
     ##########REMOVE THIS LINE
@@ -241,23 +243,16 @@ hud_handler:
       - define build_         <[build_slots].space_separated.color[<color[30,0,0]>]><[keys]>
       - define slots_         <[inv_toggle]><proc[spacing].context[-17]><[slots].space_separated.color[<color[20,0,0]>]>
 
-      #being handled in build_toggle now
-      #trap
-      #- if <[slot]> == 5:
-        #- equip offhand:air hand:air
-      #- else:
-        #- inventory clear
-        #- equip offhand:<item[paper].with[custom_model_data=<[slot].add[3]>]>
-        #slot hand changes, so give it to the next slot
-        #- give <item[gold_nugget].with[custom_model_data=10]> slot:<[slot]>
-
-    #- sidebar set_line scores:8|9 values:<[slots_]>|<[build_]>
 
   fill_slots:
     - define slots <[unselected_slot].repeat_as_list[6]>
+    - define rarity_list <list[common|uncommon|rare|epic|legendary]>
+    - define tooltip_remover <list[<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|                                                                                                                                                                                                                                                                                                                                                                                                                           ]>
+
     - repeat 6:
       #in case there's nothing afterwards
       - if <[inv_items].get[<[value]>]||null> == null:
+        #set the rarity slot to nothing
         - repeat stop
       #put in the item with the right rarity
       - if <[inv_items].get[<[value]>].has_flag[rarity]>:
@@ -266,6 +261,11 @@ hud_handler:
         - define rarity <[item].flag[rarity]>
         - define qty    <[item].quantity>
         - define s_name <[item].script.name>
+
+        ## [ Player Inventory Slots ] ##
+        #set the rarites to each item slot
+        - define rarity_number <[rarity_list].find[<[rarity]>]>
+        - inventory set o:<item[paper].with[lore=<[tooltip_remover]>;custom_model_data=<[rarity_number].add[19]>]> slot:<[value].add[27]>
 
         #in case it's an item with different models per rarity
         - if <[item].has_flag[rarities.<[rarity]>.icon_chr]>:
@@ -301,3 +301,6 @@ hud_handler:
         - define qty_spacing <[qty].is[OR_MORE].than[10].if_true[12].if_false[8]>
         - define item_slot <[rarity_slot]><proc[spacing].context[-47]><[icon]><proc[spacing].context[-<[qty_spacing]>]><[display_quantity]><proc[spacing].context[<[qty_spacing]>]>
         - define slots <[slots].set[<[item_slot]>].at[<[value]>]>
+      - else:
+        #remove the rarity slot
+        - inventory set o:air slot:<[value].add[27]>

@@ -3,6 +3,9 @@ fort_emote_handler:
   debug: false
   events:
     on player clicks in inventory slot:2|3|4|5:
+    - if <context.clicked_inventory.inventory_type> != CRAFTING:
+      - stop
+    - determine passively cancelled
     - define emote <map[2=default;3=none;4=none;5=none].get[<context.slot>]>
 
     #second check is for if they're already emoting

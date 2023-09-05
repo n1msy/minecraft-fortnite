@@ -92,7 +92,12 @@ fort_item_handler:
     - if <[e].has_flag[text_display]>:
       - remove <[e].flag[text_display]>
     - remove <[e]>
-    - give <[i].with[quantity=<[add_qty]>]> slot:<[slot]>
+
+    - define rarity <[i].flag[rarity]>
+    - define rarity_line <[rarity].to_titlecase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]>
+    - define lore <list[<[rarity_line]>]>
+
+    - give <[i].with[quantity=<[add_qty]>;lore=<[lore]>]> slot:<[slot]>
 
   item_text:
     - define text <[data].get[text]>
