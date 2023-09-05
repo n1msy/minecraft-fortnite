@@ -302,7 +302,7 @@ fort_global_handler:
     - define custom_gui <&f><proc[spacing].context[-8]><&chr[0007].font[icons]>
     - define title "<[custom_gui]><proc[spacing].context[-119]><&f><[icon]> <&7><[qty]><&f>/<[total]>"
     - define blank     <item[paper].with[custom_model_data=17]>
-    - define drop      <[blank].with[flag=action:drop;display=<&f>Drop <&b><player.flag[fort.drop_menu.qty]||0> <&f><[name]> <[icon]><&f> ?;lore=<list[<n><&9><&l>Left-Click <&f>to drop.|<&c><&l>Right-Click <&f>to drop cancel.]>]>
+    - define drop      <[blank].with[flag=action:drop;display=<&f>Drop <&b><player.flag[fort.drop_menu.qty]||0> <&f><[name]> <[icon]><&f> ?;lore=<list[<n><&9><&l>Left-Click <&f>to drop.|<&c><&l>Right-Click <&f>to cancel drop.]>]>
     - define min       <[blank].with[flag=action:min;display=<&c><&l>Minimum;lore=<&e>Click to set.]>
     - define less_1    <[blank].with[flag=action:-1;display=<&c><&l>-1;lore=<&e>Click to subtract.]>
     - define less_10   <[blank].with[flag=action:-10;display=<&c><&l>-10;lore=<&e>Click to subtract.]>

@@ -180,7 +180,7 @@ fort_explosive_handler:
 fort_item_grenade:
   type: item
   material: gold_nugget
-  display name: <&f><&l><element[GRENADE].font[item_name]>
+  display name: <&chr[1].font[item_name]><&f><&l><element[GRENADE].font[item_name]>
   mechanisms:
     custom_model_data: 6
     hides: ALL
@@ -196,7 +196,7 @@ fort_item_grenade:
 fort_item_impulse_grenade:
   type: item
   material: gold_nugget
-  display name: <&f><&l><element[IMPULSE GRENADE].font[item_name]>
+  display name: <&chr[1].font[item_name]><&f><&l><element[IMPULSE GRENADE].font[item_name]>
   mechanisms:
     custom_model_data: 7
     hides: ALL
