@@ -65,14 +65,17 @@ update_hud:
   - define fall_icon  <&chr[0003].font[icons]>
   - define storm_icon <&chr[0005].font[icons]>
   - define clock_icon <&chr[0004].font[icons]>
-  - define time       <element[0:00].font[hud_text]>
+  - define time       <element[-].font[hud_text]>
+  ##- define time       <element[0:00].font[hud_text]>
   - define time_      <element[<[clock_icon]> <[time]>].color[<color[50,0,0]>]>
 
   - define alive_icon <&chr[0002].font[icons]>
-  - define alive      <element[100].font[hud_text]>
+  - define alive      <element[-].font[hud_text]>
+  ##- define alive      <element[100].font[hud_text]>
   - define alive_     <element[<[alive_icon]> <[alive]>].color[<color[51,0,0]>]>
 
-  - define kills      <element[0].font[hud_text]>
+  - define kills      <element[-].font[hud_text]>
+  ##- define kills      <element[0].font[hud_text]>
   - define kills_icon <&chr[0001].font[icons]>
   - define kills_     <element[<[kills_icon]> <[kills]>].color[<color[52,0,0]>]>
 

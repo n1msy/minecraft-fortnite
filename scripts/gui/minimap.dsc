@@ -16,6 +16,10 @@ minimap:
 
   - define oldRotation <player.location.yaw.div[360].mul[1024].round>
 
+
+  #this chooses which image to use for minimap
+  - define in_game <player.world.equals[nimnite_map]>
+
   - while <player.is_online> && <player.has_flag[minimap]>:
 
 
@@ -88,6 +92,7 @@ minimap:
 
     - define whole_map <[tiles].unseparated>
 
+    ## - [ COMPASS ] - ##
     # compass display
     - define curRotation     <player.location.yaw.div[360].mul[1024].round_down>
     - define gameTime        <player.world.duration_since_created.in_ticks.mod[24000].mod[4]>

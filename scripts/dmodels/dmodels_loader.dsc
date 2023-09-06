@@ -3,6 +3,7 @@
 # Refer to the header of "dmodels_main.dsc" for more information.
 ###########################
 
+##MAKE SURE TO RUN THIS FOR EMOTES TO WORK PROPERLY
 dmodels_load_player_textures:
     type: task
     debug: false
