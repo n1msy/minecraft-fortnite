@@ -479,6 +479,11 @@ fort_gun_handler:
           - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round_down>;entity=<[target]>;color=<[color]>]>
           - adjust <player> reset_attack_cooldown
 
+        # - [ players can "shoot" the PLAY button ] - #
+        #my main concern is that people spam it with a gun and it causes issues
+        - else if <[target].has_flag[menu]>:
+          - inject fort_lobby_handler.button_press
+
 
   custom_shoot:
     grenade_launcher:

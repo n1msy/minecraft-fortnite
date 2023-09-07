@@ -412,7 +412,7 @@ fort_pic_handler:
   - adjust <[e]> scale:<location[2,2,2]>
   - adjust <[e]> interpolation_duration:2t
 
-  - wait 1t
+  - wait 2t
 
   - adjust <[e]> interpolation_start:0
   - adjust <[e]> scale:<location[1,1,1]>

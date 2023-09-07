@@ -21,16 +21,14 @@ fort_queue_handler:
       - define uuid <[player].uuid>
       - define seconds_in_queue <[player].flag[val.in_queue]>
 
-      - bossbar update queue_<[uuid]>_2 color:WHITE style:SOLID title:<&f><time[2069/01/01].add[<[seconds_in_queue]>].format[m:ss]>
-
       - flag <[player]> val.in_queue:++
 
-    - foreach <[players_not_queued]> as:player:
+    #- foreach <[players_not_queued]> as:player:
       ############remove this
-      - if <[player].name> != Nimsy:
-        - stop
+     # - if <[player].name> != Nimsy:
+        #- stop
 
       #play the "play" glint animation
-      - run fort_lobby_handler.play_button_anim def.player:<[player]> if:<context.second.mod[10].equals[0]>
+      #- run fort_lobby_handler.play_button_anim def.player:<[player]> if:<context.second.mod[10].equals[0]>
 
 

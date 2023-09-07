@@ -27,6 +27,9 @@ minimap:
     - define loc <player.location.round>
     - define yaw <[loc].yaw>
 
+    - if !<[in_game]>:
+      - inject fort_lobby_handler.menu
+
     #-marker
     - define marker_red   <[yaw].is[LESS].than[0].if_true[<[yaw].add[360]>].if_false[<[yaw]>].div[360].mul[255]>
     #this is minimap marker
