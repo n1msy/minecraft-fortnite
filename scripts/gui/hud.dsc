@@ -70,8 +70,8 @@ update_hud:
   - define time_      <element[<[clock_icon]> <[time]>].color[<color[50,0,0]>]>
 
   - define alive_icon <&chr[0002].font[icons]>
-  - define alive      <element[-].font[hud_text]>
-  ##- define alive      <element[100].font[hud_text]>
+  #- define alive      <element[-].font[hud_text]>
+  - define alive      <element[<server.online_players_flagged[!fort.spectating].size>].font[hud_text]>
   - define alive_     <element[<[alive_icon]> <[alive]>].color[<color[51,0,0]>]>
 
   - define kills      <element[-].font[hud_text]>

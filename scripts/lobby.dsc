@@ -20,7 +20,7 @@ fort_lobby_setup:
 fort_lobby_handler:
   type: world
   debug: false
-  definitions: player|button
+  definitions: player|button|option
   events:
     on player damages entity flagged:fort.menu.selected_button priority:-10:
     - inject fort_lobby_handler.button_press
@@ -72,7 +72,7 @@ fort_lobby_handler:
     #loop index, since it's being injected from minimap.dsc
     #first check is because glint cant play when animating
     - if !<[play_button].has_flag[selected]>:
-      - if <[loop_index].div[20].mod[8]> == 0:
+      - if !<player.has_flag[fort.in_queue]> && <[loop_index].div[20].mod[8]> == 0:
         - run fort_lobby_handler.play_button_anim def.button:<[play_button]>
 
       #- if <[loop_index].mod[2]> == 0:
@@ -85,7 +85,10 @@ fort_lobby_handler:
   select_anim:
     - define s 3
     - glow <[button]> true
-    - define anim_speed 30
+    - define anim_speed 18
+    #in case they select it mid-glint anim
+    - if !<player.has_flag[fort.in_queue]>:
+      - adjust <[button]> item:<item[oak_sign].with[custom_model_data=0]>
     - while <[button].is_spawned> && <[button].has_flag[selected]>:
       - if <[button].has_flag[press_animation]>:
         - wait 1t
@@ -114,23 +117,62 @@ fort_lobby_handler:
     - glow <[button]> false
 
   button_press:
-    - define button_type <player.flag[fort.menu.selected_button]>
-    #- if it's the play button
+    #null fall back is in case the player shoots the interact entity from too far, so there'd be nothing selected
+    - define button_type <player.flag[fort.menu.selected_button]||null>
+    - stop if:<[button_type].equals[null]>
     - playsound <player> sound:BLOCK_NOTE_BLOCK_HAT pitch:1
     - choose <[button_type]>:
       - case play_button:
         - define button <player.flag[fort.menu.<[button_type]>]>
-        - if !<player.has_flag[fort.in_queue]>:
+        - if <player.has_flag[fort.in_queue]>:
+          ## [ CANCELLING ] ##
+
+          - run fort_lobby_handler.match_info def.button:<[button]> def.option:remove
+
           - playsound <player> sound:BLOCK_NOTE_BLOCK_BASS pitch:1
-          - flag player fort.in_queue
+          - flag player fort.in_queue:!
           - define i <item[oak_sign].with[custom_model_data=0]>
         - else:
+          ## [ READYING UP ] ##
+          #spawn time elapsed text entity
+          #check in case they spam
+          - if !<player.has_flag[fort.menu.match_info]> || !<player.flag[fort.menu.match_info].is_spawned>:
+            - run fort_lobby_handler.match_info def.button:<[button]> def.option:add
+
           - playsound <player> sound:BLOCK_NOTE_BLOCK_BASS pitch:0
           - define i <item[oak_sign].with[custom_model_data=9]>
-          - flag player fort.in_queue:!
+          - flag player fort.in_queue
         - run fort_lobby_handler.press_anim def.button:<[button]>
         - adjust <[button]> item:<[i]>
 
+  match_info:
+    - define info_display <player.flag[fort.menu.match_info]||null>
+    - choose <[option]>:
+      - case add:
+        - define button_loc <[button].location>
+        - define match_info_loc <[button_loc].above[0.55].with_yaw[<[button_loc].yaw.add[180]>]>
+        - spawn <entity[text_display].with[text=Finding match...<n>Elapsed: <time[2069/01/01].format[m:ss]>;pivot=FIXED;translation=0,0.25,0;scale=1,0,1;background_color=transparent;hide_from_players=true]> <[match_info_loc]> save:time_elapsed
+        - define info_display <entry[time_elapsed].spawned_entity>
+        - adjust <player> show_entity:<[info_display]>
+        - flag player fort.menu.match_info:<[info_display]>
+
+        - wait 2t
+
+        - adjust <[info_display]> interpolation_start:0
+        - adjust <[info_display]> translation:0,0,0
+        - adjust <[info_display]> scale:<location[1,1,1]>
+        - adjust <[info_display]> interpolation_duration:2t
+
+      - case remove:
+        - if <[info_display]> != null && <[info_display].is_spawned>:
+          - wait 1t
+          - adjust <[info_display]> interpolation_start:0
+          - adjust <[info_display]> translation:0,0.25,0
+          - adjust <[info_display]> scale:<location[1,0,1]>
+          - adjust <[info_display]> interpolation_duration:2t
+          - wait 2t
+          - remove <[info_display]> if:<[info_display].is_spawned>
+        - flag player fort.menu.match_info:!
 
   play_button_anim:
     - repeat 8:
