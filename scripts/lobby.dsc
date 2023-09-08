@@ -59,7 +59,8 @@ fort_lobby_handler:
     - if <[interaction]> != null && <[interaction].has_flag[menu]>:
       - define button_type <[interaction].flag[menu].keys.first>
       - define selected_button <player.flag[fort.menu.<[button_type]>]>
-      - if !<[selected_button].has_flag[selected]>:
+      #second check is to prevent the while from repeating
+      - if !<[selected_button].has_flag[selected]> && !<[selected_button].has_flag[selected_animation]>:
         - flag player fort.menu.selected_button:<[button_type]> duration:2t
         - flag <[selected_button]> selected duration:2t
         - run fort_lobby_handler.select_anim def.button:<[selected_button]>
@@ -89,6 +90,7 @@ fort_lobby_handler:
     #in case they select it mid-glint anim
     - if !<player.has_flag[fort.in_queue]>:
       - adjust <[button]> item:<item[oak_sign].with[custom_model_data=0]>
+    - flag <[button]> selected_animation
     - while <[button].is_spawned> && <[button].has_flag[selected]>:
       - if <[button].has_flag[press_animation]>:
         - wait 1t
@@ -115,6 +117,7 @@ fort_lobby_handler:
 
     - adjust <[button]> scale:<location[<[s]>,<[s]>,<[s]>]>
     - glow <[button]> false
+    - flag <[button]> selected_animation:!
 
   button_press:
     #null fall back is in case the player shoots the interact entity from too far, so there'd be nothing selected
