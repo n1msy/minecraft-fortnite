@@ -149,12 +149,18 @@ fort_lobby_handler:
     - adjust <player> item_slot:1
 
     - define pad_loc <server.flag[fort.menu.pads].first.location>
-    - create PLAYER <player.name> <[pad_loc].face[<player.eye_location>].with_pitch[0]> save:player_npc
+    - define npc_loc <[pad_loc].face[<player.eye_location>].with_pitch[0]>
+    - create PLAYER <player.name> <[npc_loc]> save:player_npc
     - define player_npc <entry[player_npc].created_npc>
     - adjust <[player_npc]> hide_from_players
+    - adjust <[player_npc]> name_visible:false
     - adjust <player> show_entity:<[player_npc]>
 
     - flag player fort.menu.player_npc:<[player_npc]>
+
+    - spawn <entity[text_display].with[text=<player.name><n><&c>Not Ready;background_color=transparent;background_color=transparent;pivot=CENTER;scale=1,1,1;hide_from_players=true]> <[npc_loc].above[1.5]> save:name_text
+    - flag player fort.menu.name:<entry[name_text].spawned_entity>
+    - adjust <player> show_entity:<entry[name_text].spawned_entity>
 
     #show hud (dont show hud)
     #- inject update_hud
@@ -183,7 +189,7 @@ fort_lobby_handler:
 
     #-nimnite title
     - wait 8s
-    - if !<player.has_flag[fort.in_queue]>:
+    - if !<player.has_flag[fort.in_queue]> && !<player.has_flag[fort.menu.match_info]>:
       - run fort_lobby_handler.match_info def.option:add
 
     on player quit priority:-10:
@@ -207,8 +213,14 @@ fort_lobby_handler:
       - if <player.has_flag[fort.menu.player_npc]> && <player.flag[fort.menu.player_npc].is_spawned>:
         - remove <player.flag[fort.menu.player_npc]>
 
+      #player name
+      - if <player.has_flag[fort.menu.name]> && <player.flag[fort.menu.name].is_spawned>:
+        - remove <player.flag[fort.menu.name]>
+
+      #nimnite title
       - if <player.has_flag[fort.menu.title]> && <player.flag[fort.menu.title].is_spawned>:
         - remove <player.flag[fort.menu.title]>
+
 
     - if <player.has_flag[fort.emote]> && <player.has_flag[spawned_dmodel_emotes]>:
       - run dmodels_delete def.root_entity:<player.flag[spawned_dmodel_emotes]>
@@ -341,6 +353,7 @@ fort_lobby_handler:
     - define button_type <player.flag[fort.menu.selected_button]||null>
     - stop if:<[button_type].equals[null]>
     - define button <player.flag[fort.menu.<[button_type]>]>
+    - define name_text <player.flag[fort.menu.name]||null>
     - playsound <player> sound:BLOCK_NOTE_BLOCK_HAT pitch:1
     - choose <[button_type]>:
       - case play_button:
@@ -351,6 +364,8 @@ fort_lobby_handler:
 
           - bossbar fort_waiting remove players:<player>
 
+          - adjust <[name_text]> "text:<player.name><n><&c>Not ready" if:<[name_text].equals[null].not>
+
           - playsound <player> sound:BLOCK_NOTE_BLOCK_BASS pitch:1
           - flag player fort.in_queue:!
           - define i <item[oak_sign].with[custom_model_data=1]>
@@ -360,6 +375,8 @@ fort_lobby_handler:
           #check in case they spam
 
           - run fort_lobby_handler.match_info def.option:add
+
+          - adjust <[name_text]> text:<player.name><n><&a>Ready if:<[name_text].equals[null].not>
 
           - playsound <player> sound:BLOCK_NOTE_BLOCK_BASS pitch:0
           - define i <item[oak_sign].with[custom_model_data=10]>
@@ -399,11 +416,12 @@ fort_lobby_handler:
           - define translation 0,-0.3,0
           - define match_info_loc <[match_info_loc].above>
 
-        - spawn <entity[text_display].with[text=<[text]>;pivot=HORIZONTAL;translation=<[translation]>;scale=1,0,1;background_color=transparent;hide_from_players=true]> <[match_info_loc]> save:match_info
+        - spawn <entity[text_display].with[text=<[text]>;pivot=HORIZONTAL;translation=<[translation]>;scale=1,0,1;hide_from_players=true]> <[match_info_loc]> save:match_info
         - define info_display <entry[match_info].spawned_entity>
 
         - if !<player.has_flag[fort.in_queue]>:
           #flagging spawn anim just so the "idle" animation and spawn animation dont overlap
+          - adjust <[info_display]> background_color:transparent
           - flag <[info_display]> spawn_anim duration:3t
           - flag <[info_display]> title
 
