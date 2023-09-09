@@ -348,12 +348,16 @@ fort_lobby_handler:
         #below[1] (below play button)
         #below and back
         #above it: <[button_loc].above[1.3].with_yaw[<[button_loc].yaw.add[180]>]>
-        - define match_info_loc <server.flag[fort.menu_spawn].forward[5].above[3.5].with_yaw[<server.flag[fort.menu_spawn].yaw.add[180]>]>
+        - define match_info_loc <server.flag[fort.menu_spawn].forward[5].above[3.25].with_yaw[<server.flag[fort.menu_spawn].yaw.add[180]>]>
         - define text "Finding match...<n>Elapsed: <time[2069/01/01].format[m:ss]>"
+        - define translation 0,0.25,0
+        #nimnite title
         - if !<player.has_flag[fort.in_queue]>:
-          - define text <&f><&l>NIMNITE
+          - define text <&chr[999].font[icons]>
+          - define translation 0,-0.3,0
+          - define match_info_loc <[match_info_loc].above>
 
-        - spawn <entity[text_display].with[text=<[text]>;pivot=HORIZONTAL;translation=0,0.25,0;scale=1,0,1;background_color=transparent;hide_from_players=true]> <[match_info_loc]> save:match_info
+        - spawn <entity[text_display].with[text=<[text]>;pivot=HORIZONTAL;translation=<[translation]>;scale=1,0,1;background_color=transparent;hide_from_players=true]> <[match_info_loc]> save:match_info
         - define info_display <entry[match_info].spawned_entity>
         - flag <[info_display]> title if:<[title].exists>
         - adjust <player> show_entity:<[info_display]>
@@ -370,7 +374,12 @@ fort_lobby_handler:
         - if <[info_display]> != null && <[info_display].is_spawned>:
           - wait 1t
           - adjust <[info_display]> interpolation_start:0
-          - adjust <[info_display]> translation:0,0.25,0
+          - define translation 0,0.25,0
+
+          #this means if they're removing the queue thing
+          - if <player.has_flag[fort.in_queue]>:
+            - define translation 0,-0.5,0
+          - adjust <[info_display]> translation:<[translation]>
           - adjust <[info_display]> scale:<location[1,0,1]>
           - adjust <[info_display]> interpolation_duration:2t
           - wait 2t
