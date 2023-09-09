@@ -79,7 +79,7 @@ fort_lobby_setup:
 fort_lobby_handler:
   type: world
   debug: false
-  definitions: player|button|option
+  definitions: player|button|option|title
   events:
 
     on player stops flying flagged:fort.in_menu:
@@ -255,6 +255,48 @@ fort_lobby_handler:
         #- adjust <[play_button]> left_rotation:<[left_rotation]>
         #- adjust <[play_button]> interpolation_duration:2t
 
+  title_anim:
+
+    #two second animation time
+
+    - flag <[title]> animating
+
+    - repeat 2:
+
+      - define sign +
+      - if <[value]> == 2:
+        - define sign -
+
+      - define dur 20
+      - adjust <[title]> interpolation_start:0
+      - adjust <[title]> translation:0,<[sign]>0.01,0
+      - adjust <[title]> interpolation_duration:<[dur]>t
+
+      - wait <[dur]>t
+      - stop if:!<[title].is_spawned>
+
+      - define dur 8
+      - adjust <[title]> interpolation_start:0
+      - adjust <[title]> translation:0,<[sign]>0.025,0
+      - adjust <[title]> interpolation_duration:<[dur]>t
+
+      - wait <[dur]>t
+      - stop if:!<[title].is_spawned>
+
+      - define dur 12
+      - adjust <[title]> interpolation_start:0
+      - adjust <[title]> translation:0,<[sign]>0.05,0
+      - adjust <[title]> interpolation_duration:<[dur]>t
+
+      - if <[value]> != 2:
+        - wait <[dur]>t
+        - stop if:!<[title].is_spawned>
+
+    - stop if:!<[title].is_spawned>
+
+    - flag <[title]> animating:!
+
+
   select_anim:
     - define anim_speed  16
     - define type        <[button].flag[type]>
@@ -359,7 +401,12 @@ fort_lobby_handler:
 
         - spawn <entity[text_display].with[text=<[text]>;pivot=HORIZONTAL;translation=<[translation]>;scale=1,0,1;background_color=transparent;hide_from_players=true]> <[match_info_loc]> save:match_info
         - define info_display <entry[match_info].spawned_entity>
-        - flag <[info_display]> title if:<[title].exists>
+
+        - if !<player.has_flag[fort.in_queue]>:
+          #flagging spawn anim just so the "idle" animation and spawn animation dont overlap
+          - flag <[info_display]> spawn_anim duration:3t
+          - flag <[info_display]> title
+
         - adjust <player> show_entity:<[info_display]>
         - flag player fort.menu.match_info:<[info_display]>
 

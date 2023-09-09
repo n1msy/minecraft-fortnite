@@ -31,12 +31,10 @@ fort_queue_handler:
       - adjust <[match_info]> "text:Finding match...<n>Elapsed: <time[2069/01/01].add[<[secs_in_queue]>].format[m:ss]>"
 
     - bossbar update fort_waiting title:<proc[spacing].context[50]><&chr[A004].font[icons]><proc[spacing].context[-72]><&l><element[WAITING FOR PLAYERS].font[lobby_text]> color:YELLOW players:<[players_queued].filter[has_flag[fort.in_menu].not]>
-    #- foreach <[players_not_queued]> as:player:
-      ############remove this
-     # - if <[player].name> != Nimsy:
-        #- stop
-
-      #play the "play" glint animation
-      #- run fort_lobby_handler.play_button_anim def.player:<[player]> if:<context.second.mod[10].equals[0]>
 
 
+    - foreach <[players_not_queued]> as:player:
+      #-play the title moving up and down animation
+      - define title <[player].flag[fort.menu.match_info]>
+      - if <[title].is_spawned> && !<[title].has_flag[spawn_anim]> && !<[title].has_flag[animating]> && <context.second.mod[2]> == 0:
+        - run fort_lobby_handler.title_anim def.title:<[title]>
