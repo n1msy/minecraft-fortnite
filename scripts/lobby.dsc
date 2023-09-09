@@ -203,7 +203,8 @@ fort_lobby_handler:
       - if <player.has_flag[fort.menu.player_npc]> && <player.flag[fort.menu.player_npc].is_spawned>:
         - remove <player.flag[fort.menu.player_npc]>
 
-
+    - if <player.has_flag[spawned_dmodel_emotes]>:
+      - run dmodels_delete def.root_entity:<player.flag[spawned_dmodel_emotes]>
     - flag player fort:!
     - inventory clear
 
