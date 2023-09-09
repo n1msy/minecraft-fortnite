@@ -202,7 +202,6 @@ fort_gun_handler:
 
     on player right clicks block with:gun_*:
     - determine passively cancelled
-
     #-cancel shooting while trying to reload
 
     - define gun        <player.item_in_hand>
@@ -1151,7 +1150,7 @@ gun_assault_rifle:
     ammo_type: medium
     mag_size: 30
     #in seconds
-    cooldown: 0
+    cooldown: 0.1
     pellets: 1
     base_bloom: 1.2
     bloom_multiplier: 1

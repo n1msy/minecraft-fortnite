@@ -176,8 +176,9 @@ dmodels_reset_model_position:
             - adjust <[root_part]> left_rotation:<[left_rotation]>
             - adjust <[root_part]> scale:<[scale]>
 
+    - define host <[root_entity].flag[emote_host]||null>
     #-Third person viewer (removal)
-    - if <[root_entity].has_flag[emote_host]> && <[root_entity].has_flag[camera]>:
+    - if <[host]> != null && <[root_entity].has_flag[camera]>:
         - define host  <[root_entity].flag[emote_host]>
         - define hb    <[root_entity].flag[emote_hitbox]>
         - define cam   <[root_entity].flag[camera]>
@@ -194,6 +195,20 @@ dmodels_reset_model_position:
         - remove <[hb]>    if:<[hb].is_spawned>
         - remove <[cam]>   if:<[cam].is_spawned>
         - remove <[stand]> if:<[stand].is_spawned>
+        - run dmodels_delete def.root_entity:<[root_entity]>
+    - else if <[host]> != null && <[host].has_flag[fort.in_menu]>:
+        #this means it just started, so don't remove it
+        - if <[host].has_flag[fort.emote]> && !<[host].has_flag[fort.emote.mid_animation]>:
+            - flag <[host]> fort.emote.mid_animation
+            - stop
+        #since it's the npc that's emoting
+        - define host <[root_entity].flag[emote_host]>
+        - create PLAYER <[host].name> <[root_entity].location.below> save:player_npc
+        - define player_npc <entry[player_npc].created_npc>
+        - adjust <[player_npc]> hide_from_players
+        - adjust <[host]> show_entity:<[player_npc]>
+        - flag <[host]> fort.menu.player_npc:<[player_npc]>
+        - flag <[host]> fort.emote:!
         - run dmodels_delete def.root_entity:<[root_entity]>
 
 dmodels_mul_vecs:

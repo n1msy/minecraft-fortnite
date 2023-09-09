@@ -3,18 +3,77 @@ fort_lobby_setup:
   debug: false
   script:
 
-    - if <server.flag[fort.menu.play_button_hitbox]>:
-      - remove <server.flag[fort.menu.play_button_hitbox]>
+    #-reset previous entities
+    - foreach play|mode as:button_type:
+      - if <server.has_flag[fort.menu.<[button_type]>_button_hitboxes]>:
+        - foreach <server.flag[fort.menu.<[button_type]>_button_hitboxes]> as:hb:
+          - remove <[hb]> if:<[hb].is_spawned>
 
-    - define loc <player.location.center.with_pose[0,0].forward_flat[3].above[0.1]>
+    - if <server.has_flag[fort.menu.pads]>:
+      - foreach <server.flag[fort.menu.pads]> as:p:
+        - remove <[p]> if:<[p].is_spawned>
 
-    - spawn <entity[interaction].with[width=2.5;height=1]> <[loc]> save:play_hitbox
-    #- spawn <entity[text_display].with[text=<&chr[F000].font[icons]>;pivot=FIXED;scale=1,1,1]> <[loc]> save:play
+    - if <server.has_flag[fort.menu.invite_button_hitboxes]>:
+      - foreach <server.flag[fort.menu.invite_button_hitboxes]> as:inv:
+        - remove <[inv]> if:<[inv].is_spawned>
 
-    - define play_hitbox <entry[play_hitbox].spawned_entity>
-    - flag <[play_hitbox]> menu.play_button
+    - if <server.has_flag[fort.menu.button_bg]>:
+      - remove <server.flag[fort.menu.button_bg]>
 
-    - flag server fort.menu.play_button_hitbox:<[play_hitbox]>
+    #- flag server fort.menu:!
+
+    #- define loc <player.location.center.with_pose[0,0]>
+    - define loc <server.flag[fort.menu_spawn]>
+
+    - flag server fort.menu:!
+    #bottom right: <[loc].forward[2.5].right[0.8].below[0.5]>
+    #bottom middle: <[loc].forward_flat[3].below[0.5]>
+    #top middle: <[loc].forward[4].above[2].left[2]>
+    - define play_loc <[loc].forward[4.5].right[0.8].below[0.2]>
+
+    #-play button hitboxes
+    - repeat 3:
+      - spawn <entity[interaction].with[width=1;height=1]> <[play_loc].right[<[value]>]> save:play_hitbox_<[value]>
+      - define play_hitbox <entry[play_hitbox_<[value]>].spawned_entity>
+      - flag <[play_hitbox]> menu.play_button
+      - flag server fort.menu.play_button_hitboxes:->:<[play_hitbox]>
+
+    #-mode button hitboxes
+    - repeat 3:
+      - spawn <entity[interaction].with[width=0.7;height=0.7]> <[play_loc].above[1].right[<[value].div[1.05]>]> save:mode_hitbox_<[value]>
+      - define mode_hitbox <entry[mode_hitbox_<[value]>].spawned_entity>
+      - flag <[mode_hitbox]> menu.mode_button
+      - flag server fort.menu.mode_button_hitboxes:->:<[mode_hitbox]>
+
+    #get the center one
+    - define play_loc <[loc].forward[4.5].right[2.8].below[0.2]>
+
+    - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=13]>;scale=3,1.63,3]> <[play_loc].above[0.85].forward[0.001].with_yaw[<[play_loc].yaw.add[20]>]> save:button_bg
+    - define button_bg <entry[button_bg].spawned_entity>
+    - flag server fort.menu.button_bg:<[button_bg]>
+
+    - define pad_loc_1 <[loc].above.forward[5].above[0]>
+    - define pad_loc_2 <[pad_loc_1].forward.left[2]>
+    - define pad_loc_3 <[pad_loc_2].right[4]>
+    - define pad_loc_4 <[pad_loc_3].forward.right[2]>
+    - repeat 4:
+      - define l <[pad_loc_<[value]>]>
+      - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=11]>;scale=1,1,1]> <[l]> save:pad_<[value]>
+      - flag server fort.menu.pads:->:<entry[pad_<[value]>].spawned_entity>
+
+      #skip the first pad, since that's the player's own one
+      - if <[value]> == 1:
+        - repeat next
+      - spawn <entity[interaction].with[width=1;height=1]> <[l].above[0.25]> save:invite_hitbox_<[value]>
+      - define inv_hb <entry[invite_hitbox_<[value]>].spawned_entity>
+      - flag <[inv_hb]> menu.invite_button.<[value].sub[1]>
+      - flag server fort.menu.invite_button_hitboxes:->:<[inv_hb]>
+
+    - flag server fort.menu_spawn:<[loc]>
+
+    - define cuboid <[loc].below[8].backward[8].left[8].to_cuboid[<[loc].above[8].forward[8].right[8]>]>
+    - note <[cuboid]> as:fort_menu
+
 
 
 fort_lobby_handler:
@@ -22,6 +81,53 @@ fort_lobby_handler:
   debug: false
   definitions: player|button|option
   events:
+
+    on player stops flying flagged:fort.in_menu:
+    - determine cancelled
+
+    #-remove/hide the display entities when they exit the cuboid?
+    on player enters fort_menu:
+    - flag player fort.in_menu
+    - if <context.cause> != JOIN:
+      - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
+      - wait 7t
+      - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
+    - adjust <player> can_fly:true
+    - adjust <player> flying:true
+    - adjust <player> fly_speed:0.01
+    - bossbar remove fort_waiting players:<player>
+    - invisible state:true
+    - inventory clear
+    - sidebar remove
+    - if <player.has_flag[minimap]>:
+      - run minimap
+    - while <player.is_online> && <player.location.is_in[fort_menu]||false>:
+      - inject fort_lobby_handler.menu
+      - wait 1t
+    #wait for fade effect to go away
+    - wait 6t
+    - flag player fort.in_menu:!
+
+    on player exits fort_menu:
+    #cancel the emote
+    - flag player fort.emote:!
+    - if <context.cause> == QUIT:
+      - stop
+    - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
+    - wait 6t
+    - adjust <player> can_fly:false
+    - invisible state:false
+    - heal
+    - give fort_pickaxe_default slot:1
+    - adjust <player> item_slot:1
+    - adjust <player> fly_speed:0.2
+    - inject update_hud
+    - run minimap
+
+    #in case they click it from far
+    on player left clicks block flagged:fort.menu.selected_button priority:-10:
+    - inject fort_lobby_handler.button_press
+
     on player damages entity flagged:fort.menu.selected_button priority:-10:
     - inject fort_lobby_handler.button_press
 
@@ -30,35 +136,93 @@ fort_lobby_handler:
     - if <player.name> != Nimsy:
       - stop
 
-    #- define uuid <player.uuid>
+    - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
 
-    #show hud
-    - inject update_hud
+    #-player setup
+    - flag <player> fort.wood.qty:999
+    - flag <player> fort.brick.qty:999
+    - flag <player> fort.metal.qty:999
+
+    - foreach <list[light|medium|heavy|shells|rockets]> as:ammo_type:
+      - flag <player> fort.ammo.<[ammo_type]>:999
+
+    - adjust <player> item_slot:1
+
+    - define pad_loc <server.flag[fort.menu.pads].first.location>
+    - create PLAYER <player.name> <[pad_loc].face[<player.eye_location>].with_pitch[0]> save:player_npc
+    - define player_npc <entry[player_npc].created_npc>
+    - adjust <[player_npc]> hide_from_players
+    - adjust <player> show_entity:<[player_npc]>
+
+    - flag player fort.menu.player_npc:<[player_npc]>
+
+    #show hud (dont show hud)
+    #- inject update_hud
 
     #-flag server or player?
-    - define play_button_loc <server.flag[fort.menu.play_button_hitbox].location>
-    - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=0]>;scale=3,3,3;brightness=<map[block=15;sky=0]>;hide_from_players=true]> <[play_button_loc].above[0.5]> save:play_button
-    - define play_button <entry[play_button].spawned_entity>
-    - adjust <player> show_entity:<[play_button]>
+    #get the middle location
+    - foreach play|mode as:button_type:
+      - define <[button_type]>_button_loc <server.flag[fort.menu.<[button_type]>_button_hitboxes].get[2].location>
+      - if <[button_type]> == mode:
+        - define mode_button_loc <[mode_button_loc].below[0.2]>
+      - define l <[<[button_type]>_button_loc].above[0.5]>
+      - define l <[l].with_yaw[<[l].yaw.add[20]>]>
+      - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=<map[play=1;mode=14].get[<[button_type]>]>]>;scale=3,3,3;hide_from_players=true]> <[l]> save:<[button_type]>_button
+      - define <[button_type]>_button <entry[<[button_type]>_button].spawned_entity>
+      - adjust <player> show_entity:<[<[button_type]>_button]>
 
-    - flag player fort.menu.play_button:<[play_button]>
+      - flag player fort.menu.<[button_type]>_button:<[<[button_type]>_button]>
+      - flag <[<[button_type]>_button]> type:<[button_type]>
 
-    #show compass (also updates the menu buttons)
-    - run minimap
+    - foreach <server.flag[fort.menu.invite_button_hitboxes]> as:hb:
+      - define hb_loc <[hb].location>
+      - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=12]>;scale=0.75,0.75,0.75;hide_from_players=true]> <[hb_loc].above[0.5]> save:inv_<[loop_index]>
+      - define button <entry[inv_<[loop_index]>].spawned_entity>
+      - adjust <player> show_entity:<[button]>
+      - flag player fort.menu.invite_button.<[loop_index]>:->:<[button]>
+      - flag <[button]> type:invite
 
-    on player quit:
+    on player quit priority:-10:
     - define uuid <player.uuid>
     - if <player.has_flag[fort.menu]>:
-      - define play_button <player.flag[fort.menu.play_button]>
-      - remove <[play_button]> if:<[play_button].is_spawned>
-      - flag player fort.menu:!
+      - foreach play|mode as:button_type:
+        - define button <player.flag[fort.menu.<[button_type]>_button]>
+        #play button
+        - remove <[button]> if:<[button].is_spawned>
+
+      #invite buttons
+      - foreach <player.flag[fort.menu.invite_button].keys> as:k:
+        - define e <player.flag[fort.menu.invite_button.<[k]>].first>
+        - remove <[e]> if:<[e].is_spawned>
+
+      #match info text
+      - if <player.has_flag[fort.menu.match_info]> && <player.flag[fort.menu.match_info].is_spawned>:
+        - run fort_lobby_handler.match_info def.button:<player.flag[fort.menu.match_info]> def.option:remove
+
+      #player npc
+      - if <player.has_flag[fort.menu.player_npc]> && <player.flag[fort.menu.player_npc].is_spawned>:
+        - remove <player.flag[fort.menu.player_npc]>
+
+
+    - flag player fort:!
+    - inventory clear
 
   menu:
     #used in "minimap.dsc"
-    - define interaction <player.eye_location.ray_trace_target[entities=interaction;range=10]||null>
+    - define interaction <player.eye_location.ray_trace_target[entities=interaction;range=25]||null>
     - if <[interaction]> != null && <[interaction].has_flag[menu]>:
+
+      #get the button type from the player's target
       - define button_type <[interaction].flag[menu].keys.first>
-      - define selected_button <player.flag[fort.menu.<[button_type]>]>
+
+      - if <[button_type]> == invite_button:
+        - foreach <player.flag[fort.menu.invite_button].keys> as:k:
+          - if <[interaction].flag[menu.invite_button].keys.first> == <[k]>:
+            - define selected_button <player.flag[fort.menu.invite_button.<[k]>].first>
+            - foreach stop
+      - else:
+        - define selected_button <player.flag[fort.menu.<[button_type]>]>
+
       #second check is to prevent the while from repeating
       - if !<[selected_button].has_flag[selected]> && !<[selected_button].has_flag[selected_animation]>:
         - flag player fort.menu.selected_button:<[button_type]> duration:2t
@@ -84,12 +248,15 @@ fort_lobby_handler:
         #- adjust <[play_button]> interpolation_duration:2t
 
   select_anim:
-    - define s 3
+    - define anim_speed  16
+    - define type        <[button].flag[type]>
+    - define scale       <[button].scale>
+    - define scale_add   <map[play=0.25;mode=0.25;invite=0.1].get[<[type].before[_]>]>
+    - define max_scale   <[scale].add[<[scale_add]>,<[scale_add]>,<[scale_add]>]>
     - glow <[button]> true
-    - define anim_speed 18
     #in case they select it mid-glint anim
-    - if !<player.has_flag[fort.in_queue]>:
-      - adjust <[button]> item:<item[oak_sign].with[custom_model_data=0]>
+    - if <[type]> == play && !<player.has_flag[fort.in_queue]>:
+      - adjust <[button]> item:<item[oak_sign].with[custom_model_data=1]>
     - flag <[button]> selected_animation
     - while <[button].is_spawned> && <[button].has_flag[selected]>:
       - if <[button].has_flag[press_animation]>:
@@ -97,7 +264,7 @@ fort_lobby_handler:
         - while next
 
       - adjust <[button]> interpolation_start:0
-      - adjust <[button]> scale:<location[3.35,3.35,3.35]>
+      - adjust <[button]> scale:<[max_scale]>
       - adjust <[button]> interpolation_duration:<[anim_speed]>t
 
       #wait 1t to instantly stop
@@ -107,7 +274,7 @@ fort_lobby_handler:
         - while next if:<[button].has_flag[press_animation]>
 
       - adjust <[button]> interpolation_start:0
-      - adjust <[button]> scale:<location[<[s]>,<[s]>,<[s]>]>
+      - adjust <[button]> scale:<[scale]>
       - adjust <[button]> interpolation_duration:<[anim_speed]>t
 
       - repeat <[anim_speed]>:
@@ -115,7 +282,7 @@ fort_lobby_handler:
         - wait 1t
         - while next if:<[button].has_flag[press_animation]>
 
-    - adjust <[button]> scale:<location[<[s]>,<[s]>,<[s]>]>
+    - adjust <[button]> scale:<[scale]>
     - glow <[button]> false
     - flag <[button]> selected_animation:!
 
@@ -123,18 +290,20 @@ fort_lobby_handler:
     #null fall back is in case the player shoots the interact entity from too far, so there'd be nothing selected
     - define button_type <player.flag[fort.menu.selected_button]||null>
     - stop if:<[button_type].equals[null]>
+    - define button <player.flag[fort.menu.<[button_type]>]>
     - playsound <player> sound:BLOCK_NOTE_BLOCK_HAT pitch:1
     - choose <[button_type]>:
       - case play_button:
-        - define button <player.flag[fort.menu.<[button_type]>]>
         - if <player.has_flag[fort.in_queue]>:
           ## [ CANCELLING ] ##
 
           - run fort_lobby_handler.match_info def.button:<[button]> def.option:remove
 
+          - bossbar fort_waiting remove players:<player>
+
           - playsound <player> sound:BLOCK_NOTE_BLOCK_BASS pitch:1
           - flag player fort.in_queue:!
-          - define i <item[oak_sign].with[custom_model_data=0]>
+          - define i <item[oak_sign].with[custom_model_data=1]>
         - else:
           ## [ READYING UP ] ##
           #spawn time elapsed text entity
@@ -143,18 +312,30 @@ fort_lobby_handler:
             - run fort_lobby_handler.match_info def.button:<[button]> def.option:add
 
           - playsound <player> sound:BLOCK_NOTE_BLOCK_BASS pitch:0
-          - define i <item[oak_sign].with[custom_model_data=9]>
-          - flag player fort.in_queue
+          - define i <item[oak_sign].with[custom_model_data=10]>
+          - flag player fort.in_queue:0
         - run fort_lobby_handler.press_anim def.button:<[button]>
         - adjust <[button]> item:<[i]>
+
+      - case mode_button:
+        - run fort_lobby_handler.press_anim def.button:<[button]>
+        - if !<player.has_flag[fort.menu.coming_soon_cooldown]>:
+          - playsound <player> sound:ENTITY_VILLAGER_NO
+          - narrate "<&c>This feature is coming soon."
+          - flag player fort.menu.coming_soon_cooldown duration:2s
 
   match_info:
     - define info_display <player.flag[fort.menu.match_info]||null>
     - choose <[option]>:
       - case add:
         - define button_loc <[button].location>
-        - define match_info_loc <[button_loc].above[0.55].with_yaw[<[button_loc].yaw.add[180]>]>
-        - spawn <entity[text_display].with[text=Finding match...<n>Elapsed: <time[2069/01/01].format[m:ss]>;pivot=FIXED;translation=0,0.25,0;scale=1,0,1;background_color=transparent;hide_from_players=true]> <[match_info_loc]> save:time_elapsed
+        #above[0.55] (on top of play button)
+        #below[1] (below play button)
+        #below and back
+        #above it: <[button_loc].above[1.3].with_yaw[<[button_loc].yaw.add[180]>]>
+        - define match_info_loc <server.flag[fort.menu_spawn].forward[5].above[3.5].with_yaw[<server.flag[fort.menu_spawn].yaw.add[180]>]>
+        #- spawn <entity[text_display].with[text=Finding match...<n>Elapsed: <time[2069/01/01].format[m:ss]>;pivot=FIXED;translation=0,0.25,0;scale=1,0,1;background_color=transparent;hide_from_players=true]> <[match_info_loc]> save:time_elapsed
+        - spawn <entity[text_display].with[text=Finding match...<n>Elapsed: <time[2069/01/01].format[m:ss]>;pivot=HORIZONTAL;translation=0,0.25,0;scale=1,0,1;background_color=transparent;hide_from_players=true]> <[match_info_loc]> save:time_elapsed
         - define info_display <entry[time_elapsed].spawned_entity>
         - adjust <player> show_entity:<[info_display]>
         - flag player fort.menu.match_info:<[info_display]>
@@ -182,10 +363,10 @@ fort_lobby_handler:
       #in case the bar is removed
       - if <[button].has_flag[selected]> || !<[button].is_spawned>:
         - stop
-      - define i <item[oak_sign].with[custom_model_data=<[value]>]>
+      - define i <item[oak_sign].with[custom_model_data=<[value].add[1]>]>
       - adjust <[button]> item:<[i]>
       - wait 1t
-    - adjust <[button]> item:<item[oak_sign].with[custom_model_data=0]> if:<[button].is_spawned>
+    - adjust <[button]> item:<item[oak_sign].with[custom_model_data=1]> if:<[button].is_spawned>
 
   press_anim:
     #speed 1 has a "pressing" anim

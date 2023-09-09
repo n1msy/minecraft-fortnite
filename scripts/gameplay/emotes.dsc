@@ -12,33 +12,44 @@ fort_emote_handler:
     - if <[emote]> == none || <player.has_flag[fort.emote]>:
       - stop
 
+    - define emote_loc <player.location>
+    - if <player.has_flag[fort.in_menu]>:
+      - if !<player.has_flag[fort.menu.player_npc]> || !<player.flag[fort.menu.player_npc].is_spawned>:
+        - narrate "<&c>[error] Your player isn't spawned."
+        - stop
+      - define emote_loc <player.flag[fort.menu.player_npc].location>
+
     - choose <[emote]>:
       - case default:
         - define sound fort.emotes.default.<util.random.int[1].to[3]>
-        - playsound <player.location> custom sound:<[sound]> volume:1.2
+        - playsound <[emote_loc]> custom sound:<[sound]> volume:1.2
 
     #- run pmodels_spawn_model def.location:<player.location.above[2]> def.player:<player> def.scale:<location[1.87,1.87,1.87]> save:result
-    - run dmodels_spawn_model def.player:<player> def.model_name:emotes def.location:<player.location.above[2]> save:result
+    - run dmodels_spawn_model def.player:<player> def.model_name:emotes def.location:<[emote_loc].above[2]> save:result
     - define spawned <entry[result].created_queue.determination.first||null>
     - if !<[spawned].is_truthy>:
         - narrate "<&[error]>Emote spawning failed?"
         - stop
 
-    #"remove" everything for their hands
-    - fakeequip <player> for:<server.online_players> hand:air duration:10s
+    - if !<player.has_flag[fort.in_menu]>:
+      #"remove" everything for their hands
+      - fakeequip <player> for:<server.online_players> hand:air duration:10s
 
     #- run dmodels_set_yaw def.root_entity:<[spawned]> def.yaw:<player.location.yaw>
     - run dmodels_set_scale def.root_entity:<[spawned]> def.scale:1.87,1.87,1.87
 
-    - spawn INTERACTION[height=2;width=1] <player.location> save:hitbox
-    - define hb <entry[hitbox].spawned_entity>
-    - flag <[hb]> emote.hitbox.host:<player>
+    #no need for hitbox in menu
+    - if !<player.has_flag[fort.in_menu]>:
+      - spawn INTERACTION[height=2;width=1] <player.location> save:hitbox
+      - define hb <entry[hitbox].spawned_entity>
+      - flag <[hb]> emote.hitbox.host:<player>
+      - flag <[spawned]> emote_hitbox:<[hb]>
 
     - flag player fort.emote.sound:<[sound]>
     - flag player spawned_dmodel_emotes:<[spawned]>
     - flag <[spawned]> emote_host:<player>
     - flag <[spawned]> emote_sound:<[sound]>
-    - flag <[spawned]> emote_hitbox:<[hb]>
+
     - run dmodels_animate def.root_entity:<[spawned]> def.animation:<[emote]>
 
     on player clicks block flagged:fort.emote:
@@ -50,6 +61,8 @@ fort_emote_handler:
     - flag player fort.emote:!
 
     on player quits flagged:fort.emote:
+    - if <player.has_flag[fort.in_menu]>:
+      - stop
     - invisible <player> false
     - fakeequip <player> for:<server.online_players> reset
     - if <player.has_flag[spawned_dmodel_emotes]>:

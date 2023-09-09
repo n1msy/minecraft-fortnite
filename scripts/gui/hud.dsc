@@ -4,6 +4,10 @@ update_hud:
   debug: false
   script:
 
+  #-dont give the player a hud while they're inside the "menu"
+  - if <player.has_flag[fort.in_menu]>:
+    - stop
+
   #falling icon turns to clock icon after bus is done dropping
 
   # - [ Ammo ] - #

@@ -40,21 +40,26 @@ dmodels_animate:
     #-Third person viewer
     - if <[root_entity].has_flag[emote_host]>:
         - define host   <[root_entity].flag[emote_host]>
-        - define center <[root_entity].location.with_pitch[0].below[1.1]>
-
-        #- flag <[host]> fort.emote_gamemode:<[host].gamemode>
         - flag <[host]> fort.emote.animation:<[animation]>
-        - invisible <[host]> true
+        - if <[host].has_flag[fort.in_menu]>:
+            #since it's the npc that's emoting
+            - remove <[host].flag[fort.menu.player_npc]>
+            #remove this to tell the reset_model_position not to delete before the animation even starts
+        - else:
+            - define center <[root_entity].location.with_pitch[0].below[1.1]>
 
-        - spawn ARMOR_STAND[gravity=false;collidable=false;invulnerable=true;visible=false] <[center].backward_flat[3].with_pitch[20]> save:cam
-        - define cam <entry[cam].spawned_entity>
-        - spawn ARMOR_STAND[gravity=false;collidable=false;invulnerable=true;visible=false] <[center]> save:stand
-        - define stand <entry[stand].spawned_entity>
+            #- flag <[host]> fort.emote_gamemode:<[host].gamemode>
+            - invisible <[host]> true
 
-        - flag <[root_entity]> camera:<[cam]>
-        - flag <[root_entity]> stand:<[stand]>
-        #- adjust <[host]> gamemode:spectator
-        - mount <[host]>|<[cam]>
+            - spawn ARMOR_STAND[gravity=false;collidable=false;invulnerable=true;visible=false] <[center].backward_flat[3].with_pitch[20]> save:cam
+            - define cam <entry[cam].spawned_entity>
+            - spawn ARMOR_STAND[gravity=false;collidable=false;invulnerable=true;visible=false] <[center]> save:stand
+            - define stand <entry[stand].spawned_entity>
+
+            - flag <[root_entity]> camera:<[cam]>
+            - flag <[root_entity]> stand:<[stand]>
+            #- adjust <[host]> gamemode:spectator
+            - mount <[host]>|<[cam]>
 
     - flag server dmodels_anim_active.<[root_entity].uuid>:<[root_entity]>
 
@@ -172,7 +177,7 @@ dmodels_move_to_frame:
             - adjust <[ent]> scale:<[new_scale].proc[dmodels_mul_vecs].context[<[global_scale]>]>
 
     #-Third person camera
-    - if <[root_entity].has_flag[emote_host]>:
+    - if <[root_entity].has_flag[emote_host]> && <[root_entity].has_flag[camera]>:
         - define host      <[root_entity].flag[emote_host]>
         - define cam       <[root_entity].flag[camera]>
         - define stand     <[root_entity].flag[stand]>
