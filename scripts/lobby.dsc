@@ -40,7 +40,7 @@ fort_lobby_setup:
 
     #-mode button hitboxes
     - repeat 3:
-      - spawn <entity[interaction].with[width=0.7;height=0.7]> <[play_loc].above[1].right[<[value].div[1.05]>]> save:mode_hitbox_<[value]>
+      - spawn <entity[interaction].with[width=0.7;height=0.7]> <[play_loc].backward_flat[0.01].above[1].right[<[value].div[1.05].add[0.1]>]> save:mode_hitbox_<[value]>
       - define mode_hitbox <entry[mode_hitbox_<[value]>].spawned_entity>
       - flag <[mode_hitbox]> menu.mode_button
       - flag server fort.menu.mode_button_hitboxes:->:<[mode_hitbox]>
@@ -159,7 +159,6 @@ fort_lobby_handler:
     #show hud (dont show hud)
     #- inject update_hud
 
-    #-flag server or player?
     #get the middle location
     - foreach play|mode as:button_type:
       - define <[button_type]>_button_loc <server.flag[fort.menu.<[button_type]>_button_hitboxes].get[2].location>
@@ -182,6 +181,11 @@ fort_lobby_handler:
       - flag player fort.menu.invite_button.<[loop_index]>:->:<[button]>
       - flag <[button]> type:invite
 
+    #-nimnite title
+    - wait 8s
+    - if !<player.has_flag[fort.in_queue]>:
+      - run fort_lobby_handler.match_info def.option:add
+
     on player quit priority:-10:
     - define uuid <player.uuid>
     - if <player.has_flag[fort.menu]>:
@@ -203,7 +207,10 @@ fort_lobby_handler:
       - if <player.has_flag[fort.menu.player_npc]> && <player.flag[fort.menu.player_npc].is_spawned>:
         - remove <player.flag[fort.menu.player_npc]>
 
-    - if <player.has_flag[spawned_dmodel_emotes]>:
+      - if <player.has_flag[fort.menu.title]> && <player.flag[fort.menu.title].is_spawned>:
+        - remove <player.flag[fort.menu.title]>
+
+    - if <player.has_flag[fort.emote]> && <player.has_flag[spawned_dmodel_emotes]>:
       - run dmodels_delete def.root_entity:<player.flag[spawned_dmodel_emotes]>
     - flag player fort:!
     - inventory clear
@@ -298,7 +305,7 @@ fort_lobby_handler:
         - if <player.has_flag[fort.in_queue]>:
           ## [ CANCELLING ] ##
 
-          - run fort_lobby_handler.match_info def.button:<[button]> def.option:remove
+          - run fort_lobby_handler.match_info def.option:remove
 
           - bossbar fort_waiting remove players:<player>
 
@@ -309,8 +316,8 @@ fort_lobby_handler:
           ## [ READYING UP ] ##
           #spawn time elapsed text entity
           #check in case they spam
-          - if !<player.has_flag[fort.menu.match_info]> || !<player.flag[fort.menu.match_info].is_spawned>:
-            - run fort_lobby_handler.match_info def.button:<[button]> def.option:add
+
+          - run fort_lobby_handler.match_info def.option:add
 
           - playsound <player> sound:BLOCK_NOTE_BLOCK_BASS pitch:0
           - define i <item[oak_sign].with[custom_model_data=10]>
@@ -329,15 +336,26 @@ fort_lobby_handler:
     - define info_display <player.flag[fort.menu.match_info]||null>
     - choose <[option]>:
       - case add:
-        - define button_loc <[button].location>
+        #it's a title, but no need to check for it, since that's the only possible thing it can be
+        - if <[info_display]> != null && <[info_display].is_spawned>:
+          - run fort_lobby_handler.match_info def.button:<player.flag[fort.menu.match_info]> def.option:remove
+          - wait 4t
+
+        - if <player.has_flag[fort.menu.match_info]> && <player.flag[fort.menu.match_info].is_spawned>:
+          - stop
+
         #above[0.55] (on top of play button)
         #below[1] (below play button)
         #below and back
         #above it: <[button_loc].above[1.3].with_yaw[<[button_loc].yaw.add[180]>]>
         - define match_info_loc <server.flag[fort.menu_spawn].forward[5].above[3.5].with_yaw[<server.flag[fort.menu_spawn].yaw.add[180]>]>
-        #- spawn <entity[text_display].with[text=Finding match...<n>Elapsed: <time[2069/01/01].format[m:ss]>;pivot=FIXED;translation=0,0.25,0;scale=1,0,1;background_color=transparent;hide_from_players=true]> <[match_info_loc]> save:time_elapsed
-        - spawn <entity[text_display].with[text=Finding match...<n>Elapsed: <time[2069/01/01].format[m:ss]>;pivot=HORIZONTAL;translation=0,0.25,0;scale=1,0,1;background_color=transparent;hide_from_players=true]> <[match_info_loc]> save:time_elapsed
-        - define info_display <entry[time_elapsed].spawned_entity>
+        - define text "Finding match...<n>Elapsed: <time[2069/01/01].format[m:ss]>"
+        - if !<player.has_flag[fort.in_queue]>:
+          - define text <&f><&l>NIMNITE
+
+        - spawn <entity[text_display].with[text=<[text]>;pivot=HORIZONTAL;translation=0,0.25,0;scale=1,0,1;background_color=transparent;hide_from_players=true]> <[match_info_loc]> save:match_info
+        - define info_display <entry[match_info].spawned_entity>
+        - flag <[info_display]> title if:<[title].exists>
         - adjust <player> show_entity:<[info_display]>
         - flag player fort.menu.match_info:<[info_display]>
 
@@ -357,7 +375,10 @@ fort_lobby_handler:
           - adjust <[info_display]> interpolation_duration:2t
           - wait 2t
           - remove <[info_display]> if:<[info_display].is_spawned>
-        - flag player fort.menu.match_info:!
+
+          - if !<[info_display].has_flag[title]> && !<player.has_flag[fort.in_queue]>:
+            - run fort_lobby_handler.match_info def.button:<[info_display]> def.option:add
+        #- flag player fort.menu.match_info:!
 
   play_button_anim:
     - repeat 8:
@@ -368,6 +389,8 @@ fort_lobby_handler:
       - adjust <[button]> item:<[i]>
       - wait 1t
     - adjust <[button]> item:<item[oak_sign].with[custom_model_data=1]> if:<[button].is_spawned>
+
+
 
   press_anim:
     #speed 1 has a "pressing" anim
