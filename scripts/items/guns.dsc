@@ -879,6 +879,8 @@ gun_particle_origin:
         - determine <[eye_loc].forward[0.5].relative[-0.33,-0.08,0.3].right[0.01]>
       - case bolt_action_sniper_rifle:
         - determine <[eye_loc].forward.relative[-0.33,-0.04,0.3].left[0.04]>
+      - case smg:
+        - determine <[eye_loc].forward.relative[-0.28,-0.155,0.3]>
       - case tactical_smg:
         - determine <[eye_loc].forward[0.6].relative[-0.3,-0.2,0.3]>
       - case pump_shotgun:

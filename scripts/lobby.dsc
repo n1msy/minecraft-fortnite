@@ -9,6 +9,10 @@ fort_lobby_handler:
 
     #-remove/hide the display entities when they exit the cuboid?
     on player enters fort_menu:
+    #in case it bugs and joins them twice (or when i reload while inside the menu)
+    - if <player.has_flag[fort.in_menu]>:
+      - stop
+
     - flag player fort.in_menu
     - if <context.cause> != JOIN:
       - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
@@ -16,8 +20,8 @@ fort_lobby_handler:
       - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
     - adjust <player> can_fly:true
     - adjust <player> flying:true
-    ###############################ADD THIS BACK
-    ###############################- adjust <player> fly_speed:0.01
+
+    - adjust <player> fly_speed:0.07
     - bossbar remove fort_waiting players:<player>
     - invisible state:true
     - inventory clear
@@ -44,8 +48,11 @@ fort_lobby_handler:
     - give fort_pickaxe_default slot:1
     - adjust <player> item_slot:1
     - adjust <player> fly_speed:0.2
+
+    - wait 1t
     - inject update_hud
-    - run minimap
+    - if !<player.has_flag[minimap]>:
+      - run minimap
 
     #in case they click it from far
     on player left clicks block flagged:fort.menu.selected_button priority:-10:
@@ -81,7 +88,7 @@ fort_lobby_handler:
 
     - flag player fort.menu.player_npc:<[player_npc]>
 
-    - spawn <entity[text_display].with[text=<player.name><n><&c>Not Ready;background_color=transparent;background_color=transparent;pivot=CENTER;scale=1,1,1;hide_from_players=true]> <[npc_loc].above[1.5]> save:name_text
+    - spawn <entity[text_display].with[text=<player.name><n><&c>Not Ready;background_color=transparent;pivot=CENTER;scale=1,1,1;hide_from_players=true]> <[npc_loc].above[1.5]> save:name_text
     - flag player fort.menu.name:<entry[name_text].spawned_entity>
     - adjust <player> show_entity:<entry[name_text].spawned_entity>
 
@@ -89,11 +96,11 @@ fort_lobby_handler:
     #- inject update_hud
 
     #get the middle location
+    - define button_loc <server.flag[fort.menu.play_button_hitboxes].get[2].location>
     - foreach play|mode as:button_type:
-      - define <[button_type]>_button_loc <server.flag[fort.menu.<[button_type]>_button_hitboxes].get[2].location>
       - if <[button_type]> == mode:
-        - define mode_button_loc <[mode_button_loc].below[0.2]>
-      - define l <[<[button_type]>_button_loc].above[0.5]>
+        - define button_loc <[button_loc].above[0.8]>
+      - define l <[button_loc].above[0.5]>
       - define l <[l].with_yaw[<[l].yaw.add[20]>]>
       - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=<map[play=1;mode=14].get[<[button_type]>]>]>;scale=3,3,3;hide_from_players=true]> <[l]> save:<[button_type]>_button
       - define <[button_type]>_button <entry[<[button_type]>_button].spawned_entity>
@@ -344,7 +351,7 @@ fort_lobby_handler:
           - define translation 0,-0.3,0
           - define match_info_loc <[match_info_loc].above>
 
-        - spawn <entity[text_display].with[text=<[text]>;pivot=HORIZONTAL;translation=<[translation]>;scale=1,0,1;hide_from_players=true]> <[match_info_loc]> save:match_info
+        - spawn <entity[text_display].with[text=<[text]>;pivot=CENTER;translation=<[translation]>;scale=1,0,1;hide_from_players=true]> <[match_info_loc]> save:match_info
         - define info_display <entry[match_info].spawned_entity>
 
         - if !<player.has_flag[fort.in_queue]>:
@@ -419,6 +426,7 @@ fort_lobby_handler:
 fort_lobby_setup:
   type: task
   debug: false
+  definitions: cube|loops|type
   script:
 
     #-reset previous entities
@@ -440,6 +448,10 @@ fort_lobby_setup:
 
     - if <server.has_flag[fort.menu.bg_planes]>:
       - foreach <server.flag[fort.menu.bg_planes]> as:plane:
+        - remove <[plane]> if:<[plane].is_spawned>
+
+    - if <server.has_flag[fort.menu.bg_cubes]>:
+      - foreach <server.flag[fort.menu.bg_cubes]> as:plane:
         - remove <[plane]> if:<[plane].is_spawned>
 
     #- flag server fort.menu:!
@@ -499,6 +511,7 @@ fort_lobby_setup:
 
     ## - [ Background ] - ##
 
+    ## make the circles all 1 big model, via obj mc
 
     #-cylinder
     - define radius 10
@@ -550,7 +563,26 @@ fort_lobby_setup:
       - define plane     <entry[plane].spawned_entity>
       - flag server fort.menu.bg_planes:->:<[plane]>
 
+    #-background cubes
+    ##to make it more performant, i could combine a bunch of them and make them 1 big image so it would use less text displays
+    - define radius 9.8
 
+    - define size 7.2
+
+    - define i <item[white_stained_glass_pane].with[custom_model_data=1]>
+
+    - define center <[loc].below[<[cyl_height].div[4]>]>
+
+    - define circle <[center].points_around_y[radius=<[radius]>;points=25]>
+
+    - foreach <[circle]> as:plane_loc:
+
+      - define angle <[plane_loc].face[<[center]>].yaw.add[180].to_radians>
+      - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
+
+      - spawn <entity[item_display].with[item=<[i]>;left_rotation=<[left_rotation]>;scale=<[size]>,<[size]>,<[size]>]> <[plane_loc].above[1.5]> save:plane
+      - define plane     <entry[plane].spawned_entity>
+      - flag server fort.menu.bg_cubes:->:<[plane]>
 
     ##
 
@@ -558,3 +590,54 @@ fort_lobby_setup:
 
     - define cuboid <[loc].below[8].backward[8].left[8].to_cuboid[<[loc].above[8].forward[8].right[8]>]>
     - note <[cuboid]> as:fort_menu
+
+  bg_cube_anim:
+
+    - define center <server.flag[fort.menu_spawn].below[3.75]>
+
+    - define circle <[center].points_around_y[radius=9.8;points=25]>
+
+    - if <[type]> == rotate:
+    #this is run in "queue_system.dsc" every 10 seconds
+      - foreach <server.flag[fort.menu.bg_cubes]> as:cube:
+
+        - if <[type]> == rotate:
+          - define cube_loc <[cube].location>
+
+          - define get_next <[loop_index].sub[1]>
+          - if <[get_next]> == 0:
+            - define get_next 25
+
+          - define dest <[circle].get[<[get_next]>].face[<[center]>]>
+
+          - define angle <[dest].yaw.add[180].to_radians>
+          - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
+
+          - define translation <[dest].sub[<[cube_loc]>].with_y[0]>
+
+          - adjust <[cube]> interpolation_start:0
+          - adjust <[cube]> translation:<[translation]>
+          - adjust <[cube]> left_rotation:<[left_rotation]>
+          - adjust <[cube]> interpolation_duration:45s
+    - else:
+      - foreach <server.flag[fort.menu.bg_cubes].reverse> as:cube:
+        - wait 2t
+        - run fort_lobby_setup.bg_cube_brightness_anim def.cube:<[cube]>
+
+  bg_cube_brightness_anim:
+
+    #4 seconds total
+
+    - repeat 10:
+      - adjust <[cube]> brightness:<map[block=<element[16].sub[<[value]>]>;sky=0]>
+      - wait 1t
+
+    - wait 3s
+
+    - repeat 10:
+      - adjust <[cube]> brightness:<map[block=<[value].add[5]>;sky=0]>
+      - wait 1t
+
+
+
+

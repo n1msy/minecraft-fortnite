@@ -12,7 +12,6 @@ fort_emote_handler:
     - if <[emote]> == none || <player.has_flag[fort.emote]>:
       - stop
 
-    - inventory close
     - define emote_loc <player.location>
     - if <player.has_flag[fort.in_menu]>:
       - if !<player.has_flag[fort.menu.player_npc]> || !<player.flag[fort.menu.player_npc].is_spawned>:
@@ -52,6 +51,9 @@ fort_emote_handler:
     - flag <[spawned]> emote_sound:<[sound]>
 
     - run dmodels_animate def.root_entity:<[spawned]> def.animation:<[emote]>
+
+    - wait 1t
+    - inventory close
 
     on player clicks block flagged:fort.emote:
     - flag player fort.emote:!
