@@ -30,7 +30,7 @@ update_hud:
   # - [ Main Health/Shield Bars ] - #
   - define health      <player.health.mul[5].round>
   - define health_r    <[health].div[100].mul[255].round_down>
-  - define health_bar  <[empty_bar].color[<[health_r]>,0,0]>
+  - define health_bar  <[empty_bar].color[<[health_r]>,0,2]>
   - define health_text "<element[<proc[spacing].context[-215]><[health]>].color[<color[10,0,0]>]> <element[｜ 100].color[<color[101,0,0]>]>"
   - define health_icon <element[<&chr[C004].font[icons]><proc[spacing].context[1]>].color[<color[10,0,0]>]>
   - define health_     <[health_icon]><[health_bar]><[health_text]>

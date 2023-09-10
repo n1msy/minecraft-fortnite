@@ -80,7 +80,7 @@ dmodels_move_to_frame:
         #-stop the music
         - if <[root_entity].has_flag[emote_host]>:
             - define sound <[root_entity].flag[emote_sound]>
-            - foreach <[root_entity].location.find_players_within[10]> as:p:
+            - foreach <[root_entity].location.find_players_within[20]> as:p:
                 - adjust <[p]> stop_sound:<[sound]>
         - choose <[animation_data.loop]>:
             - case loop:

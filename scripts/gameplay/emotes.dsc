@@ -2,6 +2,9 @@ fort_emote_handler:
   type: world
   debug: false
   events:
+
+    #on player damages int
+
     on player clicks in inventory slot:2|3|4|5:
     - if <context.clicked_inventory.inventory_type> != CRAFTING:
       - stop

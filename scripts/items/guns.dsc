@@ -189,7 +189,8 @@ fort_gun_handler:
     - if <[gun].has_flag[sniper]>:
       - inject fort_gun_handler.reset_sniper_scope
     - else:
-    #no need to check if they dropped, since they can't drop when scoped
+      #####issue: when player dies
+      #no need to check if they dropped, since they can't drop when scoped
       - inventory adjust slot:<[slot]> custom_model_data:<[cmd]>
     - cast SPEED remove
 
