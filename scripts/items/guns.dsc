@@ -839,11 +839,11 @@ fort_gun_handler:
 
     - define neg  <proc[spacing].context[-50]>
     - define text <[neg]><&chr[000<util.random.int[4].to[6]>].font[muzzle_flash]><[neg]>
-    - spawn <entity[armor_stand].with[custom_name=<[text]>;custom_name_visible=true;gravity=false;collidable=false;invulnerable=true;visible=false]> <[particle_origin].below[2.4]> save:flash
-    #- spawn <entity[text_display].with[text=<[text]>;pivot=FIXED;scale=1,1,1]> <[particle_origin]> save:flash
+    #- spawn <entity[armor_stand].with[custom_name=<[text]>;custom_name_visible=true;gravity=false;collidable=false;invulnerable=true;visible=false]> <[particle_origin].below[2.4]> save:flash
+    - spawn <entity[text_display].with[text=<[text]>;pivot=CENTER;scale=1,1,1]> <[particle_origin].below[0.19].left[0.01]> save:flash
     - define flash <entry[flash].spawned_entity>
 
-    - wait 2t
+    - wait 3t
     - remove <[flash]>
 
   custom_recoil_fx:
@@ -869,7 +869,7 @@ gun_particle_origin:
   - if !<player.has_flag[fort.gun_scoped]>:
     - choose <[gun]>:
       - case burst_assault_rifle:
-        - determine <[eye_loc].forward.relative[-0.35,-0.17,0.3]>
+        - determine <[eye_loc].forward.relative[-0.32,-0.15,0.3]>
       - case rocket_launcher:
         - determine <[eye_loc].forward[0.8].relative[-0.33,0.027,0.3].right[0.17]>
       - case grenade_launcher:
@@ -879,37 +879,41 @@ gun_particle_origin:
       - case revolver:
         - determine <[eye_loc].forward[0.5].relative[-0.33,-0.08,0.3].right[0.01]>
       - case bolt_action_sniper_rifle:
-        - determine <[eye_loc].forward.relative[-0.33,-0.04,0.3].left[0.04]>
+        - determine <[eye_loc].forward.relative[-0.33,0,0.3].left[0.04]>
       - case smg:
-        - determine <[eye_loc].forward.relative[-0.28,-0.155,0.3]>
+        - determine <[eye_loc].forward[0.8].relative[-0.3,-0.18,0.3]>
       - case tactical_smg:
         - determine <[eye_loc].forward[0.6].relative[-0.3,-0.2,0.3]>
       - case pump_shotgun:
         - determine <[eye_loc].forward.relative[-0.33,0.05,0.3]>
+      - case tactical_shotgun:
+        - determine <[eye_loc].forward[0.6].relative[-0.31,-0.09,0.3]>
       - case assault_rifle:
-        - determine <[eye_loc].forward.relative[-0.33,-0.168,0.3]>
+        - determine <[eye_loc].forward.relative[-0.33,-0.15,0.3]>
       - default:
         - determine <[eye_loc].forward.relative[-0.33,-0.2,0.3]>
   - else:
     - choose <[gun]>:
       - case burst_assault_rifle:
-        - determine <[eye_loc].forward[1.8].below[0.09].right[0.03]>
+        - determine <[eye_loc].forward[1.8].below[0.09]>
       - case grenade_launcher:
-        - determine <[eye_loc].forward[1.8].above[0.08].right[0.03]>
+        - determine <[eye_loc].forward[1.8].above[0.08]>
       - case pistol:
-        - determine <[eye_loc].forward[1.8].below[0.1].right[0.03]>
+        - determine <[eye_loc].forward[1.8].below[0.1]>
       - case revolver:
-        - determine <[eye_loc].forward[1.8].above[0.08].right[0.03]>
+        - determine <[eye_loc].forward[1.8].above[0.08]>
       - case bolt_action_sniper_rifle:
-        - determine <[eye_loc].forward[1.8].above[0.17].right[0.015]>
+        - determine <[eye_loc].forward[1.8].above[0.2]>
       - case smg:
-        - determine <[eye_loc].forward[1.8].below[0.15].right[0.03]>
+        - determine <[eye_loc].forward[1.8].below[0.15]>
       - case tactical_smg:
-        - determine <[eye_loc].forward[1.8].below[0.2].right[0.03]>
+        - determine <[eye_loc].forward[1.8].below[0.2]>
       - case pump_shotgun:
-        - determine <[eye_loc].forward[1.8].above[0.13].right[0.03]>
+        - determine <[eye_loc].forward[1.8].above[0.2]>
+      - case tactical_shotgun:
+        - determine <[eye_loc].forward[1.8].below[0.05]>
       - case assault_rifle:
-        - determine <[eye_loc].forward[1.8].below[0.065].right[0.03]>
+        - determine <[eye_loc].forward[1.8].below[0.065]>
       - default:
         - determine <[eye_loc].forward[1.8].below[0.25]>
 
