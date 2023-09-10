@@ -12,6 +12,7 @@ fort_emote_handler:
     - if <[emote]> == none || <player.has_flag[fort.emote]>:
       - stop
 
+    - inventory close
     - define emote_loc <player.location>
     - if <player.has_flag[fort.in_menu]>:
       - if !<player.has_flag[fort.menu.player_npc]> || !<player.flag[fort.menu.player_npc].is_spawned>:

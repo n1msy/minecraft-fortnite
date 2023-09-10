@@ -1,7 +1,7 @@
 fort_lobby_handler:
   type: world
   debug: false
-  definitions: player|button|option|title
+  definitions: player|button|option|title|size_data
   events:
 
     on player stops flying flagged:fort.in_menu:
@@ -162,6 +162,7 @@ fort_lobby_handler:
         - foreach <player.flag[fort.menu.invite_button].keys> as:k:
           - if <[interaction].flag[menu.invite_button].keys.first> == <[k]>:
             - define selected_button <player.flag[fort.menu.invite_button.<[k]>].first>
+            - flag player fort.menu.invite_button_entity:<[selected_button]>
             - foreach stop
       - else:
         - define selected_button <player.flag[fort.menu.<[button_type]>]>
@@ -314,6 +315,10 @@ fort_lobby_handler:
           - narrate "<&c>This feature is coming soon."
           - flag player fort.menu.coming_soon_cooldown duration:2s
 
+      - case invite_button:
+        - define button <player.flag[fort.menu.invite_button_entity]>
+        - run fort_lobby_handler.press_anim def.button:<[button]> def.size_data:<map[to=<location[1.15,1.15,1.15]>;back=<location[0.75,0.75,0.75]>]>
+
   match_info:
     - define info_display <player.flag[fort.menu.match_info]||null>
     - choose <[option]>:
@@ -391,16 +396,22 @@ fort_lobby_handler:
 
   press_anim:
     #speed 1 has a "pressing" anim
+    - if <[size_data].exists>:
+      - define to_size   <[size_data].get[to]>
+      - define back_size <[size_data].get[back]>
+    - else:
+      - define to_size   <location[4,4,4]>
+      - define back_size <location[3,3,3]>
     - define speed 2
     - flag <[button]> press_animation duration:4t
     - adjust <[button]> interpolation_start:0
-    - adjust <[button]> scale:<location[4,4,4]>
+    - adjust <[button]> scale:<[to_size]>
     - adjust <[button]> interpolation_duration:<[speed]>t
 
     - wait <[speed]>t
 
     - adjust <[button]> interpolation_start:0
-    - adjust <[button]> scale:<location[3,3,3]>
+    - adjust <[button]> scale:<[back_size]>
     - adjust <[button]> interpolation_duration:<[speed]>t
 
 
