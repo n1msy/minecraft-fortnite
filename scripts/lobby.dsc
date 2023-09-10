@@ -21,14 +21,14 @@ fort_lobby_handler:
     - adjust <player> can_fly:true
     - adjust <player> flying:true
 
-    - adjust <player> fly_speed:0.05
+    - adjust <player> fly_speed:0.02
     - bossbar remove fort_waiting players:<player>
     - invisible state:true
     - inventory clear
     - sidebar remove
     - if <player.has_flag[minimap]>:
       - run minimap
-    - while <player.is_online> && <player.location.is_in[fort_menu]||false>:
+    - while <player.is_online> && <player.has_flag[fort.in_menu]>:
       - inject fort_lobby_handler.menu
       - wait 1t
     #wait for fade effect to go away
@@ -36,10 +36,19 @@ fort_lobby_handler:
     - flag player fort.in_menu:!
 
     on player exits fort_menu:
+
+    ####- if <context.cause> == WALK:
+      ####- title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
+      ####- wait 7t
+      ####- teleport <player> <server.flag[fort.menu_spawn]>
+      ####- stop
+
     #cancel the emote
+    - flag player fort.in_menu:!
     - flag player fort.emote:!
     - if <context.cause> == QUIT:
       - stop
+
     - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
     - wait 6t
     - adjust <player> can_fly:false

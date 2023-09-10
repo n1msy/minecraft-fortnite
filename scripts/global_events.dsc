@@ -139,6 +139,7 @@ fort_global_handler:
       - stop
     - determine cancelled
 
+    ##small bug where if you swap items the rarity thing disappears?
     on player drags in inventory:
     - if <context.slots.contains[<util.list_numbers[from=19;to=27]>]> && <context.item.material.name> != air:
       - stop

@@ -199,13 +199,14 @@ hud_handler:
 
     - define backdrop <&chr[A000].font[buttons]>
 
+    - if <[inv_type]> == inv && <[new_slot]> > 6:
+      - define slot <[old_slot].is_more_than[3].if_true[1].if_false[6]>
+      - adjust <player> item_slot:<[slot]>
+
     - inject hud_handler.fill_slots
 
     ## [ Inventory Mode ] ##
     - if <[inv_type]> == inv:
-      - if <[new_slot]> > 6:
-        - define slot <[old_slot].is_more_than[3].if_true[1].if_false[6]>
-        - adjust <player> item_slot:<[slot]>
       - define backdrop <&chr[A000].font[buttons]>
       - define keys:!
       - define count 6
