@@ -246,7 +246,8 @@ fort_lobby_handler:
     - define scale       <[button].scale>
     - define scale_add   <map[play=0.25;mode=0.25;invite=0.1].get[<[type].before[_]>]>
     - define max_scale   <[scale].add[<[scale_add]>,<[scale_add]>,<[scale_add]>]>
-    - glow <[button]> true
+    - if <[type]> != invite:
+      - glow <[button]> true
     #in case they select it mid-glint anim
     - if <[type]> == play && !<player.has_flag[fort.in_queue]>:
       - adjust <[button]> item:<item[oak_sign].with[custom_model_data=1]>
