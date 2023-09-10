@@ -28,8 +28,8 @@ fort_explosive_handler:
 
     - playsound <player> sound:ENTITY_SNOWBALL_THROW pitch:0.9
 
-    - take item:<[i]>
-    - inject update_hud
+    - take slot:<player.held_item_slot>
+    - run update_hud
 
     - drop <context.item.with[flag=thrown_grenade]> <[origin]> delay:9999s save:grenade
     - define grenade <entry[grenade].dropped_entity>
@@ -75,8 +75,9 @@ fort_explosive_handler:
 
     - playsound <player> sound:ENTITY_SNOWBALL_THROW pitch:0.9
 
-    - take item:<[i]>
-    - inject update_hud
+    #item:<[item]> doesn't work for some reason
+    - take slot:<player.held_item_slot>
+    - run update_hud
 
     - drop <context.item.with[flag=thrown_grenade]> <[origin]> delay:10s save:grenade
     - define grenade <entry[grenade].dropped_entity>
