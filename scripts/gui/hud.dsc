@@ -104,15 +104,15 @@ hud_handler:
     #only let players change item locations within the 2-6 slots
 
     after player picks up item:
-    - if <player.name> != Nimsy:
-      - stop
+    ##- if <player.name> != Nimsy:
+      ##- stop
 
     - inject update_hud
 
     after player scrolls their hotbar:
     ##########REMOVE THIS LINE
-    - if <player.name> != Nimsy:
-      - stop
+    ###- if <player.name> != Nimsy:
+      #####- stop
     - define new_slot <context.new_slot>
     - define old_slot <context.previous_slot>
 
@@ -281,7 +281,8 @@ hud_handler:
         - if <[s_name].starts_with[gun_]>:
           - define font_type guns
           - define gun_uuid  <[item].flag[uuid]>
-          - define qty       <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
+          #-check in the future why i need this fallback (it errors if i dont use it)
+          - define qty       <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]||0>
         - else if <[s_name].starts_with[fort_pickaxe_]>:
           - define font_type pickaxes
         - else:

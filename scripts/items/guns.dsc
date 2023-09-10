@@ -460,11 +460,12 @@ fort_gun_handler:
             - if <[target].armor_bonus||0> > 0:
               - define color <&b>
             - adjust <[target]> no_damage_duration:0
+            #multiple pellets uses slightly different logic for the damage_indicator, so you findout when you check if <[hit_targets]> exists
+            - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round_down>;entity=<[target_hitbox].if_null[<[target]>]>;color=<[color]>]>
 
           - adjust <[target]> no_damage_duration:0
 
           #-show damage indicator even if it's 0?
-          - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round_down>;entity=<[target_hitbox].if_null[<[target]>]>;color=<[color]>]>
           - adjust <player> reset_attack_cooldown
 
         # - [ SUPPLY DROPS ] - #

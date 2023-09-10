@@ -37,6 +37,10 @@ fort_item_handler:
     - define item <context.item>
     - define other_item <context.target.item>
 
+    - if <[item].has_flag[thrown_grenade]>:
+      - determine passively cancelled
+      - stop
+
     - if <[item].script.name> != <[other_item].script.name>:
       - determine passively cancelled
       - stop

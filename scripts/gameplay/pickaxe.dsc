@@ -16,14 +16,14 @@ fort_pic_handler:
   debug: false
   definitions: data
   events:
-    on player fort_pic takes damage:
+    on player fort_pickaxe* takes damage:
     - determine cancelled
 
     #each swing is 50 hp, each crit is 100
-    on player breaks block with:fort_pic:
+    on player breaks block with:fort_pickaxe*:
     #- stop if:<player.world.name.equals[fortnite_map].not>
     - determine passively cancelled
-    - stop if:<player.item_in_hand.script.name.equals[fort_pic].not||true>
+    - stop if:<player.item_in_hand.script.name.starts_with[fort_pickaxe].not||true>
 
     - define block <context.location>
 
@@ -92,7 +92,7 @@ fort_pic_handler:
 
     #switch between axe and pic
     #i *could* just remove the block when you click it, but the immersion would be ruined since you can't hold left click while farming
-    on player clicks block type:!air with:fort_pic:
+    on player clicks block type:!air with:fort_pickaxe*:
 
     - define i <context.item>
 
@@ -107,17 +107,17 @@ fort_pic_handler:
     - if <[i].material.name> != <[tool]>:
       - inventory adjust slot:<player.held_item_slot> material:<[tool]>
 
-    on player right clicks !air with:fort_pic:
+    on player right clicks !air with:fort_pickaxe*:
     #so they can't strip logs
     - stop if:<context.location.material.name.contains_text[wood].not>
     - determine cancelled
 
     #infinite durability
-    on fort_pic takes damage:
+    on fort_pickaxe* takes damage:
     - determine cancelled
-    on player drops fort_pic:
+    on player drops fort_pickaxe*:
     - determine cancelled
-    on player clicks fort_pic in inventory:
+    on player clicks fort_pickaxe* in inventory:
     - determine cancelled
 
     on player picks up oak_log|bricks|iron_block:

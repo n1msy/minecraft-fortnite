@@ -29,8 +29,11 @@ fort_explosive_handler:
     - playsound <player> sound:ENTITY_SNOWBALL_THROW pitch:0.9
 
     - take item:<[i]>
-    - drop <item[gold_nugget].with[custom_model_data=7]> <[origin]> delay:9999s save:grenade
+    - inject update_hud
+
+    - drop <context.item.with[flag=thrown_grenade]> <[origin]> delay:9999s save:grenade
     - define grenade <entry[grenade].dropped_entity>
+
 
     - foreach <[points]> as:p:
       - define move_loc    <[p].below[<[loop_index].sub[4].power[2].div[95]>]>
@@ -73,7 +76,9 @@ fort_explosive_handler:
     - playsound <player> sound:ENTITY_SNOWBALL_THROW pitch:0.9
 
     - take item:<[i]>
-    - drop <item[gold_nugget].with[custom_model_data=6]> <[origin]> delay:10s save:grenade
+    - inject update_hud
+
+    - drop <context.item.with[flag=thrown_grenade]> <[origin]> delay:10s save:grenade
     - define grenade <entry[grenade].dropped_entity>
     - run fort_explosive_handler.primed def:<map[grenade=<[grenade]>]>
 
