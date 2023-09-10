@@ -22,7 +22,13 @@ fort_emote_handler:
     - choose <[emote]>:
       - case default:
         - define sound fort.emotes.default.<util.random.int[1].to[3]>
-        - playsound <[emote_loc]> custom sound:<[sound]> volume:1.2
+
+    - if <player.has_flag[fort.in_menu]>:
+      - define sound_loc <player>
+    - else:
+      - define sound_loc <[emote_loc]>
+
+    - playsound <[sound_loc]> custom sound:<[sound]> volume:1.2
 
     #- run pmodels_spawn_model def.location:<player.location.above[2]> def.player:<player> def.scale:<location[1.87,1.87,1.87]> save:result
     - run dmodels_spawn_model def.player:<player> def.model_name:emotes def.location:<[emote_loc].above[2]> save:result

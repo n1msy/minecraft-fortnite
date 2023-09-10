@@ -21,7 +21,7 @@ fort_lobby_handler:
     - adjust <player> can_fly:true
     - adjust <player> flying:true
 
-    - adjust <player> fly_speed:0.07
+    - adjust <player> fly_speed:0.05
     - bossbar remove fort_waiting players:<player>
     - invisible state:true
     - inventory clear
@@ -63,8 +63,8 @@ fort_lobby_handler:
 
     on player join:
     ##############remove this
-    - if <player.name> != Nimsy:
-      - stop
+    #- if <player.name> != Nimsy:
+      #- stop
 
     - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
 
@@ -567,7 +567,7 @@ fort_lobby_setup:
     ##to make it more performant, i could combine a bunch of them and make them 1 big image so it would use less text displays
     - define radius 9.8
 
-    - define size 7.2
+    - define size 7.1
 
     - define i <item[white_stained_glass_pane].with[custom_model_data=1]>
 
