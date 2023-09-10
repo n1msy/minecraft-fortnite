@@ -5,7 +5,8 @@ update_hud:
   script:
 
   #-dont give the player a hud while they're inside the "menu"
-  - if <player.has_flag[fort.in_menu]>:
+  #- if <player.has_flag[fort.in_menu]>:
+  - if <player.location.is_in[fort_menu]||false>:
     - stop
 
   #falling icon turns to clock icon after bus is done dropping
@@ -16,7 +17,8 @@ update_hud:
   - if <player.item_in_hand.script.name.starts_with[gun_]||false>:
     - define gun_uuid      <player.item_in_hand.flag[uuid]>
     - define ammo_type     <player.item_in_hand.flag[ammo_type]>
-    - define loaded_ammo   <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
+    #figure out why the fallback has to be 0, otherwise it errors
+    - define loaded_ammo   <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]||0>
     - define total_ammo    <player.flag[fort.ammo.<[ammo_type]>]||0>
     - define ammo_icon     <&chr[E00<map[light=1;medium=2;heavy=3;shells=4;rockets=5].get[<[ammo_type]>]>].font[icons]>
     - define ammo_text    "<element[<[loaded_ammo]> / <[total_ammo]>].font[ammo_text]> <[ammo_icon]>"

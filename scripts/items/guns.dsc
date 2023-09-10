@@ -279,7 +279,6 @@ fort_gun_handler:
     - while <player.has_flag[gun_holding_down]> && <player.is_online> && <player.item_in_hand.flag[uuid]||null> == <[gun_uuid]>:
       #do 1 instead of 0 so there's no delay on the first shot
       - if <[loop_index].mod[<[ticks_between_shots]>]> == <[mod_value]>:
-
         - define times_shot <[ticks_between_shots].equals[1].if_true[<[loop_index]>].if_false[<[loop_index].div[<[ticks_between_shots]>].round_down.add[1]>]>
         - run fort_gun_handler.recoil def:<map[gun_name=<[gun_name]>]>
 
@@ -687,7 +686,8 @@ fort_gun_handler:
     - flag server fort.temp.<[gun_uuid]>.loaded_ammo:--
     - define loaded_ammo <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
 
-    - inject update_hud
+    #run, not inject, since there are waits in it
+    - run update_hud
 
     - if <[loaded_ammo]> == 0:
       - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
