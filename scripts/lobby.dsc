@@ -1,81 +1,3 @@
-fort_lobby_setup:
-  type: task
-  debug: false
-  script:
-
-    #-reset previous entities
-    - foreach play|mode as:button_type:
-      - if <server.has_flag[fort.menu.<[button_type]>_button_hitboxes]>:
-        - foreach <server.flag[fort.menu.<[button_type]>_button_hitboxes]> as:hb:
-          - remove <[hb]> if:<[hb].is_spawned>
-
-    - if <server.has_flag[fort.menu.pads]>:
-      - foreach <server.flag[fort.menu.pads]> as:p:
-        - remove <[p]> if:<[p].is_spawned>
-
-    - if <server.has_flag[fort.menu.invite_button_hitboxes]>:
-      - foreach <server.flag[fort.menu.invite_button_hitboxes]> as:inv:
-        - remove <[inv]> if:<[inv].is_spawned>
-
-    - if <server.has_flag[fort.menu.button_bg]>:
-      - remove <server.flag[fort.menu.button_bg]>
-
-    #- flag server fort.menu:!
-
-    #- define loc <player.location.center.with_pose[0,0]>
-    - define loc <server.flag[fort.menu_spawn]>
-
-    - flag server fort.menu:!
-    #bottom right: <[loc].forward[2.5].right[0.8].below[0.5]>
-    #bottom middle: <[loc].forward_flat[3].below[0.5]>
-    #top middle: <[loc].forward[4].above[2].left[2]>
-    - define play_loc <[loc].forward[4.5].right[0.8].below[0.2]>
-
-    #-play button hitboxes
-    - repeat 3:
-      - spawn <entity[interaction].with[width=1;height=1]> <[play_loc].right[<[value]>]> save:play_hitbox_<[value]>
-      - define play_hitbox <entry[play_hitbox_<[value]>].spawned_entity>
-      - flag <[play_hitbox]> menu.play_button
-      - flag server fort.menu.play_button_hitboxes:->:<[play_hitbox]>
-
-    #-mode button hitboxes
-    - repeat 3:
-      - spawn <entity[interaction].with[width=0.7;height=0.7]> <[play_loc].backward_flat[0.01].above[1].right[<[value].div[1.05].add[0.1]>]> save:mode_hitbox_<[value]>
-      - define mode_hitbox <entry[mode_hitbox_<[value]>].spawned_entity>
-      - flag <[mode_hitbox]> menu.mode_button
-      - flag server fort.menu.mode_button_hitboxes:->:<[mode_hitbox]>
-
-    #get the center one
-    - define play_loc <[loc].forward[4.5].right[2.8].below[0.2]>
-
-    - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=13]>;scale=3,1.63,3]> <[play_loc].above[0.85].forward[0.001].with_yaw[<[play_loc].yaw.add[20]>]> save:button_bg
-    - define button_bg <entry[button_bg].spawned_entity>
-    - flag server fort.menu.button_bg:<[button_bg]>
-
-    - define pad_loc_1 <[loc].above.forward[5].above[0]>
-    - define pad_loc_2 <[pad_loc_1].forward.left[2]>
-    - define pad_loc_3 <[pad_loc_2].right[4]>
-    - define pad_loc_4 <[pad_loc_3].forward.right[2]>
-    - repeat 4:
-      - define l <[pad_loc_<[value]>]>
-      - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=11]>;scale=1,1,1]> <[l]> save:pad_<[value]>
-      - flag server fort.menu.pads:->:<entry[pad_<[value]>].spawned_entity>
-
-      #skip the first pad, since that's the player's own one
-      - if <[value]> == 1:
-        - repeat next
-      - spawn <entity[interaction].with[width=1;height=1]> <[l].above[0.25]> save:invite_hitbox_<[value]>
-      - define inv_hb <entry[invite_hitbox_<[value]>].spawned_entity>
-      - flag <[inv_hb]> menu.invite_button.<[value].sub[1]>
-      - flag server fort.menu.invite_button_hitboxes:->:<[inv_hb]>
-
-    - flag server fort.menu_spawn:<[loc]>
-
-    - define cuboid <[loc].below[8].backward[8].left[8].to_cuboid[<[loc].above[8].forward[8].right[8]>]>
-    - note <[cuboid]> as:fort_menu
-
-
-
 fort_lobby_handler:
   type: world
   debug: false
@@ -94,7 +16,8 @@ fort_lobby_handler:
       - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
     - adjust <player> can_fly:true
     - adjust <player> flying:true
-    - adjust <player> fly_speed:0.01
+    ###############################ADD THIS BACK
+    ###############################- adjust <player> fly_speed:0.01
     - bossbar remove fort_waiting players:<player>
     - invisible state:true
     - inventory clear
@@ -188,7 +111,7 @@ fort_lobby_handler:
       - flag <[button]> type:invite
 
     #-nimnite title
-    - wait 8s
+    - wait 5s
     - if !<player.has_flag[fort.in_queue]> && !<player.has_flag[fort.menu.match_info]>:
       - run fort_lobby_handler.match_info def.option:add
 
@@ -481,3 +404,146 @@ fort_lobby_handler:
     - adjust <[button]> interpolation_duration:<[speed]>t
 
 
+
+fort_lobby_setup:
+  type: task
+  debug: false
+  script:
+
+    #-reset previous entities
+    - foreach play|mode as:button_type:
+      - if <server.has_flag[fort.menu.<[button_type]>_button_hitboxes]>:
+        - foreach <server.flag[fort.menu.<[button_type]>_button_hitboxes]> as:hb:
+          - remove <[hb]> if:<[hb].is_spawned>
+
+    - if <server.has_flag[fort.menu.pads]>:
+      - foreach <server.flag[fort.menu.pads]> as:p:
+        - remove <[p]> if:<[p].is_spawned>
+
+    - if <server.has_flag[fort.menu.invite_button_hitboxes]>:
+      - foreach <server.flag[fort.menu.invite_button_hitboxes]> as:inv:
+        - remove <[inv]> if:<[inv].is_spawned>
+
+    - if <server.has_flag[fort.menu.button_bg]>:
+      - remove <server.flag[fort.menu.button_bg]>
+
+    - if <server.has_flag[fort.menu.bg_planes]>:
+      - foreach <server.flag[fort.menu.bg_planes]> as:plane:
+        - remove <[plane]> if:<[plane].is_spawned>
+
+    #- flag server fort.menu:!
+
+    #- define loc <player.location.center.with_pose[0,0]>
+    - define loc <server.flag[fort.menu_spawn]>
+
+    - flag server fort.menu:!
+    #bottom right: <[loc].forward[2.5].right[0.8].below[0.5]>
+    #bottom middle: <[loc].forward_flat[3].below[0.5]>
+    #top middle: <[loc].forward[4].above[2].left[2]>
+    - define play_loc <[loc].forward[4.5].right[0.8].below[0.2]>
+
+    #-play button hitboxes
+    - repeat 3:
+      - spawn <entity[interaction].with[width=1;height=1]> <[play_loc].right[<[value]>]> save:play_hitbox_<[value]>
+      - define play_hitbox <entry[play_hitbox_<[value]>].spawned_entity>
+      - flag <[play_hitbox]> menu.play_button
+      - flag server fort.menu.play_button_hitboxes:->:<[play_hitbox]>
+
+    #-mode button hitboxes
+    - repeat 3:
+      - define mode_loc <[play_loc].forward[0.3].above[1].right[<[value].div[1.05].add[0.1]>]>
+      - if <[value]> == 3:
+        - define mode_loc <[mode_loc].backward[0.25].right[0.1]>
+      - else if <[value]> == 1:
+        - define mode_loc <[mode_loc].forward[0.28]>
+      - spawn <entity[interaction].with[width=1;height=0.55]> <[mode_loc]> save:mode_hitbox_<[value]>
+      - define mode_hitbox <entry[mode_hitbox_<[value]>].spawned_entity>
+      - flag <[mode_hitbox]> menu.mode_button
+      - flag server fort.menu.mode_button_hitboxes:->:<[mode_hitbox]>
+
+    #get the center one
+    - define play_loc <[loc].forward[4.5].right[2.8].below[0.2]>
+
+    - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=13]>;scale=3,1.63,3]> <[play_loc].above[0.85].forward[0.001].with_yaw[<[play_loc].yaw.add[20]>]> save:button_bg
+    - define button_bg <entry[button_bg].spawned_entity>
+    - flag server fort.menu.button_bg:<[button_bg]>
+
+    - define pad_loc_1 <[loc].above.forward[5].above[0]>
+    - define pad_loc_2 <[pad_loc_1].forward.left[2]>
+    - define pad_loc_3 <[pad_loc_2].right[4]>
+    - define pad_loc_4 <[pad_loc_3].forward.right[2]>
+    - repeat 4:
+      - define l <[pad_loc_<[value]>]>
+      - modifyblock <[l].center.below> barrier
+      - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=11]>;scale=1,1,1]> <[l]> save:pad_<[value]>
+      - flag server fort.menu.pads:->:<entry[pad_<[value]>].spawned_entity>
+
+      #skip the first pad, since that's the player's own one
+      - if <[value]> == 1:
+        - repeat next
+      - spawn <entity[interaction].with[width=1;height=1]> <[l].above[0.25]> save:invite_hitbox_<[value]>
+      - define inv_hb <entry[invite_hitbox_<[value]>].spawned_entity>
+      - flag <[inv_hb]> menu.invite_button.<[value].sub[1]>
+      - flag server fort.menu.invite_button_hitboxes:->:<[inv_hb]>
+
+    ## - [ Background ] - ##
+
+
+    #-cylinder
+    - define radius 10
+    - define cyl_height 15
+
+    - define center <[loc].below[<[cyl_height].div[2.35]>]>
+
+    - define circle <[center].points_around_y[radius=<[radius]>;points=15]>
+
+    - define i <item[oak_sign].with[custom_model_data=15]>
+    - foreach <[circle]> as:plane_loc:
+
+      - define angle <[plane_loc].face[<[center]>].yaw.to_radians>
+      - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
+
+      - spawn <entity[ITEM_DISPLAY].with[item=<[i]>;scale=4.4,<[cyl_height]>,4.4;left_rotation=<[left_rotation]>;translation=0,<[cyl_height].div[2.35]>,0]> <[plane_loc]> save:plane
+      - define plane     <entry[plane].spawned_entity>
+      - flag server fort.menu.bg_planes:->:<[plane]>
+
+    #-bottom circle
+    - define radius 10
+    - define height 15
+
+    - define circle <[center].points_around_y[radius=<[radius]>;points=40]>
+
+    - define i <item[oak_sign].with[custom_model_data=15]>
+    - foreach <[circle]> as:plane_loc:
+      - define angle <[plane_loc].face[<[center]>].yaw.to_radians>
+      - define left_rotation <quaternion[0,-1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
+      - define left_rotation <[left_rotation].mul[<location[1,0,0].to_axis_angle_quaternion[<element[90].to_radians>]>]>
+
+      - spawn <entity[ITEM_DISPLAY].with[item=<[i]>;scale=1.6,10.4,1.6;left_rotation=<[left_rotation]>;translation=<[plane_loc].sub[<[center]>].div[2]>]> <[plane_loc].with_yaw[180]> save:plane
+      - define plane     <entry[plane].spawned_entity>
+      - flag server fort.menu.bg_planes:->:<[plane]>
+
+    #-top circle
+    - define radius 10
+    - define height 15
+
+    - define circle <[center].add[0,<[cyl_height].mul[1.8]>,0].points_around_y[radius=<[radius]>;points=40]>
+
+    - define i <item[oak_sign].with[custom_model_data=15]>
+    - foreach <[circle]> as:plane_loc:
+      - define angle <[plane_loc].face[<[center]>].yaw.to_radians>
+      - define left_rotation <quaternion[0,-1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
+      - define left_rotation <[left_rotation].mul[<location[1,0,0].to_axis_angle_quaternion[<element[90].to_radians>]>]>
+
+      - spawn <entity[ITEM_DISPLAY].with[item=<[i]>;scale=1.6,10.4,1.6;left_rotation=<[left_rotation]>;translation=<[center].sub[<[plane_loc]>].div[2]>]> <[plane_loc]> save:plane
+      - define plane     <entry[plane].spawned_entity>
+      - flag server fort.menu.bg_planes:->:<[plane]>
+
+
+
+    ##
+
+    - flag server fort.menu_spawn:<[loc]>
+
+    - define cuboid <[loc].below[8].backward[8].left[8].to_cuboid[<[loc].above[8].forward[8].right[8]>]>
+    - note <[cuboid]> as:fort_menu

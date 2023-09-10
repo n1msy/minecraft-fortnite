@@ -206,6 +206,7 @@ dmodels_reset_model_position:
         - create PLAYER <[host].name> <[root_entity].location.below> save:player_npc
         - define player_npc <entry[player_npc].created_npc>
         - adjust <[player_npc]> hide_from_players
+        - adjust <[player_npc]> name_visible:false
         - adjust <[host]> show_entity:<[player_npc]>
         - flag <[host]> fort.menu.player_npc:<[player_npc]>
         - flag <[host]> fort.emote:!
