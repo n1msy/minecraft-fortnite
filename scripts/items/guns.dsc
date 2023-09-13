@@ -1,6 +1,4 @@
-#One minor difference between this and Val:
-#When you pick up a gun from the ground, the gun you bought in the buy phase is removed and money is recovered
-#instead of dropped too.
+#CENTER THE AMOO TEXT OR NO?
 
 drop_all_items:
   type: task

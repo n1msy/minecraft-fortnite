@@ -9,12 +9,13 @@ minimap:
   - define uuid <player.uuid>
 
   - define bb minimap_<player.uuid>
-  - bossbar create <[bb]>
-  - bossbar create <[bb]>_yaw color:yellow
+  - bossbar create <[bb]> color:YELLOW
+  - bossbar create <[bb]>_yaw color:YELLOW
   - flag player minimap
 
   - define oldRotation <player.location.yaw.div[360].mul[1024].round>
 
+  - define yaw_icon <&chr[20].font[icons].color[65,0,0]>
 
   #this chooses which image to use for minimap
   - define in_game <player.world.equals[nimnite_map]>
@@ -115,11 +116,12 @@ minimap:
 
     - define title <[compass_display]><[whole_map]><[marker]><proc[spacing].context[<[offset].sub[2].sub[<[tiles].size>]>]><[circle_display]>
 
-    - define spacing <&sp.repeat[<element[3].sub[<[yaw].length>]>]>
+    - define spacing <map[1=7;2=10;3=13].get[<[yaw].length>]>
+    #or: <element[16].sub[<[yaw].length.mul[3]>]>
 
     # just so you know, adding characters before/and after the title does change the offset. who would've guessed /s
-    - bossbar update <[bb]> title:<[title]>
-    - bossbar update <[bb]>_yaw title:<[yaw].color[65,0,0]> color:yellow
+    - bossbar update <[bb]> title:<[title]> color:YELLOW
+    - bossbar update <[bb]>_yaw title:<[yaw].color[65,0,0]><proc[spacing].context[-<[spacing]>]><[yaw_icon]><proc[spacing].context[<[spacing]>]> color:YELLOW
 
     - inject minimap.tab
     - wait 1t

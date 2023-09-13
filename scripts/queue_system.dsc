@@ -4,7 +4,10 @@ fort_queue_handler:
   debug: false
   events:
 
-    on server start:
+
+    ##create events on server shutdown to safely reset the lobby
+
+    after server start:
     - bossbar create fort_waiting color:YELLOW
 
     ## - [ QUEUE SYSTEM ] - ##
@@ -33,8 +36,7 @@ fort_queue_handler:
     - bossbar update fort_waiting title:<proc[spacing].context[50]><&chr[A004].font[icons]><proc[spacing].context[-72]><&l><element[WAITING FOR PLAYERS].font[lobby_text]> color:YELLOW players:<[players_queued].filter[has_flag[fort.in_menu].not]>
 
 
-    #- run fort_lobby_setup.bg_cube_anim def.loops:<context.second> def.type:rotate         if:<context.second.mod[10].equals[0]>
-    - run fort_lobby_setup.bg_cube_anim def.loops:<context.second> def.type:brightness     if:<context.second.mod[5].equals[0]>
+    - run fort_lobby_setup.bg_cube_anim if:<context.second.mod[5].equals[0]>
 
     #- foreach <[players_not_queued]> as:player:
       #-play the title moving up and down animation

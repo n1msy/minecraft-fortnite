@@ -4,6 +4,8 @@ fort_lobby_handler:
   definitions: player|button|option|title|size_data
   events:
 
+    #-remove the sound for whenever hitting the npc?
+
     on player stops flying flagged:fort.in_menu:
     - determine cancelled
 
@@ -28,8 +30,18 @@ fort_lobby_handler:
     - sidebar remove
     - if <player.has_flag[minimap]>:
       - run minimap
+
+    - define youtube_icon <&chr[13].font[icons]>
+    - define twitch_icon  <&chr[14].font[icons]>
+    - define twitter_icon <&chr[15].font[icons]>
+
+    - define actionbar_text "<[youtube_icon]> Nimsy <[twitch_icon]> FlimsyNimsy <[twitter_icon]> N1msy"
+
     - while <player.is_online> && <player.has_flag[fort.in_menu]>:
+      #socials
       - inject fort_lobby_handler.menu
+      #only update every 2 seconds
+      - actionbar <[actionbar_text]> if:<[loop_index].mod[40].equals[0]>
       - wait 1t
     #wait for fade effect to go away
     - wait 6t
@@ -37,11 +49,11 @@ fort_lobby_handler:
 
     on player exits fort_menu:
 
-    ####- if <context.cause> == WALK:
-      ####- title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
-      ####- wait 7t
-      ####- teleport <player> <server.flag[fort.menu_spawn]>
-      ####- stop
+    - if <context.cause> == WALK:
+      - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
+      - wait 7t
+      - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
+      - stop
 
     #cancel the emote
     - flag player fort.in_menu:!
@@ -72,8 +84,8 @@ fort_lobby_handler:
 
     on player join:
     ##############remove this
-    #- if <player.name> != Nimsy:
-      #- stop
+    - if !<list[asd988|Nimsy].contains[<player.name>]>:
+      - stop
 
     - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
 
@@ -596,10 +608,14 @@ fort_lobby_setup:
 
     ##
 
+    ##for tutorial icon, make sure to add text saying "Tutorial" when hovering over it
+
     - flag server fort.menu_spawn:<[loc]>
 
-    - define cuboid <[loc].below[8].backward[8].left[8].to_cuboid[<[loc].above[8].forward[8].right[8]>]>
-    - note <[cuboid]> as:fort_menu
+    - define size 8
+    #- define cuboid <[loc].below[<[size]>].backward[<[size]>].left[<[size]>].to_cuboid[<[loc].above[<[size]>].forward[<[size]>].right[<[size]>]>]>
+    - define ellipsoid <[loc].to_ellipsoid[<[size]>,<[size]>,<[size]>]>
+    - note <[ellipsoid]> as:fort_menu
 
   bg_cube_anim:
 
@@ -607,35 +623,34 @@ fort_lobby_setup:
 
     - define circle <[center].points_around_y[radius=9.8;points=25]>
 
-    - if <[type]> == rotate:
+    #- if <[type]> == rotate:
     #this is run in "queue_system.dsc" every 10 seconds
-      - foreach <server.flag[fort.menu.bg_cubes]> as:cube:
+    #  - foreach <server.flag[fort.menu.bg_cubes]> as:cube:
 
-        - if <[type]> == rotate:
-          - define cube_loc <[cube].location>
+    #    - if <[type]> == rotate:
+    #      - define cube_loc <[cube].location>
 
-          - define get_next <[loop_index].sub[1]>
-          - if <[get_next]> == 0:
-            - define get_next 25
+    #      - define get_next <[loop_index].sub[1]>
+    #      - if <[get_next]> == 0:
+    #        - define get_next 25
 
-          - define dest <[circle].get[<[get_next]>].face[<[center]>]>
+    #      - define dest <[circle].get[<[get_next]>].face[<[center]>]>
 
-          - define angle <[dest].yaw.add[180].to_radians>
-          - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
+    #      - define angle <[dest].yaw.add[180].to_radians>
+    #      - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
 
-          - define translation <[dest].sub[<[cube_loc]>].with_y[0]>
+    #      - define translation <[dest].sub[<[cube_loc]>].with_y[0]>
 
-          - adjust <[cube]> interpolation_start:0
-          - adjust <[cube]> translation:<[translation]>
-          - adjust <[cube]> left_rotation:<[left_rotation]>
-          - adjust <[cube]> interpolation_duration:45s
-    - else:
-      - foreach <server.flag[fort.menu.bg_cubes].reverse> as:cube:
-        - wait 2t
-        - run fort_lobby_setup.bg_cube_brightness_anim def.cube:<[cube]>
+    #      - adjust <[cube]> interpolation_start:0
+    #      - adjust <[cube]> translation:<[translation]>
+    #      - adjust <[cube]> left_rotation:<[left_rotation]>
+    #      - adjust <[cube]> interpolation_duration:45s
+    #- else:
+    - foreach <server.flag[fort.menu.bg_cubes].reverse> as:cube:
+      - wait 2t
+      - run fort_lobby_setup.bg_cube_brightness_anim def.cube:<[cube]>
 
   bg_cube_brightness_anim:
-
     #4 seconds total
 
     - repeat 10:

@@ -124,8 +124,8 @@ fort_global_handler:
     #in case it's part of the drop menu
 
     ################REMOVE THIS
-    ###- if <player.name> != Nimsy:
-      ###- stop
+    - if !<list[asd988|Nimsy].contains[<player.name>]>:
+      - stop
 
     - stop if:<context.item.has_flag[action]||false>
     - if <util.list_numbers[from=19;to=27].contains[<context.slot>]> && <context.item.material.name> != air:

@@ -106,15 +106,17 @@ hud_handler:
     #only let players change item locations within the 2-6 slots
 
     after player picks up item:
-    ##- if <player.name> != Nimsy:
-      ##- stop
+    ##############REMOVE THIS LINE
+    - if !<list[asd988|Nimsy].contains[<player.name>]>:
+      - stop
 
     - inject update_hud
 
     after player scrolls their hotbar:
     ##########REMOVE THIS LINE
-    ###- if <player.name> != Nimsy:
-      #####- stop
+    - if !<list[asd988|Nimsy].contains[<player.name>]>:
+      - stop
+
     - define new_slot <context.new_slot>
     - define old_slot <context.previous_slot>
 
