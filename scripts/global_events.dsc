@@ -335,3 +335,71 @@ fort_global_handler:
 
     - inventory open d:<[inv]>
 
+  death_fx:
+  #-create the "on your knees" animation or no? because the player fades away anyways
+    anim:
+      - define loc <player.location.with_pose[0,0]>
+
+      - wait 2s
+      - run fort_global_handler.death_fx.squares def:<map[loc=<[loc]>]>
+      - wait 6t
+      - run fort_global_handler.death_fx.circles def:<map[loc=<[loc]>]>
+
+    squares:
+      - define loc <[data].get[loc].above[0.3]>
+      - define drone_Loc <[loc].above[2.3]>
+        #shadowed or no?
+
+      #the effect also looks really cool in first person (when doing it in the player's position)
+      - repeat 30:
+
+        #-"drone" (temp, wait for model?)
+        - playeffect effect:REDSTONE at:<[drone_loc]> offset:0 visibility:50 special_data:1.1|<color[#828282]>
+
+        - define size <util.random.decimal[0.8].to[1.62]>
+        - define dest <[loc].above[<util.random.decimal[1.8].to[2.6]>].random_offset[0.15,0,0.15]>
+
+        - define origin <[loc].random_offset[0.5,0,0.5]>
+
+        - define start_translation <[origin].sub[<[loc]>]>
+        - define end_translation   <[dest].sub[<[loc]>]>
+
+        - spawn <entity[text_display].with[text=<element[⬛].color[#<list[D8F0FF|AAF4FF].random>]>;pivot=VERTICAL;scale=<[size]>,<[size]>,<[size]>;translation=<[start_translation]>;background_color=transparent]> <[loc]> save:fx
+        - define fx <entry[fx].spawned_entity>
+        - wait 1t
+
+        - adjust <[fx]> interpolation_start:0
+        - adjust <[fx]> translation:<[end_translation]>
+        - adjust <[fx]> scale:0,0,0
+        - adjust <[fx]> interpolation_duration:15t
+        - run fort_global_handler.death_fx.remove_square def:<map[square=<[fx]>]>
+
+    remove_square:
+      - define square <[data].get[square]>
+      - wait 17t
+      - remove <[square]> if:<[square].is_spawned>
+
+    circles:
+      - define loc <[data].get[loc]>
+      - define start_loc   <[loc].above[1.9]>
+      - define translation <[loc].above[2.25].sub[<[start_loc]>]>
+
+      - repeat 3:
+
+        - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=21]>;scale=3.25,3.25,3.25] <[start_loc]> save:circle_<[value]>
+        - define circle_<[value]> <entry[circle_<[value]>].spawned_entity>
+        - define circles:->:<[circle_<[value]>]>
+
+        - wait 3t
+
+        - adjust <[circle_<[value]>]> interpolation_start:0
+        - adjust <[circle_<[value]>]> translation:<[translation]>
+        - adjust <[circle_<[value]>]> scale:0,0,0
+        - adjust <[circle_<[value]>]> interpolation_duration:17t
+
+      - wait 2s
+      - remove <[circles].filter[is_spawned]>
+
+
+
+

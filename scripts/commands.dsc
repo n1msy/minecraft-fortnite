@@ -8,9 +8,20 @@ fort_commands:
   aliases:
   - fort
   tab completions:
-    1: <list[fill_chests|fill_ammo_boxes|supply_drop]>
+    - if !<player.has_permission[fort.setup]||<context.server>>:
+      - stop
+    - determine <list[lobby_setup|pregame_spawn|fill_chests|fill_ammo_boxes|supply_drop]>
   script:
   - choose <context.args.first||null>:
+    - case lobby_setup:
+      - run fort_lobby_setup
+      - narrate "<&a>Nimnite lobby menu set."
+      - if !<server.has_flag[fort.pregame.spawn]>:
+        - narrate "<&c>[Warning] Pregame island hasn't been set."
+        - narrate "<&7>Type /fort pregame_spawn to set."
+    - case pregame_spawn:
+      - flag server fort.pregame.spawn:<player.location.center>
+      - narrate "<&a>Nimnite pregame island spawn set."
     - case chest:
       #-much better to use the item instead and place them down
       - define loc <player.location.center.above[0.1]>

@@ -4,6 +4,8 @@ fort_lobby_handler:
   definitions: player|button|option|title|size_data
   events:
 
+    #-create the entities upon joining/quitting, or remove/add entities when entering/exiting area
+
     #-remove the sound for whenever hitting the npc?
 
     on player stops flying flagged:fort.in_menu:
@@ -82,6 +84,8 @@ fort_lobby_handler:
     on player damages entity flagged:fort.menu.selected_button priority:-10:
     - inject fort_lobby_handler.button_press
 
+
+    #### - [ OPTIMIZE / PRETTIFY THIS CODE ] ###
     on player join:
     ##############remove this
     - if !<list[asd988|Nimsy].contains[<player.name>]>:
@@ -130,6 +134,15 @@ fort_lobby_handler:
       - flag player fort.menu.<[button_type]>_button:<[<[button_type]>_button]>
       - flag <[<[button_type]>_button]> type:<[button_type]>
 
+    #vid button
+    - define vid_button_loc <server.flag[fort.menu.vid_button_bg].location.backward_flat[0.001]>
+    - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=18]>;scale=3,3,3;hide_from_players=true]> <[vid_button_loc]> save:vid_button
+    - define vid_button <entry[vid_button].spawned_entity>
+    - adjust <player> show_entity:<[vid_button]>
+
+    - flag player fort.menu.vid_button:<[vid_button]>
+    - flag <[vid_button]> type:vid_button
+
     - foreach <server.flag[fort.menu.invite_button_hitboxes]> as:hb:
       - define hb_loc <[hb].location>
       - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=12]>;scale=0.75,0.75,0.75;hide_from_players=true]> <[hb_loc].above[0.5]> save:inv_<[loop_index]>
@@ -143,12 +156,13 @@ fort_lobby_handler:
     - if !<player.has_flag[fort.in_queue]> && !<player.has_flag[fort.menu.match_info]>:
       - run fort_lobby_handler.match_info def.option:add
 
+    ## - [ MAKE THIS CLEANER ] - ##
     on player quit priority:-10:
     - define uuid <player.uuid>
     - if <player.has_flag[fort.menu]>:
-      - foreach play|mode as:button_type:
+      - foreach play|mode|vid as:button_type:
         - define button <player.flag[fort.menu.<[button_type]>_button]>
-        #play button
+        #play/mode/vid button
         - remove <[button]> if:<[button].is_spawned>
 
       #invite buttons
@@ -265,7 +279,7 @@ fort_lobby_handler:
     - define anim_speed  16
     - define type        <[button].flag[type]>
     - define scale       <[button].scale>
-    - define scale_add   <map[play=0.25;mode=0.25;invite=0.1].get[<[type].before[_]>]>
+    - define scale_add   <map[play=0.25;mode=0.25;invite=0.1;vid=0.2].get[<[type].before[_]>]>
     - define max_scale   <[scale].add[<[scale_add]>,<[scale_add]>,<[scale_add]>]>
     - if <[type]> != invite:
       - glow <[button]> true
@@ -348,6 +362,10 @@ fort_lobby_handler:
         - define button <player.flag[fort.menu.invite_button_entity]>
         - run fort_lobby_handler.press_anim def.button:<[button]> def.size_data:<map[to=<location[1.15,1.15,1.15]>;back=<location[0.75,0.75,0.75]>]>
 
+      - case vid_button:
+        - define button <player.flag[fort.menu.vid_button]>
+        - run fort_lobby_handler.press_anim def.button:<[button]> def.size_data:<map[to=<location[3.5,3.5,3.5]>;back=<location[3,3,3]>]>
+
   match_info:
     - define info_display <player.flag[fort.menu.match_info]||null>
     - choose <[option]>:
@@ -425,6 +443,8 @@ fort_lobby_handler:
 
   press_anim:
     #speed 1 has a "pressing" anim
+    ##waiting 1 tick after a denizen/paper update has made it a bit better?
+    #- wait 1t
     - if <[size_data].exists>:
       - define to_size   <[size_data].get[to]>
       - define back_size <[size_data].get[back]>
@@ -452,7 +472,7 @@ fort_lobby_setup:
   script:
 
     #-reset previous entities
-    - foreach play|mode as:button_type:
+    - foreach play|mode|vid as:button_type:
       - if <server.has_flag[fort.menu.<[button_type]>_button_hitboxes]>:
         - foreach <server.flag[fort.menu.<[button_type]>_button_hitboxes]> as:hb:
           - remove <[hb]> if:<[hb].is_spawned>
@@ -467,6 +487,12 @@ fort_lobby_setup:
 
     - if <server.has_flag[fort.menu.button_bg]>:
       - remove <server.flag[fort.menu.button_bg]>
+
+    - if <server.has_flag[fort.menu.vid_button_bg]>:
+      - remove <server.flag[fort.menu.vid_button_bg]>
+
+    - if <server.has_flag[fort.menu.vid_text]>:
+      - remove <server.flag[fort.menu.vid_text]>
 
     - if <server.has_flag[fort.menu.bg_planes]>:
       - foreach <server.flag[fort.menu.bg_planes]> as:plane:
@@ -485,7 +511,9 @@ fort_lobby_setup:
     #bottom right: <[loc].forward[2.5].right[0.8].below[0.5]>
     #bottom middle: <[loc].forward_flat[3].below[0.5]>
     #top middle: <[loc].forward[4].above[2].left[2]>
-    - define play_loc <[loc].forward[4.5].right[0.8].below[0.2]>
+    - define play_loc <[loc].forward[4.5].right[1.2].below[0.2]>
+
+    ## - [ BUTTONS ] - ##
 
     #-play button hitboxes
     - repeat 3:
@@ -507,11 +535,39 @@ fort_lobby_setup:
       - flag server fort.menu.mode_button_hitboxes:->:<[mode_hitbox]>
 
     #get the center one
-    - define play_loc <[loc].forward[4.5].right[2.8].below[0.2]>
+    - define play_loc <[loc].forward[4.5].right[3.2].below[0.2]>
 
     - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=13]>;scale=3,1.63,3]> <[play_loc].above[0.85].forward[0.001].with_yaw[<[play_loc].yaw.add[20]>]> save:button_bg
     - define button_bg <entry[button_bg].spawned_entity>
     - flag server fort.menu.button_bg:<[button_bg]>
+
+    #-vid button hitboxes
+    - repeat 3:
+      - define vid_loc <[play_loc].forward[0.1].above[0.8].left[<[value].div[1.15].add[5.5]>]>
+      - if <[value]> == 3:
+        - define vid_loc <[vid_loc].backward[0.25].left[0.1]>
+      - else if <[value]> == 1:
+        - define vid_loc <[vid_loc].forward[0.28]>
+      - spawn <entity[interaction].with[width=0.9;height=2]> <[vid_loc]> save:vid_hitbox_<[value]>
+      - define vid_hitbox <entry[vid_hitbox_<[value]>].spawned_entity>
+      - flag <[vid_hitbox]> menu.vid_button
+      - flag server fort.menu.vid_button_hitboxes:->:<[vid_hitbox]>
+
+    #vid bg
+    - define vid_bg_loc <[play_loc].forward[0.1].above[1.8].left[7.3].forward[0.001].with_yaw[<[play_loc].yaw.sub[20]>]>
+    - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=17]>;scale=3.1,1.8,3.1]> <[vid_bg_loc]> save:vid_button_bg
+    - define vid_button_bg <entry[vid_button_bg].spawned_entity>
+    - flag server fort.menu.vid_button_bg:<[vid_button_bg]>
+
+    #vid text
+    - define text "Watch how this gamemode was made!"
+    - define vid_text_loc <[vid_bg_loc].above[1].with_yaw[<[vid_bg_loc].yaw.add[180]>]>
+    - spawn <entity[text_display].with[text=<[text]>;pivot=FIXED;scale=0.8,0.8,0.8;background_color=transparent]> <[vid_text_loc]> save:vid_text
+    - define vid_text <entry[vid_text].spawned_entity>
+    - flag server fort.menu.vid_text:<[vid_text]>
+
+
+    ## - [ PADS ] - ##
 
     - define pad_loc_1 <[loc].above.forward[5].above[0]>
     - define pad_loc_2 <[pad_loc_1].forward.left[2]>
@@ -614,7 +670,7 @@ fort_lobby_setup:
 
     - define size 8
     #- define cuboid <[loc].below[<[size]>].backward[<[size]>].left[<[size]>].to_cuboid[<[loc].above[<[size]>].forward[<[size]>].right[<[size]>]>]>
-    - define ellipsoid <[loc].to_ellipsoid[<[size]>,<[size]>,<[size]>]>
+    - define ellipsoid <[loc].below[1.1].to_ellipsoid[<[size]>,5,<[size]>]>
     - note <[ellipsoid]> as:fort_menu
 
   bg_cube_anim:
@@ -623,29 +679,6 @@ fort_lobby_setup:
 
     - define circle <[center].points_around_y[radius=9.8;points=25]>
 
-    #- if <[type]> == rotate:
-    #this is run in "queue_system.dsc" every 10 seconds
-    #  - foreach <server.flag[fort.menu.bg_cubes]> as:cube:
-
-    #    - if <[type]> == rotate:
-    #      - define cube_loc <[cube].location>
-
-    #      - define get_next <[loop_index].sub[1]>
-    #      - if <[get_next]> == 0:
-    #        - define get_next 25
-
-    #      - define dest <[circle].get[<[get_next]>].face[<[center]>]>
-
-    #      - define angle <[dest].yaw.add[180].to_radians>
-    #      - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
-
-    #      - define translation <[dest].sub[<[cube_loc]>].with_y[0]>
-
-    #      - adjust <[cube]> interpolation_start:0
-    #      - adjust <[cube]> translation:<[translation]>
-    #      - adjust <[cube]> left_rotation:<[left_rotation]>
-    #      - adjust <[cube]> interpolation_duration:45s
-    #- else:
     - foreach <server.flag[fort.menu.bg_cubes].reverse> as:cube:
       - wait 2t
       - run fort_lobby_setup.bg_cube_brightness_anim def.cube:<[cube]>
