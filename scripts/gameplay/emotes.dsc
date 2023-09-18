@@ -21,6 +21,7 @@ fort_emote_handler:
         - narrate "<&c>[error] Your player isn't spawned."
         - stop
       - define emote_loc <player.flag[fort.menu.player_npc].location>
+      - define yaw <[emote_loc].yaw>
 
     - choose <[emote]>:
       - case default:
@@ -33,8 +34,7 @@ fort_emote_handler:
 
     - playsound <[sound_loc]> custom sound:<[sound]> volume:1.2
 
-    #- run pmodels_spawn_model def.location:<player.location.above[2]> def.player:<player> def.scale:<location[1.87,1.87,1.87]> save:result
-    - run dmodels_spawn_model def.player:<player> def.model_name:emotes def.location:<[emote_loc].above[2]> save:result
+    - run dmodels_spawn_model def.player:<player> def.model_name:emotes def.location:<[emote_loc].above[2]> def.yaw:<[yaw]||0> save:result
     - define spawned <entry[result].created_queue.determination.first||null>
     - if !<[spawned].is_truthy>:
         - narrate "<&[error]>Emote spawning failed?"

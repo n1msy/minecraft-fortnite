@@ -8,9 +8,7 @@ fort_commands:
   aliases:
   - fort
   tab completions:
-    - if !<player.has_permission[fort.setup]||<context.server>>:
-      - stop
-    - determine <list[lobby_setup|pregame_spawn|fill_chests|fill_ammo_boxes|supply_drop]>
+    1: <list[lobby_setup|pregame_spawn|fill_chests|fill_ammo_boxes|supply_drop]>
   script:
   - choose <context.args.first||null>:
     - case lobby_setup:

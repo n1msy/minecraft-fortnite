@@ -3,17 +3,17 @@
 # Refer to the header of "dmodels_main.dsc" for more information.
 ###########################
 
-q:
-    type: task
-    debug: false
-    script:
-    - define data <server.flag[dmodels_data.model_emotes]>
-    - foreach <[data].keys> as:ent:
-        - define name    <server.flag[dmodels_data.model_emotes.<[ent]>.name]>
-        - define rot     <server.flag[dmodels_data.model_emotes.<[ent]>.rotation]>
-        - define origin  <server.flag[dmodels_data.model_emotes.<[ent]>.origin]>
-        - announce <&a><[name]> to_console
-        - announce <[origin]> to_console
+#q:
+#    type: task
+#    debug: false
+#    script:
+#    - define data <server.flag[dmodels_data.model_emotes]>
+#    - foreach <[data].keys> as:ent:
+#        - define name    <server.flag[dmodels_data.model_emotes.<[ent]>.name]>
+#        - define rot     <server.flag[dmodels_data.model_emotes.<[ent]>.rotation]>
+#        - define origin  <server.flag[dmodels_data.model_emotes.<[ent]>.origin]>
+#        - announce <&a><[name]> to_console
+#        - announce <[origin]> to_console
        # - narrate <&7><server.flag[dmodels_data.model_emotes.<[ent]>.name]>
        # - if <server.flag[dmodels_data.model_emotes.<[ent]>.name]> == RIGHT_ARM:
         #    - announce ARM:<server.flag[dmodels_data.model_emotes.<[ent]>]> to_console
@@ -29,7 +29,7 @@ dmodel_part_display:
 dmodels_spawn_model:
     type: task
     debug: false
-    definitions: player[Optional argument that allows you to use that player's skin.] | model_name[The name of the model to spawn, must already have been loaded via 'dmodels_load_bbmodel'] | location[World location to spawn at] | scale[The scale to spawn the model with, as a LocationTag-vector] | rotation[The rotation to spawn the model with, as a quaternion.] | view_range[(OPTIONAL) can override the global view_range setting in the config below per-model if desired.] | fake_to[(OPTIONAL) list of players to fake-spawn the model to. If left off, will use a real (serverside) entity spawn.]
+    definitions: player[Optional argument that allows you to use that player's skin.] | model_name[The name of the model to spawn, must already have been loaded via 'dmodels_load_bbmodel'] | location[World location to spawn at] | scale[The scale to spawn the model with, as a LocationTag-vector] | rotation[The rotation to spawn the model with, as a quaternion.] | view_range[(OPTIONAL) can override the global view_range setting in the config below per-model if desired.] | fake_to[(OPTIONAL) list of players to fake-spawn the model to. If left off, will use a real (serverside) entity spawn.]|yaw[(OPTIONAL) define a yaw]
     description:
     - Spawns a single instance of a model using real item display entities at a location.
     - Supplies determination: EntityTag of the model root entity.
@@ -49,7 +49,7 @@ dmodels_spawn_model:
                 - debug error "[DModels] <red>Something went wrong in dmodels_spawn_model invalid skin type."
                 - stop
 
-    - define center <[location].with_pitch[0].below[1]>
+    - define center <[location].with_pose[0,<[yaw]||0>].below[1]>
     - define scale <[scale].if_null[<location[1,1,1]>].mul[<script[dmodels_config].parsed_key[default_scale]>]>
     - define rotation <[rotation].if_null[<quaternion[identity]>]>
     - define yaw_quaternion <quaternion[0,-1,0,0]>

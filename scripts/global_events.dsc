@@ -338,12 +338,55 @@ fort_global_handler:
   death_fx:
   #-create the "on your knees" animation or no? because the player fades away anyways
     anim:
-      - define loc <player.location.with_pose[0,0]>
+      - define loc <player.location>
 
-      - wait 2s
+      - wait 5s
+      - run dmodels_spawn_model def.model_name:emotes def.location:<[loc].above[2.1]> def.yaw:<[loc].yaw> save:result
+      - define spawned <entry[result].created_queue.determination.first||null>
+      - run dmodels_set_scale def.root_entity:<[spawned]> def.scale:1.87,1.87,1.87
+      - run dmodels_animate def.root_entity:<[spawned]> def.animation:death
+
+      - define loc <[loc].with_pose[0,0]>
+      - run fort_global_handler.death_fx.ray def:<map[loc=<[loc]>]>
+
+      - playsound <[loc]> sound:BLOCK_BEACON_DEACTIVATE pitch:1.75
+      - playsound <[loc]> sound:ENTITY_ALLAY_DEATH pitch:1.25
+
       - run fort_global_handler.death_fx.squares def:<map[loc=<[loc]>]>
       - wait 6t
       - run fort_global_handler.death_fx.circles def:<map[loc=<[loc]>]>
+
+      #- playsound <[loc]> sound:BLOCK_ANVIL_DESTROY pitch:2
+
+    ray:
+      - define loc <[data].get[loc].above[2.535]>
+      - define text <&chr[21].font[icons]>
+
+      - spawn <entity[text_display].with[text=<[text]>;pivot=VERTICAL;translation=-0.06,0,0;scale=0,12,0;background_color=transparent]> <[loc]> save:ray
+      - define ray <entry[ray].spawned_entity>
+
+      - wait 1t
+
+      - adjust <[ray]> interpolation_start:0
+      - adjust <[ray]> scale:7,12,7
+      - adjust <[ray]> interpolation_duration:2t
+
+      - wait 2t
+
+      - repeat 15:
+        - adjust <[ray]> interpolation_start:0
+        - define size <util.random.decimal[4].to[7.5]>
+        - adjust <[ray]> scale:<[size]>,12,<[size]>
+        - adjust <[ray]> interpolation_duration:2t
+        - wait 2t
+
+      - adjust <[ray]> interpolation_start:0
+      - adjust <[ray]> scale:<[size].sub[2]>,0,<[size].sub[2]>
+      - adjust <[ray]> interpolation_duration:3t
+
+      - wait 3t
+
+      - remove <[ray]> if:<[ray].is_spawned>
 
     squares:
       - define loc <[data].get[loc].above[0.3]>

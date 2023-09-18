@@ -9,9 +9,9 @@
 # @contributors Max^
 # @thanks Darwin, Max^, kalebbroo, sharklaserss - for helping with reference models, testing, ideas, etc
 # @date 2022/06/01
-# @updated 2023/05/12
+# @updated 2023/09/08
 # @denizen-build REL-1793
-# @script-version 2.0
+# @script-version 2.1
 #
 # This takes BlockBench "BBModel" files, converts them to a client-ready resource pack and Denizen internal data,
 # then is able to display them in minecraft and even animate them, by spawning and moving invisible armor stands with resource pack items on their heads.
@@ -82,7 +82,7 @@
 # # To rotate a model
 # - run dmodels_set_rotation def.root_entity:<[root]> def.quaternion:identity
 # # To scale a model
-# - run dmodels_scale_model def.root_entity:<[root]> def.scale:1,1,1
+# - run dmodels_set_scale def.root_entity:<[root]> def.scale:1,1,1
 # # To set the color of a model
 # - run dmodels_set_color def.root_entity:<[root]> def.color:red
 #
@@ -141,6 +141,11 @@ dmodels_config:
   resource_pack_path: data/dmodels/res_pack
   # During the loading process the scale is shrunken down exactly 2.2 for items to allow bigger models in block bench so this brings it back up to default scale in-game (this is an estimate)
   default_scale: 2.2
+
+  # You can optionally set the json indent for the resource pack to save space (0 for example).
+  resource_pack_indent: 4
+  # Set the resource pack version https://minecraft.fandom.com/wiki/Pack_format
+  resource_pack_version: 13
 
   #-for player skins
   templates:

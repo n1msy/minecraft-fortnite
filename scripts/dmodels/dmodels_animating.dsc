@@ -89,6 +89,9 @@ dmodels_move_to_frame:
                 - flag server dmodels_anim_active.<[root_entity].uuid>:!
                 - if <[root_entity].has_flag[dmodels_default_animation]>:
                     - run dmodels_animate def.root_entity:<[root_entity]> def.animation:<[root_entity].flag[dmodels_default_animation]>
+                #remove the dmodel the second the animation ends
+                - else if <[animation]> == death:
+                    - run dmodels_delete def.root_entity:<[root_entity]>
                 - else:
                     - run dmodels_reset_model_position def.root_entity:<[root_entity]>
                 - stop
@@ -125,8 +128,6 @@ dmodels_move_to_frame:
                 - choose <[before_frame.interpolation]>:
                     - case catmullrom:
                         - if <[channel]> == rotation:
-                            # TODO: Actual impl? If this even exists in blockbench.
-                            #- narrate <[before_frame.data]>
                             - define data <[before_frame.data].as[quaternion].slerp[end=<[after_frame.data]>;amount=<[time_percent]>]>
                         - else:
                             - define before_extra <[relevant_frames].filter[get[time].is_less_than[<[before_frame.time]>]].last||null>
@@ -140,6 +141,21 @@ dmodels_move_to_frame:
                             - define p2 <[after_frame.data].as[location]>
                             - define p3 <[after_extra.data].as[location]>
                             - define data <proc[dmodels_catmullrom_proc].context[<[p0]>|<[p1]>|<[p2]>|<[p3]>|<[time_percent]>]>
+                    - case bezier:
+                        - if <[channel]> == rotation:
+                            - define q0 <[before_frame.left_time].as[quaternion]>
+                            - define q1 <[before_frame.left_value].as[quaternion]>
+                            - define q2 <[after_frame.right_time].as[quaternion]||<[before_frame.right_time].as[quaternion]>>
+                            - define q3 <[after_frame.right_value].as[quaternion]||<[before_frame.right_value].as[quaternion]>>
+                            - define bezier <proc[dmodels_quaternion_bezier_proc].context[<[q0]>|<[q1]>|<[q2]>|<[q3]>|<[time_percent]>]>
+                            - define data <[before_frame.data].as[quaternion].slerp[end=<[after_frame.data]>;amount=<[time_percent]>].mul[<[bezier]>]>
+                        - else:
+                            - define p0 <[before_frame.left_time].as[location]>
+                            - define p1 <[before_frame.left_value].as[location]>
+                            - define p2 <[after_frame.right_time].as[location]||<[before_frame.right_time].as[location]>>
+                            - define p3 <[after_frame.right_value].as[location]||<[before_frame.right_value].as[location]>>
+                            - define bezier <proc[dmodels_bezier_proc].context[<[p0]>|<[p1]>|<[p2]>|<[p3]>|<[time_percent]>]>
+                            - define data <[after_frame.data].as[location].sub[<[before_frame.data]>].mul[<[time_percent]>].add[<[before_frame.data]>].add[<[bezier]>]>
                     - case linear:
                         - if <[channel]> == rotation:
                             #- narrate before:<[before_frame.data]>/after:<[after_frame.data]>/time_percent:<[time_percent]>
@@ -192,6 +208,34 @@ dmodels_move_to_frame:
         - look <[cam]> <[stand_loc]>
 
         - teleport <[cam]> <[stand_loc].backward[3]>
+
+# https://en.wikipedia.org/wiki/B%C3%A9zier_curve
+dmodels_bezier_proc:
+    type: procedure
+    debug: false
+    definitions: p0|p1|p2|p3|t
+    script:
+    - define u <element[1].sub[<[t]>]>
+    - define tt <[t].mul[<[t]>]>
+    - define uu <[u].mul[<[u]>]>
+    - define uuu <[uu].mul[<[u]>]>
+    - define ttt <[tt].mul[<[t]>]>
+    - define x <[uuu].mul[<[p0].x.add[3]>].mul[<[uu].mul[<[t]>]>].mul[<[p1].x.add[3]>].mul[<[u].mul[<[tt]>]>].mul[<[p2].x.add[<[ttt]>]>].mul[<[p3].x>]>
+    - define y <[uuu].mul[<[p0].y.add[3]>].mul[<[uu].mul[<[t]>]>].mul[<[p1].y.add[3]>].mul[<[u].mul[<[tt]>]>].mul[<[p2].y.add[<[ttt]>]>].mul[<[p3].y>]>
+    - define z <[uuu].mul[<[p0].z.add[3]>].mul[<[uu].mul[<[t]>]>].mul[<[p1].z.add[3]>].mul[<[u].mul[<[tt]>]>].mul[<[p2].z.add[<[ttt]>]>].mul[<[p3].z>]>
+    - determine <[x]>,<[y]>,<[z]>
+
+dmodels_quaternion_bezier_proc:
+    type: procedure
+    debug: false
+    definitions: q0|q1|q2|q3|t
+    script:
+    - define s1 <[q0].slerp[end=<[q1]>;amount=<[t]>]>
+    - define s2 <[q1].slerp[end=<[q2]>;amount=<[t]>]>
+    - define s3 <[q2].slerp[end=<[q3]>;amount=<[t]>]>
+    - define i1 <[s1].slerp[end=<[s2]>;amount=<[t]>]>
+    - define i2 <[s2].slerp[end=<[s3]>;amount=<[t]>]>
+    - determine <[i1].slerp[end=<[i2]>;amount=<[t]>]>
 
 dmodels_catmullrom_get_t:
     type: procedure

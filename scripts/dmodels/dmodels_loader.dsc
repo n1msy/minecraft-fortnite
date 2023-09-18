@@ -80,9 +80,10 @@ dmodels_load_bbmodel:
     script:
     - debug log "[DModels] loading <[model_name].custom_color[emphasis]>"
     # =============== Prep ===============
+    - define model_name_lowercased <[model_name].to_lowercase>
     - define pack_root <script[dmodels_config].parsed_key[resource_pack_path]>
-    - define models_root <[pack_root]>/assets/minecraft/models/item/dmodels/<[model_name]>
-    - define textures_root <[pack_root]>/assets/minecraft/textures/dmodels/<[model_name]>
+    - define models_root <[pack_root]>/assets/minecraft/models/item/dmodels/<[model_name_lowercased]>
+    - define textures_root <[pack_root]>/assets/minecraft/textures/dmodels/<[model_name_lowercased]>
     - define item_validate <item[<script[dmodels_config].parsed_key[item]>]||null>
     - if <[item_validate]> == null:
       - debug error "[DModels] Item must be valid Example: potion"
@@ -91,6 +92,7 @@ dmodels_load_bbmodel:
     - define file data/dmodels/<[model_name]>.bbmodel
     - define scale_factor <element[0.25].div[4.0]>
     - define mc_texture_data <map>
+    - define pack_indent <script[dmodels_config].parsed_key[resource_pack_indent]>
     - flag server dmodels_data.temp_<[model_name]>:!
     # =============== BBModel loading and validation ===============
     - if !<util.has_file[<[file]>]>:
@@ -110,16 +112,17 @@ dmodels_load_bbmodel:
         - debug error "[DModels] Can't load bbmodel for '<[model_name]>' - file has no elements?"
         - stop
     # =============== Pack validation ===============
-    - define packversion 13
+    - define packversion <script[dmodels_config].data_key[resource_pack_version]>
     - if !<util.has_file[<[pack_root]>/pack.mcmeta]>:
-        - run dmodels_multiwaitable_filewrite def.key:core def.path:<[pack_root]>/pack.mcmeta def.data:<map.with[pack].as[<map[pack_format=<[packversion]>;description=dModels_AutoPack_Default]>].to_json[native_types=true;indent=4].utf8_encode>
+        - run dmodels_multiwaitable_filewrite def.key:core def.path:<[pack_root]>/pack.mcmeta def.data:<map.with[pack].as[<map[pack_format=<[packversion]>;description=dModels_AutoPack_Default]>].to_json[native_types=true;indent=<[pack_indent]>].utf8_encode>
     - else if <server.flag[dmodels_last_pack_version]||0> != <[packversion]>:
         - ~fileread path:<[pack_root]>/pack.mcmeta save:mcmeta
         - define mcmeta_data <util.parse_yaml[<entry[mcmeta].data.utf8_decode>]>
         - define mcmeta_data.pack.pack_format <[packversion]>
-        - run dmodels_multiwaitable_filewrite def.key:core def.path:<[pack_root]>/pack.mcmeta def.data:<[mcmeta_data].to_json[native_types=true;indent=4].utf8_encode>
+        - run dmodels_multiwaitable_filewrite def.key:core def.path:<[pack_root]>/pack.mcmeta def.data:<[mcmeta_data].to_json[native_types=true;indent=<[pack_indent]>].utf8_encode>
     - flag server dmodels_last_pack_version:<[packversion]>
     # =============== Textures loading ===============
+    - define mcmetas <[data.mcmetas]||<map>>
     - define tex_id 0
     - define texture_paths <list>
     - foreach <[data.textures]||<list>> as:texture:
@@ -130,9 +133,14 @@ dmodels_load_bbmodel:
         - if !<[raw_source].starts_with[data:image/png;base64,]>:
             - debug error "[DModels] Can't load bbmodel for '<[model_name]>': invalid texture source data."
             - stop
+        - define tex_uuid <[texture.uuid]>
+        - foreach <[mcmetas]> key:meta_uuid as:meta_data:
+            - if <[tex_uuid]> == <[meta_uuid]>:
+                - define texture_meta_path <[textures_root]>/<[texname]>.png.mcmeta
+                - run dmodels_multiwaitable_filewrite def.key:<[model_name]> def.path:<[texture_meta_path]> def.data:<[meta_data].to_json[native_types=true;indent=<[pack_indent]>].utf8_encode>
         - define texture_output_path <[textures_root]>/<[texname]>.png
         - run dmodels_multiwaitable_filewrite def.key:<[model_name]> def.path:<[texture_output_path]> def.data:<[raw_source].after[,].base64_to_binary>
-        - define proper_path dmodels/<[model_name]>/<[texname]>
+        - define proper_path dmodels/<[model_name_lowercased]>/<[texname]>
         - define mc_texture_data.<[tex_id]> <[proper_path]>
         - define texture_paths:->:<[proper_path]>
         - if <[texture.particle]||false>:
@@ -182,12 +190,23 @@ dmodels_load_bbmodel:
             - else:
                 - foreach <[animator.keyframes]> as:keyframe:
                     - definemap anim_map channel:<[keyframe.channel]> time:<[keyframe.time]> interpolation:<[keyframe.interpolation]>
-                    - if <[anim_map.interpolation]> not in catmullrom|linear|step:
+                    - if <[anim_map.interpolation]> not in catmullrom|linear|step|bezier:
                         - debug error "[DModels] Limitation while loading bbmodel for '<[model_name]>': unknown interpolation type '<[anim_map.interpolation]>', defaulting to 'linear'."
                         - define anim_map.interpolation linear
+                    - if <[anim_map.interpolation]> == bezier:
+                        - if <[keyframe.channel]> == rotation:
+                            - define anim_map.left_time <proc[dmodels_quaternion_from_euler].context[<[keyframe.bezier_left_time].parse[trim.to_radians]>]>
+                            - define anim_map.left_value <proc[dmodels_quaternion_from_euler].context[<[keyframe.bezier_left_value].parse[trim.to_radians]>]>
+                            - define anim_map.right_time <proc[dmodels_quaternion_from_euler].context[<[keyframe.bezier_right_time].parse[trim.to_radians]>]>
+                            - define anim_map.right_value <proc[dmodels_quaternion_from_euler].context[<[keyframe.bezier_right_value].parse[trim.to_radians]>]>
+                        - else:
+                            - define anim_map.left_time <[keyframe.bezier_left_time].parse[trim].comma_separated>
+                            - define anim_map.left_value <[keyframe.bezier_left_value].parse[trim].comma_separated>
+                            - define anim_map.right_time <[keyframe.bezier_right_time].parse[trim].comma_separated>
+                            - define anim_map.right_value <[keyframe.bezier_right_value].parse[trim].comma_separated>
                     - define data_points <[keyframe.data_points].first>
                     - if <[keyframe.channel]> == rotation:
-                        - define anim_map.data <proc[dmodels_quaternion_from_euler].context[<[data_points.x].trim.to_radians.mul[-1]>|<[data_points.y].trim.to_radians.mul[-1]>|<[data_points.z].trim.to_radians>]>
+                        - define anim_map.data <proc[dmodels_quaternion_from_euler].context[<[data_points.x].trim.to_radians.mul[-1]>|<[data_points.y].trim.to_radians.mul[-1]>|<[data_points.z].trim.to_radians>].normalize>
                     - else:
                         - define anim_map.data <[data_points.x].trim>,<[data_points.y].trim>,<[data_points.z].trim>
                     - define animation_list.<[animation.name]>.animators.<[o_uuid]>.frames:->:<[anim_map]>
@@ -217,7 +236,7 @@ dmodels_load_bbmodel:
                 source: <[new_dir]>
                 prefix: <[new_dir]>/
             - define atlas_data.sources:->:<[src]>
-        - define new_atlas_json <[atlas_data].to_json[indent=4].utf8_encode>
+        - define new_atlas_json <[atlas_data].to_json[indent=<[pack_indent]>].utf8_encode>
         - flag server dmodels_temp_atlas_file:<[new_atlas_json]> expire:1h
         - waituntil rate:1t max:15s !<server.has_flag[dmodels_data.temp_core.filewrites.<[atlas_file].escaped>]>
         - run dmodels_multiwaitable_filewrite def.key:core def.path:<[atlas_file]> def.data:<[new_atlas_json]>
@@ -267,8 +286,8 @@ dmodels_load_bbmodel:
             - define model_json.groups <list[<[json_group]>]>
             - define model_json.display.head.translation <list[32|32|32]>
             - define model_json.display.head.scale <list[4|4|4]>
-            - define modelpath item/dmodels/<[model_name]>/<[outline.name].to_lowercase>
-            - run dmodels_multiwaitable_filewrite def.key:<[model_name]> def.path:<[models_root]>/<[outline.name].to_lowercase>.json def.data:<[model_json].to_json[native_types=true;indent=4].utf8_encode>
+            - define modelpath item/dmodels/<[model_name_lowercased]>/<[outline.name].to_lowercase>
+            - run dmodels_multiwaitable_filewrite def.key:<[model_name]> def.path:<[models_root]>/<[outline.name].to_lowercase>.json def.data:<[model_json].to_json[native_types=true;indent=<[pack_indent]>].utf8_encode>
             - define cmd 0
             - define min_cmd 1000
             - foreach <[override_item_data.overrides]||<list>> as:override:
@@ -285,7 +304,7 @@ dmodels_load_bbmodel:
         - define outline.rotation <proc[dmodels_quaternion_from_euler].context[<[rotation].parse[to_radians]>]>
         - flag server dmodels_data.model_<[model_name]>.<[outline.uuid]>:<[outline]>
     - if <[overrides_changed]>:
-        - define override_file_json <[override_item_data].to_json[native_types=true;indent=4].utf8_encode>
+        - define override_file_json <[override_item_data].to_json[native_types=true;indent=<[pack_indent]>].utf8_encode>
         - flag server dmodels_temp_item_file:<[override_file_json]> expire:1h
         - waituntil rate:1t max:15s !<server.has_flag[dmodels_data.temp_core.filewrites.<[override_item_filepath].escaped>]>
         - run dmodels_multiwaitable_filewrite def.key:<[model_name]> def.path:<[override_item_filepath]> def.data:<[override_file_json]>
