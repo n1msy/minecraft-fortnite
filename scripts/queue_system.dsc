@@ -31,9 +31,11 @@ fort_queue_handler:
       - define secs_in_queue <[player].flag[fort.in_queue]>
 
       - define match_info <[player].flag[fort.menu.match_info]>
+      #timer resets hourly (meaning it can't go past an hour)
       - adjust <[match_info]> "text:Finding match...<n>Elapsed: <time[2069/01/01].add[<[secs_in_queue]>].format[m:ss]>"
 
-    - bossbar update fort_waiting title:<proc[spacing].context[50]><&chr[A004].font[icons]><proc[spacing].context[-72]><&l><element[WAITING FOR PLAYERS].font[lobby_text]> color:YELLOW players:<[players_queued].filter[has_flag[fort.in_menu].not]>
+    #also checking if there's 2 or more bossbars already, to let players load their hud first before showing the next bossbar (fort waiting)
+    - bossbar update fort_waiting title:<proc[spacing].context[50]><&chr[A004].font[icons]><proc[spacing].context[-72]><&l><element[WAITING FOR PLAYERS].font[lobby_text]> color:YELLOW players:<[players_queued].filter[has_flag[fort.in_menu].not].filter[bossbar_ids.size.is[OR_MORE].than[2]]>
 
 
     - run fort_lobby_setup.bg_cube_anim if:<context.second.mod[5].equals[0]>
