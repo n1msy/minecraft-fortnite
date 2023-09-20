@@ -340,7 +340,7 @@ fort_global_handler:
     anim:
       - define loc <player.location>
 
-      - wait 5s
+      - wait 2s
       - run dmodels_spawn_model def.model_name:emotes def.location:<[loc].above[2.1]> def.yaw:<[loc].yaw> save:result
       - define spawned <entry[result].created_queue.determination.first||null>
       - run dmodels_set_scale def.root_entity:<[spawned]> def.scale:1.87,1.87,1.87
@@ -419,7 +419,8 @@ fort_global_handler:
 
     remove_square:
       - define square <[data].get[square]>
-      - wait 17t
+      - define wait <[data].get[wait]||17>
+      - wait <[wait]>t
       - remove <[square]> if:<[square].is_spawned>
 
     circles:

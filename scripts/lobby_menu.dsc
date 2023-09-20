@@ -19,9 +19,7 @@ fort_lobby_handler:
 
     - flag player fort.in_menu
     - if <context.cause> != JOIN:
-      - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
-      - wait 7t
-      - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
+      - run fort_lobby_handler.lobby_tp
     - adjust <player> can_fly:true
     - adjust <player> flying:true
 
@@ -52,9 +50,7 @@ fort_lobby_handler:
     on player exits fort_menu:
 
     - if <context.cause> == WALK:
-      - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
-      - wait 7t
-      - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
+      - run fort_lobby_handler.lobby_tp
       - stop
 
     #cancel the emote
@@ -191,6 +187,11 @@ fort_lobby_handler:
       - run dmodels_delete def.root_entity:<player.flag[spawned_dmodel_emotes]>
     - flag player fort:!
     - inventory clear
+
+  lobby_tp:
+    - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
+    - wait 7t
+    - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
 
   menu:
     #used in "minimap.dsc"

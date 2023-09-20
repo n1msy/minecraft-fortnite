@@ -8,18 +8,76 @@ fort_commands:
   aliases:
   - fort
   tab completions:
-    1: <list[lobby_setup|pregame_spawn|fill_chests|fill_ammo_boxes|supply_drop]>
+    1: <list[lobby_setup|lobby_teleport|pregame_spawn|fill_chests|fill_ammo_boxes|supply_drop]>
   script:
   - choose <context.args.first||null>:
+
+    # - [ SETUP COMMANDS ] - #
     - case lobby_setup:
       - run fort_lobby_setup
       - narrate "<&a>Nimnite lobby menu set."
       - if !<server.has_flag[fort.pregame.spawn]>:
-        - narrate "<&c>[Warning] Pregame island hasn't been set."
-        - narrate "<&7>Type /fort pregame_spawn to set."
-    - case pregame_spawn:
+        - narrate "<&c>[Warning] Pregame island hasn't been setup."
+        - narrate "<&7>Type /fort pregame_setup to set."
+
+    - case lobby_teleport:
+      - define loc <player.location.round.above[0.5]>
+      - flag server fort.pregame.lobby_circle.loc:<[loc]>
+
+      - define loc <[loc].with_pose[0,0]>
+      - define circle <server.flag[fort.pregame.lobby_circle.circle]||null>
+      - if <[circle]> != null && <[circle].is_spawned>:
+        - remove <[circle]>
+
+      - define text <server.flag[fort.pregame.lobby_circle.text]||null>
+      - if <[text]> != null && <[text].is_spawned>:
+        - remove <[text]>
+
+      - define planes <server.flag[fort.pregame.lobby_circle.planes]||null>
+      - flag server fort.pregame.lobby_circle.planes:!
+      - if <[planes]> != null:
+        - foreach <[planes]> as:pl:
+          - remove <[pl]> if:<[pl].is_spawned>
+
+      - define circle_icon <&chr[22].font[icons]>
+      - spawn <entity[text_display].with[text=<[circle_icon]>;background_color=transparent;pivot=FIXED;scale=3,3,3]> <[loc].below[0.5].with_pitch[-90]> save:circle
+      - flag server fort.pregame.lobby_circle.circle:<entry[circle].spawned_entity>
+
+      #- define text <element[<&l>RETURN TO MENU].color_gradient[from=<color[#ffca29]>;to=<&e>]>
+      - define text <&chr[23].font[icons]>
+      - spawn <entity[text_display].with[text=<[text]>;background_color=transparent;pivot=CENTER;scale=1.35,1.35,1.35]> <[loc].above[2]> save:text
+      - flag server fort.pregame.lobby_circle.text:<entry[text].spawned_entity>
+
+      #-circular transparent outline
+      #i think this might be off-center?
+      - define radius 1.1
+      - define cyl_height 1
+
+      - define center <[loc].below[2.2]>
+
+      - define circle <[center].points_around_y[radius=<[radius]>;points=16]>
+
+      - foreach <[circle]> as:plane_loc:
+
+        - define angle <[plane_loc].face[<[center]>].yaw.to_radians>
+        - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
+
+        #- define plane_loc <[plane_loc].face[<[loc]>]>
+        #- define plane_loc <[plane_loc].with_yaw[<[plane_loc].yaw.mul[-1]>].with_pitch[0]>
+
+        - spawn <entity[item_display].with[item=<item[white_stained_glass_pane].with[custom_model_data=2]>;translation=0,0.8,0;scale=1.25,1.7,1.25]> <[plane_loc].above[1.75].face[<[loc]>].with_pitch[0]> save:plane
+        - define plane     <entry[plane].spawned_entity>
+        - flag server fort.pregame.lobby_circle.planes:->:<[plane]>
+
+      - define ellipsoid <[loc].above[1].to_ellipsoid[1.3,2,1.3]>
+      - note <[ellipsoid]> as:fort_lobby_circle
+
+      - run pregame_island_handler.lobby_circle.anim
+
+    - case pregame_setup:
       - flag server fort.pregame.spawn:<player.location.center>
       - narrate "<&a>Nimnite pregame island spawn set."
+
     - case chest:
       #-much better to use the item instead and place them down
       - define loc <player.location.center.above[0.1]>
@@ -48,7 +106,7 @@ fort_commands:
       - foreach <[containers]> as:loc:
         - inject fort_chest_handler.fill_<map[chests=chest;ammo_boxes=ammo_box].get[<[container_type]>]>
 
-      - narrate "<&a>All <[type].replace[_].with[ ]> have been filled <&7>(<[containers].size>)<&a>."
+      - narrate "<&a>All <[container_type].replace[_].with[ ]> have been filled <&7>(<[containers].size>)<&a>."
 
     - case supply_drop:
       - define loc <player.location.with_pitch[0]>
