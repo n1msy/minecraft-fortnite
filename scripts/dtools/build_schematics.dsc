@@ -89,6 +89,7 @@ fort_struct_command:
         - flag server fort.structure.<[name]>.health:<script[nimnite_config].data_key[structures.<[type]>.default_hp]>
 
         - narrate "<&a>Schematic saved as <&7><&dq><&f>fort_structure_<[name]>.schem<&7><&dq>"
+        - narrate "<&7>Type <&f>/fs set (name) health (int) <&7>to change the max health."
 
       # - [ Set Structure Info ] - #
       - case set:
@@ -218,7 +219,7 @@ fort_struct_handler:
       - flag <[center]> build.type:<[type]>
       - flag <[center]> build.health:<[hp]>
       - flag <[center]> build.material:<[material]>
-      - flag <[center]> build.natural
+      - flag <[center]> build.natural.max_health:<server.flag[fort.structure.<[name]>.health]>
 
       - flag <[blocks]> build.center:<[center]>
 

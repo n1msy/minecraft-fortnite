@@ -30,22 +30,22 @@ fort_pic_handler:
     - if !<[block].has_flag[build.center]>:
       - stop
 
-    - define center   <[block].flag[build.center]>
-    - define hp       <[center].flag[build.health]>
-    - define mat_type <[center].flag[build.material]>
+    - define center      <[block].flag[build.center]>
+    - define hp          <[center].flag[build.health]>
+    - define mat_type    <[center].flag[build.material]>
 
-    - if <[center].has_flag[build.natural]>:
-      - narrate "insert natural structure-breaking code here"
-      - stop
+    - define struct      <[center].flag[build.structure]>
+    - define struct_type <[center].flag[build.type]>
 
     #filtering so connected blocks aren't affected
-    - define blocks   <[center].flag[build.structure].blocks.filter[flag[build.center].equals[<[center]>]]>
+    - define blocks   <[struct].blocks.filter[flag[build.center].equals[<[center]>]]>
     #so you can see the entirety of the floor/wall break
-    - if <list[wall|floor].contains[<[center].flag[build.type]>]>:
-      - define blocks <[center].flag[build.structure].blocks>
+    - if <list[wall|floor].contains[<[struct_type]>]>:
+      - define blocks <[struct].blocks>
 
     - define damage 50
 
+    #-weak point check
     - if <[block].has_flag[build.weak_point]>:
       - flag player fort.weak_point:++ duration:2s
       - define damage <[damage].mul[2]>
@@ -63,13 +63,25 @@ fort_pic_handler:
       #- playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:0 volume:0.25
       - playsound <player> sound:BLOCK_NOTE_BLOCK_PLING pitch:<[pitch]> volume:0.4
 
-    - define max_health <script[nimnite_config].data_key[materials.<[mat_type]>.hp]>
+
+    - if !<[center].has_flag[build.natural]>:
+      - define max_health <script[nimnite_config].data_key[materials.<[mat_type]>.hp]>
+      #show the health at the center of the tile
+      - define health_display_loc <[center]>
+    - else:
+      # - for natural structures:
+      #was gonna use the server flag to check for max health, but this might be less error-prone and a cleaner method in general
+      - define max_health <[center].flag[build.natural.max_health]>
+      #-this is still susceptible to change!
+      #show the health in front of the block destroyed?
+      - define health_display_loc <[block]>
+
     - define new_health <[hp].sub[<[damage]>]>
 
     - if <[new_health]> > 0:
       - flag <[center]> build.health:<[new_health]>
 
-      - run fort_pic_handler.display_build_health def:<map[loc=<[center]>;health=<[new_health]>;max_health=<[max_health]>]>
+      - run fort_pic_handler.display_build_health def:<map[loc=<[health_display_loc]>;health=<[new_health]>;max_health=<[max_health]>]>
 
       - define progress <element[10].sub[<[new_health].div[<[max_health]>].mul[10]>]>
       - foreach <[blocks]> as:b:
@@ -88,6 +100,10 @@ fort_pic_handler:
     - foreach <[blocks]> as:b:
       - blockcrack <[b]> progress:0 players:<server.online_players>
       - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
+
+    - if <[center].has_flag[build.natural]>:
+      - inject fort_pic_handler.break_natural_structure
+      - stop
 
     #otherwise, break the tile and anything else connected to it
     - inject build_system_handler.break
@@ -297,6 +313,36 @@ fort_pic_handler:
         - inject update_hud
         - wait 1t
 
+  break_natural_structure:
+
+    #sorting by y for trees so it goes
+    - define blocks <[blocks].sort_by_number[y]>
+
+    - flag player fort.build_health:!
+    - flag <[blocks]> build:!
+
+    - if <[struct_type]> != tree:
+      - modifyblock <[blocks]> air
+      - playsound <[blocks].first> sound:BLOCK_STONE_BREAK pitch:0.8
+      - playeffect effect:BLOCK_CRACK at:<[blocks].parse[center]> offset:0 special_data:<[blocks].first.material> quantity:10 visibility:100
+
+    #-tree animation
+    - else:
+      #do the leaf calculations when placing down the tree, or just when breaking it? (when placing down might be a little more optimised, but eh)
+      - define wood_blocks <[blocks].filter[material.block_sound_data.get[break_sound].contains_text[wood]]>
+      - define leaves      <[blocks].exclude[<[wood_blocks]>]>
+      - foreach <[wood_blocks].sub_lists[5]> as:sub_blocks:
+        - modifyblock <[sub_blocks]> air
+        - define sound <[sub_blocks].first.after_last[_].equals[leaves].if_true[BLOCK_GRASS_BREAK].if_false[BLOCK_WOOD_BREAK]>
+        - playsound <[sub_blocks].first> sound:<[sound]> pitch:0.8
+        - playeffect effect:BLOCK_CRACK at:<[sub_blocks].parse[center]> offset:0 special_data:<[sub_blocks].first.material> quantity:10 visibility:100
+        - wait 2t
+
+      - playsound <[center]> sound:BLOCK_GRASS_BREAK pitch:0.8
+      - foreach <[leaves]> as:leaf:
+        - define leaf_mat <[leaf].material>
+        - modifyblock <[leaf]> air
+        - playeffect effect:BLOCK_CRACK at:<[leaf].center> offset:0 special_data:<[leaf_mat]> quantity:2 visibility:100
 
   tree:
 
