@@ -21,21 +21,23 @@ fort_pic_handler:
 
     #each swing is 50 hp, each crit is 100
     on player breaks block with:fort_pickaxe*:
-    #- stop if:<player.world.name.equals[fortnite_map].not>
     - determine passively cancelled
+    #do we need this check?
     - stop if:<player.item_in_hand.script.name.starts_with[fort_pickaxe].not||true>
 
     - define block <context.location>
 
     - if !<[block].has_flag[build.center]>:
-      #because trees and boulders dont have a specific "build type"
-      - if <[block].material.name.contains_text[wood]> || <[block].material.name.contains_text[fence]>:
-        - inject fort_pic_handler.tree
       - stop
 
     - define center   <[block].flag[build.center]>
     - define hp       <[center].flag[build.health]>
     - define mat_type <[center].flag[build.material]>
+
+    - if <[center].has_flag[build.natural]>:
+      - narrate "insert natural structure-breaking code here"
+      - stop
+
     #filtering so connected blocks aren't affected
     - define blocks   <[center].flag[build.structure].blocks.filter[flag[build.center].equals[<[center]>]]>
     #so you can see the entirety of the floor/wall break

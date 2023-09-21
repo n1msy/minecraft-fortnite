@@ -1,9 +1,4 @@
-#clean this shit up insanely (at school)
-
-#this script is very messy because im tired and need to rush it asap
-
-#clean up this code more?
-
+#can be cleaner i feel like
 fort_struct_wand:
   type: item
   material: blaze_rod
@@ -11,15 +6,15 @@ fort_struct_wand:
   flags:
     schem: none
 
-fort_schem_command:
+fort_struct_command:
   type: command
-  name: fort_schem
+  name: fort_struct
   debug: false
-  description: Fortnite Build Schematic Commands
-  usage: /fort_schem
+  description: Fortnite Build Structure Schematic Commands
+  usage: /fort_struct
   permission: fort.setup
   aliases:
-  - fort
+  - fs
 
   tab complete:
     #ik this can be prettier and more organized but idc
@@ -30,9 +25,9 @@ fort_schem_command:
     - define structures <server.flag[fort.structure].keys||<list[]>>
 
     #new arg has a special exemption, since it requires more than 2 arguments
-    - if <[r_args].starts_with[save<&sp>]> && <[args].size> <= 2:
+    - if <[r_args].starts_with[save<&sp>]>:
       #so the tab completions dont appear after being put in already once
-      - if <[args].size> >= 2 && <[r_args].ends_with[<&sp>]>:
+      - if <[args].size> >= 2 && <[r_args].ends_with[<&sp>]> || <[args].size> > 2:
         - stop
       - determine <list[tree|rock]>
       - stop
@@ -52,7 +47,8 @@ fort_schem_command:
       - stop
 
 
-    - determine <list[save|remove|set]>
+    - determine <list[save|remove|set|list]>
+
   script:
     #most trees give around 50 wood
     #most stone structures give around 40
@@ -60,6 +56,8 @@ fort_schem_command:
 
     - define arg <context.args.first||null>
     - choose <[arg]>:
+
+      # - [ Save Structure as Schematic ] - #
       - case save:
 
         - define cuboid <player.we_selection||null>
@@ -81,7 +79,9 @@ fort_schem_command:
           - narrate "<&c>A schematic by this name already exists."
           - stop
 
-        - ~schematic create name:fort_structure_<[name]> <player.location.center.with_y[<[cuboid].min.y>]> area:<[cuboid]>
+        - define center <[cuboid].center>
+
+        - ~schematic create name:fort_structure_<[name]> <player.location.center.with_y[<[cuboid].min.y>]> area:<[cuboid]> flags
         - ~schematic save name:fort_structure_<[name]>
 
         - flag server fort.structure.<[name]>.type:<[type]>
@@ -90,6 +90,7 @@ fort_schem_command:
 
         - narrate "<&a>Schematic saved as <&7><&dq><&f>fort_structure_<[name]>.schem<&7><&dq>"
 
+      # - [ Set Structure Info ] - #
       - case set:
 
         - define name <context.args.get[2]||null>
@@ -111,6 +112,7 @@ fort_schem_command:
 
         - narrate "<&a>Set <&7><&dq><&f><[name]><&7><&dq> <&a>health to: <&f><[input].format_number>"
 
+      # - [ Get Structure Wand ] - #
       - case wand:
 
         - define name <context.args.get[2]||null>
@@ -121,7 +123,7 @@ fort_schem_command:
 
         - narrate "<&a>You recieved a <[display_name]> <&a>."
         - if <[name]> == none:
-          - narrate "<&7>No schematic was set. <&a>Right-click <&7>your current wand to select one.<n><&7>Or, type <&f>/fort_schem (name) <&7>with an empty hand to receive a new wand with the pallete specified."
+          - narrate "<&7>No structure was set. <&a>Right-click <&7>your current wand to select one.<n><&7>Or, type <&f>/fs (name) <&7>with an empty hand to receive a new wand with the structure specified."
 
         - if <player.item_in_hand.script.name||null> == fort_struct_wand:
           - if <[name]> == none:
@@ -134,8 +136,9 @@ fort_schem_command:
 
         - if !<player.has_flag[fort_struct.using_wand]> && <[name]> != none:
           - wait 1t
-          - run fort_schem_handler.selector
+          - run fort_struct_handler.selector
 
+      # - [ Remove Schematic ] - #
       - case remove:
         - define name <context.args.get[2]||null>
         - if !<[structures].contains[<[name]>]>:
@@ -155,10 +158,34 @@ fort_schem_command:
 
         - narrate "<&c>Removed <&7><&dq><&f>fort_structure_<[name]>.schem<&7><&dq>"
 
+      - case list:
+        - inject fort_struct_command.view_list
+
       - default:
         - narrate "<&c>Invalid command."
 
-fort_schem_handler:
+  view_list:
+    - define structures <server.flag[fort.structure].keys||<list[]>>
+
+    - if <[structures].is_empty>:
+      - narrate "<&c>You have no saved structures.<n><&7>To create a structure schematic, type <&f>/fs save (name)<&7>."
+      - stop
+
+    - narrate "<n>Listing all structures:"
+    - foreach <[structures]> as:name:
+
+      - define display_name "<&f><&dq><&e><[name]><&f><&dq> Pallete Info"
+      - define type         "<&7>Type: <&b><server.flag[fort.structure.<[name]>.type].to_uppercase>"
+      - define material     "<&7>Material: <&b><server.flag[fort.structure.<[name]>.material]>"
+      - define hp           "<&7>Health: <&b><server.flag[fort.structure.<[name]>.health]>"
+
+      - define action       "<&a>Click to get wand."
+
+      - define info <element[<&b><&l>[View Info]].on_hover[<[display_name]><n><n><[type]><n><[material]><n><[hp]><n><n><[action]>]>
+      - narrate "<&8>- <&e><[name]> <[info].on_click[/fs wand <[name]>]>"
+    - narrate <empty>
+
+fort_struct_handler:
   type: world
   debug: false
   events:
@@ -172,91 +199,122 @@ fort_schem_handler:
         - ~schematic load name:fort_structure_<[name]>
 
       - define origin <player.flag[fort_struct.using_wand.origin]>
+
       - ~schematic paste name:fort_structure_<[name]> <[origin]> noair flags
 
+      #get all the blocks before pasting, in case there's another structure cuboid overlapping
       - define cuboid  <schematic[fort_structure_<[name]>].cuboid[<[origin]>]>
+      - define blocks <[cuboid].blocks.filter[material.name.equals[air].not].filter[has_flag[build].not]>
+
       - define center <[cuboid].center>
 
       #each structure has their own uuid?
-      - define blocks <[cuboid].blocks.filter[has_flag[build.natural]].filter[flag[build.natural[]]]>
 
       - define hp       <server.flag[fort.structure.<[name]>.health]>
       - define material <server.flag[fort.structure.<[name]>.material]>
       - define type     <server.flag[fort.structure.<[name]>.type]>
 
-      - flag <[blocks]> build.structure:<[cuboid]>
-      - flag <[blocks]> build.type:<[type]>
-      - flag <[blocks]> build.health:<[hp]>
-      - flag <[blocks]> build.material:<[material]>
+      - flag <[center]> build.structure:<[cuboid]>
+      - flag <[center]> build.type:<[type]>
+      - flag <[center]> build.health:<[hp]>
+      - flag <[center]> build.material:<[material]>
+      - flag <[center]> build.natural
 
-    on player right clicks block with:pallete_wand:
-      - define grad <&gradient[from=lime;to=white]>
-      - define current_palletes <server.flag[pallete].keys||<list[]>>
-      - inject pallete_command.view_list
-      - ratelimit <player> 1t
+      - flag <[blocks]> build.center:<[center]>
 
-    on player drops pallete_wand:
+    on player right clicks block with:fort_struct_wand:
+
+      - define origin <player.eye_location.ray_trace[default=air;range=200]>
+      - if <[origin].has_flag[build.center]> && <[origin].flag[build.center].has_flag[build.natural]>:
+        - define center <[origin].flag[build.center]>
+        - define struct <[center].flag[build.structure]>
+        - define blocks <[struct].blocks.filter[has_flag[build.center]].filter[flag[build.center].equals[<[center]>]]>
+        - flag <[blocks]> build:!
+        - modifyblock <[blocks]> air
+
+      - else:
+
+        - inject fort_struct_command.view_list
+        - ratelimit <player> 1t
+
+    on player drops fort_struct_wand:
       - determine passively cancelled
-      - define name <context.item.flag[pallete]>
+      - define name <context.item.flag[schem]>
       - if <[name]> == none:
         - stop
-      - if !<schematic.list.contains[pallete_<[name]>]>:
-        - ~schematic load name:pallete_<[name]>
-      - schematic rotate name:pallete_<[name]> angle:90
-      - flag player pallete.using_wand:!
+      - if !<schematic.list.contains[fort_structure_<[name]>]>:
+        - ~schematic load name:fort_structure_<[name]>
+
+      - define angle 90
+      #- define angle 45 if:<server.flag[fort.structure.<[name]>.type].equals[rock]>
+      - schematic rotate name:fort_structure_<[name]> angle:<[angle]>
+      - flag player fort_struct.using_wand:!
       - wait 1t
-      - run pallete_wand_handler.selector
-    after player holds item item:pallete_wand:
-      - run pallete_wand_handler.selector
+      - run fort_struct_handler.selector
+
+    after player holds item item:fort_struct_wand:
+      #second check is in case the structure was removed
+      - define structures <server.flag[fort.structure].keys||<list[]>>
+      - define name       <player.item_in_hand.flag[schem]>
+      - if <[name]> != none && <[structures].contains[<[name]>]>:
+        - run fort_struct_handler.selector
+
   selector:
     - define name none
     - define type null
-    - flag player pallete.using_wand
-    - while <player.item_in_hand.script.name||null> == pallete_wand && <player.has_flag[pallete.using_wand]>:
+    - flag player fort_struct.using_wand
+    - while <player.item_in_hand.script.name||null> == fort_struct_wand && <player.has_flag[fort_struct.using_wand]>:
+
       - define eye_loc <player.eye_location>
-      - define origin <[eye_loc].ray_trace[default=air;range=3]>
 
-      # - [ Calculate the grid location. ] - #
-      #- define x <proc[round4].context[<[origin].x>]>
-      #- define z <proc[round4].context[<[origin].z>]>
+      - define origin <[eye_loc].ray_trace[default=air;range=200]>
 
-      #- define origin <[origin].with_x[<[x]>].with_z[<[z]>].below>
-      - define origin <[origin].forward[2]> if:<[type].exists.and[<[type].equals[wall]>]>
+      - flag player fort_struct.using_wand.origin:<[origin]>
 
-      - flag player pallete.using_wand.origin:<[origin]>
+      - if <[origin].has_flag[build.center]> && <[origin].flag[build.center].has_flag[build.natural]>:
+        - actionbar "<&e><&l>RIGHT-CLICK <&c>to remove structure."
 
-      - if <[name]> != <player.item_in_hand.flag[pallete]>:
-        - define name <player.item_in_hand.flag[pallete]>
-        - define type <server.flag[pallete.<[name]>.type]>
-        - if <[type]> == wall:
-          - define origin <[origin].above[2]>
+        - define struct <[origin].flag[build.center].flag[build.structure]>
+        - debugblock <[struct].blocks> color:255,49,49,50 d:2t players:<player>
 
-        - if !<schematic.list.contains[pallete_<[name]>]>:
-          - ~schematic load name:pallete_<[name]>
-
-        - if <[display_blocks].exists> && <[display_blocks].any>:
+        - if <[display_blocks].exists>:
           - remove <[display_blocks].filter[is_spawned]>
+        - flag player fort_struct.using_wand.displays_spawned:!
 
-        - define display_blocks <list[]>
+      - else:
+        #loading the entities in for the first time
+        - if !<player.has_flag[fort_struct.using_wand.displays_spawned]>:
 
-        - define cuboid <schematic[pallete_<[name]>].cuboid[<[origin]>]>
-        - define min <[cuboid].min>
+          - define name <player.item_in_hand.flag[schem]>
+
+          - if !<schematic.list.contains[fort_structure_<[name]>]>:
+            - ~schematic load name:fort_structure_<[name]>
+
+          - if <[display_blocks].exists> && <[display_blocks].any>:
+            - remove <[display_blocks].filter[is_spawned]>
+
+          - define display_blocks <list[]>
+
+          - define cuboid <schematic[fort_structure_<[name]>].cuboid[<[origin]>]>
+          - define min <[cuboid].min>
+          - foreach <[cuboid].blocks> as:block:
+            - define mat <schematic[fort_structure_<[name]>].block[<[block].sub[<[min]>]>]>
+
+            - spawn <entity[block_display].with[material=<[mat]>;glowing=true]> <[block]> save:b_display
+
+            - define display_blocks <[display_blocks].include[<entry[b_display].spawned_entity>]>
+
+          - flag player fort_struct.using_wand.displays_spawned
+
+        - define cuboid <schematic[fort_structure_<[name]>].cuboid[<[origin]>]>
+        #- debugblock <[cuboid].blocks> color:0,0,0,50 d:1t players:<server.online_players>
+
         - foreach <[cuboid].blocks> as:block:
-          - define mat <schematic[pallete_<[name]>].block[<[block].sub[<[min]>]>]>
-
-          - spawn <entity[block_display].with[material=<[mat]>;glowing=true]> <[block]> save:b_display
-
-          - define display_blocks <[display_blocks].include[<entry[b_display].spawned_entity>]>
-
-      - define cuboid <schematic[pallete_<[name]>].cuboid[<[origin]>]>
-      - debugblock <[cuboid].blocks> color:0,0,0,50 d:1t players:<server.online_players>
-
-      - foreach <[cuboid].blocks> as:block:
-        - teleport <[display_blocks].get[<[loop_index]>]> <[block]>
+          - teleport <[display_blocks].get[<[loop_index]>]> <[block]>
 
       - wait 1t
 
     - if <[display_blocks].exists> && <[display_blocks].any>:
       - remove <[display_blocks].filter[is_spawned]>
 
-    - flag player pallete.using_wand:!
+    - flag player fort_struct.using_wand:!
