@@ -70,8 +70,10 @@ fort_pic_handler:
       - define health_display_loc <[center]>
     - else:
       # - for natural structures:
-      #was gonna use the server flag to check for max health, but this might be less error-prone and a cleaner method in general
-      - define max_health <[center].flag[build.natural.max_health]>
+      #server flag
+      - define struct_name <[center].flag[build.natural.name]>
+      - define max_health  <server.flag[fort.structure.<[struct_name]>.health]>
+
       #-this is still susceptible to change!
       #show the health in front of the block destroyed?
       - define health_display_loc <[block]>
@@ -328,7 +330,7 @@ fort_pic_handler:
 
     #-tree animation
     - else:
-      #do the leaf calculations when placing down the tree, or just when breaking it? (when placing down might be a little more optimised, but eh)
+
       - define wood_blocks <[blocks].filter[material.block_sound_data.get[break_sound].contains_text[wood]]>
       - define leaves      <[blocks].exclude[<[wood_blocks]>]>
       - foreach <[wood_blocks].sub_lists[5]> as:sub_blocks:

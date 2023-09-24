@@ -148,7 +148,7 @@ paste_build:
   description: Paste the tile build as a schematic.
   usage: /paste_build (name)
   tab complete:
-  - determine <schematic.list>
+  - determine <schematic.list.filter[starts_with[fort_structure].not]>
   script:
 
   - define name <context.args.first||null>
@@ -170,7 +170,7 @@ paste_build:
   - narrate "<&7>Applying vector data to new locations..."
 
   #- narrate <[name]>
-  - ~schematic paste name:<[name]> <[origin]>
+  - ~schematic paste name:<[name]> <[origin]> noair
 
   #- define total_blocks <schematic[<[name]>].cuboid[<[origin]>].blocks.filter[has_flag[build.center]]>
   - define total_blocks <schematic[<[name]>].cuboid[<[origin]>].blocks.filter[has_flag[build.center]]>

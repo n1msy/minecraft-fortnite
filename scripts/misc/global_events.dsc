@@ -261,7 +261,7 @@ fort_global_handler:
       - stop
     - flag player fort.drop_menu:!
 
-    on *grass* physics:
+    on *grass*|dead_bush physics:
     - determine cancelled
 
     on block drops item from breaking:

@@ -1,15 +1,19 @@
-pregame_island_handler:
-  type: world
+#pregame_island_handler:
+#  type: world
+#  debug: false
+#  definitions: square
+#  events:
+#    on player enters fort_lobby_circle:
+#    - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
+#    - cast LEVITATION duration:8t amplifier:3 no_ambient no_clear no_icon hide_particles
+#    - wait 7t
+#    - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
+
+island_task:
+  type: task
   debug: false
-  definitions: square
-  events:
-    on player enters fort_lobby_circle:
-    - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
-    - cast LEVITATION duration:8t amplifier:3 no_ambient no_clear no_icon hide_particles
-    - wait 7t
-    - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
-
-
+  script:
+    - narrate a
   lobby_circle:
     anim:
       - define loc <server.flag[fort.pregame.lobby_circle.loc].with_pose[0,0]>

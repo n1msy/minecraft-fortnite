@@ -46,6 +46,8 @@ fort_struct_command:
       - determine <[structures]>
       - stop
 
+    - if <[r_args].contains_text[health<&sp>]>:
+      - stop
 
     - determine <list[save|remove|set|list]>
 
@@ -201,11 +203,14 @@ fort_struct_handler:
 
       - define origin <player.flag[fort_struct.using_wand.origin]>
 
+      - define cuboid  <schematic[fort_structure_<[name]>].cuboid[<[origin]>]>
+      #blocks that were there even before the tree was placed (so those dont get flagged)
+      - define preexisting_blocks <[cuboid].blocks.filter[material.name.equals[air].not]>
+
       - ~schematic paste name:fort_structure_<[name]> <[origin]> noair flags
 
       #get all the blocks before pasting, in case there's another structure cuboid overlapping
-      - define cuboid  <schematic[fort_structure_<[name]>].cuboid[<[origin]>]>
-      - define blocks <[cuboid].blocks.filter[material.name.equals[air].not].filter[has_flag[build].not]>
+      - define blocks <[cuboid].blocks.filter[material.name.equals[air].not].filter[has_flag[build].not].exclude[<[preexisting_blocks]>]>
 
       - define center <[cuboid].center>
 
@@ -219,7 +224,7 @@ fort_struct_handler:
       - flag <[center]> build.type:<[type]>
       - flag <[center]> build.health:<[hp]>
       - flag <[center]> build.material:<[material]>
-      - flag <[center]> build.natural.max_health:<server.flag[fort.structure.<[name]>.health]>
+      - flag <[center]> build.natural.name:<[name]>
 
       - flag <[blocks]> build.center:<[center]>
 
