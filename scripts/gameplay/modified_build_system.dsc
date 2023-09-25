@@ -1,6 +1,68 @@
 
 #/ex schematic create name:tilted_towers_1 area:<player.we_selection> <player.location> flags
 
+#these tasks are for fixing trees that i placed when the world was called something else
+fort_set_world_flags:
+  type: task
+  debug: false
+  script:
+  - define sel <player.we_selection>
+  - define world <player.world>
+
+  - narrate "Finding blocks..."
+  - define blocks <[sel].blocks_flagged[build.center]>
+  - narrate <&a>Found.
+  - wait 1t
+  - narrate "Setting flags..."
+  - foreach <[blocks]> as:bl:
+    - define center <[bl].flag[build.center].with_world[<[world]>]>
+    - flag <[bl]> build.center:<[center]>
+    - if <[bl].has_flag[build.structure]>:
+      - flag <[bl]> build.structure:<[bl].flag[build.structure].with_world[<[world]>]>
+    - wait 1t
+
+  - narrate <&a><&l>Done.
+
+fort_set_world:
+  type: task
+  debug: false
+  script:
+
+  - if <player.has_flag[asd]>:
+    - flag player asd:!
+    - stop
+
+  - flag player asd
+  - define world <player.world>
+  - while <player.has_flag[asd]> && <player.is_online>:
+    - define target_loc <player.eye_location.ray_trace[default=air;range=200]>
+    - define centers <[target_loc].find_blocks_flagged[build.center].within[20].parse[flag[build.center]].deduplicate>
+    - define incorrect_centers <[centers].filter[world.equals[<[world]>].not]>
+    - foreach <[incorrect_centers]> as:c:
+      - debugblock <[c].with_world[<[world]>].flag[build.structure].with_world[<[world]>].outline> color:255,49,49,50 d:2t players:<player>
+
+    - define correct_centers <[centers].exclude[<[incorrect_centers]>]>
+    - foreach <[correct_centers]> as:c:
+      - debugblock <[c].flag[build.structure].outline> color:84,255,69,50 d:2t players:<player>
+
+    - wait 1t
+  - flag player asd:!
+
+fort_set_world_handler:
+  type: world
+  debug: false
+  events:
+    on player left clicks block flagged:asd:
+    - define world <player.world>
+    - define target_loc <player.eye_location.ray_trace[default=air;range=200]>
+    - define centers <[target_loc].find_blocks_flagged[build.center].within[20].parse[flag[build.center]].deduplicate>
+    - define incorrect_centers <[centers].filter[world.equals[<[world]>].not]>
+    - foreach <[incorrect_centers]> as:c:
+      - define struct <[c].with_world[<[world]>].flag[build.structure].with_world[<[world]>]>
+      - flag <[c].with_world[<[world]>]> build.structure:<[struct]>
+      - flag <[struct].blocks_flagged[build.center].filter[flag[build.center].equals[<[c]>]]> build.center:<[c].with_world[<[world]>]>
+    - narrate <&a>Fixed.
+
 tile_visualiser_command:
   type: command
   name: tv
@@ -42,6 +104,8 @@ save_build:
     - narrate "<&c>You must make a selection!"
     - stop
 
+  - define world <player.world>
+
   - define structure <player.we_selection.blocks_flagged[build.structure].parse[flag[build.structure]]||null>
   - if <[structure].is_empty> || <[structure]> == null:
     - narrate "<&c>Invalid selection!"
@@ -54,28 +118,45 @@ save_build:
     - narrate "<&7>Overwriting current <&dq><&f><[name]>.schem<&7><&dq> file..."
     - adjust system delete_file:schematics/<[name]>.schem
 
+  - narrate "<&7>Temporarily setting each center to glass..."
+  - define air_blocks <list[]>
+  - foreach <[structure]> as:tile:
+    #we dont have to check if the blocks belong to that tile, since we have to just replace air blocks with any block anyways
+    - define add_air_blocks <[tile].blocks.filter[material.name.equals[air]]>
+    - define air_blocks <[air_blocks].include[<[add_air_blocks]>]>
+
+  - ~modifyblock <[air_blocks]> glass
+  - flag <[air_blocks]> build.air
+
+  - narrate "<&a><[air_blocks].size> <&7>air centers set."
+
   - narrate "<&7>Finding vector data for <&a><[structure].size> <&7>tiles..."
 
   - foreach <[structure]> as:tile:
-    - define center      <[tile].center.flag[build.center]||null>
+    - define tile <[tile].with_world[<[world]>]>
+    - define center      <[tile].center.flag[build.center].with_world[<[world]>]||null>
     - if <[center]> == null:
       - teleport <player> <[tile].center>
       - narrate "<&c>This tile structure's center returned null. Please fix it and try again."
       - stop
 
-    - if <[center].flag[build.structure]||null> == null:
+    - if <[center].flag[build.structure].with_world[<[world]>]||null> == null:
       - teleport <player> <[tile].center>
       - narrate "<&c>This tile structure's center returned null. Please fix it and try again."
       - stop
 
-    - define blocks      <[tile].blocks.filter[flag[build.center].equals[<[center]>]]>
+    - define blocks      <[tile].blocks.filter[flag[build.center].with_world[<[world]>].equals[<[center]>]]>
     - foreach <[blocks]> as:b:
       - define vector <[center].sub[<[b]>]>
-      - flag <[b]> build.center_vector:<[vector]>
-    - flag <[center]> build.min_vector:<[center].flag[build.structure].min.sub[<[center]>]>
-    - flag <[center]> build.max_vector:<[center].flag[build.structure].max.sub[<[center]>]>
+      - flag <[b]> build.center_vector:<[vector].with_world[<[world]>]>
+      #- announce <[vector].with_world[<[world]>]> to_console
+    - flag <[center]> build.min_vector:<[center].flag[build.structure].with_world[<[world]>].min.sub[<[center]>]>
+    - flag <[center]> build.max_vector:<[center].flag[build.structure].with_world[<[world]>].max.sub[<[center]>]>
 
   - schematic create name:<[name]> area:<player.we_selection> <player.location> flags
+
+  - ~modifyblock <[air_blocks]> air
+  - flag <[air_blocks]> build.air:!
 
   - narrate "<&7>Saving schematic as <&dq><&f><[name]>.schem<&7><&dq>..."
   - ~schematic save name:<[name]>
@@ -128,16 +209,36 @@ remove_build:
     - narrate "<&c>You must make a selection!"
     - stop
 
-  - define structure <player.we_selection.blocks_flagged[build.structure].parse[flag[build.structure]]||null>
-  - if <[structure].is_empty> || <[structure]> == null:
+  - define blocks <player.we_selection.blocks_flagged[build]||null>
+  - if <[blocks].is_empty> || <[blocks]> == null:
     - narrate "<&c>Invalid selection!"
     - stop
 
-  - narrate "<&7>Removing <&a><[structure].size> <&7>tiles..."
+  - narrate "<&7>Removing build blocks..."
 
-  - foreach <[structure]> as:tile:
-    - modifyblock <[tile].blocks> air
-    - flag <[tile].blocks> build:!
+  - modifyblock <[blocks]> air
+  - flag <[blocks]> build:!
+
+  - narrate <&a>Done!
+
+undo_build:
+  type: command
+  name: undo_build
+  debug: false
+  description: Remove the build you're looking at.
+  usage: /undo_build
+  script:
+
+  - if !<schematic.list.contains[undo]> || !<player.has_flag[fort_build.undo_loc]>:
+    - narrate "<&c>Can't undo."
+    - stop
+
+  - define origin <player.flag[fort_build.undo_loc]>
+  - define cuboid <schematic[undo].cuboid[<[origin]>]>
+
+  - flag <[cuboid].blocks> build:!
+
+  - ~schematic paste name:undo <[origin]>
 
   - narrate <&a>Done!
 
@@ -169,19 +270,31 @@ paste_build:
   - define world  <[origin].world>
   - narrate "<&7>Applying vector data to new locations..."
 
-  #- narrate <[name]>
-  - ~schematic paste name:<[name]> <[origin]> noair
+  #-undo command
 
-  #- define total_blocks <schematic[<[name]>].cuboid[<[origin]>].blocks.filter[has_flag[build.center]]>
+  - if <schematic.list.contains[undo]>:
+    - ~schematic unload name:undo
+
+  - if <util.has_file[schematics/undo.schem]>:
+    - adjust system delete_file:schematics/undo.schem
+  - flag player fort_build.undo_loc:<[origin]>
+  - schematic create name:undo area:<schematic[<[name]>].cuboid[<[origin]>]> <[origin]> flags
+  - ~schematic save name:undo
+
+  - ~schematic paste name:<[name]> <[origin]>
+
   - define total_blocks <schematic[<[name]>].cuboid[<[origin]>].blocks.filter[has_flag[build.center]]>
 
   #- playeffect effect:FLAME at:<[total_blocks]> visibility:300 offset:0
   - foreach <[total_blocks]> as:b:
-    - define center_vector <[b].flag[build.center_vector]||null>
+    - define center_vector <[b].flag[build.center_vector].with_world[<[world]>]||null>
     - if <[center_vector]> == null:
       - announce <&c><[b]>/<[center_vector]> to_console
-      #- foreach next
-    - define new_center    <[b].add[<[center_vector].with_world[<[world]>]>]>
+      - foreach next
+
+    - flag <[b]> build.center_vector:<[center_vector]>
+
+    - define new_center    <[b].add[<[center_vector]>].with_world[<[world]>]>
     - flag <[b]> build.center:<[new_center]>
     #also get the new cuboid tags for structure data
     - if <[new_center].simple> == <[b].simple>:
@@ -189,8 +302,23 @@ paste_build:
       - define min        <[new_center].add[<[min_vector]>]>
       - define max_vector <[b].flag[build.max_vector].with_world[<[world]>]>
       - define max        <[new_center].add[<[max_vector]>]>
-      - define struct     <[min].to_cuboid[<[max]>]>
+      - define struct     <[min].to_cuboid[<[max]>].with_world[<[world]>]>
+      - flag <[b]> build.min_vector:<[min_vector]>
+      - flag <[b]> build.max_vector:<[max_vector]>
       - flag <[b]> build.structure:<[struct]>
+
+ # - wait 1s
+  - narrate "<&7>Getting air blocks..."
+  - define structure <schematic[<[name]>].cuboid[<[origin]>].blocks_flagged[build.structure].parse[flag[build.structure]]||null>
+  - define air_blocks <list[]>
+  - foreach <[structure]> as:tile:
+  #  #we dont have to check if the blocks belong to that tile, since we have to just replace air blocks with any block anyways
+    - define add_air_blocks <[tile].blocks_flagged[build.air]>
+    - define air_blocks <[air_blocks].include[<[add_air_blocks]>]>
+
+  - ~modifyblock <[air_blocks]> air
+  - flag <[air_blocks]> build.air:!
+  - narrate "<&7>Turned <&a><[air_blocks].size> <&7>blocks back into air."
 
   - narrate <&a>Done!
   #- wait 5m

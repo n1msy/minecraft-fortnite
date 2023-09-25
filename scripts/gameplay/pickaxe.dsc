@@ -30,7 +30,9 @@ fort_pic_handler:
     - if !<[block].has_flag[build.center]>:
       - stop
 
-    - define center      <[block].flag[build.center]>
+    #in case it was pasted from a different world (specifically for the pine trees, since i accidentally made em in a different world)
+    - define center      <[block].flag[build.center].with_world[<[block].world>]>
+
     - define hp          <[center].flag[build.health]>
     - define mat_type    <[center].flag[build.material]>
 

@@ -260,16 +260,22 @@ fort_struct_handler:
 
     after player holds item item:fort_struct_wand:
       #second check is in case the structure was removed
+      - if <player.has_flag[fort_struct.using_wand]>:
+        - flag player fort_struct.using_wand:!
+        - wait 1t
+
       - define structures <server.flag[fort.structure].keys||<list[]>>
       - define name       <player.item_in_hand.flag[schem]>
       - if <[name]> != none && <[structures].contains[<[name]>]>:
         - run fort_struct_handler.selector
 
   selector:
-    - define name none
+    - define name <player.item_in_hand.flag[schem]>
     - define type null
     - flag player fort_struct.using_wand
-    - while <player.item_in_hand.script.name||null> == fort_struct_wand && <player.has_flag[fort_struct.using_wand]>:
+    - while <player.item_in_hand.script.name||null> == fort_struct_wand && <player.has_flag[fort_struct.using_wand]> && <player.item_in_hand.flag[schem]> == <[name]>:
+
+      - define name <player.item_in_hand.flag[schem]>
 
       - define eye_loc <player.eye_location>
 
@@ -281,7 +287,7 @@ fort_struct_handler:
         - actionbar "<&e><&l>RIGHT-CLICK <&c>to remove structure."
 
         - define struct <[origin].flag[build.center].flag[build.structure]>
-        - debugblock <[struct].blocks> color:255,49,49,50 d:2t players:<player>
+        - debugblock <[struct].outline> color:255,49,49,50 d:2t players:<player>
 
         - if <[display_blocks].exists>:
           - remove <[display_blocks].filter[is_spawned]>
@@ -290,8 +296,6 @@ fort_struct_handler:
       - else:
         #loading the entities in for the first time
         - if !<player.has_flag[fort_struct.using_wand.displays_spawned]>:
-
-          - define name <player.item_in_hand.flag[schem]>
 
           - if !<schematic.list.contains[fort_structure_<[name]>]>:
             - ~schematic load name:fort_structure_<[name]>
@@ -306,7 +310,7 @@ fort_struct_handler:
           - foreach <[cuboid].blocks> as:block:
             - define mat <schematic[fort_structure_<[name]>].block[<[block].sub[<[min]>]>]>
 
-            - spawn <entity[block_display].with[material=<[mat]>;glowing=true]> <[block]> save:b_display
+            - spawn <entity[block_display].with[material=<[mat]>;glowing=false]> <[block]> save:b_display
 
             - define display_blocks <[display_blocks].include[<entry[b_display].spawned_entity>]>
 
@@ -316,6 +320,9 @@ fort_struct_handler:
         #- debugblock <[cuboid].blocks> color:0,0,0,50 d:1t players:<server.online_players>
 
         - foreach <[cuboid].blocks> as:block:
+          - if <[display_blocks].get[<[loop_index]>]||null> == null:
+            #- flag player fort_struct.using_wand.displays_spawned:!
+            - foreach next
           - teleport <[display_blocks].get[<[loop_index]>]> <[block]>
 
       - wait 1t
