@@ -4,6 +4,29 @@ fort_lobby_handler:
   definitions: player|button|option|title|size_data
   events:
 
+    on shutdown:
+    - define menu_players <server.online_players_flagged[fort.in_menu]>
+    - foreach <[menu_players]> as:p:
+      - define player_npc     <player.flag[fort.menu.player_npc]>
+      - define play_button    <player.flag[fort.menu.play_button]>
+      - define mode_button    <player.flag[fort.menu.mode_button]>
+      - define vid_button     <player.flag[fort.menu.vid_button]>
+      - define match_info     <player.flag[fort.menu.match_info]>
+      - define invite_buttons <player.flag[fort.menu.invite_button]>
+
+      - remove <[player_npc]> if:<[player_npc].is_spawned>
+      - remove <[play_button]> if:<[play_button].is_spawned>
+      - remove <[mode_button]> if:<[mode_button].is_spawned>
+      - remove <[vid_button]> if:<[vid_button].is_spawned>
+      - remove <[match_info]> if:<[match_info].is_spawned>
+      - foreach <[invite_buttons].keys> as:i:
+        - define i_button <player.flag[fort.menu.invite_button.<[i]>]>
+        - remove <[i_button]> if:<[i_button].is_spawned>
+
+    on server prestart:
+    - createworld ft24
+    - bossbar create fort_waiting players:<server.online_players>
+
     #-create the entities upon joining/quitting, or remove/add entities when entering/exiting area
 
     #-remove the sound for whenever hitting the npc?

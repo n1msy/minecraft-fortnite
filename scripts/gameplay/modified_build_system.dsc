@@ -125,8 +125,9 @@ save_build:
     - define add_air_blocks <[tile].blocks.filter[material.name.equals[air]]>
     - define air_blocks <[air_blocks].include[<[add_air_blocks]>]>
 
-  - ~modifyblock <[air_blocks]> glass
-  - flag <[air_blocks]> build.air
+  - if <[air_blocks].any>:
+    - ~modifyblock <[air_blocks]> glass
+    - flag <[air_blocks]> build.air
 
   - narrate "<&a><[air_blocks].size> <&7>air centers set."
 
@@ -155,8 +156,9 @@ save_build:
 
   - schematic create name:<[name]> area:<player.we_selection> <player.location> flags
 
-  - ~modifyblock <[air_blocks]> air
-  - flag <[air_blocks]> build.air:!
+  - if <[air_blocks].any>:
+    - ~modifyblock <[air_blocks]> air
+    - flag <[air_blocks]> build.air:!
 
   - narrate "<&7>Saving schematic as <&dq><&f><[name]>.schem<&7><&dq>..."
   - ~schematic save name:<[name]>
@@ -281,7 +283,7 @@ paste_build:
   - schematic create name:undo area:<schematic[<[name]>].cuboid[<[origin]>]> <[origin]> flags
   - ~schematic save name:undo
 
-  - ~schematic paste name:<[name]> <[origin]>
+  - ~schematic paste name:<[name]> <[origin]> noair
 
   - define total_blocks <schematic[<[name]>].cuboid[<[origin]>].blocks.filter[has_flag[build.center]]>
 
@@ -316,9 +318,10 @@ paste_build:
     - define add_air_blocks <[tile].blocks_flagged[build.air]>
     - define air_blocks <[air_blocks].include[<[add_air_blocks]>]>
 
-  - ~modifyblock <[air_blocks]> air
-  - flag <[air_blocks]> build.air:!
-  - narrate "<&7>Turned <&a><[air_blocks].size> <&7>blocks back into air."
+  - if <[air_blocks].any>:
+    - ~modifyblock <[air_blocks]> air
+    - flag <[air_blocks]> build.air:!
+    - narrate "<&7>Turned <&a><[air_blocks].size> <&7>blocks back into air."
 
   - narrate <&a>Done!
   #- wait 5m
