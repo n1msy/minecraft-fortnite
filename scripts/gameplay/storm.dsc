@@ -1,3 +1,7 @@
+#globaldisplay commands
+#/globaldisplay create 2 paper{CustomModelData:19} ~ ~ ~ 20 20 20
+#/globaldisplay transform 2 ~ -40 ~ 100 3000 100 3
+
 storm:
   type: task
   debug: false

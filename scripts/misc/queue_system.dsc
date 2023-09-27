@@ -7,8 +7,8 @@ fort_queue_handler:
 
     ##create events on server shutdown to safely reset the lobby
 
-    after server start:
-    - bossbar create fort_waiting color:YELLOW
+    on server start:
+    - bossbar create fort_waiting color:YELLOW players:<server.online_players>
 
     ## - [ QUEUE SYSTEM ] - ##
     on delta time secondly:

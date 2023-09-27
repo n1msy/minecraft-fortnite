@@ -25,7 +25,9 @@ fort_lobby_handler:
 
     on server prestart:
     - createworld ft24
-    - bossbar create fort_waiting players:<server.online_players>
+    - createworld fort_pregame_island
+    - createworld fort_map
+    - createworld nimnite_map
 
     #-create the entities upon joining/quitting, or remove/add entities when entering/exiting area
 
@@ -59,6 +61,9 @@ fort_lobby_handler:
     - define twitter_icon <&chr[15].font[icons]>
 
     - define actionbar_text "<[youtube_icon]> Nimsy <[twitch_icon]> FlimsyNimsy <[twitter_icon]> N1msy"
+
+    #wait, so the player's play button flag will work (when they join the server)
+    - wait 1t
 
     - while <player.is_online> && <player.has_flag[fort.in_menu]>:
       #socials
@@ -154,7 +159,9 @@ fort_lobby_handler:
       - flag <[<[button_type]>_button]> type:<[button_type]>
 
     #vid button
-    - define vid_button_loc <server.flag[fort.menu.vid_button_bg].location.backward_flat[0.001]>
+    ##moving it forward a little bit, because it for some reason rotates a little bit
+   #- define vid_button_loc <server.flag[fort.menu.vid_button_bg].location.backward_flat[0.001]>
+    - define vid_button_loc <server.flag[fort.menu.vid_button_bg].location.backward_flat[0.05]>
     - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=18]>;scale=3,3,3;hide_from_players=true]> <[vid_button_loc]> save:vid_button
     - define vid_button <entry[vid_button].spawned_entity>
     - adjust <player> show_entity:<[vid_button]>
@@ -172,7 +179,7 @@ fort_lobby_handler:
 
     #-nimnite title
     - wait 5s
-    - if !<player.has_flag[fort.in_queue]> && !<player.has_flag[fort.menu.match_info]>:
+    - if !<player.has_flag[fort.in_queue]> || !<player.has_flag[fort.menu.match_info]>:
       - run fort_lobby_handler.match_info def.option:add
 
     ## - [ MAKE THIS CLEANER ] - ##

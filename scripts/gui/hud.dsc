@@ -4,9 +4,8 @@ update_hud:
   debug: false
   script:
 
-  #-dont give the player a hud while they're inside the "menu"
-  #- if <player.has_flag[fort.in_menu]>:
-  - if <player.location.is_in[fort_menu]||false>:
+  #dont give hud to players if in fort menu
+  - if <player.has_flag[fort.in_menu]>:
     - stop
 
   #falling icon turns to clock icon after bus is done dropping
@@ -112,10 +111,17 @@ hud_handler:
 
     - inject update_hud
 
-    after player scrolls their hotbar:
+    on player scrolls their hotbar:
     ##########REMOVE THIS LINE
     - if !<list[asd988|Nimsy].contains[<player.name>]>:
       - stop
+
+    - if <player.has_flag[fort.using_glider]>:
+      - determine passively cancelled
+      - stop
+
+    #(added wait instead of using after in event, so i can cancel event if necessary)
+    - wait 1t
 
     - define new_slot <context.new_slot>
     - define old_slot <context.previous_slot>
@@ -132,6 +138,9 @@ hud_handler:
     on player swaps items:
     #- stop if:<player.world.name.equals[fortnite_map].not>
     - determine passively cancelled
+    - if <player.has_flag[fort.using_glider]>:
+      - stop
+
     - define new_type <map[inv=build;build=inv].get[<player.flag[fort.inv_type]||inv>]>
     - flag player fort.inv_type:<[new_type]>
 
@@ -173,6 +182,9 @@ hud_handler:
   # <[new_slot]>
   # <[old_slot]>
     - define slot <[new_slot]>
+
+    #so it doesn't change to the slot the glider is in
+    - define slot <player.flag[fort.using_glider.previous_slot]> if:<player.has_flag[fort.using_glider]>
 
     - define inv_type <player.flag[fort.inv_type]||inv>
     - if <[inv_type]> == inv:
