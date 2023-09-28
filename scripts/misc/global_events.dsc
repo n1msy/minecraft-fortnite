@@ -76,6 +76,10 @@ fort_global_handler:
 
     #-fall damage ignores shield
     - if <context.cause> == FALL:
+      - if <[e].has_flag[fort.using_glider]>:
+        - determine passively cancelled
+        - stop
+
       - run fort_global_handler.land_fx
       #you take half the fall damage now
       - define damage <[damage].div[1.5]>
