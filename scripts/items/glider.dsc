@@ -14,19 +14,9 @@
 #how i calculated: battle bus from loot lake y in fort = 832 m = 832 blocks
 #battle bus height = loot lake y + 832 blocks = 32 + 832 = 864
 
-test:
-  type: task
-  debug: false
-  script:
-  - if <player.has_flag[test]>:
-    - flag player test:!
-    - stop
-  - flag player test
-  - while <player.has_flag[test]>:
-    - animate <player> animation:START_USE_MAINHAND_ITEM
-    #- repeat 10:
-    #- animate <player> animation:START_USE_OFFHAND_ITEM
-    - wait 1t
+##play a noise when falling for enemies to indicate they're falling?
+
+##might be a bit too many particle effects; if too laggy, tone it down
 
 fort_glider_handler:
   type: world
@@ -84,6 +74,10 @@ fort_glider_handler:
 
       # - [ FALLING ] - #
       - if !<player.has_flag[fort.using_glider.deployed]>:
+        - if <[gliding_time].exists>:
+          - define gliding_time:!
+          - adjust <player> stop_sound:minecraft:item.elytra.flying
+
         - adjust <player> gliding:true
 
         #so players can't glide upwards + they glide at a constant rate
@@ -97,9 +91,9 @@ fort_glider_handler:
         - define right_foot <player.location.relative[-0.1,0,0]>
         - define left_hand  <player.location.relative[0.4,0,1]>
         - define right_hand <player.location.relative[-0.4,0,1]>
+        - define limbs      <list[<[left_foot]>|<[right_foot]>|<[left_hand]>|<[right_hand]>]>
 
-        - foreach <[left_foot]>|<[right_foot]>|<[left_hand]>|<[right_hand]> as:limb:
-          - playeffect effect:REDSTONE offset:0 at:<[limb]> visibility:100 special_data:1|WHITE
+        - playeffect effect:REDSTONE offset:0 at:<[limbs]> visibility:25 special_data:1|WHITE
 
         - actionbar <[deploy_text]>
 
@@ -107,15 +101,50 @@ fort_glider_handler:
       - else:
         - define glider <player.flag[fort.using_glider.deployed]>
 
-        #second check is if the yaw isn't the same as what it was
-        - if <[loop_index].mod[2]> == 0 && <player.location.yaw> != <[yaw]||null> && !<[glider].has_flag[deploy_anim]> && !<[glider].has_flag[undeploy_anim]>:
-          - define yaw   <[eye_loc].yaw>
-          - define angle <[yaw].to_radians>
-          - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
+        #how long they've been using the glider for (only used for sound effect currently)
+        - define gliding_time:++
 
-          - adjust <[glider]> interpolation_start:0
-          - adjust <[glider]> left_rotation:<[left_rotation]>
-          - adjust <[glider]> interpolation_duration:2t
+        #since glide effect is removed, it wont play this sound anymore
+        #play every 6 seconds
+        - playsound <player> sound:ITEM_ELYTRA_FLYING pitch:1.3 volume:0.1 if:<[loop_index].mod[145].equals[0].or[<[gliding_time].equals[1]>]>
+
+        #second check is if the yaw isn't the same as what it was
+        - if !<[glider].has_flag[deploy_anim]> && !<[glider].has_flag[undeploy_anim]>:
+
+          #-wind fx
+          - if <[loop_index].mod[3]> == 0:
+            #so the wind fx doesn't look as vertical
+            - define left_side  <[eye_loc].with_pitch[0].below[0.2].backward[0.6].left[1.45]>
+            - define right_side <[eye_loc].with_pitch[0].below[0.2].backward[0.6].right[1.45]>
+
+            #redstone
+            #- define left_side  <[eye_loc].below[0.55].with_pitch[0].backward[0.6].left[1.4]>
+            #- define right_side <[eye_loc].below[0.55].with_pitch[0].backward[0.6].right[1.4]>
+
+            - foreach <[left_side]>|<[right_side]> as:side:
+              - define vel <[side].with_pitch[-45].backward.sub[<[side]>].div[2]>
+              - playeffect effect:CLOUD offset:0 at:<[side]> velocity:<[vel]> visibility:25
+              #special_data:0.9|WHITE
+
+          #-glider rotation
+          - if <[loop_index].mod[2]> == 0 && <player.location.yaw> != <[yaw]||null>:
+            - define yaw         <[eye_loc].yaw>
+            #- define pitch       <[eye_loc].pitch>
+            #- define yaw_angle   <[yaw].to_radians>
+            #- define pitch_angle <[pitch].to_radians>
+            #- define yaw_rotation   <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[yaw_angle]>]>]>
+            #- define pitch_rotation <quaternion[0,1,0,0].mul[<location[1,0,0].to_axis_angle_quaternion[<[pitch_angle]>]>]>
+
+            #- define left_rotation <[yaw_rotation].mul[<[pitch_rotation]>]>
+
+            #(the commented out is including pitch)
+            - define yaw   <[eye_loc].yaw>
+            - define angle <[yaw].to_radians>
+            - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
+
+            - adjust <[glider]> interpolation_start:0
+            - adjust <[glider]> left_rotation:<[left_rotation]>
+            - adjust <[glider]> interpolation_duration:2t
 
         - actionbar <[undeploy_text]> if:<player.has_flag[fort.using_glider.locked].not>
 
@@ -123,6 +152,10 @@ fort_glider_handler:
 
     #this should in theory ALWAYS be toggled to off since it will always take out the glider no matter what
     - run fort_glider_handler.toggle_glider
+
+    - adjust <player> stop_sound:minecraft:item.elytra.flying
+    - playsound <player.location> sound:BLOCK_ANCIENT_DEBRIS_STEP pitch:2
+    - run fort_global_handler.land_fx
 
     - adjust <player> item_slot:<[previous_slot]>
 
@@ -143,6 +176,9 @@ fort_glider_handler:
 
       - if <[glider].has_flag[undeploy_anim]>:
         - stop
+
+      - playsound <player> sound:ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM pitch:1.5 volume:1
+      - playsound <player> sound:ENTITY_PLAYER_ATTACK_NODAMAGE pitch:0.3 volume:1.5
 
       - flag <[glider]> undeploy_anim duration:10t
       - adjust <[glider]> interpolation_start:0
@@ -170,12 +206,17 @@ fort_glider_handler:
       - flag player fort.using_glider.deployed:<[glider]>
 
       #"remove" the players hand from frame, so it *looks* like they're holding the glider (even though it's a random item)
-      - give <item[white_stained_glass_pane].with[display=<&sp>;custom_model_data=1]> slot:9 to:<player.inventory>
+      - give <item[gold_nugget].with[display=<&sp>;custom_model_data=23]> slot:9 to:<player.inventory>
 
       - mount <[glider]>|<player>
       - look <[glider]> pitch:0
 
       - cast LEVITATION duration:0 amplifier:-10 <player> no_ambient hide_particles no_icon no_clear
+
+      ##make sure other players can hear this
+      #- playsound <[loc]> sound:ENTITY_ALLAY_DEATH pitch:2 volume:0.4
+      - playsound <player> sound:ENTITY_ALLAY_AMBIENT_WITH_ITEM pitch:0.8 volume:0.8
+      - playsound <player> sound:ITEM_ARMOR_EQUIP_ELYTRA pitch:0.8 volume:1.7
 
       ##do we really need all this extra checks?
 

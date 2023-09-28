@@ -76,6 +76,7 @@ fort_global_handler:
 
     #-fall damage ignores shield
     - if <context.cause> == FALL:
+      - run fort_global_handler.land_fx
       #you take half the fall damage now
       - define damage <[damage].div[1.5]>
       #that way the annoying head thing doesn't happen when falling by the smallest amount
@@ -340,6 +341,14 @@ fort_global_handler:
 
     - inventory open d:<[inv]>
 
+  land_fx:
+
+  - define loc <player.location.above[0.2]>
+  - define circle <[loc].points_around_y[radius=1;points=10]>
+  - foreach <[circle]> as:point:
+    - define velocity <[point].sub[<[loc]>].normalize.div[8].with_y[0.15]>
+    - playeffect effect:CLOUD offset:0 at:<[loc]> visibility:100 velocity:<[velocity]>
+
   death_fx:
   #-create the "on your knees" animation or no? because the player fades away anyways
     anim:
@@ -448,7 +457,6 @@ fort_global_handler:
 
       - wait 2s
       - remove <[circles].filter[is_spawned]>
-
 
 
 
