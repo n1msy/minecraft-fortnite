@@ -4,6 +4,9 @@ fort_global_handler:
   definitions: data
   events:
 
+    on block fades:
+    - determine cancelled
+
     on block falls:
     - determine cancelled
 
