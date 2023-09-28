@@ -284,8 +284,9 @@ dmodels_load_bbmodel:
             #### Item override building
             - definemap json_group name:<[outline.name].to_lowercase> color:0 children:<util.list_numbers[from=0;to=<[child_count]>]> origin:<[outline_origin].mul[<[scale_factor]>].xyz.split[,]>
             - define model_json.groups <list[<[json_group]>]>
-            - define model_json.display.head.translation <list[32|32|32]>
+            - define model_json.display.head.translation <list[-32|32|-32]>
             - define model_json.display.head.scale <list[4|4|4]>
+            - define model_json.display.head.rotation <list[0|180|0]>
             - define modelpath item/dmodels/<[model_name_lowercased]>/<[outline.name].to_lowercase>
             - run dmodels_multiwaitable_filewrite def.key:<[model_name]> def.path:<[models_root]>/<[outline.name].to_lowercase>.json def.data:<[model_json].to_json[native_types=true;indent=<[pack_indent]>].utf8_encode>
             - define cmd 0

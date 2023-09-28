@@ -99,13 +99,10 @@ dmodels_move_to_frame:
                 - define timespot <[animation_data.length]>
                 - flag server dmodels_anim_active.<[root_entity].uuid>:!
 
-    - define global_rotation <[root_entity].flag[dmodel_global_rotation]>
     - define global_scale <[root_entity].flag[dmodel_global_scale].mul[<script[dmodels_config].parsed_key[default_scale]>]>
     - define global_scale <location[1,1,1]> if:<[is_player].exists>
-    - define center <[root_entity].location.with_pitch[0].below[1]>
-    - define yaw_quaternion <quaternion[0,1,0,0]>
-    #<location[0,1,0].to_axis_angle_quaternion[<[root_entity].flag[dmodel_yaw].add[180].to_radians.mul[-1]>]>
-    - define orientation <[yaw_quaternion].mul[<[global_rotation]>]>
+    - define center <[root_entity].location.with_yaw[<[root_entity].location.yaw.add[180]>].with_pitch[0].below[1]>
+    - define orientation <[root_entity].flag[dmodel_global_rotation]>
     - define parentage <map>
     - foreach <[animation_data.animators]> key:part_id as:animator:
         - define framedata.position <location[0,0,0]>
