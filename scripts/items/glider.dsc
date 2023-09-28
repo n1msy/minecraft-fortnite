@@ -101,6 +101,9 @@ fort_glider_handler:
       - else:
         - define glider <player.flag[fort.using_glider.deployed]>
 
+        - define velocity <[eye_loc].forward[1].sub[<[eye_loc]>].div[2].with_y[-0.25]>
+        - adjust <player> velocity:<[velocity]>
+
         #how long they've been using the glider for (only used for sound effect currently)
         - define gliding_time:++
 
@@ -188,7 +191,7 @@ fort_glider_handler:
       - adjust <[glider]> interpolation_duration:10t
 
       - take slot:9 from:<player.inventory>
-      - cast LEVITATION remove
+      #- cast LEVITATION remove
       - flag player fort.using_glider.deployed:!
 
       - wait 10t
@@ -211,7 +214,8 @@ fort_glider_handler:
       - mount <[glider]>|<player>
       - look <[glider]> pitch:0
 
-      - cast LEVITATION duration:0 amplifier:-10 <player> no_ambient hide_particles no_icon no_clear
+      #instead of casting levitation, just using the same velocity logic as before
+      #- cast LEVITATION duration:0 amplifier:-10 <player> no_ambient hide_particles no_icon no_clear
 
       ##make sure other players can hear this
       #- playsound <[loc]> sound:ENTITY_ALLAY_DEATH pitch:2 volume:0.4
