@@ -34,18 +34,40 @@ fort_queue_handler:
     #bossbar is created on player joins in "lobby.dsc"
     - foreach <[players_queued]> as:player:
       - define uuid <[player].uuid>
+      - define mode <[player].flag[fort.menu.mode]>
 
       - flag <[player]> fort.in_queue:++
       - define secs_in_queue <[player].flag[fort.in_queue]>
 
       - define match_info <[player].flag[fort.menu.match_info]>
+
+      - define text "Finding match...<n>Elapsed: <time[2069/01/01].add[<[secs_in_queue]>].format[m:ss]>"
+      - if <[secs_in_queue]> >= 5:
+        - define text "Joining match..."
+
       #timer resets hourly (meaning it can't go past an hour)
-      - adjust <[match_info]> "text:Finding match...<n>Elapsed: <time[2069/01/01].add[<[secs_in_queue]>].format[m:ss]>"
+      - adjust <[match_info]> text:<[text]>
 
       #only send players after waiting at least 5 seconds
-      #- if <[secs_in_queue]> > 5:
+      - if <[secs_in_queue]> >= 6 && <[<[mode]>_servers].any>:
 
-        #- define available_servers
+        #get the server with the most players
+        #instead of finding the server for each player, update the count within the queue while still having this def so the definition doesnt have to constantly be redefined?
+        - define server_to_join <[<[mode]>_servers].parse_tag[<[parse_value]>/<server.flag[fort.available_servers.<[mode]>.<[parse_value]>.players].size||0>].sort_by_number[parse[after[/]]].reverse.first.before[/]>
+
+        - narrate <[server_to_join]>
+        #-ONLY flag the player data on this server when ADDING players... (removing is done inside the game server via bungeerun, to confirm they have been removed)
+        #doing this for add, since the player count updates instantly.
+        #for removing:
+        #on player quit: if the server they are quitting from is a fort game server, remove that player from the lobby server's flags
+        #either via BUNGEERUN and ONLY from the game server, OR share a script and just check <bungee.server>
+
+        - flag server fort.available_servers.<[mode]>.<[server_to_join]>.players:->:<[player]>
+
+        ########TEMP TELEPORT COMMAND
+        - teleport <[player]> <server.flag[fort.pregame.spawn]>
+        #####USE THIS (below) ON ACTUAL SERVER:
+        #- adjust <[player]> send_to:<[server_to_join]>
 
     #background triangles
     - run fort_lobby_setup.bg_cube_anim if:<context.second.mod[5].equals[0]>
