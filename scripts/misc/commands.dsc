@@ -21,7 +21,8 @@ fort_commands:
         - narrate "<&7>Type /fort pregame_setup to set."
 
     - case lobby_teleport:
-      - define loc <player.location.round.above[0.5]>
+      #- define loc <player.location.round.above[0.5]>
+      - define loc <server.flag[fort.pregame.lobby_circle.loc]>
       - flag server fort.pregame.lobby_circle.loc:<[loc]>
 
       - define loc <[loc].with_pose[0,0]>
@@ -74,8 +75,8 @@ fort_commands:
 
       - run pregame_island_handler.lobby_circle.anim
 
-    - case pregame_setup:
-      - flag server fort.pregame.spawn:<player.location.center>
+    - case pregame_spawn:
+      - flag server fort.pregame.spawn:<player.location.center.with_pose[0,-90]>
       - narrate "<&a>Nimnite pregame island spawn set."
 
     - case chest:

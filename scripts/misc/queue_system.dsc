@@ -1,3 +1,5 @@
+#-Belongs on LOBBY SERVER
+
 ## - [ Nimnite Queue System ] - ##
 fort_queue_handler:
   type: world
@@ -21,6 +23,13 @@ fort_queue_handler:
     - define players_not_queued <[players].filter[has_flag[fort.in_queue].not]>
     - define players_queued     <[players].filter[has_flag[fort.in_queue]]>
 
+    - define solo_servers   <server.flag[fort.available_servers.solo].keys||<list[]>>
+    - define duos_servers   <server.flag[fort.available_servers.duos].keys||<list[]>>
+    - define squads_servers <server.flag[fort.available_servers.squads].keys||<list[]>>
+
+    #flag keys for available servers
+    #.players = each player ready that has joined the pregame island and is waiting for the game to start
+
     # - Update Queue Timer
     #bossbar is created on player joins in "lobby.dsc"
     - foreach <[players_queued]> as:player:
@@ -34,15 +43,18 @@ fort_queue_handler:
       #timer resets hourly (meaning it can't go past an hour)
       - adjust <[match_info]> "text:Finding match...<n>Elapsed: <time[2069/01/01].add[<[secs_in_queue]>].format[m:ss]>"
 
-    #also checking if there's 2 or more bossbars already, to let players load their hud first before showing the next bossbar (fort waiting)
-    - bossbar update fort_waiting title:<proc[spacing].context[50]><&chr[A004].font[icons]><proc[spacing].context[-72]><&l><element[WAITING FOR PLAYERS].font[lobby_text]> color:YELLOW players:<[players_queued].filter[has_flag[fort.in_menu].not].filter[bossbar_ids.size.is[OR_MORE].than[2]]>
+      #only send players after waiting at least 5 seconds
+      #- if <[player].flag[fort.in_queue]> >= 5 && <[available_servers].any>:
+        #- adjust
 
 
+    #background triangles
     - run fort_lobby_setup.bg_cube_anim if:<context.second.mod[5].equals[0]>
 
+
+    #-title animation (disabled)
     #- foreach <[players_not_queued]> as:player:
       #-play the title moving up and down animation
-      ###should we have this? id
       #- define title <[player].flag[fort.menu.match_info]>
       #- if <[title].is_spawned> && !<[title].has_flag[spawn_anim]> && !<[title].has_flag[animating]> && <context.second.mod[2]> == 0:
         #- run fort_lobby_handler.title_anim def.title:<[title]>

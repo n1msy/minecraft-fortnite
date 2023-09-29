@@ -1,3 +1,5 @@
+#-Belongs on LOBBY SERVER
+
 fort_lobby_handler:
   type: world
   debug: false
@@ -117,10 +119,8 @@ fort_lobby_handler:
 
     - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
 
-    #-player setup
-    - flag <player> fort.wood.qty:999
-    - flag <player> fort.brick.qty:999
-    - flag <player> fort.metal.qty:999
+    #default mode
+    - flag player fort.menu.mode:solo
 
     - foreach <list[light|medium|heavy|shells|rockets]> as:ammo_type:
       - flag <player> fort.ammo.<[ammo_type]>:999
@@ -162,7 +162,7 @@ fort_lobby_handler:
     ##moving it forward a little bit, because it for some reason rotates a little bit
    #- define vid_button_loc <server.flag[fort.menu.vid_button_bg].location.backward_flat[0.001]>
     - define vid_button_loc <server.flag[fort.menu.vid_button_bg].location.backward_flat[0.05]>
-    - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=18]>;scale=3,3,3;hide_from_players=true]> <[vid_button_loc]> save:vid_button
+    - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=20]>;scale=3,3,3;hide_from_players=true]> <[vid_button_loc]> save:vid_button
     - define vid_button <entry[vid_button].spawned_entity>
     - adjust <player> show_entity:<[vid_button]>
 
@@ -372,18 +372,28 @@ fort_lobby_handler:
           #spawn time elapsed text entity
           #check in case they spam
 
+          #have to flag *before* match_info shows up
+          - flag player fort.in_queue:0
+
           - run fort_lobby_handler.match_info def.option:add
 
           - adjust <[name_text]> text:<player.name><n><&a>Ready if:<[name_text].equals[null].not>
 
           - playsound <player> sound:BLOCK_NOTE_BLOCK_BASS pitch:0
           - define i <item[oak_sign].with[custom_model_data=10]>
-          - flag player fort.in_queue:0
+
         - run fort_lobby_handler.press_anim def.button:<[button]>
         - adjust <[button]> item:<[i]>
 
       - case mode_button:
+        - define new_mode <map[solo=duos;duos=squads;squads=solo].get[<player.flag[fort.menu.mode]>]>
+        - flag player fort.menu.mode:<[new_mode]>
+        - define i <item[oak_sign].with[custom_model_data=<map[solo=14;duos=15;squads=16].get[<[new_mode]>]>]>
+
         - run fort_lobby_handler.press_anim def.button:<[button]>
+        - adjust <[button]> item:<[i]>
+
+        - stop
         - if !<player.has_flag[fort.menu.coming_soon_cooldown]>:
           - playsound <player> sound:ENTITY_VILLAGER_NO
           - narrate "<&c>This feature is coming soon."
@@ -400,6 +410,7 @@ fort_lobby_handler:
   match_info:
     - define info_display <player.flag[fort.menu.match_info]||null>
     - choose <[option]>:
+
       - case add:
         #it's a title, but no need to check for it, since that's the only possible thing it can be
         - if <[info_display]> != null && <[info_display].is_spawned>:
@@ -428,7 +439,7 @@ fort_lobby_handler:
         - if !<player.has_flag[fort.in_queue]>:
           #flagging spawn anim just so the "idle" animation and spawn animation dont overlap
           - adjust <[info_display]> background_color:transparent
-          - flag <[info_display]> spawn_anim duration:3t
+          #- flag <[info_display]> spawn_anim duration:3t
           - flag <[info_display]> title
 
         - adjust <player> show_entity:<[info_display]>
@@ -586,7 +597,7 @@ fort_lobby_setup:
 
     #vid bg
     - define vid_bg_loc <[play_loc].forward[0.1].above[1.8].left[7.3].forward[0.001].with_yaw[<[play_loc].yaw.sub[20]>]>
-    - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=17]>;scale=3.1,1.8,3.1]> <[vid_bg_loc]> save:vid_button_bg
+    - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=19]>;scale=3.1,1.8,3.1]> <[vid_bg_loc]> save:vid_button_bg
     - define vid_button_bg <entry[vid_button_bg].spawned_entity>
     - flag server fort.menu.vid_button_bg:<[vid_button_bg]>
 
@@ -630,7 +641,7 @@ fort_lobby_setup:
 
     - define circle <[center].points_around_y[radius=<[radius]>;points=15]>
 
-    - define i <item[oak_sign].with[custom_model_data=15]>
+    - define i <item[oak_sign].with[custom_model_data=17]>
     - foreach <[circle]> as:plane_loc:
 
       - define angle <[plane_loc].face[<[center]>].yaw.to_radians>
@@ -646,7 +657,7 @@ fort_lobby_setup:
 
     - define circle <[center].points_around_y[radius=<[radius]>;points=40]>
 
-    - define i <item[oak_sign].with[custom_model_data=15]>
+    - define i <item[oak_sign].with[custom_model_data=17]>
     - foreach <[circle]> as:plane_loc:
       - define angle <[plane_loc].face[<[center]>].yaw.to_radians>
       - define left_rotation <quaternion[0,-1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
@@ -662,7 +673,7 @@ fort_lobby_setup:
 
     - define circle <[center].add[0,<[cyl_height].mul[1.8]>,0].points_around_y[radius=<[radius]>;points=40]>
 
-    - define i <item[oak_sign].with[custom_model_data=15]>
+    - define i <item[oak_sign].with[custom_model_data=17]>
     - foreach <[circle]> as:plane_loc:
       - define angle <[plane_loc].face[<[center]>].yaw.to_radians>
       - define left_rotation <quaternion[0,-1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>

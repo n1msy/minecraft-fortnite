@@ -24,7 +24,7 @@ fort_glider_handler:
   events:
 
     on player drops item flagged:for.using_glider:
-    - determine canceled
+    - determine cancelled
 
     on player starts sneaking flagged:fort.using_glider:
     - if <player.has_flag[fort.using_glider.locked]>:
@@ -59,7 +59,7 @@ fort_glider_handler:
     - define deploy_text   "<[sneak_button]> <element[<&l>DEPLOY GLIDER].color[<color[71,0,0]>]>"
     - define undeploy_text "<[sneak_button]> <element[<&l>UNDEPLOY GLIDER].color[<color[71,0,0]>]>"
 
-    - while !<player.is_on_ground> && <player.is_online>:
+    - while !<player.is_on_ground> && <player.is_online> && <player.is_spawned>:
 
       - define loc        <player.location>
       - define eye_loc  <player.eye_location>
@@ -100,6 +100,9 @@ fort_glider_handler:
       # - [ GLIDER ] - #
       - else:
         - define glider <player.flag[fort.using_glider.deployed]>
+        #- define gliding_model <player.flag[fort.using_glider.gliding_model]>
+
+        #- teleport <[gliding_model]> <[loc].above[2]>
 
         - define velocity <[eye_loc].forward[1].sub[<[eye_loc]>].div[2].with_y[-0.25]>
         - adjust <player> velocity:<[velocity]>
@@ -132,16 +135,7 @@ fort_glider_handler:
           #-glider rotation
           - if <[loop_index].mod[2]> == 0 && <player.location.yaw> != <[yaw]||null>:
             - define yaw         <[eye_loc].yaw>
-            #- define pitch       <[eye_loc].pitch>
-            #- define yaw_angle   <[yaw].to_radians>
-            #- define pitch_angle <[pitch].to_radians>
-            #- define yaw_rotation   <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[yaw_angle]>]>]>
-            #- define pitch_rotation <quaternion[0,1,0,0].mul[<location[1,0,0].to_axis_angle_quaternion[<[pitch_angle]>]>]>
-
-            #- define left_rotation <[yaw_rotation].mul[<[pitch_rotation]>]>
-
             #(the commented out is including pitch)
-            - define yaw   <[eye_loc].yaw>
             - define angle <[yaw].to_radians>
             - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
 
@@ -157,8 +151,11 @@ fort_glider_handler:
     - run fort_glider_handler.toggle_glider
 
     - adjust <player> stop_sound:minecraft:item.elytra.flying
-    - playsound <player.location> sound:BLOCK_ANCIENT_DEBRIS_STEP pitch:2
-    - run fort_global_handler.land_fx
+
+    #-in case they die
+    - if <player.is_spawned>:
+      - playsound <player.location> sound:BLOCK_ANCIENT_DEBRIS_STEP pitch:2
+      - run fort_global_handler.land_fx
 
     - adjust <player> item_slot:<[previous_slot]>
 
@@ -192,7 +189,12 @@ fort_glider_handler:
 
       - take slot:9 from:<player.inventory>
       #- cast LEVITATION remove
+      #- cast INVISIBILITY remove
       - flag player fort.using_glider.deployed:!
+
+      #- define gliding_model <player.flag[fort.using_glider.gliding_model]||null>
+      #- if <[gliding_model]> != null:
+        #- run dmodels_delete def.root_entity:<[gliding_model]>
 
       - wait 10t
 
@@ -211,33 +213,22 @@ fort_glider_handler:
       #"remove" the players hand from frame, so it *looks* like they're holding the glider (even though it's a random item)
       - give <item[gold_nugget].with[display=<&sp>;custom_model_data=23]> slot:9 to:<player.inventory>
 
+      #- run dmodels_spawn_model def.player:<player> def.model_name:emotes def.location:<[loc].above[2]> def.yaw:<[yaw]> save:result
+      #- define gliding_model <entry[result].created_queue.determination.first||null>
+      #- run dmodels_set_scale def.root_entity:<[gliding_model]> def.scale:1.87,1.87,1.87
+      #- flag player fort.using_glider.gliding_model:<[gliding_model]>
+
       - mount <[glider]>|<player>
+
       - look <[glider]> pitch:0
 
       #instead of casting levitation, just using the same velocity logic as before
       #- cast LEVITATION duration:0 amplifier:-10 <player> no_ambient hide_particles no_icon no_clear
 
       ##make sure other players can hear this
-      #- playsound <[loc]> sound:ENTITY_ALLAY_DEATH pitch:2 volume:0.4
       - playsound <player> sound:ENTITY_ALLAY_AMBIENT_WITH_ITEM pitch:0.8 volume:0.8
       - playsound <player> sound:ITEM_ARMOR_EQUIP_ELYTRA pitch:0.8 volume:1.7
 
-      ##do we really need all this extra checks?
-
-      #in case it's from a previous queue/spam
-      #- if <[glider].has_flag[deploy_anim]>:
-      #  - stop
-
-      #- flag <[glider]> deploy_anim duration:15t
-
-      #- repeat 2:
-      #  #in case they spawn another glider (from spamming)
-      #  - if !<[glider].is_spawned>:
-      #    - if !<player.has_flag[fort.using_glider.deployed]>:
-      #      - stop
-      #    - define glider <player.flag[fort.using_glider.deployed]>
-      #    - flag <[glider]> deploy_anim duration:<element[15].sub[<[value]>]>
-      #  - wait 1t
       - flag <[glider]> deploy_anim duration:15t
       - wait 2t
 
