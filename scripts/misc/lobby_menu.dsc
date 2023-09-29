@@ -386,18 +386,27 @@ fort_lobby_handler:
         - adjust <[button]> item:<[i]>
 
       - case mode_button:
+        #- run fort_lobby_handler.press_anim def.button:<[button]>
+        #- if !<player.has_flag[fort.menu.coming_soon_cooldown]>:
+        #  - playsound <player> sound:ENTITY_VILLAGER_NO
+        #  - narrate "<&c>This feature is coming soon."
+        #  - flag player fort.menu.coming_soon_cooldown duration:2s
+        #- stop
+
+        - if <player.has_flag[fort.in_queue]>:
+          - if !<player.has_flag[fort.menu.mode_lock_cooldown]>:
+            - playsound <player> sound:ENTITY_VILLAGER_NO
+            - narrate "<&c>Cannot change modes mid-queue."
+            - flag player fort.menu.mode_lock_cooldown duration:2s
+          - stop
+
+        ##use this to add new modes
         - define new_mode <map[solo=duos;duos=squads;squads=solo].get[<player.flag[fort.menu.mode]>]>
         - flag player fort.menu.mode:<[new_mode]>
         - define i <item[oak_sign].with[custom_model_data=<map[solo=14;duos=15;squads=16].get[<[new_mode]>]>]>
 
         - run fort_lobby_handler.press_anim def.button:<[button]>
         - adjust <[button]> item:<[i]>
-
-        - stop
-        - if !<player.has_flag[fort.menu.coming_soon_cooldown]>:
-          - playsound <player> sound:ENTITY_VILLAGER_NO
-          - narrate "<&c>This feature is coming soon."
-          - flag player fort.menu.coming_soon_cooldown duration:2s
 
       - case invite_button:
         - define button <player.flag[fort.menu.invite_button_entity]>

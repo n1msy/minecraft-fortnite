@@ -34,7 +34,6 @@ fort_queue_handler:
     #bossbar is created on player joins in "lobby.dsc"
     - foreach <[players_queued]> as:player:
       - define uuid <[player].uuid>
-      - define seconds_in_queue <[player].flag[fort.in_queue]>
 
       - flag <[player]> fort.in_queue:++
       - define secs_in_queue <[player].flag[fort.in_queue]>
@@ -44,9 +43,9 @@ fort_queue_handler:
       - adjust <[match_info]> "text:Finding match...<n>Elapsed: <time[2069/01/01].add[<[secs_in_queue]>].format[m:ss]>"
 
       #only send players after waiting at least 5 seconds
-      #- if <[player].flag[fort.in_queue]> >= 5 && <[available_servers].any>:
-        #- adjust
+      #- if <[secs_in_queue]> > 5:
 
+        #- define available_servers
 
     #background triangles
     - run fort_lobby_setup.bg_cube_anim if:<context.second.mod[5].equals[0]>
