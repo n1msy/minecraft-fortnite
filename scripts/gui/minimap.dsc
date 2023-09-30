@@ -70,7 +70,7 @@ minimap:
       - define final_x <[map_x].add[<[x_add]>]>
 
       - if <[final_y]> <= 0 || <[final_y]> >= 5 || <[final_x]> <= 0 || <[final_x]> >= 5:
-        - define char 0000
+        - define char 0999
       - else:
         - define char <[row_<[final_y]>].get[<[final_x]>]>
 
@@ -85,7 +85,7 @@ minimap:
       - define loc_to_color <color[<[r]>,<[g]>,<[displayId]>]>
       - define ch <[chars].get[<[value]>]>
 
-      - if <[ch]> == 0000:
+      - if <[ch]> == 0999:
         - repeat next
 
       - define tiles:->:<&chr[<[ch]>].font[map].color[<[loc_to_color]>]>
@@ -171,7 +171,8 @@ minimap:
     #- narrate <[]>
     - define real_g <[x].mod[256]>
     - define real_b <[y].mod[256]>
-    - define full_marker_color <color[<[full_marker_red]>,<[real_g]>,<[real_b]>]>
-    - define full_marker       <&chr[E000].font[map].color[<[full_marker_color]>]>
+    #null is if it's oob
+    - define full_marker_color <color[<[full_marker_red]>,<[real_g]>,<[real_b]>]||null>
+    - define full_marker       <&chr[E000].font[map].color[<[full_marker_color]>].if_null[<empty>]>
 
     - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><n><[map]><n.repeat[9]>
