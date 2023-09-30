@@ -69,7 +69,9 @@ minimap:
       - define final_y <[map_y].add[<[y_add]>]>
       - define final_x <[map_x].add[<[x_add]>]>
 
+      - define oob False
       - if <[final_y]> <= 0 || <[final_y]> >= 5 || <[final_x]> <= 0 || <[final_x]> >= 5:
+        - define oob True
         - define char 0999
       - else:
         - define char <[row_<[final_y]>].get[<[final_x]>]>
@@ -80,13 +82,13 @@ minimap:
     - define in_game <[world].name.equals[nimnite_map]>
     - define displayId 4
     - repeat 4:
-      - define displayId <[value].sub[1]> if:<[in_game]>
+      - define displayId <[value].sub[1]> if:<[in_game].or[<[oob]>]>
       #value is display id
       - define loc_to_color <color[<[r]>,<[g]>,<[displayId]>]>
       - define ch <[chars].get[<[value]>]>
 
-      - if <[ch]> == 0999:
-        - repeat next
+      #- if <[ch]> == 0999:
+        #- repeat next
 
       - define tiles:->:<&chr[<[ch]>].font[map].color[<[loc_to_color]>]>
 
