@@ -17,11 +17,9 @@ minimap:
 
   - define yaw_icon <&chr[20].font[icons].color[65,0,0]>
 
-  #this chooses which image to use for minimap
-  - define in_game <player.world.equals[nimnite_map]>
-
   - while <player.is_online> && <player.has_flag[minimap]>:
 
+    - define world <player.world>
 
     #turn loc to color
     - define loc <player.location.round>
@@ -79,9 +77,12 @@ minimap:
       - define chars:->:<[char]>
 
     - define tiles:!
+    - define in_game <[world].name.equals[nimnite_map]>
+    - define displayId 4
     - repeat 4:
+      - define displayId <[value].sub[1]> if:<[in_game]>
       #value is display id
-      - define loc_to_color <color[<[r]>,<[g]>,<[value].sub[1]>]>
+      - define loc_to_color <color[<[r]>,<[g]>,<[displayId]>]>
       - define ch <[chars].get[<[value]>]>
 
       - if <[ch]> == 0000:
@@ -89,13 +90,12 @@ minimap:
 
       - define tiles:->:<&chr[<[ch]>].font[map].color[<[loc_to_color]>]>
 
-
     - define whole_map <[tiles].unseparated>
 
     ## - [ COMPASS ] - ##
     # compass display
     - define curRotation     <player.location.yaw.div[360].mul[1024].round_down>
-    - define gameTime        <player.world.duration_since_created.in_ticks.mod[24000].mod[4]>
+    - define gameTime        <[world].duration_since_created.in_ticks.mod[24000].mod[4]>
     - define rotation_color  <color[<[curRotation].mod[256]>,<[oldRotation].mod[256]>,<[curRotation].div[256].round_down.add[<[oldRotation].div[256].round_down.mul[4]>].add[<[gameTime].mul[16]>]>]>
     - define oldRotation     <[curRotation]>
     - define compass_display <&chr[B000].font[map].color[<[rotation_color]>]>

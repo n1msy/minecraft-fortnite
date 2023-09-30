@@ -4,20 +4,6 @@ fort_global_handler:
   definitions: data
   events:
 
-    ##################################TEMP WORLD CHANGE SHIT
-    on player changes world from fort_pregame_island:
-    - define mode solo
-    - flag server fort.available_servers.solo.test.players:<-:<player>
-    on player changes world to fort_pregame_island:
-    - flag player fort.wood.qty:999
-    - flag player fort.brick.qty:999
-    - flag player fort.metal.qty:999
-
-    - foreach <list[light|medium|heavy|shells|rockets]> as:ammo_type:
-      - flag player fort.ammo.<[ammo_type]>:999
-
-    - flag player fort.in_queue:!
-
     on block fades:
     - determine cancelled
 

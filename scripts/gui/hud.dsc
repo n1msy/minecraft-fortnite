@@ -70,7 +70,8 @@ update_hud:
   - define fall_icon  <&chr[0003].font[icons]>
   - define storm_icon <&chr[0005].font[icons]>
   - define clock_icon <&chr[0004].font[icons]>
-  - define time       <element[-].font[hud_text]>
+  - if !<[time].exists>:
+    - define time       <element[-].font[hud_text]>
   ##- define time       <element[0:00].font[hud_text]>
   - define time_      <element[<[clock_icon]> <[time]>].color[<color[50,0,0]>]>
 

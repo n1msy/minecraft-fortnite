@@ -55,7 +55,6 @@ fort_queue_handler:
         #instead of finding the server for each player, update the count within the queue while still having this def so the definition doesnt have to constantly be redefined?
         - define server_to_join <[<[mode]>_servers].parse_tag[<[parse_value]>/<server.flag[fort.available_servers.<[mode]>.<[parse_value]>.players].size||0>].sort_by_number[parse[after[/]]].reverse.first.before[/]>
 
-        - narrate <[server_to_join]>
         #-ONLY flag the player data on this server when ADDING players... (removing is done inside the game server via bungeerun, to confirm they have been removed)
         #doing this for add, since the player count updates instantly.
         #for removing:

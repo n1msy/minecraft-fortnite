@@ -51,7 +51,6 @@ fort_lobby_handler:
     - adjust <player> flying:true
 
     - adjust <player> fly_speed:0.02
-    - bossbar remove fort_waiting players:<player>
     - invisible state:true
     - inventory clear
     - sidebar remove
@@ -359,8 +358,6 @@ fort_lobby_handler:
           ## [ CANCELLING ] ##
 
           - run fort_lobby_handler.match_info def.option:remove
-
-          - bossbar fort_waiting remove players:<player>
 
           - adjust <[name_text]> "text:<player.name><n><&c>Not ready" if:<[name_text].equals[null].not>
 

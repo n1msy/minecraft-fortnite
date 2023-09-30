@@ -1,3 +1,6 @@
+
+##make sure to disable lobby circle fx after game starts
+
 pregame_island_handler:
   type: world
   debug: false
@@ -9,15 +12,38 @@ pregame_island_handler:
     - wait 7t
     - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
 
+    ##################################TEMP WORLD CHANGE SHIT
+    on player changes world from fort_pregame_island:
+    - define mode solo
+    - flag server fort.available_servers.solo.test.players:<-:<player>
+    - bossbar remove fort_waiting players:<player>
+
+    on player changes world to fort_pregame_island:
+
+    - flag player fort.wood.qty:0
+    - flag player fort.brick.qty:0
+    - flag player fort.metal.qty:0
+
+    - foreach <list[light|medium|heavy|shells|rockets]> as:ammo_type:
+      - flag player fort.ammo.<[ammo_type]>:999
+
+    - flag player fort.in_queue:!
+
+    - wait 10t
+    - bossbar update fort_waiting color:YELLOW players:<player>
+
   lobby_circle:
     anim:
       - define loc <server.flag[fort.pregame.lobby_circle.loc].with_pose[0,0]>
       - define circle <server.flag[fort.pregame.lobby_circle.circle]>
 
-      - while <[circle].is_spawned>:
-        - adjust <[circle]> interpolation_start:0
-        - adjust <[circle]> left_rotation:<quaternion[0,0,1,0].mul[<location[0,0,-1].to_axis_angle_quaternion[<[loop_index].div[85]>]>]>
-        - adjust <[circle]> interpolation_duration:1t
+      - flag server fort.lobby_circle_enabled
+
+      - while <server.has_flag[fort.lobby_circle_enabled]>:
+        - if <[circle].is_spawned>:
+          - adjust <[circle]> interpolation_start:0
+          - adjust <[circle]> left_rotation:<quaternion[0,0,1,0].mul[<location[0,0,-1].to_axis_angle_quaternion[<[loop_index].div[85]>]>]>
+          - adjust <[circle]> interpolation_duration:1t
 
         #-square
         - if <[loop_index].mod[6]> == 0:
