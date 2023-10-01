@@ -9,13 +9,9 @@ fort_queue_handler:
 
     ##create events on server shutdown to safely reset the lobby
 
-    on server start:
-    - bossbar create fort_waiting color:YELLOW players:<server.online_players>
-
     ## - [ QUEUE SYSTEM ] - ##
     on delta time secondly:
 
-    - define min_players <script[nimnite_config].data_key[minimum_players]>
     - define max_players <script[nimnite_config].data_key[maximum_players]>
 
     - define players <server.online_players_flagged[fort]>
@@ -42,14 +38,18 @@ fort_queue_handler:
       - define match_info <[player].flag[fort.menu.match_info]>
 
       - define text "Finding match...<n>Elapsed: <time[2069/01/01].add[<[secs_in_queue]>].format[m:ss]>"
-      - if <[secs_in_queue]> >= 5:
+
+      #find the servers only with less than 100 players (because server is still available to join even if the game is starting (if it has less than 100 players))
+      - define available_servers <[<[mode]>_servers].filter_tag[<server.flag[fort.available_servers.<[mode]>.<[filter_value]>.players].size.is[LESS].than[<[max_players]>].if_null[true]>]>
+
+      - if <[secs_in_queue]> >= 5 && <[available_servers].any>:
         - define text "Joining match..."
 
       #timer resets hourly (meaning it can't go past an hour)
       - adjust <[match_info]> text:<[text]>
 
       #only send players after waiting at least 5 seconds
-      - if <[secs_in_queue]> >= 6 && <[<[mode]>_servers].any>:
+      - if <[secs_in_queue]> >= 6 && <[available_servers].any>:
 
         #get the server with the most players
         #instead of finding the server for each player, update the count within the queue while still having this def so the definition doesnt have to constantly be redefined?

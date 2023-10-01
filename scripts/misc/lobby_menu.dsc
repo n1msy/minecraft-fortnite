@@ -113,7 +113,7 @@ fort_lobby_handler:
     #### - [ OPTIMIZE / PRETTIFY THIS CODE ] ###
     on player join:
     ##############remove this
-    - if !<list[asd988|Nimsy].contains[<player.name>]>:
+    - if !<list[asd988|Nimsy|DessieWessie].contains[<player.name>]>:
       - stop
 
     - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>

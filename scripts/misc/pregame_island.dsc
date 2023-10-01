@@ -6,6 +6,12 @@ pregame_island_handler:
   debug: false
   definitions: square
   events:
+
+    ######when server starts, set the chests, ammo boxes, and floor loot
+    ###MAKE SURE TO DEBUG IT IN THE CONSOLE
+    on server start:
+    - bossbar create fort_info title:<proc[spacing].context[50]><&chr[A004].font[icons]><proc[spacing].context[-72]><&l><element[WAITING FOR PLAYERS].font[lobby_text]> color:YELLOW players:<server.online_players>
+
     on player enters fort_lobby_circle:
     - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
     - cast LEVITATION duration:8t amplifier:3 no_ambient no_clear no_icon hide_particles
@@ -16,7 +22,7 @@ pregame_island_handler:
     on player changes world from fort_pregame_island:
     - define mode solo
     - flag server fort.available_servers.solo.test.players:<-:<player>
-    - bossbar remove fort_waiting players:<player>
+    - bossbar remove fort_info players:<player>
 
     on player changes world to fort_pregame_island:
 
@@ -29,8 +35,51 @@ pregame_island_handler:
 
     - flag player fort.in_queue:!
 
+    - run update_hud
+    - run minimap
     - wait 10t
-    - bossbar update fort_waiting color:YELLOW players:<player>
+    - bossbar update fort_info color:YELLOW players:<player>
+
+    ##<server.online_players_flagged[fort].size>
+    - if <world[fort_pregame_island].players.size> >= <script[nimnite_config].data_key[minimum_players]> && !<server.has_flag[fort.temp.game_starting]>:
+      - run pregame_island_handler.countdown
+
+  countdown:
+    - define min_players <script[nimnite_config].data_key[minimum_players]>
+    - define +spacing    <proc[spacing].context[99]>
+    - define -spacing    <proc[spacing].context[-121]>
+    - define bus_icon    <&chr[A025].font[icons]>
+    - define clock_icon  <&chr[0004].font[icons]>
+
+    - flag server fort.temp.game_starting
+    #flagging phase for hud updating manually too
+    - flag server fort.temp.phase:bus
+    - repeat 10:
+      ##<server.online_players_flagged[fort]>
+      - define players <world[fort_pregame_island].players>
+      - define seconds <element[10].sub[<[value]>]>
+      - define timer <time[2069/01/01].add[<[seconds]>].format[m:ss]>
+
+      - flag server fort.temp.timer:<[timer]>
+
+      - bossbar update fort_info title:<[+spacing]><[bus_icon]><[-spacing]><&l><element[BATTLE BUS LAUNCHING IN].font[lobby_text]><&sp><element[<&d><&l><[seconds]> Seconds].font[lobby_text]> color:YELLOW players:<[players]>
+      - sidebar set_line scores:5 values:<element[<&chr[0025].font[icons]> <[timer]>].font[hud_text].color[<color[50,0,0]>]> players:<[players]>
+
+      - wait 1s
+      ##<server.online_players_flagged[fort]>
+      - define players <world[fort_pregame_island].players>
+      - if <[players].size> < <[min_players]>:
+        - bossbar update fort_info title:<proc[spacing].context[50]><&chr[A004].font[icons]><proc[spacing].context[-72]><&l><element[WAITING FOR PLAYERS].font[lobby_text]> color:YELLOW players:<[players]>
+        - sidebar set_line scores:5 values:<element[<[clock_icon]> -].font[hud_text].color[<color[50,0,0]>]> players:<[players]>
+
+        - flag server fort.temp:!
+        - stop
+
+    - announce start_game
+
+    ###remove this
+    - flag server fort.temp:!
+
 
   lobby_circle:
     anim:

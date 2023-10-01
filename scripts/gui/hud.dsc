@@ -1,4 +1,7 @@
 #-basically everything that's not the map
+
+##update every element of the hud every time, or just isolate things to update?
+#ie update_slots, update_mats, update_health
 update_hud:
   type: task
   debug: false
@@ -67,13 +70,38 @@ update_hud:
     - define <[mat]>_  <element[<[mat_icon]><proc[spacing].context[-32]><[mat_text]>].color[<color[4<[loop_index]>,0,0]>]>
 
   # - [ Stats ] - #
-  - define fall_icon  <&chr[0003].font[icons]>
-  - define storm_icon <&chr[0005].font[icons]>
-  - define clock_icon <&chr[0004].font[icons]>
-  - if !<[time].exists>:
-    - define time       <element[-].font[hud_text]>
+  #- define bus_icon   <&chr[0025].font[icons]>
+  #- define fall_icon  <&chr[0003].font[icons]>
+  #- define storm_icon <&chr[0005].font[icons]>
+  #- define clock_icon <&chr[0004].font[icons]>
+
+  #phases:
+  #1) bus (doors will open in x)
+  #2) fall (jump off bus)
+  #3) countdown
+  #4) storm_shrink
+
+  - choose <server.flag[fort.temp.phase]||null>:
+    - case bus:
+      #bus icon
+      - define timer_icon <&chr[0025].font[icons]>
+    - case fall:
+      #fall icon
+      - define timer_icon <&chr[0003].font[icons]>
+    - case grace_period:
+      #clock icon
+      - define timer_icon <&chr[0004].font[icons]>
+    - case storm_shrink:
+      - define timer_icon <&chr[0005].font[icons]>
+      #storm icon
+    - default:
+      - define timer_icon <&chr[0004].font[icons]>
+
+  - define timer       <server.flag[fort.temp.timer].if_null[-].font[hud_text]>
+
+    #<time[2069/01/01].add[<[secs_in_queue]>].format[m:ss]
   ##- define time       <element[0:00].font[hud_text]>
-  - define time_      <element[<[clock_icon]> <[time]>].color[<color[50,0,0]>]>
+  - define time_      <element[<[timer_icon]> <[timer]>].color[<color[50,0,0]>]>
 
   - define alive_icon <&chr[0002].font[icons]>
   #- define alive      <element[-].font[hud_text]>
@@ -107,14 +135,14 @@ hud_handler:
 
     after player picks up item:
     ##############REMOVE THIS LINE
-    - if !<list[asd988|Nimsy].contains[<player.name>]>:
+    - if !<list[asd988|Nimsy|DessieWessie].contains[<player.name>]>:
       - stop
 
     - inject update_hud
 
     on player scrolls their hotbar:
     ##########REMOVE THIS LINE
-    - if !<list[asd988|Nimsy].contains[<player.name>]>:
+    - if !<list[asd988|Nimsy|DessieWessie].contains[<player.name>]>:
       - stop
 
     - if <player.has_flag[fort.using_glider]>:

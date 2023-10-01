@@ -82,7 +82,7 @@ minimap:
     - define in_game <[world].name.equals[nimnite_map]>
     - define displayId 4
     - repeat 4:
-      - define displayId <[value].sub[1]> if:<[in_game].or[<[oob]>]>
+      - define displayId <[value].sub[1]> if:<[in_game]>
       #value is display id
       - define loc_to_color <color[<[r]>,<[g]>,<[displayId]>]>
       - define ch <[chars].get[<[value]>]>
@@ -178,3 +178,12 @@ minimap:
     - define full_marker       <&chr[E000].font[map].color[<[full_marker_color]>].if_null[<empty>]>
 
     - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><n><[map]><n.repeat[9]>
+    #<&chr[999].font[icons]><n.repeat[5]>
+
+#-disable players from tablist
+#fort_minimap_handler:
+  #type: world
+  #debug: false
+  #events:
+   # on player receives tablist update:
+    #- determine cancelled
