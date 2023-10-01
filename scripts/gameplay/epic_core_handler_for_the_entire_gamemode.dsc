@@ -1,4 +1,5 @@
 #/ex narrate <location[75.5,0,55.5].points_around_y[radius=50;points=16].to_polygon.with_y_min[0].with_y_max[300].outline>
+#/globaldisplay transform 2 ~ 0 ~ 1600 300 1600 80
 fort_core_handler:
   type: task
   debug: false
@@ -76,6 +77,10 @@ fort_core_handler:
 
     - define icon <&chr[<map[bus=0025;fall=0003;grace_period=B005;storm_shrink=0005].get[<[phase]>]>].get[icons]>
 
+    - if <[diameter].exists>:
+      - define storm_center <server.flag[fort.temp.storm_center]>
+      - execute as_server "globaldisplay transform storm <[storm_center].simple.before_last[,].replace_text[,].with[ ]> <[diameter]> 600 <[diameter]><[seconds].mul[20]>"
+
     - choose <[phase]>:
       - case bus:
         - define announce_icon <&chr[A025].get[icons]>
@@ -136,3 +141,68 @@ fort_bus_handler:
   events:
     on player steers entity flagged:fort.in_bus:
     - narrate a
+
+
+  spawn:
+
+    - if <server.has_flag[fort.temp.bus.model]>:
+      - run dmodels_delete def.root_entity:<server.flag[fort.temp.bus.model]>
+      - flag server fort.temp.bus.model:!
+    - if <server.has_flag[fort.temp.bus.seats]>:
+      - foreach <server.flag[fort.temp.bus.seats]> as:s:
+        - remove <[s]>
+      - flag server fort.temp.bus.seats:!
+
+    - if <server.has_flag[fort.temp.bus.driver]>:
+      - remove <server.flag[fort.temp.bus.driver]>
+      - flag server fort.temp.bus.driver:!
+
+    - define loc <player.location.above[2].with_pitch[0]>
+    - define yaw <[loc].yaw>
+
+    - run dmodels_spawn_model def.model_name:battle_bus def.location:<[loc]> def.yaw:<[yaw]||0> save:bus
+    - define bus <entry[bus].created_queue.determination.first||null>
+    - run dmodels_set_scale def.root_entity:<[bus]> def.scale:1.3,1.3,1.3
+
+    - flag server fort.temp.bus.model:<[bus]>
+
+    - define drivers_seat_loc <[loc].left[0.71].below[1.2].backward[0.1]>
+    - spawn <entity[item_display].with[item=iron_block;scale=0.1,0.1,0.1]> <[drivers_seat_loc]> save:drivers_seat
+    - define drivers_seat <entry[drivers_seat].spawned_entity>
+    - flag server fort.temp.bus.seats:->:<[drivers_seat]>
+
+    #dead center (of seat) = 1.256
+    - define left_seat_1_loc <[drivers_seat_loc].left[0.075].backward[1.35]>
+    - spawn <entity[item_display].with[item=iron_block;scale=0.1,0.1,0.1]> <[left_seat_1_loc]> save:left_seat_1
+    - define left_seat_1 <entry[left_seat_1].spawned_entity>
+    - flag server fort.temp.bus.seats:->:<[left_seat_1]>
+
+    - define left_seat_2_loc <[left_seat_1_loc].backward[1.0716]>
+    - spawn <entity[item_display].with[item=iron_block;scale=0.1,0.1,0.1]> <[left_seat_2_loc]> save:left_seat_2
+    - define left_seat_2 <entry[left_seat_2].spawned_entity>
+    - flag server fort.temp.bus.seats:->:<[left_seat_2]>
+
+    - repeat 3:
+      - define side_seat_<[value]>_loc <[drivers_seat_loc].left[0.2].backward[<[value].sub[1].add[4.1]>].with_yaw[<[yaw].add[90]>]>
+      - spawn <entity[item_display].with[item=iron_block;scale=0.1,0.1,0.1]> <[side_seat_<[value]>_loc]> save:side_seat_<[value]>
+      - define side_seat_<[value]> <entry[side_seat_<[value]>].spawned_entity>
+      - flag server fort.temp.bus.seats:->:<[side_seat_<[value]>]>
+
+    - repeat 5:
+      - define right_seat_<[value]>_loc <[drivers_seat_loc].right[1.53].backward[1.35].backward[<[value].sub[1].mul[1.0716]>]>
+      - spawn <entity[item_display].with[item=iron_block;scale=0.1,0.1,0.1]> <[right_seat_<[value]>_loc]> save:right_seat_<[value]>
+      - define right_seat_<[value]> <entry[right_seat_<[value]>].spawned_entity>
+      - flag server fort.temp.bus.seats:->:<[right_seat_<[value]>]>
+
+    - create PLAYER <&sp> <[drivers_seat_loc]> save:bus_driver
+    - define bus_driver <entry[bus_driver].created_npc>
+    - adjust <[bus_driver]> skin_blob:<script[nimnite_config].data_key[Spitfire_Skin]>
+    - adjust <[bus_driver]> name_visible:false
+
+    - flag server fort.temp.bus.driver:<[bus_driver]>
+
+    - wait 1t
+    - mount <[bus_driver]>|<[drivers_seat]>
+
+    #- flag player driver_seat:<[drivers_seat]>
+
