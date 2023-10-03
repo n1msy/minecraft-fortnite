@@ -140,15 +140,19 @@ fort_bus_handler:
   debug: false
   events:
 
-    on player steers entity flagged:fort.on_bus:
-    - if <context.dismount>:
-      - determine passively cancelled
-      - stop
+    on player exits vehicle flagged:fort.on_bus:
+    - flag server fort.on_bus:!
+    - flag server fort.temp.bus.passengers:<-:<player>
 
-    - if <context.jump>:
-      - mount cancel <player>
-      - flag player fort.on_bus:!
-      - flag server fort.temp.bus.passengers:<-:<player>
+    #on player steers entity flagged:fort.on_bus:
+    #- if <context.dismount>:
+    #  - determine passively cancelled
+    #  - stop
+
+    #- if <context.jump>:
+    #  - mount cancel <player>
+    #  - flag player fort.on_bus:!
+    #  - flag server fort.temp.bus.passengers:<-:<player>
 
   spawn:
 

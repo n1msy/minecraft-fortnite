@@ -56,6 +56,7 @@ fort_emote_handler:
     - flag player fort.emote.sound:<[sound]>
     - flag player spawned_dmodel_emotes:<[spawned]>
     - flag <[spawned]> emote_host:<player>
+    - flag <[spawned]> emote_loc:<[emote_loc]>
     - flag <[spawned]> emote_sound:<[sound]>
 
     - run dmodels_animate def.root_entity:<[spawned]> def.animation:<[emote]>

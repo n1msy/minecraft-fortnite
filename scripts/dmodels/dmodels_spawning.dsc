@@ -105,9 +105,9 @@ dmodels_spawn_model:
         - define parentage.<[id]>.position <[new_pos]>
         - define parentage.<[id]>.rotation <[new_rot]>
         - define translation <[new_pos].proc[dmodels_mul_vecs].context[<[global_scale]>].div[16].mul[0.25]>
-        - define to_spawn_ent dmodel_part_display[item=<[part.item]>;display=HEAD;translation=<[translation]>;left_rotation=<[orientation_parent].mul[<[pose]>]>;scale=<[global_scale]>]
         - if !<[player].exists>:
-            - define to_spawn_ent dmodel_part_display[item=<[part_item]>;display=HEAD;translation=<[translation]>;left_rotation=<[orientation].mul[<[pose]>]>;scale=<[scale]>]
+            #- define to_spawn_ent dmodel_part_display[item=<[part_item]>;display=HEAD;translation=<[translation]>;left_rotation=<[orientation].mul[<[pose]>]>;scale=<[scale]>]
+            - define to_spawn_ent dmodel_part_display[item=<[part.item]>;display=HEAD;translation=<[translation]>;left_rotation=<[orientation_parent].mul[<[pose]>]>;scale=<[global_scale]>]
         - else:
             #tracking_range 256 fixes issue of going too far from player model textures
             - define to_spawn_ent dmodel_part_display[item=<[part_item]>;display=THIRDPERSON_RIGHTHAND;tracking_range=256;translation=<[offset_translate]>;left_rotation=<[orientation].mul[<[pose]>]>;scale=<[scale]>]
@@ -186,7 +186,8 @@ dmodels_reset_model_position:
         - define cam   <[root_entity].flag[camera]>
         - define stand <[root_entity].flag[stand]>
 
-        - teleport <[host]> <[center]>
+        - teleport <[host]> <[root_entity].flag[emote_loc]>
+        #<[center].with_yaw[<[center].yaw.add[180]>]>
         - invisible <[host]> false if:<[host].is_online>
         - fakeequip <[host]> for:<server.online_players> reset if:<[host].is_online>
         #- adjust <[host]> gamemode:<[host].flag[fort.emote_gamemode]>

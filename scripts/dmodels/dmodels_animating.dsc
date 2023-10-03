@@ -46,7 +46,7 @@ dmodels_animate:
             - remove <[host].flag[fort.menu.player_npc]>
             #remove this to tell the reset_model_position not to delete before the animation even starts
         - else:
-            - define center <[root_entity].location.with_pitch[0].below[1.1]>
+            - define center <[root_entity].location.with_pitch[0].with_yaw[<[root_entity].location.yaw.add[180]>].below[1.1]>
 
             #- flag <[host]> fort.emote_gamemode:<[host].gamemode>
             - invisible <[host]> true
