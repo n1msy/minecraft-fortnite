@@ -6,6 +6,7 @@ fort_lobby_handler:
   definitions: player|button|option|title|size_data
   events:
 
+
     on shutdown:
     - define menu_players <server.online_players_flagged[fort.in_menu]>
     - foreach <[menu_players]> as:p:
@@ -30,6 +31,10 @@ fort_lobby_handler:
     - createworld fort_pregame_island
     - createworld fort_map
     - createworld nimnite_map
+
+    #-in case the server crashed/it was incorrectly shut down
+    - remove <world[lobby].entities[item_display|text_display|npc]>
+    - run fort_lobby_setup
 
     #-create the entities upon joining/quitting, or remove/add entities when entering/exiting area
 
@@ -534,13 +539,13 @@ fort_lobby_setup:
         - remove <[inv]> if:<[inv].is_spawned>
 
     - if <server.has_flag[fort.menu.button_bg]>:
-      - remove <server.flag[fort.menu.button_bg]>
+      - remove <server.flag[fort.menu.button_bg]> if:<server.flag[fort.menu.button_bg].is_spawned>
 
     - if <server.has_flag[fort.menu.vid_button_bg]>:
-      - remove <server.flag[fort.menu.vid_button_bg]>
+      - remove <server.flag[fort.menu.vid_button_bg]> if:<server.flag[fort.menu.vid_button_bg].is_spawned>
 
     - if <server.has_flag[fort.menu.vid_text]>:
-      - remove <server.flag[fort.menu.vid_text]>
+      - remove <server.flag[fort.menu.vid_text]> if:<server.flag[fort.menu.vid_text].is_spawned>
 
     - if <server.has_flag[fort.menu.bg_planes]>:
       - foreach <server.flag[fort.menu.bg_planes]> as:plane:
@@ -550,7 +555,8 @@ fort_lobby_setup:
       - foreach <server.flag[fort.menu.bg_cubes]> as:plane:
         - remove <[plane]> if:<[plane].is_spawned>
 
-    #- flag server fort.menu:!
+    - if <server.has_flag[fort.menu.text_wall]>:
+      - remove <server.flag[fort.menu.text_wall]> if:<server.flag[fort.menu.text_wall].is_spawned>
 
     #- define loc <player.location.center.with_pose[0,0]>
     - define loc <server.flag[fort.menu_spawn]>
@@ -617,7 +623,7 @@ fort_lobby_setup:
 
     ## - [ PADS ] - ##
 
-    - define pad_loc_1 <[loc].above.forward[5].above[0]>
+    - define pad_loc_1 <[loc].above.forward[5]>
     - define pad_loc_2 <[pad_loc_1].forward.left[2]>
     - define pad_loc_3 <[pad_loc_2].right[4]>
     - define pad_loc_4 <[pad_loc_3].forward.right[2]>
@@ -634,6 +640,13 @@ fort_lobby_setup:
       - define inv_hb <entry[invite_hitbox_<[value]>].spawned_entity>
       - flag <[inv_hb]> menu.invite_button.<[value].sub[1]>
       - flag server fort.menu.invite_button_hitboxes:->:<[inv_hb]>
+
+    ## [ Back Message ] ##
+
+    - define text "<&b><&l>Nimnite<&f> is a remake of the popular game <&o>Fortnite<&f>. Need I say more?<n><n><&f>If you're wondering what happened to <&c><&l>Nimorant<&f>, this server will be undergoing big changes from the ground up. So for the time being, this will be the only gamemode up. Enjoy!<n><n><&o>Special thanks to these people:<n><n><&b>SatoriOnSaturn <&f>(modeler)<n><&b>Freya <&f>(builder)<n><&b>asd988 <&f>(shader wiz)<n><n><&e>Donate on Patreon <&b>@ <&f><&n>patreon.com/nimsy<&r> <&c>❤"
+    - spawn <entity[text_display].with[text=<[text]>;background_color=transparent;pivot=FIXED;scale=1,1,1]> <[loc].backward[6].below[0.5].with_yaw[0]> save:text_wall
+
+    - flag server fort.menu.text_wall:<entry[text_wall].spawned_entity>
 
     ## - [ Background ] - ##
 
@@ -743,7 +756,4 @@ fort_lobby_setup:
     - repeat 10:
       - adjust <[cube]> brightness:<map[block=<[value].add[5]>;sky=0]>
       - wait 1t
-
-
-
 

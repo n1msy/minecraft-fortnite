@@ -388,5 +388,5 @@ dmodels_quaternion_from_euler:
     - define x_q <location[1,0,0].to_axis_angle_quaternion[<[x]>]>
     - define y_q <location[0,1,0].to_axis_angle_quaternion[<[y]>]>
     - define z_q <location[0,0,1].to_axis_angle_quaternion[<[z]>]>
-    - determine <[x_q].mul[<[y_q]>].mul[<[z_q]>]>
+    - determine <[z_q].mul[<[y_q]>].mul[<[x_q]>]>
 

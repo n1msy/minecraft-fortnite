@@ -101,7 +101,9 @@ dmodels_move_to_frame:
 
     - define global_scale <[root_entity].flag[dmodel_global_scale].mul[<script[dmodels_config].parsed_key[default_scale]>]>
     - define global_scale <location[1,1,1]> if:<[is_player].exists>
-    - define center <[root_entity].location.with_yaw[<[root_entity].location.yaw.add[180]>].with_pitch[0].below[1]>
+
+    - define center <[root_entity].location.with_pitch[0].below[1]>
+
     - define orientation <[root_entity].flag[dmodel_global_rotation]>
     - define parentage <map>
     - foreach <[animation_data.animators]> key:part_id as:animator:

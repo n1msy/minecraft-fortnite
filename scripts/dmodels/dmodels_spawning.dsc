@@ -49,7 +49,8 @@ dmodels_spawn_model:
                 - debug error "[DModels] <red>Something went wrong in dmodels_spawn_model invalid skin type."
                 - stop
 
-    - define center <[location].with_pose[0,<[yaw]||0>].below[1]>
+    - define center <[location].with_pitch[0].with_yaw[<[yaw].if_null[<[location].yaw.add[180]>]>].below[1]>
+
     - define scale <[scale].if_null[<location[1,1,1]>]>
     - define global_scale <[scale].mul[<script[dmodels_config].parsed_key[default_scale]>]>
 
@@ -104,7 +105,7 @@ dmodels_spawn_model:
         - define parentage.<[id]>.position <[new_pos]>
         - define parentage.<[id]>.rotation <[new_rot]>
         - define translation <[new_pos].proc[dmodels_mul_vecs].context[<[global_scale]>].div[16].mul[0.25]>
-        - define to_spawn_ent dmodel_part_display[item=<[part.item]>;display=HEAD;scale=<[global_scale]>]
+        - define to_spawn_ent dmodel_part_display[item=<[part.item]>;display=HEAD;translation=<[translation]>;left_rotation=<[orientation_parent].mul[<[pose]>]>;scale=<[global_scale]>]
         - if !<[player].exists>:
             - define to_spawn_ent dmodel_part_display[item=<[part_item]>;display=HEAD;translation=<[translation]>;left_rotation=<[orientation].mul[<[pose]>]>;scale=<[scale]>]
         - else:
@@ -125,7 +126,6 @@ dmodels_spawn_model:
         - flag <[spawned]> dmodel_root:<[root]>
         - flag <[root]> dmodel_parts:->:<[spawned]>
         - flag <[root]> dmodel_anim_part.<[id]>:->:<[spawned]>
-    - run dmodels_reset_model_position def.root_entity:<[root]>
     - determine <[root]>
 
 dmodels_reset_model_position:
@@ -143,7 +143,8 @@ dmodels_reset_model_position:
     - if <[model_data]> == null:
         - debug error "<&[Error]> Could not update model for root entity <[root_entity]> as it does not exist."
         - stop
-    - define center <[root_entity].location.with_yaw[<[root_entity].location.yaw.add[180]>].with_pitch[0].below[1]>
+
+    - define center <[root_entity].location.with_pitch[0].below[1]>
     - define global_scale <[root_entity].flag[dmodel_global_scale].mul[<script[dmodels_config].parsed_key[default_scale]>]>
     - define orientation <[root_entity].flag[dmodel_global_rotation]>
 
@@ -164,7 +165,7 @@ dmodels_reset_model_position:
         - define parentage.<[id]>.rotation <[new_rot]>
         - foreach <[root_parts]> as:root_part:
           - if <[root_part].flag[dmodel_def_part_id]> == <[id]>:
-            - define left_rotation <[orientation].mul[<[pose]>]>
+            - define left_rotation <[orientation_parent].mul[<[pose]>]>
             - if <[is_player].exists>:
                 - define offset      <[orientation].transform[<[part.origin]>]>
                 - define scale       <location[1,1,1]>
@@ -204,7 +205,7 @@ dmodels_reset_model_position:
             - stop
         #since it's the npc that's emoting
         - define host <[root_entity].flag[emote_host]>
-        - create PLAYER <[host].name> <[root_entity].location.below> save:player_npc
+        - create PLAYER <[host].name> <[root_entity].location.below.with_yaw[-180]> save:player_npc
         - define player_npc <entry[player_npc].created_npc>
         - adjust <[player_npc]> hide_from_players
         - adjust <[player_npc]> name_visible:false
