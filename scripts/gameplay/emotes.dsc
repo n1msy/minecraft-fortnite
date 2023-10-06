@@ -15,12 +15,12 @@ fort_emote_handler:
     - if <[emote]> == none || <player.has_flag[fort.emote]>:
       - stop
 
-    - define emote_loc <player.location>
+    - define emote_loc <player.location.above[0.35]>
     - if <player.has_flag[fort.in_menu]>:
       - if !<player.has_flag[fort.menu.player_npc]> || !<player.flag[fort.menu.player_npc].is_spawned>:
         - narrate "<&c>[error] Your player isn't spawned."
         - stop
-      - define emote_loc <player.flag[fort.menu.player_npc].location>
+      - define emote_loc <player.flag[fort.menu.player_npc].location.above[0.4]>
 
     - choose <[emote]>:
       - case default:
