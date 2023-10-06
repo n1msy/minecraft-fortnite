@@ -27,6 +27,9 @@ fort_lobby_handler:
         - remove <[i_button]> if:<[i_button].is_spawned>
 
     on server prestart:
+    #so only the test server is updated
+    - if <bungee.server||null> != null:
+      - stop
     - createworld ft24
     - createworld fort_pregame_island
     - createworld fort_map
