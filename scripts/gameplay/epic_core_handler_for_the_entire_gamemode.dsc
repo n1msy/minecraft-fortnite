@@ -313,7 +313,6 @@ fort_bus_handler:
     - repeat <[distance]>:
 
       - if <server.has_flag[fort.temp.cancel_bus]> || !<[bus].is_spawned>:
-        - narrate <server.has_flag[fort.temp.cancel_bus]>
         - flag server fort.temp.cancel_bus:!
         - repeat stop
 
@@ -325,6 +324,7 @@ fort_bus_handler:
 
       - foreach <[controllers]> as:c:
         - teleport <[c]> <[new_loc].add[<[c].flag[vector_loc]>]>
+        #- push <[c]> origin:<[]> destination:<[new_loc].add[<[c].flag[vector_loc]>]> duration:1t
 
       - foreach <[seats]> as:seat:
         - teleport <[seat]> <[new_loc].add[<[seat].flag[vector_loc]>]>
