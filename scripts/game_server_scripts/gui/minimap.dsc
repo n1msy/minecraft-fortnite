@@ -37,8 +37,8 @@ minimap:
     - define x <[loc].x>
     - define z <[loc].z>
 
-    - define top_left_x -1000
-    - define top_left_z -1000
+    - define top_left_x -1024
+    - define top_left_z -1024
 
     - define r <[x].sub[<[top_left_x]>].mod[256]>
     - define g <[z].sub[<[top_left_z]>].mod[256]>
@@ -86,7 +86,7 @@ minimap:
       - define chars:->:<[char]>
 
     - define tiles:!
-    - define in_game true
+    - define in_game <player.world.name.equals[nimnite_map]>
     - define displayId 4
     - repeat 4:
       - define displayId <[value].sub[1]> if:<[in_game]>

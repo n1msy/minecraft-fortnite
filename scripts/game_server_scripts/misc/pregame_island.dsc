@@ -83,6 +83,9 @@ pregame_island_handler:
     - wait 7t
     - adjust <player> send_to:fort_lobby
 
+    on player quit:
+    - if <server.online_players.exclude[<player>].size> == 0:
+      - remove <world[pregame_island].entities[text_display].filter[has_flag[lobby_circle_square]]>
     ##################################TEMP WORLD CHANGE SHIT
     #on player changes world from fort_pregame_island:
     #- define mode solo
