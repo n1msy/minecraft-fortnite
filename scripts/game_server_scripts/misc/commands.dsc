@@ -76,7 +76,7 @@ fort_commands:
       - run pregame_island_handler.lobby_circle.anim
 
     - case pregame_spawn:
-      - flag server fort.pregame.spawn:<player.location.center.with_pose[0,-90]>
+      - flag server fort.pregame.spawn:<player.location.round.with_pose[0,-90]>
       - narrate "<&a>Nimnite pregame island spawn set."
 
     - case chest:

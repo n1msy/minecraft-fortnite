@@ -446,7 +446,7 @@ fort_gun_handler:
           #shot flag is for damage indicator
           - flag <[target]> fort.shot duration:1t
           - define damage <[damage].mul[<[headshot_multiplier]>].round_down> if:<[body_part].equals[Head]>
-          - hurt <[damage]> <[target]> source:<player>
+          - hurt <[damage]> <[target]> source:<player> if:<[target].world.name.equals[pregame_island].not>
           #total damage to consider all damage combined if multiple pellets are used per shot
           - if <[pellets]> > 1:
             #multiple list support in case pellets hit multiple people

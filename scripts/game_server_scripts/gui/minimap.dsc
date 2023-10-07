@@ -177,13 +177,12 @@ minimap:
     - define full_marker_color <color[<[full_marker_red]>,<[real_g]>,<[real_b]>]||null>
     - define full_marker       <&chr[E000].font[map].color[<[full_marker_color]>].if_null[<empty>]>
 
-    - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><n><[map]><n.repeat[9]>
-    #<&chr[999].font[icons]><n.repeat[5]>
+    - define youtube_icon <&chr[13].font[icons]>
+    - define twitch_icon  <&chr[14].font[icons]>
+    - define twitter_icon <&chr[15].font[icons]>
 
-#-disable players from tablist
-#fort_minimap_handler:
-  #type: world
-  #debug: false
-  #events:
-   # on player receives tablist update:
-    #- determine cancelled
+    - define actionbar_text "<[youtube_icon]> Nimsy <[twitch_icon]> FlimsyNimsy <[twitter_icon]> N1msy"
+
+    #show storm timer info in tablist too?
+    - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><n><[map]><n.repeat[10]><[actionbar_text]><n>
+    #<&chr[999].font[icons]><n.repeat[5]>
