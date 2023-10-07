@@ -1,7 +1,7 @@
 fort_pickaxe_default:
   type: item
   material: netherite_pickaxe
-  display name: <&f><&l><element[Pickaxe].font[item_name]>
+  display name: <&chr[1].font[item_name]><&f><&l><element[Pickaxe].font[item_name]>
   enchantments:
   - efficiency:5
   mechanisms:

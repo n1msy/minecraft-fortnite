@@ -74,6 +74,11 @@ fort_global_handler:
     - define e      <context.entity>
     - if !<[e].is_living>:
       - stop
+
+    - if <[e].world.name> == pregame_island:
+      - determine passively cancelled
+      - stop
+
     - define damage <context.damage>
     - define shield <[e].armor_bonus||null>
 

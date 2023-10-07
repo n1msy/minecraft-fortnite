@@ -52,6 +52,7 @@ pregame_island_handler:
     - foreach <list[light|medium|heavy|shells|rockets]> as:ammo_type:
       - flag player fort.ammo.<[ammo_type]>:999
 
+    - adjust <player> gamemode:survival
     - inventory clear
     - give fort_pickaxe_default slot:1
     - adjust <player> item_slot:1
@@ -89,8 +90,7 @@ pregame_island_handler:
     #flagging phase for hud updating manually too
     - flag server fort.temp.phase:bus
     - repeat 10:
-      ##<server.online_players_flagged[fort]>
-      - define players <world[fort_pregame_island].players>
+      - define players <server.online_players_flagged[fort]>
       - define seconds <element[10].sub[<[value]>]>
       - define timer <time[2069/01/01].add[<[seconds]>].format[m:ss]>
 
@@ -100,8 +100,7 @@ pregame_island_handler:
       - sidebar set_line scores:5 values:<element[<&chr[0025].font[icons]> <[timer]>].font[hud_text].color[<color[50,0,0]>]> players:<[players]>
 
       - wait 1s
-      ##<server.online_players_flagged[fort]>
-      - define players <world[fort_pregame_island].players>
+      - define players <server.online_players_flagged[fort]>
       - if <[players].size> < <[min_players]>:
         - bossbar update fort_info title:<proc[spacing].context[50]><&chr[A004].font[icons]><proc[spacing].context[-72]><&l><element[WAITING FOR PLAYERS].font[lobby_text]> color:YELLOW players:<[players]>
         - sidebar set_line scores:5 values:<element[<[clock_icon]> -].font[hud_text].color[<color[50,0,0]>]> players:<[players]>
