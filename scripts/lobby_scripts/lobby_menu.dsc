@@ -37,17 +37,15 @@ fort_lobby_handler:
         - define i_button <player.flag[fort.menu.invite_button.<[i]>]>
         - remove <[i_button]> if:<[i_button].is_spawned>
 
-    on server prestart:
+    on server start:
     #so only the test server is updated
-    - if <bungee.server||null> != null:
-      - stop
-    - createworld ft24
-    - createworld fort_pregame_island
-    - createworld fort_map
-    - createworld nimnite_map
+    #- createworld ft24
+    #- createworld fort_pregame_island
+    #- createworld fort_map
+    #- createworld nimnite_map
 
     #-in case the server crashed/it was incorrectly shut down
-    - remove <world[lobby].entities[item_display|text_display|npc]>
+    - remove <world[fort_lobby].entities[item_display|text_display|npc]>
     - run fort_lobby_setup
 
     #-create the entities upon joining/quitting, or remove/add entities when entering/exiting area
@@ -118,10 +116,6 @@ fort_lobby_handler:
 
     #### - [ OPTIMIZE / PRETTIFY THIS CODE ] ###
     on player join:
-
-    #####REMOVE THIS WHEN MOVING TO LIVE SERVER
-    - if <bungee.server||null> == null:
-      - stop
 
     - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
 
