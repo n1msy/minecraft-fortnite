@@ -148,14 +148,14 @@ minimap:
     - define neg_spacing <proc[spacing].context[-1]>
     - define border_radius 4
     - define map <list[]>
-    - repeat 16:
+    - repeat 64:
       - define zeroes <element[0].repeat[<element[3].sub[<[value].length>]>]>
       - define char A<[zeroes]><[value]>
       - define row:->:<&chr[<[char]>].font[map]>
-      - if <[value].mod[4]> == 0:
+      - if <[value].mod[8]> == 0:
         - define map <[map].include[<&sp.repeat[<[border_radius].sub[1]>]><[row].separated_by[<[neg_spacing]>]><&sp.repeat[<[border_radius].sub[1]>]>]>
         - define row:!
-    - define map <[map].separated_by[<n.repeat[10]>]>
+    - define map <[map].separated_by[<n.repeat[5]>]>
 
     # - circle
     - define actualX <[circle_x]>
