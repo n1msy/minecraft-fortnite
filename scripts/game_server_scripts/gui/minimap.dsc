@@ -79,7 +79,7 @@ minimap:
       - define oob False
       - if <[final_y]> <= 0 || <[final_y]> > 8 || <[final_x]> <= 0 || <[final_x]> > 8:
         - define oob True
-        - define char 0999
+        - define char 0000
       - else:
         - define char <[row_<[final_y]>].get[<[final_x]>]>
 
@@ -94,8 +94,8 @@ minimap:
       - define loc_to_color <color[<[r]>,<[g]>,<[displayId]>]>
       - define ch <[chars].get[<[value]>]>
 
-      #- if <[ch]> == 0999:
-        #- repeat next
+      - if <[ch]> == 0000:
+        - repeat next
 
       - define tiles:->:<&chr[<[ch]>].font[map].color[<[loc_to_color]>]>
 
