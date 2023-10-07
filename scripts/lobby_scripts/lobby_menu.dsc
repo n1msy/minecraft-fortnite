@@ -58,8 +58,8 @@ fort_lobby_handler:
     - adjust <player> flying:true
 
     - adjust <player> fly_speed:0.02
-    - adjust <player> hide_from_players
-    ##- invisible state:true
+    #- adjust <player> hide_from_players
+    - invisible state:true
     - inventory clear
     - sidebar remove
     - if <player.has_flag[minimap]>:
@@ -99,7 +99,7 @@ fort_lobby_handler:
     - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
     - wait 6t
     - adjust <player> can_fly:false
-    ##- invisible state:false
+    - invisible state:false
     - heal
     - give fort_pickaxe_default slot:1
     - adjust <player> item_slot:1
@@ -195,7 +195,7 @@ fort_lobby_handler:
     ## - [ MAKE THIS CLEANER ] - ##
     on player quit priority:-10:
     - define uuid <player.uuid>
-    - adjust <player> show_to_players
+    #- adjust <player> show_to_players
     - if <player.has_flag[fort.menu]>:
       - foreach play|mode|vid as:button_type:
         - define button <player.flag[fort.menu.<[button_type]>_button]>
