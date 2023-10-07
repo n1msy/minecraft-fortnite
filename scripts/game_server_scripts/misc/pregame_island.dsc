@@ -7,24 +7,43 @@ pregame_island_handler:
   definitions: square
   events:
 
-    ######when server starts, set the chests, ammo boxes, and floor loot
-    ###MAKE SURE TO DEBUG IT IN THE CONSOLE
     on server start:
-    - bossbar create fort_info title:<proc[spacing].context[50]><&chr[A004].font[icons]><proc[spacing].context[-72]><&l><element[WAITING FOR PLAYERS].font[lobby_text]> color:YELLOW players:<server.online_players>
+    - announce "-------------------- [ <&b>NIMNITE GAME SERVER STARTUP <&r>] --------------------" to_console
 
-    on player enters fort_lobby_circle:
-    - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
-    - cast LEVITATION duration:8t amplifier:3 no_ambient no_clear no_icon hide_particles
-    - wait 7t
-    - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
+    #two ways of doing the "copying" system:
+    #1) copy the file, then create the world
+    #2) have the template world on each server and use "copy_from" arg in createworld command
 
-    ##################################TEMP WORLD CHANGE SHIT
-    on player changes world from fort_pregame_island:
-    - define mode solo
-    - flag server fort.available_servers.solo.test.players:<-:<player>
-    - bossbar remove fort_info players:<player>
+    - ~filecopy origin:../../../../nimnite_map_template destination:../../nimnite_map overwrite
+    - ~createworld nimnite_map
 
-    on player changes world to fort_pregame_island:
+    - announce "<&b>[Nimnite]<&r> Created world <&dq><&a>nimnite_map<&r><&dq> from <&dq><&e>nimnite_map_template<&r><&dq>" to_console
+
+    - foreach <list[chests|ammo_boxes]> as:container_type:
+      - define containers <server.flag[fort.<[container_type]>]||<list[]>>
+      - announce "<&b>[Nimnite]<&r> Filling all <&e><[container_type].replace[_].with[ ]><&r>..." to_console
+
+      - foreach <[containers]> as:loc:
+        - inject fort_chest_handler.fill_<map[chests=chest;ammo_boxes=ammo_box].get[<[container_type]>]>
+
+      - announce "<&b>[Nimnite]<&r> Done (<&a><[containers].size><&r> filled)" to_console
+
+    ##################SET FLOOR LOOT TOO
+    - announce "<&b>[Nimnite]<&r> Setting all <&e>floor loot<&r>... <&c>Coming Soon." to_console
+    #- announce "<&b>[Nimnite]<&r> Setting all <&e>floor loot<&r>..." to_console
+    #- announce "<&b>[Nimnite]<&r> Done (<&a>0<&r>)" to_console
+
+    - run pregame_island_handler.lobby_circle.anim
+    - announce "<&b>[Nimnite]<&r> Set lobby circle animation in world <&dq><&e>fort_pregame_island<&r><&dq>" to_console
+
+    - define bossbar fort_info
+    - bossbar create <[bossbar]> title:<proc[spacing].context[50]><&chr[A004].font[icons]><proc[spacing].context[-72]><&l><element[WAITING FOR PLAYERS].font[lobby_text]> color:YELLOW players:<server.online_players>
+    - announce "<&b>[Nimnite]<&r> Created bossbar <&dq><&e><[bossbar]><&r><&dq>" to_console
+    - announce ------------------------------------------------------------------------- to_console
+
+    on player join:
+
+    - teleport <player> <server.flag[fort.pregame.spawn].random_offset[10,0,10]>
 
     - flag player fort.wood.qty:0
     - flag player fort.brick.qty:0
@@ -33,16 +52,31 @@ pregame_island_handler:
     - foreach <list[light|medium|heavy|shells|rockets]> as:ammo_type:
       - flag player fort.ammo.<[ammo_type]>:999
 
-    - flag player fort.in_queue:!
+    - inventory clear
+    - give fort_pickaxe_default slot:1
+    - adjust <player> item_slot:1
 
     - run update_hud
     - run minimap
     - wait 10t
     - bossbar update fort_info color:YELLOW players:<player>
 
-    ##<server.online_players_flagged[fort].size>
-    - if <world[fort_pregame_island].players.size> >= <script[nimnite_config].data_key[minimum_players]> && !<server.has_flag[fort.temp.game_starting]>:
+    - if <server.online_players_flagged[fort].size> >= <script[nimnite_config].data_key[minimum_players]> && !<server.has_flag[fort.temp.game_starting]>:
       - run pregame_island_handler.countdown
+
+    # - [ Return to Lobby Menu ] - #
+    on player enters fort_lobby_circle:
+    - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
+    - cast LEVITATION duration:8t amplifier:3 no_ambient no_clear no_icon hide_particles
+    - wait 7t
+    - adjust <player> send_to:fort_lobby
+
+    ##################################TEMP WORLD CHANGE SHIT
+    #on player changes world from fort_pregame_island:
+    #- define mode solo
+    #- flag server fort.available_servers.solo.test.players:<-:<player>
+    #- bossbar remove fort_info players:<player>
+
 
   countdown:
     - define min_players <script[nimnite_config].data_key[minimum_players]>
@@ -96,14 +130,13 @@ pregame_island_handler:
 
         #-square
         - if <[loop_index].mod[6]> == 0:
-          - define size <util.random.decimal[1.2].to[1.9]>
-          #- define dest <[loc].above[<util.random.decimal[1.8].to[2.6]>]>
-
-          - define origin <[loc].below[0.4].random_offset[0.75,0,0.75]>
-          - define end_translation   0,<util.random.decimal[1.8].to[2.6]>,0
+          - define size            <util.random.decimal[1.2].to[1.9]>
+          - define origin          <[loc].below[0.4].random_offset[0.75,0,0.75]>
+          - define end_translation 0,<util.random.decimal[1.8].to[2.6]>,0
 
           - spawn <entity[text_display].with[text=<element[⬛].color[#<list[D8F0FF|AAF4FF].random>]>;pivot=VERTICAL;scale=<[size]>,<[size]>,<[size]>;background_color=transparent]> <[origin]> save:fx
           - define fx <entry[fx].spawned_entity>
+          - flag <[fx]> lobby_circle_square
 
           - wait 1t
 
@@ -114,3 +147,7 @@ pregame_island_handler:
           - run fort_global_handler.death_fx.remove_square def:<map[square=<[fx]>;wait=52]>
         - else:
           - wait 1t
+
+      #remove entities in case they weren't already (or if server shuts down)
+      - remove <world[fort_pregame_island].entities[text_display].filter[has_flag[lobby_circle_square]]>
+      - flag server fort.lobby_circle_enabled:!

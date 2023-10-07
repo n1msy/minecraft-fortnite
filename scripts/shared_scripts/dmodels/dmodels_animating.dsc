@@ -53,7 +53,7 @@ dmodels_animate:
 
             - spawn ARMOR_STAND[gravity=false;collidable=false;invulnerable=true;visible=false] <[center].backward_flat[3].with_pitch[20]> save:cam
             - define cam <entry[cam].spawned_entity>
-            - spawn ARMOR_STAND[gravity=false;collidable=false;invulnerable=true;visible=false] <[center]> save:stand
+            - spawn ARMOR_STAND[gravity=false;collidable=false;invulnerable=true;visible=false] <[center].below[0.4]> save:stand
             - define stand <entry[stand].spawned_entity>
 
             - flag <[root_entity]> camera:<[cam]>

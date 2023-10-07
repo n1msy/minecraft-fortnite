@@ -4,6 +4,9 @@ fort_global_handler:
   definitions: data
   events:
 
+    on player breaks block with:!fort_pickaxe_*:
+    - determine cancelled
+
     on block fades:
     - determine cancelled
 
@@ -130,11 +133,8 @@ fort_global_handler:
     on player clicks in inventory slot:2|3|4|5|7|8|9|10|11|12|13|14|15|16|17|18|28|29|30|31|32|33|34|35|36|19|20|21|22|23|24|25|26|27:
     #19-27 are the resources/ammo slots
     #in case it's part of the drop menu
-
-    ################REMOVE THIS
-    - if !<list[asd988|Nimsy].contains[<player.name>]>:
-      - stop
-
+    #this stop is for emotes
+    - stop if:<context.clicked_inventory.inventory_type.equals[CRAFTING]>
     - stop if:<context.item.has_flag[action]||false>
     - if <util.list_numbers[from=19;to=27].contains[<context.slot>]> && <context.item.material.name> != air:
       - stop
@@ -145,6 +145,7 @@ fort_global_handler:
         - wait 0.5t
         - inject update_hud
       - stop
+
     - determine cancelled
 
     ##small bug where if you swap items the rarity thing disappears?
