@@ -130,6 +130,9 @@ pregame_island_handler:
       - define loc <server.flag[fort.pregame.lobby_circle.loc].with_pose[0,0]>
       - define circle <server.flag[fort.pregame.lobby_circle.circle]>
 
+      #in case server was shut down incorrectly (or before a match was started)
+      - remove <world[pregame_island].entities[text_display].filter[has_flag[lobby_circle_square]]>
+
       - flag server fort.lobby_circle_enabled
 
       - while <server.has_flag[fort.lobby_circle_enabled]>:
@@ -159,5 +162,5 @@ pregame_island_handler:
           - wait 1t
 
       #remove entities in case they weren't already (or if server shuts down)
-      - remove <world[fort_pregame_island].entities[text_display].filter[has_flag[lobby_circle_square]]>
+      - remove <world[pregame_island].entities[text_display].filter[has_flag[lobby_circle_square]]>
       - flag server fort.lobby_circle_enabled:!
