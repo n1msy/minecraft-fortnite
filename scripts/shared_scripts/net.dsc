@@ -19,7 +19,7 @@ net_help:
   - if !<player.has_permission[Net.Utility.Help]||<context.server>>:
     - stop
   script:
-  - define commands <server.scripts.filter[container_type.equals[command]].filter[name.before[_].is[==].to[net]].filter_tag[<player.has_permission[<[filter_value].data_key[permission]>]||false>].alphabetical.sub_lists[7]>
+  - define commands <util.scripts.filter[container_type.equals[command]].filter[name.before[_].is[==].to[net]].filter_tag[<player.has_permission[<[filter_value].data_key[permission]>]||false>].alphabetical.sub_lists[7]>
   - define page <context.args.first||1>
   - define total_pages <[commands].size>
   - if !<[page].is_integer> || <[page]> <= 0:
@@ -1897,13 +1897,13 @@ net_commands_handler:
     on player receives commands:
     - if <player.is_op>:
        - stop
-    - define command_scripts <server.scripts.filter[container_type.equals[command]].filter[name.before[_].is[==].to[net]]>
+    - define command_scripts <util.scripts.filter[container_type.equals[command]].filter[name.before[_].is[==].to[net]]>
     - define commands <[command_scripts].parse[after[_]]>
     - foreach <[command_scripts].filter[data_key[aliases].equals[null].not]> as:cmd:
       - foreach <[cmd].data_key[aliases]> as:a:
         - define aliases:->:<[a]>
     - determine <[commands].include[<[aliases]>].alphabetical>
-    #- determine <server.scripts.filter[container_type.equals[command]].filter[name.before[_].is[==].to[net]].parse[after[_]].alphabetical>
+    #- determine <util.scripts.filter[container_type.equals[command]].filter[name.before[_].is[==].to[net]].parse[after[_]].alphabetical>
 
 tab_data:
   type: data
