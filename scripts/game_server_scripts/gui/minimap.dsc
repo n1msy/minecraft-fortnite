@@ -86,7 +86,7 @@ minimap:
       - define chars:->:<[char]>
 
     - define tiles:!
-    - define in_game <[world].name.equals[nimnite_map]>
+    - define in_game true
     - define displayId 4
     - repeat 4:
       - define displayId <[value].sub[1]> if:<[in_game]>
@@ -115,12 +115,12 @@ minimap:
     - define circle_x 0
     - define circle_y 0
     - define storm_id 5
-    - define relX     <[circle_x].sub[<[loc].x>].add[1024]>
-    - define relZ     <[circle_y].sub[<[loc].z>].add[1024]>
+    - define relX     <[circle_x].sub[<[loc].x>].add[2048].max[0].min[4095]>
+    - define relZ     <[circle_y].sub[<[loc].z>].add[2048].max[0].min[4095]>
     - define r_       <[relX].mod[256]>
     - define g_       <[relZ].mod[256]>
-    - define b_       <[relX].div[256].round_down.add[<[relZ].div[256].round_down.mul[8]>].add[<[storm_id].div[4].round_down.mul[64]>]>
-    - define offset   <[storm_id].mod[4].mul[2]>
+    - define b_       <[relX].div[256].round_down.add[<[relZ].div[256].round_down.mul[16]>]>
+    - define offset   <[storm_id].mul[2]>
 
     - define circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
     - define circle_display <&chr[E001].font[map].color[<[circle_color]>]>
