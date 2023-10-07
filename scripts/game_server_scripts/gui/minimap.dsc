@@ -46,14 +46,21 @@ minimap:
     - if <[g]> < 0:
       - define g <[g].add[256]>
 
-    - define map_x <[x].add[512].div[256].round_down.add[1]>
-    - define map_y <[z].add[512].div[256].round_down.add[1]>
+    - define top_left_x -1024
+    - define top_left_z -1024
+
+    - define map_x <[x].sub[<[top_left_x]>].div[256].round_down.add[1]>
+    - define map_y <[z].sub[<[top_left_z]>].div[256].round_down.add[1]>
 
     #array of characters
-    - define row_1 <list[0001|0002|0003|0004]>
-    - define row_2 <list[0005|0006|0007|0008]>
-    - define row_3 <list[0009|0010|0011|0012]>
-    - define row_4 <list[0013|0014|0015|0016]>
+    - define row_1 <list[0001|0002|0003|0004|0005|0006|0007|0008]>
+    - define row_2 <list[0009|000a|000b|000c|000d|000e|000f|0010]>
+    - define row_3 <list[0011|0012|0013|0014|0015|0016|0017|0018]>
+    - define row_4 <list[0019|001a|001b|001c|001d|001e|001f|0020]>
+    - define row_5 <list[0021|0022|0023|0024|0025|0026|0027|0028]>
+    - define row_6 <list[0029|002a|002b|002c|002d|002e|002f|0030]>
+    - define row_7 <list[0031|0032|0033|0034|0035|0036|0037|0038]>
+    - define row_8 <list[0039|003a|003b|003c|003d|003e|003f|0040]>
 
     - define base_coords <list[0,0|0,1|1,0|1,1]>
 
@@ -70,7 +77,7 @@ minimap:
       - define final_x <[map_x].add[<[x_add]>]>
 
       - define oob False
-      - if <[final_y]> <= 0 || <[final_y]> >= 5 || <[final_x]> <= 0 || <[final_x]> >= 5:
+      - if <[final_y]> <= 0 || <[final_y]> > 8 || <[final_x]> <= 0 || <[final_x]> > 8:
         - define oob True
         - define char 0999
       - else:
@@ -102,9 +109,11 @@ minimap:
     - define oldRotation     <[curRotation]>
     - define compass_display <&chr[B000].font[map].color[<[rotation_color]>]>
 
+    ## - [ CIRCLE ] - ##
     # circle display
-    - define circle_x 65
-    - define circle_y 90
+    #- circle x and y is in worldspace
+    - define circle_x 0
+    - define circle_y 0
     - define storm_id 5
     - define relX     <[circle_x].sub[<[loc].x>].add[1024]>
     - define relZ     <[circle_y].sub[<[loc].z>].add[1024]>
