@@ -108,20 +108,6 @@ fort_lobby_handler:
     - if <context.cause> == QUIT:
       - stop
 
-    - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
-    - wait 6t
-    - adjust <player> can_fly:false
-    - invisible state:false
-    - heal
-    - give fort_pickaxe_default slot:1
-    - adjust <player> item_slot:1
-    - adjust <player> fly_speed:0.2
-
-    - wait 1t
-    - inject update_hud
-    - if !<player.has_flag[minimap]>:
-      - run minimap
-
     #in case they click it from far
     on player left clicks block flagged:fort.menu.selected_button priority:-10:
     - inject fort_lobby_handler.button_press
