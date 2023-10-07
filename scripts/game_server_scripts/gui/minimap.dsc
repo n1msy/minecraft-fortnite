@@ -37,17 +37,17 @@ minimap:
     - define x <[loc].x>
     - define z <[loc].z>
 
-    - define r <[x].mod[256]>
-    - define g <[z].mod[256]>
+    - define top_left_x -1000
+    - define top_left_z -1000
+
+    - define r <[x].sub[<[top_left_x]>].mod[256]>
+    - define g <[z].sub[<[top_left_z]>].mod[256]>
 
     #can't be 0
     - if <[r]> < 0:
       - define r <[r].add[256]>
     - if <[g]> < 0:
       - define g <[g].add[256]>
-
-    - define top_left_x -1024
-    - define top_left_z -1024
 
     - define map_x <[x].sub[<[top_left_x]>].div[256].round_down.add[1]>
     - define map_y <[z].sub[<[top_left_z]>].div[256].round_down.add[1]>
