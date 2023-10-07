@@ -6,6 +6,18 @@ fort_lobby_handler:
   definitions: player|button|option|title|size_data
   events:
 
+    #on player damaged:
+    #- determine cancelled
+
+    on player changes food level:
+    - determine cancelled
+
+    on player damages entity flagged:fort.in_menu:
+    - determine cancelled
+
+    on player hears sound key:entity.player.attack.nodamage:
+    - determine cancelled
+
     on shutdown:
     - define menu_players <server.online_players_flagged[fort.in_menu]>
     - foreach <[menu_players]> as:p:
@@ -118,11 +130,12 @@ fort_lobby_handler:
     - determine passively cancelled
     - inject fort_lobby_handler.button_press
 
-    on player damages entity flagged:fort.in_menu:
-    - determine cancelled
-
     #### - [ OPTIMIZE / PRETTIFY THIS CODE ] ###
     on player join:
+
+    #####REMOVE THIS WHEN MOVING TO LIVE SERVER
+    - if <bungee.server||null> == null:
+      - stop
 
     - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
 
