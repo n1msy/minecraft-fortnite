@@ -8,11 +8,20 @@ pregame_island_handler:
   events:
 
     on server start:
+    - flag server fort.temp.startup
+    - announce "<&b>[Nimnite]<&r> Getting ready for startup..." to_console
+    #5 seconds
+    - wait 5s
     - announce "-------------------- [ <&b>NIMNITE GAME SERVER STARTUP <&r>] --------------------" to_console
 
     #two ways of doing the "copying" system:
     #1) copy the file, then create the world
     #2) have the template world on each server and use "copy_from" arg in createworld command
+
+    #either createworld here, *or* just remove the world on shut down
+    - if <util.has_file[../../nimnite_map]>:
+      - ~createworld nimnite_map
+      - adjust <world[nimnite_map]> destroy
 
     - ~filecopy origin:../../../../nimnite_map_template destination:../../nimnite_map overwrite
     - ~createworld nimnite_map
@@ -40,6 +49,8 @@ pregame_island_handler:
     - bossbar create <[bossbar]> title:<proc[spacing].context[50]><&chr[A004].font[icons]><proc[spacing].context[-72]><&l><element[WAITING FOR PLAYERS].font[lobby_text]> color:YELLOW players:<server.online_players>
     - announce "<&b>[Nimnite]<&r> Created bossbar <&dq><&e><[bossbar]><&r><&dq>" to_console
     - announce ------------------------------------------------------------------------- to_console
+    - flag server fort.temp.startup:!
+
 
     on player join:
 

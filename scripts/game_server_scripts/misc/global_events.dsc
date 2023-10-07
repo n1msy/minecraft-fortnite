@@ -4,6 +4,10 @@ fort_global_handler:
   definitions: data
   events:
 
+    #-only show teammates in tablist?
+    #on player receives tablist update:
+    #- determine cancelled
+
     on player breaks block with:!fort_pickaxe_*:
     - determine cancelled
 
@@ -123,7 +127,7 @@ fort_global_handler:
     - if !<[e].has_flag[fort.shot]>:
       - define color <&f> if:<[color].exists.not>
       - define entity <context.entity>
-      - if <[entity].has_flag[spawned_dmodel_emotes]> && <[entity].flag[spawned_dmodel_emotes].has_flag[emote_hitbox]>:
+      - if <[entity].has_flag[spawned_dmodel_emotes]> && <[entity].flag[spawned_dmodel_emotes].has_flag[emote_hitbox]||false>:
         #this way, the damage indicator shows up on the animated emote and not the player
         - define entity <[entity].flag[spawned_dmodel_emotes].flag[emote_hitbox]>
       - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round>;entity=<context.entity>;color=<[color]>]>
