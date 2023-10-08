@@ -11,12 +11,15 @@ fort_bungee_handler:
 
     - define game_server <[data].get[game_server]>
     - define status      <[data].get[status]>
-    - define mode        <[data].get[mode]>
 
     - choose <[status]>:
       - case AVAILABLE:
-        - flag server fort.available_servers.<[mode]>.<[game_server]>.players:<[data].get[players]>
+        - define mode        <[data].get[mode]>
+        - define players     <[data].get[players]>
+        - flag server fort.available_servers.<[mode]>.<[game_server]>.players:<[players]>
+        - announce "<&b>[Nimnite]<&r> Game server <&b><[game_server]><&r> is now <&a>AVAILABLE<&r>. Mode: <&e><[mode]>"
       - case UNAVAILABLE:
         - flag server fort.available_servers.<[mode]>.<[game_server]>:!
+        - announce "<&b>[Nimnite]<&r> Game server <&b><[game_server]><&r> is now <&c>CLOSED<&r>"
       - default:
         - flag server fort.available_servers.<[mode]>.<[game_server]>:!

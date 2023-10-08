@@ -143,7 +143,6 @@ pregame_island_handler:
     - definemap data:
         game_server: <bungee.server>
         status: UNAVAILABLE
-        mode: <server.flag[fort.mode]||solo>
     #send all the player data, or just remove the current one?
     - bungeerun fort_lobby fort_bungee_handler.set_status def:<[data]>
 
