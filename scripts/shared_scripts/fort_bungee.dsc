@@ -13,6 +13,17 @@ fort_bungee_handler:
           players: <server.online_players_flagged[fort]>
       - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
 
+    on bungee server disconnects:
+    - if <context.server> != fort_lobby && <context.server.starts_with[fort_]>:
+      - if <bungee.list_servers.contains[fort_lobby]>:
+        - definemap data:
+            game_server: <bungee.server>
+            status: UNAVAILABLE
+            mode: <server.flag[fort.mode]||solo>
+        #send all the player data, or just remove the current one?
+        - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
+        - announce "<&b>[Nimnite]<&r> Set this game server to <&c>CLOSED<&r> (<&b><[data].get[game_server]><&r>)." to_console
+
 
 
 fort_bungee_tasks:
