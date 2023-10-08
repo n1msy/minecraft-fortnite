@@ -181,9 +181,10 @@ fort_lobby_handler:
       - flag <[button]> type:invite
 
     #-nimnite title
-    - wait 5s
-    - if !<player.has_flag[fort.in_queue]> || !<player.has_flag[fort.menu.match_info]>:
-      - run fort_lobby_handler.match_info def.option:add
+    #- wait 5s
+    #- if !<player.has_flag[fort.in_queue]> || !<player.has_flag[fort.menu.match_info]>:
+      #- run fort_lobby_handler.match_info def.option:add if:<player.is_online>
+    - run fort_lobby_handler.match_info def.option:add
 
     ## - [ MAKE THIS CLEANER ] - ##
     on player quit priority:-10:
@@ -200,7 +201,7 @@ fort_lobby_handler:
         - define e <player.flag[fort.menu.invite_button.<[k]>].first>
         - remove <[e]> if:<[e].is_spawned>
 
-      #match info text
+      #match info text / nimnite title
       - if <player.has_flag[fort.menu.match_info]> && <player.flag[fort.menu.match_info].is_spawned>:
         - run fort_lobby_handler.match_info def.button:<player.flag[fort.menu.match_info]> def.option:remove
 
@@ -211,11 +212,6 @@ fort_lobby_handler:
       #player name
       - if <player.has_flag[fort.menu.name]> && <player.flag[fort.menu.name].is_spawned>:
         - remove <player.flag[fort.menu.name]>
-
-      #nimnite title
-      - if <player.has_flag[fort.menu.title]> && <player.flag[fort.menu.title].is_spawned>:
-        - remove <player.flag[fort.menu.title]>
-
 
     - if <player.has_flag[fort.emote]> && <player.has_flag[spawned_dmodel_emotes]>:
       - run dmodels_delete def.root_entity:<player.flag[spawned_dmodel_emotes]>
