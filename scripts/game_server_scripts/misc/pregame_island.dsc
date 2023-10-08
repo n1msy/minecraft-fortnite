@@ -10,6 +10,7 @@ pregame_island_handler:
   events:
 
     on server start:
+
     #clear anything from the previous match
     - flag server fort.temp:!
     - flag server fort.temp.startup
@@ -25,6 +26,8 @@ pregame_island_handler:
     #either createworld here, *or* just remove the world on shut down
     - if <util.has_file[../../nimnite_map]>:
       - ~createworld nimnite_map
+      #-in case server was shut down during bus phase
+      - run pregame_island_handler.bus_removal
       - adjust <world[nimnite_map]> destroy
 
     - ~filecopy origin:../../../../nimnite_map_template destination:../../nimnite_map overwrite
@@ -128,6 +131,14 @@ pregame_island_handler:
 
     - flag player fort:!
 
+    on shutdown:
+    - definemap data:
+        game_server: <bungee.server>
+        status: UNAVAILABLE
+        mode: <server.flag[fort.mode]||solo>
+    #send all the player data, or just remove the current one?
+    - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
+    - announce "<&b>[Nimnite]<&r> Set this game server to <&c>CLOSED<&r> (<&b><[data].get[game_server]><&r>)." to_console
 
   countdown:
     - define min_players <script[nimnite_config].data_key[minimum_players]>
@@ -173,6 +184,22 @@ pregame_island_handler:
     - flag server fort.lobby_circle_enabled:!
 
     - run fort_core_handler
+
+  bus_removal:
+    - if <server.has_flag[fort.temp.bus.model]>:
+      - run dmodels_delete def.root_entity:<server.flag[fort.temp.bus.model]> if:<server.flag[fort.temp.bus.model].is_spawned>
+      - flag server fort.temp.bus.model:!
+
+    #we can also make the seats the keys, and the vectors the values
+    - if <server.has_flag[fort.temp.bus.seats]>:
+      - foreach <server.flag[fort.temp.bus.seats]> as:s:
+        - remove <[s]> if:<[s].is_spawned>
+      - flag server fort.temp.bus.seats:!
+
+    - if <server.has_flag[fort.temp.bus.driver]>:
+      - remove <server.flag[fort.temp.bus.driver]>
+      - flag server fort.temp.bus.driver:!
+
 
   lobby_circle:
     anim:

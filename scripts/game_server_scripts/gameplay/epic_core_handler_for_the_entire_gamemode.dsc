@@ -106,7 +106,7 @@ fort_core_handler:
   timer:
     - flag server fort.temp.phase:<[phase]>
 
-    - define icon <&chr[<map[bus=0025;fall=0003;grace_period=B005;storm_shrink=0005].get[<[phase]>]>].get[icons]>
+    - define icon <&chr[<map[bus=0025;fall=0003;grace_period=B005;storm_shrink=0005].get[<[phase]>]>].font[icons]>
 
     - if <[diameter].exists>:
       - define storm_center <server.flag[fort.temp.storm_center]>
@@ -191,23 +191,7 @@ fort_bus_handler:
   start_bus:
 
 
-    - if <server.has_flag[fort.temp.bus.model]>:
-      - run dmodels_delete def.root_entity:<server.flag[fort.temp.bus.model]> if:<server.flag[fort.temp.bus.model].is_spawned>
-      - flag server fort.temp.bus.model:!
-
-    #we can also make the seats the keys, and the vectors the values
-    - if <server.has_flag[fort.temp.bus.seats]>:
-      - foreach <server.flag[fort.temp.bus.seats]> as:s:
-        - remove <[s]> if:<[s].is_spawned>
-      - flag server fort.temp.bus.seats:!
-
-    - if <server.has_flag[fort.temp.bus.driver]>:
-      - remove <server.flag[fort.temp.bus.driver]>
-      - flag server fort.temp.bus.driver:!
-
-    - flag server fort.temp.bus:!
-
-    - define center     <world[ft24].spawn_location.with_y[220].with_pitch[0]>
+    - define center     <world[nimnite_map].spawn_location.with_y[220].with_pitch[0]>
     - define yaw        <util.random.int[0].to[360]>
 
     - define bus_start  <[center].with_yaw[<[yaw]>].forward[1152].face[<[center]>]>
