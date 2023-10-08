@@ -38,8 +38,9 @@ fort_lobby_handler:
         - remove <[i_button]> if:<[i_button].is_spawned>
 
     - flag <server.players_flagged[fort]> fort:!
+    - remove <world[fort_lobby].entities[item_display|text_display|npc]>
 
-    on server start:
+    after server start:
     #so only the test server is updated
     #- createworld ft24
     #- createworld fort_pregame_island
