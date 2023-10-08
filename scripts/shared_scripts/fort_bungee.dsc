@@ -14,7 +14,7 @@ fort_bungee_handler:
       - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
 
     on bungee server disconnects:
-    - if <context.server> != fort_lobby && <context.server.starts_with[fort_]>:
+    - if <context.server> != fort_lobby && <bungee.server> != fort_lobby && <context.server.starts_with[fort_]>:
       - if <bungee.list_servers.contains[fort_lobby]>:
         - definemap data:
             game_server: <bungee.server>
