@@ -148,14 +148,14 @@ minimap:
     - define neg_spacing <proc[spacing].context[-1]>
     - define border_radius 4
     - define map <list[]>
-    - repeat 64:
+    - repeat 16:
       - define zeroes <element[0].repeat[<element[3].sub[<[value].length>]>]>
       - define char A<[zeroes]><[value]>
       - define row:->:<&chr[<[char]>].font[map]>
       - if <[value].mod[8]> == 0:
         - define map <[map].include[<&sp.repeat[<[border_radius].sub[1]>]><[row].separated_by[<[neg_spacing]>]><&sp.repeat[<[border_radius].sub[1]>]>]>
         - define row:!
-    - define map <[map].separated_by[<n.repeat[5]>]>
+    - define map <[map].separated_by[<n.repeat[5]>].color[76,0,0]>
 
     # - circle
     - define actualX <[circle_x]>
@@ -193,5 +193,5 @@ minimap:
     - define actionbar_text "<[youtube_icon]> Nimsy <[twitch_icon]> FlimsyNimsy <[twitter_icon]> N1msy"
 
     #show storm timer info in tablist too?
-    - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><n><[map]><n.repeat[10]><[actionbar_text]><n>
+    - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><n><[map]><n.repeat[5]><[actionbar_text]><n>
     #<&chr[999].font[icons]><n.repeat[5]>
