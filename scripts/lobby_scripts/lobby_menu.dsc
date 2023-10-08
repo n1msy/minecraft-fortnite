@@ -44,6 +44,7 @@ fort_lobby_handler:
     #NO need to give some time to let the server know which game servers and open and not before a player joins and queues,
     #since it already takes a minimum of 5 seconds to actually look for a server
 
+    - waituntil <world[fort_lobby].if_null[false]> max:10s
     #-in case the server crashed/it was incorrectly shut down
     - remove <world[fort_lobby].entities[item_display|text_display|npc]>
     - run fort_lobby_setup
