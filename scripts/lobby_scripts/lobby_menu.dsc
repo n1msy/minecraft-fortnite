@@ -40,7 +40,10 @@ fort_lobby_handler:
     - flag <server.players_flagged[fort]> fort:!
     - remove <world[fort_lobby].entities[item_display|text_display|npc]>
 
-    after server start:
+    on server start:
+    #NO need to give some time to let the server know which game servers and open and not before a player joins and queues,
+    #since it already takes a minimum of 5 seconds to actually look for a server
+
     #so only the test server is updated
     #- createworld ft24
     #- createworld fort_pregame_island
@@ -50,8 +53,6 @@ fort_lobby_handler:
     #-in case the server crashed/it was incorrectly shut down
     - remove <world[fort_lobby].entities[item_display|text_display|npc]>
     - run fort_lobby_setup
-
-    #-create the entities upon joining/quitting, or remove/add entities when entering/exiting area
 
     #-remove the sound for whenever hitting the npc?
 
@@ -187,7 +188,7 @@ fort_lobby_handler:
     ## - [ MAKE THIS CLEANER ] - ##
     on player quit priority:-10:
     - define uuid <player.uuid>
-    #- adjust <player> show_to_players
+
     - if <player.has_flag[fort.menu]>:
       - foreach play|mode|vid as:button_type:
         - define button <player.flag[fort.menu.<[button_type]>_button]>
