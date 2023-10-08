@@ -62,7 +62,7 @@ pregame_island_handler:
         mode: <server.flag[fort.mode]||solo>
         players: <server.online_players_flagged[fort]>
     #- define data <map[game_server=<bungee.server>;status=AVAILABLE;mode=<server.flag[fort.mode]||solo>;players=<server.online_players_flagged[fort]>]>
-    - bungeerun fort_lobby fort_bungee_handler.set_data def:<[data]>
+    - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
 
     - flag server fort.temp.available
     - announce "<&b>[Nimnite]<&r> Set this game server to <&a>AVAILABLE<&r> (<&b><[data].get[game_server]><&r>)." to_console
@@ -120,7 +120,7 @@ pregame_island_handler:
         mode: <server.flag[fort.mode]||solo>
         players: <server.online_players_flagged[fort]>
     #send all the player data, or just remove the current one?
-    - bungeerun fort_lobby fort_bungee_handler.set_status def:<[data]>
+    - bungeerun fort_lobby fort_bungee_tasks.set_status def:<[data]>
 
 
   countdown:
@@ -157,7 +157,7 @@ pregame_island_handler:
         status: UNAVAILABLE
         mode: <server.flag[fort.mode]||solo>
     #send all the player data, or just remove the current one?
-    - bungeerun fort_lobby fort_bungee_handler.set_data def:<[data]>
+    - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
     - announce "<&b>[Nimnite]<&r> Set this game server to <&c>CLOSED<&r> (<&b><[data].get[game_server]><&r>)." to_console
 
     #in case lobby restarts, let it know on startup that it's no longer available

@@ -1,4 +1,7 @@
 fort_bungee_handler:
+  type: world
+  debug: false
+  events:
     #-in case the server closes and it reopens thinking a game server is open even though it isn't
     on bungee server connects:
     - if <context.server> == fort_lobby && <bungee.server> != fort_lobby && <bungee.server.starts_with[fort_]>:
@@ -8,7 +11,7 @@ fort_bungee_handler:
           status: <[status]>
           mode: <server.flag[fort.mode]||solo>
           players: <server.online_players_flagged[fort]>
-      - bungeerun fort_lobby fort_bungee_handler.set_data def:<[data]>
+      - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
 
 
 
