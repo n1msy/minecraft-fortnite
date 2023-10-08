@@ -30,7 +30,6 @@ fort_bungee_handler:
               mode: <[mode]>
           #send all the player data, or just remove the current one?
           - run fort_bungee_tasks.set_data def:<[data]>
-          - announce "<&b>[Nimnite]<&r> Set this game server to <&c>CLOSED<&r> (<&b><[data].get[game_server]><&r>)." to_console
 
 
 
