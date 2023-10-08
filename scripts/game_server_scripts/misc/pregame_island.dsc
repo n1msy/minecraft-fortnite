@@ -131,15 +131,6 @@ pregame_island_handler:
 
     - flag player fort:!
 
-    on shutdown:
-    - definemap data:
-        game_server: <bungee.server>
-        status: UNAVAILABLE
-        mode: <server.flag[fort.mode]||solo>
-    #send all the player data, or just remove the current one?
-    - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
-    - announce "<&b>[Nimnite]<&r> Set this game server to <&c>CLOSED<&r> (<&b><[data].get[game_server]><&r>)." to_console
-
   countdown:
     - define min_players <script[nimnite_config].data_key[minimum_players]>
     - define +spacing    <proc[spacing].context[99]>
