@@ -4,8 +4,9 @@ spacing:
   definitions: int
   script:
     - if !<[int].is_integer>:
-      - narrate "Not an integer"
+      - debug ERROR "Not an integer"
       - determine "Not an integer"
+    #- debug LOG <[int]>
 
     - define spacing <list>
     - define prefixA 0
@@ -15,6 +16,39 @@ spacing:
       - define prefixB F
       - define int <[int].abs>
 
+    - if <[int]> >= 33554432:
+      - define spacing:->:<&chr[<[prefixA]>01A].font[spacing]>
+      - define int:-:33554432
+    - if <[int]> >= 16777216:
+      - define spacing:->:<&chr[<[prefixA]>019].font[spacing]>
+      - define int:-:16777216
+    - if <[int]> >= 8388608:
+      - define spacing:->:<&chr[<[prefixA]>018].font[spacing]>
+      - define int:-:8388608
+    - if <[int]> >= 4194304:
+      - define spacing:->:<&chr[<[prefixA]>017].font[spacing]>
+      - define int:-:4194304
+    - if <[int]> >= 2097152:
+      - define spacing:->:<&chr[<[prefixA]>016].font[spacing]>
+      - define int:-:2097152
+    - if <[int]> >= 1048576:
+      - define spacing:->:<&chr[<[prefixA]>015].font[spacing]>
+      - define int:-:1048576
+    - if <[int]> >= 524288:
+      - define spacing:->:<&chr[<[prefixA]>014].font[spacing]>
+      - define int:-:524288
+    - if <[int]> >= 262144:
+      - define spacing:->:<&chr[<[prefixA]>013].font[spacing]>
+      - define int:-:262144
+    - if <[int]> >= 131072:
+      - define spacing:->:<&chr[<[prefixA]>012].font[spacing]>
+      - define int:-:131072
+    - if <[int]> >= 65536:
+      - define spacing:->:<&chr[<[prefixA]>011].font[spacing]>
+      - define int:-:65536
+    - if <[int]> >= 32768:
+      - define spacing:->:<&chr[<[prefixA]>010].font[spacing]>
+      - define int:-:32768
     - if <[int]> >= 16384:
       - define spacing:->:<&chr[<[prefixA]>00F].font[spacing]>
       - define int:-:16384
