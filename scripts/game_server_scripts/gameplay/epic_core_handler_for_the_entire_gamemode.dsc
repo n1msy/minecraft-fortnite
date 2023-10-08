@@ -176,6 +176,9 @@ fort_bus_handler:
   debug: false
   events:
 
+    on player damaged flagged:fort.on_bus:
+    - determine cancelled
+
     on player exits vehicle flagged:fort.on_bus:
     #players can't drop off before FALL phase
     - if <server.flag[fort.temp.phase]> == BUS:
