@@ -1,5 +1,7 @@
 
 ##make sure to disable lobby circle fx after game starts
+##make sure to flag the server for different modes with "fort.mode"
+
 
 pregame_island_handler:
   type: world
@@ -51,6 +53,18 @@ pregame_island_handler:
     - announce ------------------------------------------------------------------------- to_console
     - flag server fort.temp.startup:!
 
+    #just for safety, wait a few seconds
+    - wait 5s
+    #players *should* always be 0, but in case someone somehow (like an op) joins this server manually
+    - definemap data:
+        game_server: <bungee.server>
+        status: AVAILABLE
+        mode: <server.flag[fort.mode]||solo>
+        players: <server.online_players_flagged[fort]>
+    - define data <map[game_server=<bungee.server>;status=AVAILABLE;mode=<server.flag[fort.mode]||solo>;players=<server.online_players_flagged[fort]>]>
+    - bungeerun fort_lobby fort_bungee_handler.set_status def:<[data]>
+
+    - announce "<&b>[Nimnite]<&r> Set this game server (<&a><[data].get[game_server]><&r>) available to join. Mode: <&a><[data].get[mode]>" to_console
 
     on player join:
 
@@ -63,6 +77,7 @@ pregame_island_handler:
     - foreach <list[light|medium|heavy|shells|rockets]> as:ammo_type:
       - flag player fort.ammo.<[ammo_type]>:999
 
+    - heal
     - adjust <player> gamemode:survival
     - inventory clear
     - give fort_pickaxe_default slot:1
@@ -86,11 +101,14 @@ pregame_island_handler:
     on player quit:
     - if <server.online_players.exclude[<player>].size> == 0:
       - remove <world[pregame_island].entities[text_display].filter[has_flag[lobby_circle_square]]>
-    ##################################TEMP WORLD CHANGE SHIT
-    #on player changes world from fort_pregame_island:
-    #- define mode solo
-    #- flag server fort.available_servers.solo.test.players:<-:<player>
-    #- bossbar remove fort_info players:<player>
+
+    - definemap data:
+        game_server: <bungee.server>
+        status: AVAILABLE
+        mode: <server.flag[fort.mode]||solo>
+        players: <server.online_players_flagged[fort]>
+    #send all the player data, or just remove the current one?
+    - bungeerun fort_lobby fort_bungee_handler.set_status def:<[data]>
 
 
   countdown:
@@ -122,6 +140,13 @@ pregame_island_handler:
         - flag server fort.temp:!
         - stop
 
+    - definemap data:
+        game_server: <bungee.server>
+        status: UNAVAILABLE
+        mode: <server.flag[fort.mode]||solo>
+    #send all the player data, or just remove the current one?
+    - bungeerun fort_lobby fort_bungee_handler.set_status def:<[data]>
+
     - announce start_game
 
     ###remove this
@@ -145,7 +170,8 @@ pregame_island_handler:
           - adjust <[circle]> interpolation_duration:1t
 
         #-square
-        - if <[loop_index].mod[6]> == 0:
+        #second check is if it's greater than 0, otherwise they'll keep on spawning and not be removed?
+        - if <[loop_index].mod[6]> == 0 && <server.online_players_flagged[fort].size> > 0:
           - define size            <util.random.decimal[1.2].to[1.9]>
           - define origin          <[loc].below[0.4].random_offset[0.75,0,0.75]>
           - define end_translation 0,<util.random.decimal[1.8].to[2.6]>,0
