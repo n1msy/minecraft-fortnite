@@ -15,7 +15,7 @@ pregame_island_handler:
     - flag server fort.temp.startup
     - announce "<&b>[Nimnite]<&r> Getting ready for startup..." to_console
     #5 seconds
-    - wait 5s
+    - wait 3s
     - announce "-------------------- [ <&b>NIMNITE GAME SERVER STARTUP <&r>] --------------------" to_console
 
     #two ways of doing the "copying" system:
@@ -56,7 +56,7 @@ pregame_island_handler:
     - flag server fort.temp.startup:!
 
     #just for safety, wait a few seconds
-    - wait 5s
+    - wait 3s
     #players *should* always be 0, but in case someone somehow (like an op) joins this server manually
     - definemap data:
         game_server: <bungee.server>
