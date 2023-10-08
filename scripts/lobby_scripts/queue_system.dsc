@@ -57,7 +57,7 @@ fort_queue_handler:
         - define server_to_join <[<[mode]>_servers].parse_tag[<[parse_value]>/<server.flag[fort.available_servers.<[mode]>.<[parse_value]>.players].size||0>].sort_by_number[parse[after[/]]].reverse.first.before[/]>
 
         #this flag is so the foreach doesn't include the "joining" players, in case it takes a minute
-        - flag player fort.joining_match
+        - flag <[player]> fort.joining_match
         - adjust <[player]> send_to:<[server_to_join]>
         #make a waituntil the player is no longer on this server?
         #-should i do it this way, or is it just safer to check in the bungee event

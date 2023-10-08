@@ -40,20 +40,23 @@ fort_lobby_handler:
     - flag <server.players_flagged[fort]> fort:!
     - remove <world[fort_lobby].entities[item_display|text_display|npc]>
 
-    after server start:
-    #so only the test server is updated
-    #- createworld ft24
-    #- createworld fort_pregame_island
-    #- createworld fort_map
-    #- createworld nimnite_map
+    on server start:
+    #NO need to give some time to let the server know which game servers and open and not before a player joins and queues,
+    #since it already takes a minimum of 5 seconds to actually look for a server
 
     #-in case the server crashed/it was incorrectly shut down
     - remove <world[fort_lobby].entities[item_display|text_display|npc]>
     - run fort_lobby_setup
 
-    #-create the entities upon joining/quitting, or remove/add entities when entering/exiting area
 
-    #-remove the sound for whenever hitting the npc?
+    - define game_servers <bungee.list_servers.exclude[<bungee.server>]>
+    #-in case some game servers shut down while the lobby was down
+    - foreach <list[solo|duos|squads]> as:mode:
+      - define available_servers <server.flag[fort.available_servers.<[mode]>].keys||<list[]>>
+      - define invalid_servers   <[available_servers].filter[contains_any[<[game_servers]>].not]>
+      - foreach <[invalid_servers]> as:i_server:
+        - flag server fort.available_servers.<[mode]>.<[i_server]>:!
+        - announce "<&b>[Nimnite]<&r> Set this game server to <&c>CLOSED<&r> (<&b><[i_server]><&r>)." to_console
 
     on player stops flying flagged:fort.in_menu:
     - determine cancelled
@@ -182,12 +185,15 @@ fort_lobby_handler:
 
     #-nimnite title
     - wait 1s
-    - if !<player.has_flag[fort.in_queue]> || !<player.has_flag[fort.menu.match_info]>:
-      - run fort_lobby_handler.match_info def.option:add if:<player.is_online>
+    - if !<player.has_flag[fort.menu.match_info]>:
+      - run fort_lobby_handler.match_info def.option:add
+
     ## - [ MAKE THIS CLEANER ] - ##
     on player quit priority:-10:
     - define uuid <player.uuid>
-    #- adjust <player> show_to_players
+
+    - flag player fort.quitting
+
     - if <player.has_flag[fort.menu]>:
       - foreach play|mode|vid as:button_type:
         - define button <player.flag[fort.menu.<[button_type]>_button]>
@@ -201,7 +207,7 @@ fort_lobby_handler:
 
       #match info text / nimnite title
       - if <player.has_flag[fort.menu.match_info]> && <player.flag[fort.menu.match_info].is_spawned>:
-        - run fort_lobby_handler.match_info def.button:<player.flag[fort.menu.match_info]> def.option:remove
+        - remove <player.flag[fort.menu.match_info]>
 
       #player npc
       - if <player.has_flag[fort.menu.player_npc]> && <player.flag[fort.menu.player_npc].is_spawned>:
@@ -472,7 +478,7 @@ fort_lobby_handler:
           - wait 2t
           - remove <[info_display]> if:<[info_display].is_spawned>
 
-          - if !<[info_display].has_flag[title]> && !<player.has_flag[fort.in_queue]>:
+          - if !<[info_display].has_flag[title]> && !<player.has_flag[fort.in_queue]> && !<player.has_flag[fort.quitting]>:
             - run fort_lobby_handler.match_info def.button:<[info_display]> def.option:add
         #- flag player fort.menu.match_info:!
 

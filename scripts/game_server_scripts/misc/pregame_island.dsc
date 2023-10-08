@@ -10,10 +10,13 @@ pregame_island_handler:
   events:
 
     on server start:
+
+    #clear anything from the previous match
+    - flag server fort.temp:!
     - flag server fort.temp.startup
     - announce "<&b>[Nimnite]<&r> Getting ready for startup..." to_console
     #5 seconds
-    - wait 5s
+    - wait 3s
     - announce "-------------------- [ <&b>NIMNITE GAME SERVER STARTUP <&r>] --------------------" to_console
 
     #two ways of doing the "copying" system:
@@ -23,6 +26,8 @@ pregame_island_handler:
     #either createworld here, *or* just remove the world on shut down
     - if <util.has_file[../../nimnite_map]>:
       - ~createworld nimnite_map
+      #-in case server was shut down during bus phase
+      - run pregame_island_handler.bus_removal
       - adjust <world[nimnite_map]> destroy
 
     - ~filecopy origin:../../../../nimnite_map_template destination:../../nimnite_map overwrite
@@ -54,19 +59,24 @@ pregame_island_handler:
     - flag server fort.temp.startup:!
 
     #just for safety, wait a few seconds
-    - wait 5s
+    - wait 2s
     #players *should* always be 0, but in case someone somehow (like an op) joins this server manually
-    - definemap data:
-        game_server: <bungee.server>
-        status: AVAILABLE
-        mode: <server.flag[fort.mode]||solo>
-        players: <server.online_players_flagged[fort]>
-    #- define data <map[game_server=<bungee.server>;status=AVAILABLE;mode=<server.flag[fort.mode]||solo>;players=<server.online_players_flagged[fort]>]>
-    - bungeerun fort_lobby fort_bungee_handler.set_data def:<[data]>
+    - if <bungee.list_servers.contains[fort_lobby]>:
+      - definemap data:
+          game_server: <bungee.server>
+          status: AVAILABLE
+          mode: <server.flag[fort.mode]||solo>
+          players: <server.online_players_flagged[fort]>
+      #- define data <map[game_server=<bungee.server>;status=AVAILABLE;mode=<server.flag[fort.mode]||solo>;players=<server.online_players_flagged[fort]>]>
+      - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
+      - announce "<&b>[Nimnite]<&r> Set this game server to <&a>AVAILABLE<&r> (<&b><[data].get[game_server]><&r>)." to_console
 
-    - announce "<&b>[Nimnite]<&r> Set this game server (<&a><[data].get[game_server]><&r>) available to join. Mode: <&a><[data].get[mode]>" to_console
+    - flag server fort.temp.available
 
     on player join:
+
+    #clear previous fort flags in case it wasn't
+    - flag player fort:!
 
     - teleport <player> <server.flag[fort.pregame.spawn].random_offset[10,0,10]>
 
@@ -85,10 +95,22 @@ pregame_island_handler:
 
     - run update_hud
     - run minimap
+
     - wait 10t
     - bossbar update fort_info color:YELLOW players:<player>
 
-    - if <server.online_players_flagged[fort].size> >= <script[nimnite_config].data_key[minimum_players]> && !<server.has_flag[fort.temp.game_starting]>:
+    - define players <server.online_players_flagged[fort]>
+
+    - define alive_icon <&chr[0002].font[icons]>
+    - define alive      <element[<[players].size>].font[hud_text]>
+    - define alive_     <element[<[alive_icon]> <[alive]>].color[<color[51,0,0]>]>
+
+    #update the player count for everyone
+    - sidebar set_line scores:4 values:<[alive_]> players:<[players]>
+
+    #-start countdown if there are enough people ready
+    #second check is in case more people join during the countdown and it still going on, dont start another one
+    - if <[players].size> >= <script[nimnite_config].data_key[minimum_players]> && !<server.has_flag[fort.temp.game_starting]>:
       - run pregame_island_handler.countdown
 
     # - [ Return to Lobby Menu ] - #
@@ -108,8 +130,9 @@ pregame_island_handler:
         mode: <server.flag[fort.mode]||solo>
         players: <server.online_players_flagged[fort]>
     #send all the player data, or just remove the current one?
-    - bungeerun fort_lobby fort_bungee_handler.set_status def:<[data]>
+    - bungeerun fort_lobby fort_bungee_tasks.set_status def:<[data]>
 
+    - flag player fort:!
 
   countdown:
     - define min_players <script[nimnite_config].data_key[minimum_players]>
@@ -145,12 +168,31 @@ pregame_island_handler:
         status: UNAVAILABLE
         mode: <server.flag[fort.mode]||solo>
     #send all the player data, or just remove the current one?
-    - bungeerun fort_lobby fort_bungee_handler.set_data def:<[data]>
+    - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
+    - announce "<&b>[Nimnite]<&r> Set this game server to <&c>CLOSED<&r> (<&b><[data].get[game_server]><&r>)." to_console
 
-    - announce start_game
+    #in case lobby restarts, let it know on startup that it's no longer available
+    - flag server fort.temp.available:!
 
-    ###remove this
-    - flag server fort.temp:!
+    #stop lobby circle animation
+    - flag server fort.lobby_circle_enabled:!
+
+    - run fort_core_handler
+
+  bus_removal:
+    - if <server.has_flag[fort.temp.bus.model]>:
+      - run dmodels_delete def.root_entity:<server.flag[fort.temp.bus.model]> if:<server.flag[fort.temp.bus.model].is_spawned>
+      - flag server fort.temp.bus.model:!
+
+    #we can also make the seats the keys, and the vectors the values
+    - if <server.has_flag[fort.temp.bus.seats]>:
+      - foreach <server.flag[fort.temp.bus.seats]> as:s:
+        - remove <[s]> if:<[s].is_spawned>
+      - flag server fort.temp.bus.seats:!
+
+    - if <server.has_flag[fort.temp.bus.driver]>:
+      - remove <server.flag[fort.temp.bus.driver]>
+      - flag server fort.temp.bus.driver:!
 
 
   lobby_circle:
