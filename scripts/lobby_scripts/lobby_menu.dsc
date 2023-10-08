@@ -191,6 +191,8 @@ fort_lobby_handler:
     on player quit priority:-10:
     - define uuid <player.uuid>
 
+    - flag player fort.quitting
+
     - if <player.has_flag[fort.menu]>:
       - foreach play|mode|vid as:button_type:
         - define button <player.flag[fort.menu.<[button_type]>_button]>
@@ -475,7 +477,7 @@ fort_lobby_handler:
           - wait 2t
           - remove <[info_display]> if:<[info_display].is_spawned>
 
-          - if !<[info_display].has_flag[title]> && !<player.has_flag[fort.in_queue]> && !<player.has_flag[fort.joining_match]>:
+          - if !<[info_display].has_flag[title]> && !<player.has_flag[fort.in_queue]> && !<player.has_flag[fort.quitting]>:
             - run fort_lobby_handler.match_info def.button:<[info_display]> def.option:add
         #- flag player fort.menu.match_info:!
 
