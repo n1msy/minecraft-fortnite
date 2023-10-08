@@ -114,6 +114,8 @@ fort_core_handler:
 
     - choose <[phase]>:
       - case bus:
+        - run fort_bus_handler.start_bus
+
         - define announce_icon <&chr[A025].get[icons]>
         - define text "DOORS WILL OPEN IN"
         - define +spacing <proc[spacing].context[89]>
@@ -148,8 +150,7 @@ fort_core_handler:
           - define -spacing <proc[spacing].context[-138]>
 
     - repeat <[seconds]>:
-      ##<server.online_players_flagged[fort]>
-      - define players      <world[ft24].players>
+      - define players      <server.online_players_flagged[fort]>
       - define seconds_left <[seconds].sub[<[value]>]>
       - define timer        <time[2069/01/01].add[<[seconds_left]>].format[m:ss]>
 
@@ -172,28 +173,23 @@ fort_bus_handler:
   events:
 
     on player exits vehicle flagged:fort.on_bus:
-    - flag server fort.on_bus:!
+    #players can't drop off before FALL phase
+    - if <server.flag[fort.temp.phase]> == BUS:
+      - determine passively cancelled
+      - stop
+
+    ####playsound when jumping off
+
+    - flag player fort.on_bus:!
     - flag server fort.temp.bus.passengers:<-:<player>
 
     - teleport <player> <player.location.below[1.5]>
+    - invisible false for:<server.online_players>
 
-    #- run fort_glider_handler.fall
+    - run fort_glider_handler.fall
 
-    #on player steers entity flagged:fort.on_bus:
-    #- if <context.dismount>:
-    #  - determine passively cancelled
-    #  - stop
+  start_bus:
 
-    #- if <context.jump>:
-    #  - mount cancel <player>
-    #  - flag player fort.on_bus:!
-    #  - flag server fort.temp.bus.passengers:<-:<player>
-
-  spawn:
-
-    - flag server fort.temp.cancel_bus
-    - wait 2t
-    - flag server fort.temp.cancel_bus:!
 
     - if <server.has_flag[fort.temp.bus.model]>:
       - run dmodels_delete def.root_entity:<server.flag[fort.temp.bus.model]> if:<server.flag[fort.temp.bus.model].is_spawned>
@@ -245,12 +241,14 @@ fort_bus_handler:
     - define left_seat_1 <entry[left_seat_1].spawned_entity>
     - flag server fort.temp.bus.seats:->:<[left_seat_1]>
     - flag <[left_seat_1]> vector_loc:<[left_seat_1_loc].sub[<[seat_origin]>]>
+    - define total_seats:->:<[left_seat_1]>
 
     - define left_seat_2_loc <[left_seat_1_loc].backward[1.0716]>
     - spawn <entity[item_display].with[scale=0.1,0.1,0.1]> <[left_seat_2_loc]> save:left_seat_2
     - define left_seat_2 <entry[left_seat_2].spawned_entity>
     - flag server fort.temp.bus.seats:->:<[left_seat_2]>
     - flag <[left_seat_2]> vector_loc:<[left_seat_2_loc].sub[<[seat_origin]>]>
+    - define total_seats:->:<[left_seat_2]>
 
     - repeat 3:
       - define side_seat_<[value]>_loc <[drivers_seat_loc].left[0.075].backward[<[value].sub[1].add[4]>].with_yaw[<[yaw].add[90]>].below[0.05]>
@@ -258,6 +256,7 @@ fort_bus_handler:
       - define side_seat_<[value]> <entry[side_seat_<[value]>].spawned_entity>
       - flag server fort.temp.bus.seats:->:<[side_seat_<[value]>]>
       - flag <[side_seat_<[value]>]> vector_loc:<[side_seat_<[value]>_loc].sub[<[seat_origin]>]>
+      - define total_seats:->:<[side_seat_<[value]>]>
 
     - repeat 5:
       - define right_seat_<[value]>_loc <[drivers_seat_loc].right[1.53].backward[1.2].backward[<[value].sub[1].mul[1.0716]>].below[0.05]>
@@ -265,6 +264,7 @@ fort_bus_handler:
       - define right_seat_<[value]> <entry[right_seat_<[value]>].spawned_entity>
       - flag server fort.temp.bus.seats:->:<[right_seat_<[value]>]>
       - flag <[right_seat_<[value]>]> vector_loc:<[right_seat_<[value]>_loc].sub[<[seat_origin]>]>
+      - define total_seats:->:<[right_seat_<[value]>]>
 
     - create PLAYER <&sp> <[drivers_seat_loc]> save:bus_driver
     - define bus_driver <entry[bus_driver].created_npc>
@@ -274,9 +274,7 @@ fort_bus_handler:
     - flag server fort.temp.bus.driver:<[bus_driver]>
 
     - mount <[bus_driver]>|<[drivers_seat]>
-    - mount <player>|<[side_seat_2]>
 
-    #- stop
     - define bus_parts <[bus].flag[dmodel_parts]>
     - foreach <[bus_parts]> as:part:
       #for some reason gotta offset the armor stand a little bit
@@ -289,12 +287,24 @@ fort_bus_handler:
       - flag <[controller]> vector_loc:<[part_loc].sub[<[bus_start]>]>
       #- wait 1t
 
+    #randomize this, or make it so players are in the same bus if they queued at the same time?
+    - define players <server.online_players_flagged[fort]>
+    #-mount every player with 10 random players in the bus
+    - foreach <[players].sub_lists[10]> as:group:
+      - define available_seats <[total_seats]>
+      #make those players only visible to that group
+      - invisible <[group]> true for:<[players].exclude[<[group]>]>
 
-    - flag server fort.temp.bus.passengers:->:<player>
+      #mount the grouped players to random seats
+      - foreach <[group]> as:passenger:
+        - define r_seat <[available_seats].random>
+        - mount <[passenger]>|<[r_seat]>
+        - define available_seats:<-:<[r_seat]>
 
-    - flag player fort.on_bus
+    - flag <[players]> fort.on_bus
+    - flag server fort.temp.bus.passengers:<[players]>
 
-    ##logic for finding bus starting position
+    #logic for finding bus starting position
     #map is 2304x2304
     #2304/2 = 1152
 
@@ -317,6 +327,20 @@ fort_bus_handler:
         - repeat stop
 
       - define passengers <server.flag[fort.temp.bus.passengers]>
+
+      #if the next phase has started and the rest of the passengers need to get off
+      #not in the first if check, so the bus still moves forwards a little after dropping players
+      - if <server.flag[fort.temp.phase]> == grace_period && <[passengers].any>:
+        - foreach <[passengers]> as:passenger:
+          - flag <[passenger]> fort.on_bus:!
+          - teleport <[passenger]> <[passenger].location.below[1.5]>
+          - run fort_glider_handler.fall player:<[passenger]>
+
+        #remove invisibility
+        - invisible <[passengers]> false for:<server.online_players>
+        - flag server fort.temp.bus.passengers:<list[]>
+        - define passengers <list[]>
+
       - define new_loc <[bus_start].forward[<[value]>]>
 
       #teleport the display entity itself too (so it doesn't despawn, just every second)
@@ -329,7 +353,8 @@ fort_bus_handler:
       - foreach <[seats]> as:seat:
         - teleport <[seat]> <[new_loc].add[<[seat].flag[vector_loc]>]>
 
-      - actionbar <[jump_text]> targets:<[passengers]> if:<[value].mod[30].equals[0]>
+      - if <server.flag[fort.temp.phase]> == FALL && <[value].mod[30]> == 0:
+        - actionbar <[jump_text]> targets:<[passengers]>
 
       - wait 1t
 
@@ -341,4 +366,7 @@ fort_bus_handler:
 
     - foreach <server.flag[fort.temp.bus.controllers]> as:c:
       - remove <[c]> if:<[c].is_spawned>
-    - flag server fort.temp.bus.controllers:!
+
+    - remove <[bus_driver]> if:<[bus_driver].is_spawned>
+
+    - flag server fort.temp.bus:!

@@ -64,7 +64,8 @@ pregame_island_handler:
     #- define data <map[game_server=<bungee.server>;status=AVAILABLE;mode=<server.flag[fort.mode]||solo>;players=<server.online_players_flagged[fort]>]>
     - bungeerun fort_lobby fort_bungee_handler.set_data def:<[data]>
 
-    - announce "<&b>[Nimnite]<&r> Set this game server (<&a><[data].get[game_server]><&r>) available to join. Mode: <&a><[data].get[mode]>" to_console
+    - flag server fort.temp.available
+    - announce "<&b>[Nimnite]<&r> Set this game server to <&a>AVAILABLE<&r> (<&b><[data].get[game_server]><&r>)." to_console
 
     on player join:
 
@@ -88,7 +89,18 @@ pregame_island_handler:
     - wait 10t
     - bossbar update fort_info color:YELLOW players:<player>
 
-    - if <server.online_players_flagged[fort].size> >= <script[nimnite_config].data_key[minimum_players]> && !<server.has_flag[fort.temp.game_starting]>:
+    - define players <server.online_players_flagged[fort].size>
+
+    - define alive_icon <&chr[0002].font[icons]>
+    - define alive      <element[<[players].size>].font[hud_text]>
+    - define alive_     <element[<[alive_icon]> <[alive]>].color[<color[51,0,0]>]>
+
+    #update the player count for everyone
+    - sidebar set_line scores:4 values:<[alive_]> players:<[players]>
+
+    #-start countdown if there are enough people ready
+    #second check is in case more people join during the countdown and it still going on, dont start another one
+    - if <[players]> >= <script[nimnite_config].data_key[minimum_players]> && !<server.has_flag[fort.temp.game_starting]>:
       - run pregame_island_handler.countdown
 
     # - [ Return to Lobby Menu ] - #
@@ -146,12 +158,15 @@ pregame_island_handler:
         mode: <server.flag[fort.mode]||solo>
     #send all the player data, or just remove the current one?
     - bungeerun fort_lobby fort_bungee_handler.set_data def:<[data]>
+    - announce "<&b>[Nimnite]<&r> Set this game server to <&c>CLOSED<&r> (<&b><[data].get[game_server]><&r>)." to_console
 
-    - announce start_game
+    #in case lobby restarts, let it know on startup that it's no longer available
+    - flag server fort.temp.available:!
 
-    ###remove this
-    - flag server fort.temp:!
+    #stop lobby circle animation
+    - flag server fort.lobby_circle_enabled:!
 
+    - run fort_core_handler
 
   lobby_circle:
     anim:
