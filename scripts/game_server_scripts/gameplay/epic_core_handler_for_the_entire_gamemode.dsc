@@ -30,6 +30,10 @@ stand_to_display_ent_testing:
   - flag player ent:<[ent]>
   - flag player ent1:<[ent1]>
 
+####todo:
+###create storm and show it to all players
+###add sounds for when the announcents appear
+###find random center to place circle
 
 fort_core_handler:
   type: task
@@ -116,17 +120,17 @@ fort_core_handler:
       - case bus:
         - run fort_bus_handler.start_bus
 
-        - define announce_icon <&chr[A025].get[icons]>
+        - define announce_icon <&chr[A025].font[icons]>
         - define text "DOORS WILL OPEN IN"
         - define +spacing <proc[spacing].context[89]>
         - define -spacing <proc[spacing].context[-97]>
       - case fall:
-        - define announce_icon <&chr[B003].get[icons]>
+        - define announce_icon <&chr[B003].font[icons]>
         - define text "EVERYBODY OFF, LAST STOP IN"
         - define +spacing <proc[spacing].context[114]>
         - define -spacing <proc[spacing].context[-130]>
       - case grace_period:
-        - define announce_icon <&chr[B006].get[icons]>
+        - define announce_icon <&chr[B006].font[icons]>
         - define text "STORM EYE <[FORMING]||SHRINKS> IN"
 
         - if <[seconds]> <= 60:
@@ -138,7 +142,7 @@ fort_core_handler:
           - define -spacing <proc[spacing].context[-141]>
 
       - case storm_shrink:
-        - define announce_icon <&chr[A005].get[icons]>
+        - define announce_icon <&chr[A005].font[icons]>
         - define text "STORM EYE SHRINKING"
 
         - if <[seconds]> <= 60:
@@ -163,7 +167,7 @@ fort_core_handler:
       - if <[value]> <= 5:
         - bossbar update fort_info title:<[+spacing]><[announce_icon]><[-spacing]><&l><[text].font[lobby_text]><&sp><&d><&l><[seconds_left].as[duration].formatted_words.to_titlecase.font[lobby_text]> color:YELLOW players:<[players]>
       - else if <[value]> == 6:
-        - bossbar update fort_info title:<empty> players:<[players]>
+        - bossbar update fort_info title:<empty> color:YELLOW players:<[players]>
 
       - wait 1s
 
