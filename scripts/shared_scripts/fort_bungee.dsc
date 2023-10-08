@@ -1,8 +1,4 @@
 fort_bungee_handler:
-  type: world
-  debug: false
-  definitions: data
-  events:
     #-in case the server closes and it reopens thinking a game server is open even though it isn't
     on bungee server connects:
     - if <context.server> == fort_lobby && <bungee.server> != fort_lobby && <bungee.server.starts_with[fort_]>:
@@ -14,6 +10,14 @@ fort_bungee_handler:
           players: <server.online_players_flagged[fort]>
       - bungeerun fort_lobby fort_bungee_handler.set_data def:<[data]>
 
+
+
+fort_bungee_tasks:
+  type: task
+  debug: false
+  definitions: data
+  script:
+    - narrate "do bungee tings"
   set_data:
 
     #instead of having available_servers flag, have only .servers flag and have a status key?
