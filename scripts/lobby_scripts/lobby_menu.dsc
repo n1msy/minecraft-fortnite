@@ -19,7 +19,7 @@ fort_lobby_handler:
     - determine cancelled
 
     on shutdown:
-    - define menu_players <server.online_players_flagged[fort.in_menu]>
+    - define menu_players <server.online_players_flagged[fort.menu]>
     - foreach <[menu_players]> as:p:
       - define player_npc     <player.flag[fort.menu.player_npc]>
       - define play_button    <player.flag[fort.menu.play_button]>
@@ -36,6 +36,8 @@ fort_lobby_handler:
       - foreach <[invite_buttons].keys> as:i:
         - define i_button <player.flag[fort.menu.invite_button.<[i]>]>
         - remove <[i_button]> if:<[i_button].is_spawned>
+
+    - flag <server.players_flagged[fort]> fort:!
 
     on server start:
     #so only the test server is updated
