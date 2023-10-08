@@ -14,15 +14,23 @@ fort_bungee_handler:
       - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
 
     on bungee server disconnects:
-    - if <context.server> != fort_lobby && <bungee.server> != fort_lobby && <context.server.starts_with[fort_]>:
-      - if <bungee.list_servers.contains[fort_lobby]>:
-        - definemap data:
-            game_server: <bungee.server>
-            status: UNAVAILABLE
-            mode: <server.flag[fort.mode]||solo>
-        #send all the player data, or just remove the current one?
-        - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
-        - announce "<&b>[Nimnite]<&r> Set this game server to <&c>CLOSED<&r> (<&b><[data].get[game_server]><&r>)." to_console
+    - if <context.server> != fort_lobby && <context.server.starts_with[fort_]>:
+      - define closed_server <context.server>
+      - if <bungee.server> == fort_lobby:
+        - foreach <list[solo|duos|squads]> as:mode_type:
+          - define available_servers <server.flag[fort.available_servers.<[mode_type]>].keys||<list[]>>
+          - if <[available_servers].filter[equals[<[closed_server]>]].any>:
+            - define mode <[mode_type]>
+            - foreach stop
+
+        - if <[mode].exists>:
+          - definemap data:
+              game_server: <[closed_server]>
+              status: UNAVAILABLE
+              mode: <[mode]>
+          #send all the player data, or just remove the current one?
+          - run fort_bungee_tasks.set_data def:<[data]>
+          - announce "<&b>[Nimnite]<&r> Set this game server to <&c>CLOSED<&r> (<&b><[data].get[game_server]><&r>)." to_console
 
 
 
