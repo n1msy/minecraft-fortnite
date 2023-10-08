@@ -58,13 +58,14 @@ pregame_island_handler:
     #just for safety, wait a few seconds
     - wait 3s
     #players *should* always be 0, but in case someone somehow (like an op) joins this server manually
-    - definemap data:
-        game_server: <bungee.server>
-        status: AVAILABLE
-        mode: <server.flag[fort.mode]||solo>
-        players: <server.online_players_flagged[fort]>
-    #- define data <map[game_server=<bungee.server>;status=AVAILABLE;mode=<server.flag[fort.mode]||solo>;players=<server.online_players_flagged[fort]>]>
-    - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
+    - if <bungee.list_servers.contains[fort_lobby]>:
+      - definemap data:
+          game_server: <bungee.server>
+          status: AVAILABLE
+          mode: <server.flag[fort.mode]||solo>
+          players: <server.online_players_flagged[fort]>
+      #- define data <map[game_server=<bungee.server>;status=AVAILABLE;mode=<server.flag[fort.mode]||solo>;players=<server.online_players_flagged[fort]>]>
+      - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
 
     - flag server fort.temp.available
     - announce "<&b>[Nimnite]<&r> Set this game server to <&a>AVAILABLE<&r> (<&b><[data].get[game_server]><&r>)." to_console
