@@ -86,7 +86,7 @@ minimap:
       - define chars:->:<[char]>
 
     - define tiles:!
-    - define in_game <player.world.name.equals[nimnite_map]>
+    - define in_game <player.world.name.equals[nimnite_map].or[<player.name.equals[asd988]>]>
     - define displayId 4
     - repeat 4:
       - define displayId <[value].sub[1]> if:<[in_game]>
@@ -120,12 +120,29 @@ minimap:
     - define r_       <[relX].mod[256]>
     - define g_       <[relZ].mod[256]>
     - define b_       <[relX].div[256].round_down.add[<[relZ].div[256].round_down.mul[16]>]>
-    - define offset   <[storm_id].mul[2]>
+    - define circle_offset   <[storm_id]>
 
     - define circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
     - define circle_display <&chr[E001].font[map].color[<[circle_color]>]>
 
-    - define title <[compass_display]><[whole_map]><[marker]><proc[spacing].context[<[offset].sub[2].sub[<[tiles].size>]>]><[circle_display]>
+    ## - [ PURPLE CIRCLE ] - ##
+    - define circle_x 10
+    - define circle_y 10
+    - define storm_radius 30.5
+    - define relX     <[circle_x].sub[<[loc].x>].add[2048].max[0].min[4095]>
+    - define relZ     <[circle_y].sub[<[loc].z>].add[2048].max[0].min[4095]>
+    - define r_       <[relX].mod[256]>
+    - define g_       <[relZ].mod[256]>
+    - define b_       <[relX].div[256].round_down.add[<[relZ].div[256].round_down.mul[16]>]>
+    # static size
+    #- define purple_offset   <[storm_radius].mul[32].round_down>
+    # idle animation with sin for example
+    - define purple_offset   <[storm_radius].add[<[world].duration_since_created.in_seconds.mul[3].sin>].mul[32].round_down>
+
+    - define circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
+    - define purple_circle_display <&chr[E003].font[map].color[<[circle_color]>]>
+
+    - define title <[compass_display]><[whole_map]><[marker]><proc[spacing].context[<[circle_offset].add[<[purple_offset]>].sub[2].sub[<[tiles].size>]>]><[circle_display]><proc[spacing].context[<[purple_offset].sub[<[circle_offset].sub[1]>]>]><[purple_circle_display]>
 
     - define spacing <map[1=7;2=10;3=13].get[<[yaw].length>]>
     #or: <element[16].sub[<[yaw].length.mul[3]>]>
