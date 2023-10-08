@@ -40,6 +40,7 @@ fort_queue_handler:
       - define text "Finding match...<n>Elapsed: <time[2069/01/01].add[<[secs_in_queue]>].format[m:ss]>"
 
       #find the servers only with less than 100 players (because server is still available to join even if the game is starting (if it has less than 100 players))
+      #checking if null at the end, since the ".players" key isn't necessarily added yet
       - define available_servers <[<[mode]>_servers].filter_tag[<server.flag[fort.available_servers.<[mode]>.<[filter_value]>.players].size.is[LESS].than[<[max_players]>].if_null[true]>]>
 
       - if <[secs_in_queue]> >= 5 && <[available_servers].any>:
@@ -55,18 +56,13 @@ fort_queue_handler:
         #instead of finding the server for each player, update the count within the queue while still having this def so the definition doesnt have to constantly be redefined?
         - define server_to_join <[<[mode]>_servers].parse_tag[<[parse_value]>/<server.flag[fort.available_servers.<[mode]>.<[parse_value]>.players].size||0>].sort_by_number[parse[after[/]]].reverse.first.before[/]>
 
-        #-ONLY flag the player data on this server when ADDING players... (removing is done inside the game server via bungeerun, to confirm they have been removed)
-        #doing this for add, since the player count updates instantly.
-        #for removing:
-        #on player quit: if the server they are quitting from is a fort game server, remove that player from the lobby server's flags
-        #either via BUNGEERUN and ONLY from the game server, OR share a script and just check <bungee.server>
-
+        - adjust <[player]> send_to:<[server_to_join]>
+        #make a waituntil the player is no longer on this server?
+        #-should i do it this way, or is it just safer to check in the bungee event
+        #one perk of doing it directly on the server is that the flag is basically instant, unlike a bungeerun, making it safe to check
+        #if there are enough players waiting on the other server.
+        #one way to counter this if i wanted to use bungeerun is to add a delay before checking for available players?
         - flag server fort.available_servers.<[mode]>.<[server_to_join]>.players:->:<[player]>
-
-        ########TEMP TELEPORT COMMAND
-        - teleport <[player]> <server.flag[fort.pregame.spawn]>
-        #####USE THIS (below) ON ACTUAL SERVER:
-        #- adjust <[player]> send_to:<[server_to_join]>
 
     #background triangles
     - run fort_lobby_setup.bg_cube_anim if:<context.second.mod[5].equals[0]>
