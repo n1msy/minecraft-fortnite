@@ -89,7 +89,7 @@ pregame_island_handler:
     - wait 10t
     - bossbar update fort_info color:YELLOW players:<player>
 
-    - define players <server.online_players_flagged[fort].size>
+    - define players <server.online_players_flagged[fort]>
 
     - define alive_icon <&chr[0002].font[icons]>
     - define alive      <element[<[players].size>].font[hud_text]>
