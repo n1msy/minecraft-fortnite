@@ -4,7 +4,7 @@ spacing:
   definitions: int
   script:
     - if !<[int].is_integer>:
-      - debug ERROR "Not an integer"
+      - debug ERROR "Not an integer <[int]>"
       - determine "Not an integer"
     #- debug LOG <[int]>
 
