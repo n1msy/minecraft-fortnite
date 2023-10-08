@@ -28,12 +28,14 @@ fort_emote_handler:
 
     - if <player.has_flag[fort.in_menu]>:
       - define sound_loc <player>
+      #using fake_to def to hide the emote from other players
+      - run dmodels_spawn_model def.player:<player> def.model_name:emotes def.location:<[emote_loc].above[2]> def.fake_to:<player> save:result
     - else:
       - define sound_loc <[emote_loc]>
+      - run dmodels_spawn_model def.player:<player> def.model_name:emotes def.location:<[emote_loc].above[2]> save:result
 
     - playsound <[sound_loc]> custom sound:<[sound]> volume:1.2
 
-    - run dmodels_spawn_model def.player:<player> def.model_name:emotes def.location:<[emote_loc].above[2]> save:result
     - define spawned <entry[result].created_queue.determination.first||null>
     - if !<[spawned].is_truthy>:
         - narrate "<&[error]>Emote spawning failed?"
