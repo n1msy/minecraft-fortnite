@@ -8,7 +8,7 @@ fort_bungee_handler:
           status: <[status]>
           mode: <server.flag[fort.mode]||solo>
           players: <server.online_players_flagged[fort]>
-      - bungeerun fort_lobby fort_bungee_handler.set_data def:<[data]>
+      - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
 
 
 
