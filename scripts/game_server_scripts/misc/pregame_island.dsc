@@ -59,7 +59,7 @@ pregame_island_handler:
     - flag server fort.temp.startup:!
 
     #just for safety, wait a few seconds
-    - wait 3s
+    - wait 2s
     #players *should* always be 0, but in case someone somehow (like an op) joins this server manually
     - if <bungee.list_servers.contains[fort_lobby]>:
       - definemap data:
