@@ -186,7 +186,8 @@ fort_lobby_handler:
     #-nimnite title
     - wait 1s
     - if !<player.has_flag[fort.menu.match_info]>:
-      - run fort_lobby_handler.match_info def.option:add if:<player.is_online>
+      - run fort_lobby_handler.match_info def.option:add
+
     ## - [ MAKE THIS CLEANER ] - ##
     on player quit priority:-10:
     - define uuid <player.uuid>
@@ -206,7 +207,7 @@ fort_lobby_handler:
 
       #match info text / nimnite title
       - if <player.has_flag[fort.menu.match_info]> && <player.flag[fort.menu.match_info].is_spawned>:
-        - run fort_lobby_handler.match_info def.button:<player.flag[fort.menu.match_info]> def.option:remove
+        - remove <player.flag[fort.menu.match_info]>
 
       #player npc
       - if <player.has_flag[fort.menu.player_npc]> && <player.flag[fort.menu.player_npc].is_spawned>:
