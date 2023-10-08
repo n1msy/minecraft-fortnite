@@ -1,7 +1,17 @@
 
 ##make sure to disable lobby circle fx after game starts
 ##make sure to flag the server for different modes with "fort.mode"
-
+test:
+  type: task
+  debug: true
+  script:
+    - definemap data:
+        game_server: <bungee.server>
+        status: AVAILABLE
+        mode: <server.flag[fort.mode]||solo>
+        players: <server.online_players_flagged[fort]>
+    #- define data <map[game_server=<bungee.server>;status=AVAILABLE;mode=<server.flag[fort.mode]||solo>;players=<server.online_players_flagged[fort]>]>
+    - bungeerun fort_lobby fort_bungee_handler.set_data def:<[data]>
 
 pregame_island_handler:
   type: world
@@ -62,7 +72,7 @@ pregame_island_handler:
         mode: <server.flag[fort.mode]||solo>
         players: <server.online_players_flagged[fort]>
     #- define data <map[game_server=<bungee.server>;status=AVAILABLE;mode=<server.flag[fort.mode]||solo>;players=<server.online_players_flagged[fort]>]>
-    - bungeerun fort_lobby fort_bungee_handler.set_data def:<map[game_server=<bungee.server>;status=AVAILABLE;mode=<server.flag[fort.mode]||solo>;players=<server.online_players_flagged[fort]>]>
+    - bungeerun fort_lobby fort_bungee_handler.set_data def:<[data]>
 
     - announce "<&b>[Nimnite]<&r> Set this game server (<&a><[data].get[game_server]><&r>) available to join. Mode: <&a><[data].get[mode]>" to_console
 
