@@ -69,9 +69,9 @@ pregame_island_handler:
           players: <server.online_players_flagged[fort]>
       #- define data <map[game_server=<bungee.server>;status=AVAILABLE;mode=<server.flag[fort.mode]||solo>;players=<server.online_players_flagged[fort]>]>
       - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
+      - announce "<&b>[Nimnite]<&r> Set this game server to <&a>AVAILABLE<&r> (<&b><[data].get[game_server]><&r>)." to_console
 
     - flag server fort.temp.available
-    - announce "<&b>[Nimnite]<&r> Set this game server to <&a>AVAILABLE<&r> (<&b><[data].get[game_server]><&r>)." to_console
 
     on player join:
 
