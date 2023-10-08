@@ -17,7 +17,7 @@ fort_queue_handler:
     - define players <server.online_players_flagged[fort]>
 
     - define players_not_queued <[players].filter[has_flag[fort.in_queue].not]>
-    - define players_queued     <[players].filter[has_flag[fort.in_queue]]>
+    - define players_queued     <[players].filter[has_flag[fort.in_queue]].filter[has_flag[fort.joining_match].not]>
 
     - define solo_servers   <server.flag[fort.available_servers.solo].keys||<list[]>>
     - define duos_servers   <server.flag[fort.available_servers.duos].keys||<list[]>>
@@ -56,6 +56,8 @@ fort_queue_handler:
         #instead of finding the server for each player, update the count within the queue while still having this def so the definition doesnt have to constantly be redefined?
         - define server_to_join <[<[mode]>_servers].parse_tag[<[parse_value]>/<server.flag[fort.available_servers.<[mode]>.<[parse_value]>.players].size||0>].sort_by_number[parse[after[/]]].reverse.first.before[/]>
 
+        #this flag is so the foreach doesn't include the "joining" players, in case it takes a minute
+        - flag player fort.joining_match
         - adjust <[player]> send_to:<[server_to_join]>
         #make a waituntil the player is no longer on this server?
         #-should i do it this way, or is it just safer to check in the bungee event

@@ -181,11 +181,9 @@ fort_lobby_handler:
       - flag <[button]> type:invite
 
     #-nimnite title
-    #- wait 5s
-    #- if !<player.has_flag[fort.in_queue]> || !<player.has_flag[fort.menu.match_info]>:
-      #- run fort_lobby_handler.match_info def.option:add if:<player.is_online>
-    - run fort_lobby_handler.match_info def.option:add
-
+    - wait 1s
+    - if !<player.has_flag[fort.in_queue]> || !<player.has_flag[fort.menu.match_info]>:
+      - run fort_lobby_handler.match_info def.option:add if:<player.is_online>
     ## - [ MAKE THIS CLEANER ] - ##
     on player quit priority:-10:
     - define uuid <player.uuid>
