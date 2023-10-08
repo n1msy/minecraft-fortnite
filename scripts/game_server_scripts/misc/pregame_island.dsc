@@ -10,6 +10,8 @@ pregame_island_handler:
   events:
 
     on server start:
+    #clear anything from the previous match
+    - flag server fort.temp:!
     - flag server fort.temp.startup
     - announce "<&b>[Nimnite]<&r> Getting ready for startup..." to_console
     #5 seconds
