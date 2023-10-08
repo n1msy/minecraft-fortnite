@@ -88,6 +88,7 @@ pregame_island_handler:
 
     - run update_hud
     - run minimap
+
     - wait 10t
     - bossbar update fort_info color:YELLOW players:<player>
 
@@ -102,7 +103,7 @@ pregame_island_handler:
 
     #-start countdown if there are enough people ready
     #second check is in case more people join during the countdown and it still going on, dont start another one
-    - if <[players]> >= <script[nimnite_config].data_key[minimum_players]> && !<server.has_flag[fort.temp.game_starting]>:
+    - if <[players].size> >= <script[nimnite_config].data_key[minimum_players]> && !<server.has_flag[fort.temp.game_starting]>:
       - run pregame_island_handler.countdown
 
     # - [ Return to Lobby Menu ] - #
@@ -123,6 +124,8 @@ pregame_island_handler:
         players: <server.online_players_flagged[fort]>
     #send all the player data, or just remove the current one?
     - bungeerun fort_lobby fort_bungee_tasks.set_status def:<[data]>
+
+    - flag player fort:!
 
 
   countdown:

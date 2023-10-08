@@ -2,8 +2,8 @@ minimap:
   type: task
   debug: false
   script:
-  - if <player.has_flag[minimap]>:
-    - flag player minimap:!
+  - if <player.has_flag[fort.minimap]>:
+    - flag player fort.minimap:!
     - stop
 
   - define uuid <player.uuid>
@@ -11,13 +11,13 @@ minimap:
   - define bb minimap_<player.uuid>
   - bossbar create <[bb]> color:YELLOW
   - bossbar create <[bb]>_yaw color:YELLOW
-  - flag player minimap
+  - flag player fort.minimap
 
   - define oldRotation <player.location.yaw.div[360].mul[1024].round>
 
   - define yaw_icon <&chr[20].font[icons].color[65,0,0]>
 
-  - while <player.is_online> && <player.has_flag[minimap]>:
+  - while <player.is_online> && <player.has_flag[fort.minimap]>:
 
     - define world <player.world>
 
@@ -137,7 +137,7 @@ minimap:
     - inject minimap.tab
     - wait 1t
 
-  - flag player minimap:!
+  - flag player fort.minimap:!
   - if <server.current_bossbars.contains[<[bb]>]>:
     - bossbar remove <[bb]>
   - if <server.current_bossbars.contains[<[bb]>_yaw]>:
