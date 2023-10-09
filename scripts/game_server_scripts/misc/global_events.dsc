@@ -20,6 +20,10 @@ fort_global_handler:
     on player picks up item flagged:build:
     - determine cancelled
 
+    #-how to prevent doors from breaking in the first place?
+    on *door* spawns:
+    - determine cancelled
+
     #make one task for dropping all items?
     ###make sure to remove the flag, since they technically can't play after they die
     on player death:
@@ -281,6 +285,9 @@ fort_global_handler:
 
     on *grass*|dead_bush|fern physics:
     - determine cancelled
+
+    #on blocks physics adjacent:down:
+    #- determine cancelled
 
     on block drops item from breaking:
     - determine cancelled

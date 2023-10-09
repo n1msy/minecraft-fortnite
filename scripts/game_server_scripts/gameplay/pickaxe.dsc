@@ -94,7 +94,7 @@ fort_pic_handler:
       - run fort_pic_handler.display_build_health def:<map[loc=<[health_display_loc]>;health=<[new_health]>;max_health=<[max_health]>]>
 
       - define progress <element[10].sub[<[new_health].div[<[max_health]>].mul[10]>]>
-      - foreach <[blocks]> as:b:
+      - foreach <[blocks].filter[has_flag[build.existed].not]> as:b:
         - blockcrack <[b]> progress:<[progress]> players:<server.online_players>
 
       #weak points only appear if it takes more than two swings to break the structure
@@ -109,7 +109,7 @@ fort_pic_handler:
     - flag player fort.build_health:!
 
     #reset blockcrack in case a player places a wall in the same spot again
-    - foreach <[blocks]> as:b:
+    - foreach <[blocks].filter[has_flag[build.existed].not]> as:b:
       - blockcrack <[b]> progress:0 players:<server.online_players>
       - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
 

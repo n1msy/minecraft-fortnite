@@ -134,17 +134,10 @@ hud_handler:
     #only let players change item locations within the 2-6 slots
 
     after player picks up item:
-    ##############REMOVE THIS LINE
-    - if !<list[asd988|Nimsy|DessieWessie].contains[<player.name>]>:
-      - stop
 
     - inject update_hud
 
     on player scrolls their hotbar:
-    ##########REMOVE THIS LINE
-    - if !<list[asd988|Nimsy|DessieWessie].contains[<player.name>]>:
-      - stop
-
     - if <player.has_flag[fort.using_glider]>:
       - determine passively cancelled
       - stop
@@ -165,7 +158,7 @@ hud_handler:
       - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
 
     on player swaps items:
-    #- stop if:<player.world.name.equals[fortnite_map].not>
+    #- stop if:<player.world.name.equals[nimnite_map].not>
     - determine passively cancelled
     - if <player.has_flag[fort.using_glider]>:
       - stop

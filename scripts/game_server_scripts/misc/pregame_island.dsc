@@ -93,6 +93,9 @@ pregame_island_handler:
     - give fort_pickaxe_default slot:1
     - adjust <player> item_slot:1
 
+    #so all houses/builds aren't dark
+    - cast NIGHT_VISION duration:infinite no_ambient hide_particles no_icon no_clear
+
     - run update_hud
     - run minimap
 

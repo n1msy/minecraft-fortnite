@@ -1,3 +1,49 @@
+#TODO: clean up this entire thing; it's pretty unorganized and ugly
+#-play wood/brick/metal sounds (and cancel the other breaking sound) when breaking tiles?
+
+test:
+  type: task
+  debug: false
+  script:
+    - define tile <player.cursor_on.flag[build.center].flag[build.structure]>
+    - define center <[tile].center.flag[build.center]>
+    - define t <player.flag[test]>
+    #this time, with PITCH, since it can go above and below too
+    - narrate <[t].center.flag[build.center]>
+    - define pose    <[center].face[<[t].center.flag[build.center]>]>
+    - define t_yaw   <[pose].yaw>
+    - define t_pitch <[pose].pitch>
+    #- narrate <[pose].yaw>/<[t_pitch]>
+    - define section <[tile].intersection[<[t]>].blocks.parse[with_pose[<[t_pitch]>,<[t_yaw]>]]>
+    #if there's no actual material that's connecting the tiles together, then it's *not* a nearby tile
+
+    #wall to wall can be: to the left, to the right, above, and below
+    - modifyblock <[section].parse[forward]> diamond_block
+
+tile_visualiser_command:
+  type: command
+  name: tv
+  debug: false
+  description: View the tile you're looking at in the form of debugblocks
+  usage: /tv
+  aliases:
+    - tv
+  script:
+  - if <player.has_flag[tv]>:
+    - flag player tv:!
+    - stop
+  - narrate "tile visualiser program initiated"
+  - flag player tv
+  - while <player.has_flag[tv]>:
+    - define target_block <player.cursor_on||null>
+    - if <[target_block]> != null && <[target_block].has_flag[build.center]>:
+      - define center <[target_block].flag[build.center]>
+      - define blocks <[center].flag[build.structure].blocks.filter[flag[build.center].equals[<[center]>]]>
+      - debugblock <[blocks]> d:2t color:0,0,0,75
+    - wait 1t
+  - narrate "tile visualiser program terminated"
+
+
 build_tiles:
   type: task
   debug: false
@@ -321,7 +367,18 @@ build_system_handler:
     - define blocks <[tile].blocks.filter[flag[build.center].equals[<[center]>]]>
 
     #everything is being re-applied anyways, so it's ok
-    - modifyblock <[tile].blocks> air
+    - define remove_blocks <[tile].blocks.filter[has_flag[build.existed].not]>
+
+    - if <[center].flag[build.placed_by]> == WORLD && <[type]> != FLOOR:
+      #this way, there's no little holes on the ground after breaking walls that are on the floor
+      #- if <[type]> == floor:
+      #  - define keep_blocks <[remove_blocks].filter[below.material.name.equals[air].not].filter[flag[build.center].equals[<[center]>].not.if_null[true]]>
+      #- else:
+      - define keep_blocks <[remove_blocks].filter[below.material.name.equals[air].not].filter[below.has_flag[build].not]>
+
+      - define remove_blocks <[remove_blocks].exclude[<[keep_blocks]>]>
+
+    - modifyblock <[remove_blocks]> air
 
     - flag <[blocks]> build:!
 
@@ -371,6 +428,8 @@ build_system_handler:
             - define center <[tile].center.flag[build.center]>
             - define type   <[center].flag[build.type]>
 
+            #- [For Debug Purposes]
+            #- debugblock <[tile].blocks> d:3m color:0,0,0,150 if:<proc[is_root].context[<[center]>|<[type]>]>
             - foreach next if:<proc[is_root].context[<[center]>|<[type]>]>
             #If the tile ISN'T touching the ground, then first, we remove it
             #from the tiles to check list, because obvi we've already checked
@@ -380,6 +439,34 @@ build_system_handler:
             #in the structure list. That means that we don't keep rechecking tiles
             #we've already checked.
             - define surrounding_tiles <proc[get_surrounding_tiles].context[<[tile]>|<[center]>].exclude[<[structure]>]>
+            #only get the surrounding tiles if they're actually connected (not by air blocks), if it's a world block
+
+            #-ONLY if the broken tile was a wall and the connecting tiles are floors
+            - if <[center].flag[build.placed_by]> == WORLD && <[type]> == WALL:
+              - foreach <[surrounding_tiles]> as:t:
+                - define t_type <[t].center.flag[build.type]>
+                - if <[t_type]> == FLOOR:
+                  - define yaw <[center].face[<[t].center.flag[build.center]>].yaw>
+                  - define section <[tile].intersection[<[t]>].blocks.parse[with_yaw[<[yaw]>]]>
+                  #if there's no actual material that's connecting the tiles together, then it's *not* a nearby tile
+                  - if <[section].filter[backward_flat.material.name.equals[air].not].is_empty>:
+                    - define surrounding_tiles:<-:<[t]>
+
+                #second check makes is so only up/down/left/right works
+                - else if <[t_type]> == WALL && <[t].center.face[<[center]>].yaw> != 45:
+                  #this time, with PITCH, since it can go above and below too
+                  - define pose    <[center].face[<[t].center.flag[build.center]>]>
+                  - define t_yaw   <[pose].yaw>
+                  - define t_pitch <[pose].pitch>
+                  #- narrate <[pose].yaw>/<[t_pitch]>
+                  - define section <[tile].intersection[<[t]>].blocks.parse[with_pose[<[t_pitch]>,<[t_yaw]>]]>
+                  #if there's no actual material that's connecting the tiles together, then it's *not* a nearby tile
+
+                  #wall to wall can be: to the left, to the right, above, and below
+                  #- modifyblock <[section].parse[forward].filter[material.name.equals[air].not]> diamond_block
+                  - if <[section].filter[forward.material.name.equals[air].not].is_empty>:
+                    - define surrounding_tiles:<-:<[t]>
+
             #We add all these new tiles to the structure, and since we already excluded
             #the previous list of tiles in the structure, we don't need to deduplicate.
             - define structure:|:<[surrounding_tiles]>
@@ -393,16 +480,21 @@ build_system_handler:
         #-break the tiles
         - foreach <[structure]> as:tile:
 
+          #do you get mats from world structures that are broken by chain?
+
           - wait 3t
 
           - define blocks <[tile].blocks.filter[flag[build.center].equals[<[tile].center.flag[build.center]||null>]]>
 
+          #defining sound before turning material to air
+          - define sound <[tile].center.material.block_sound_data.get[break_sound]>
+
+          - foreach <[tile].blocks> as:b:
+            - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
           #everything is being re-applied anyways, so it's ok
           - ~modifyblock <[tile].blocks> air
           #-often too many sounds compared to blocks breaking? (i just made modifyblock waitable, maybe that fixed it)
-          - playsound <[tile].center> sound:<[tile].center.material.block_sound_data.get[break_sound]> pitch:0.8
-          - foreach <[tile].blocks> as:b:
-            - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
+          - playsound <[tile].center> sound:<[sound]> pitch:0.8
 
           - flag <[blocks]> build:!
 
@@ -435,7 +527,8 @@ build_system_handler:
 
       ##only adding player-placed tiles to replace tile data (since world-placed shouldn't be replaced with player builds, but flag replace is ok)
       #doing this so AFTER the original tile is completely removed
-      - define replace_tiles_data:<[replace_tiles_data].include[<[tile_data]>]> if:<[c_tile_center].flag[build.placed_by].equals[WORLD].not>
+      #if_null is for natural structures (they don't have PLACED_BY flag) -> probably shouldve done something like, "PLACED_BY: NATURAL", but it's identified with build.natural
+      - define replace_tiles_data:<[replace_tiles_data].include[<[tile_data]>]> if:<[c_tile_center].flag[build.placed_by].equals[WORLD].not.if_null[false]>
 
       #make the connectors a part of the other tile
       - flag <[connecting_blocks]> build.center:<[c_tile_center]>
@@ -467,10 +560,17 @@ build_system_handler:
         - define override_blocks <[top_points].include[<[bot_points]>].filter[flag[build.center].flag[build.type].equals[pyramid].not]>
 
         #so it doesn't completely override any previously placed tiles
-        - define set_blocks    <[total_set_blocks].filter[has_flag[build].not].include[<[own_stair_blocks]>].include[<[override_blocks]>]>
+        - define set_blocks      <[total_set_blocks].filter[has_flag[build].not].include[<[own_stair_blocks]>].include[<[override_blocks]>]>
 
-        #don't include edited blocks
-        - define set_blocks    <[set_blocks].filter[has_flag[build.edited].not]>
+        #-don't include edited blocks
+        - define set_blocks      <[set_blocks].filter[has_flag[build.edited].not]>
+
+        #-don't include blocks that existed there before hand
+        #existing blocks are either world-placed blocks, or just terrain blocks
+        - define existing_blocks <proc[get_existing_blocks].context[<list_single[<[set_blocks]>]>]>
+        - flag <[existing_blocks]> build.existed
+
+        - define set_blocks      <[set_blocks].exclude[<[existing_blocks]>]>
 
         - define direction <[center].yaw.simple>
         - define material <[base_material]>_stairs[direction=<[direction]>]
@@ -479,6 +579,10 @@ build_system_handler:
         #if they're stairs and they are going in the same direction, to keep the stairs "smooth", forget about adding connectors to them
         - define consecutive_stair_blocks <[set_connector_blocks].filter[flag[build.center].flag[build.type].equals[stair]].filter[material.direction.equals[<[direction]>]]>
         - define set_blocks               <[set_connector_blocks].exclude[<[consecutive_stair_blocks]>].exclude[<[override_blocks]>].filter[has_flag[build.edited].not]>
+        - define existing_blocks <proc[get_existing_blocks].context[<list_single[<[set_blocks]>]>]>
+        - flag <[existing_blocks]> build.existed
+
+        - define set_blocks      <[set_blocks].exclude[<[existing_blocks]>]>
 
         - modifyblock <[set_blocks]> <map[oak=oak_planks;brick=bricks;cobblestone=cobblestone].get[<[base_material]>]>
 
@@ -507,8 +611,26 @@ build_system_handler:
           #with_pose part removes yaw/pitch data so we can exclude it from total blocks
           - define exclude_blocks <[top_points].include[<[bot_points]>].parse[with_pose[0,0]]>
 
-        - define set_blocks <[total_blocks].exclude[<[exclude_blocks]>]>
-        - modifyblock <[set_blocks].filter[has_flag[build.edited].not]> <map[oak=oak_planks;brick=bricks;cobblestone=cobblestone].get[<[base_material]>]>
+        - define set_blocks <[total_blocks].exclude[<[exclude_blocks]>].filter[has_flag[build.edited].not].deduplicate>
+        - define existing_blocks <proc[get_existing_blocks].context[<list_single[<[set_blocks]>]>]>
+        - flag <[existing_blocks]> build.existed
+
+        - define set_blocks      <[set_blocks].exclude[<[existing_blocks]>]>
+
+        - modifyblock <[set_blocks]> <map[oak=oak_planks;brick=bricks;cobblestone=cobblestone].get[<[base_material]>]>
+
+get_existing_blocks:
+  type: procedure
+  definitions: blocks
+  debug: false
+  script:
+    - define non_air_blocks     <[blocks].filter[material.name.equals[air].not].filter[has_flag[build.center].not]>
+    - define world_build_blocks <[blocks].filter[has_flag[build.center]].filter[flag[build.center].flag[build.placed_by].equals[WORLD]]>
+    #- define natural_blocks     <[blocks].filter[has_flag[build.natural]]>
+
+    #deduplicate in case the blocks met both criteria of definitions
+    #- determine <[non_air_blocks].include[<[world_build_blocks]>].include[<[natural_blocks]>].deduplicate>
+    - determine <[non_air_blocks].include[<[world_build_blocks]>].deduplicate>
 
 find_connected_tiles:
   type: procedure
@@ -544,7 +666,7 @@ get_surrounding_tiles:
   definitions: tile|center
   debug: false
   script:
-    - define nearby_tiles <[center].find_blocks_flagged[build.center].within[5].parse[flag[build.center].flag[build.structure]].deduplicate.exclude[<[tile]>]>
+    - define nearby_tiles <[center].find_blocks_flagged[build.center].within[5].filter[flag[build.center].has_flag[build.natural].not].parse[flag[build.center].flag[build.structure]].deduplicate.exclude[<[tile]>]>
     - define connected_tiles <[nearby_tiles].filter[intersects[<[tile]>]]>
     - determine <[connected_tiles]>
 
@@ -623,9 +745,19 @@ place_pyramid:
           - if !<[s].has_flag[build.center]> || <list[stair|pyramid].contains[<[s].flag[build.center].flag[build.type]>]>:
             - define block_data <[block_data].include[<map[loc=<[s]>;mat=<[side_mat]>]>]>
 
-    - modifyblock <[block_data].parse[get[loc]].filter[has_flag[build.edited].not]> <[block_data].parse[get[mat]]>
-    - modifyblock <[center]> <[base_material]>_slab if:<[center].has_flag[build.edited].not>
+    - define set_blocks      <[block_data].parse[get[loc]].filter[has_flag[build.edited].not]>
+    - define existing_blocks <proc[get_existing_blocks].context[<list_single[<[set_blocks]>]>]>
+    - flag <[existing_blocks]> build.existed
 
+    - define set_blocks      <[set_blocks].exclude[<[existing_blocks]>]>
+
+    - modifyblock <[set_blocks]> <[block_data].parse[get[mat]]>
+
+    - if !<[center].has_flag[build.edited]>:
+      - if <[center].material.name> != air:
+        - flag <[center]> build.existed
+      - else:
+        - modifyblock <[center]> <[base_material]>_slab
 
 stair_blocks_gen:
   type: procedure
@@ -756,14 +888,29 @@ build_toggle:
         # 2) if there's already a build there (and if that build is NOT a pyramid or a stair (since those can be "overwritten"))
         #if none pass, it's buildable
         - define can_build True
-        - define unbreakable_blocks <[display_blocks].filter[material.name.equals[air].not].filter[has_flag[build].not]>
+        #- define unbreakable_blocks <[display_blocks].filter[material.name.equals[air].not].filter[has_flag[build].not]>
         #this way, grass and shit is overwritten because screw that
 
-        - if <[unbreakable_blocks].filter[material.vanilla_tags.contains[replaceable_plants].not].any> || <[final_center].has_flag[build.center]>:
+        #- if <[unbreakable_blocks].filter[material.vanilla_tags.contains[replaceable_plants].not].any> || <[final_center].has_flag[build.center]>:
           #make sure you can place walls around stairs and pyramids (in that order)
           #made it so you cant place stairs on stairs and pyramids on pyramids
-          - if !<[final_center].has_flag[build.center]> || !<list[pyramid|stair].contains[<[final_center].flag[build.center].flag[build.type]>]> || <list[pyramid|stair].contains[<[type]>]>:
-            - define can_build False
+          #- if !<[final_center].has_flag[build.center]> || !<list[pyramid|stair].contains[<[final_center].flag[build.center].flag[build.type]>]> || <list[pyramid|stair].contains[<[type]>]>:
+            #- define can_build False
+
+        #-so you can't place tiles over other tiles
+        #checks are so:
+          #you can place walls around stairs and pyramids (in that order)
+          #you cant place stairs on stairs and pyramids on pyramids
+        - if <[final_center].has_flag[build.center]> && !<list[pyramid|stair].contains[<[final_center].flag[build.center].flag[build.type]>]>:
+          - define can_build False
+
+        #-so you can't place a floor down on the ground if it's being fully covered
+        - if <[type]> == FLOOR && <[final_center].material.name> != AIR:
+          - define can_build False
+
+        #-you can't place builds on natural structures
+        - if <[tile].blocks.filter[has_flag[build.center]].filter[flag[build.center].has_flag[build.natural]].any>:
+          - define can_build False
 
         - define build_color 45,167,237,150
         - if <player.flag[fort.<[material]>.qty]||0> < 10:
