@@ -355,7 +355,6 @@ build_system_handler:
     #so it only includes the parts of the tile that are its own (since each cuboid intersects by one)
     - define blocks <[tile].blocks.filter[flag[build.center].equals[<[center]>]]>
 
-    #everything is being re-applied anyways, so it's ok
     - define remove_blocks <[tile].blocks.filter[has_flag[build_existed].not]>
 
     - if <[center].flag[build.placed_by]> == WORLD && <[type]> != FLOOR:
@@ -617,6 +616,7 @@ get_existing_blocks:
   script:
     - define non_air_blocks     <[blocks].filter[material.name.equals[air].not].filter[has_flag[build.center].not]>
     - define world_build_blocks <[blocks].filter[has_flag[build.center]].filter[flag[build.center].flag[build.placed_by].equals[WORLD]]>
+
     #- define natural_blocks     <[blocks].filter[has_flag[build.natural]]>
 
     #deduplicate in case the blocks met both criteria of definitions
@@ -745,7 +745,7 @@ place_pyramid:
     - modifyblock <[set_blocks]> <[block_data].parse[get[mat]]>
 
     - if !<[center].has_flag[build.edited]>:
-      - if <[center].material.name> != air:
+      - if <[center].material.name> != air && <[center].flag[build.placed_by]||null> == WORLD:
         - flag <[center]> build_existed
       - else:
         - modifyblock <[center]> <[base_material]>_slab
@@ -891,8 +891,11 @@ build_toggle:
         #-so you can't place tiles over other tiles
         #checks are so:
           #you can place walls around stairs and pyramids (in that order)
-          #you cant place stairs on stairs and pyramids on pyramids
         - if <[final_center].has_flag[build.center]> && !<list[pyramid|stair].contains[<[final_center].flag[build.center].flag[build.type]>]>:
+          - define can_build False
+
+        #you cant place stairs on stairs and pyramids on pyramids
+        - if <[final_center].has_flag[build.center]> && <list[pyramid|stair].contains[<[final_center].flag[build.center].flag[build.type]>]> && <list[pyramid|stair].contains[<[type]>]>:
           - define can_build False
 
         #-so you can't place a floor down on the ground if it's being fully covered
