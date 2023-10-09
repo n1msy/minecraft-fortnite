@@ -251,7 +251,8 @@ build_system_handler:
       - define total_blocks <[tile].blocks>
       - define override_blocks <[total_blocks].filter[has_flag[build.center]].filter_tag[<list[pyramid|stair].contains[<[filter_value].flag[build.center].flag[build.type]>]>]>
 
-      - define blocks <[total_blocks].filter[has_flag[build].not].include[<[override_blocks]>]>
+      #checking if it doesn't have build.CENTER isntead of just "build" because for some reason some blocks have the "build" flag, even though they're info is removed?
+      - define blocks <[total_blocks].filter[has_flag[build.center].not].include[<[override_blocks]>]>
 
       - definemap data:
           tile: <[tile]>
@@ -355,7 +356,7 @@ build_system_handler:
     - define blocks <[tile].blocks.filter[flag[build.center].equals[<[center]>]]>
 
     #everything is being re-applied anyways, so it's ok
-    - define remove_blocks <[tile].blocks.filter[has_flag[build.existed].not]>
+    - define remove_blocks <[tile].blocks.filter[has_flag[build_existed].not]>
 
     - if <[center].flag[build.placed_by]> == WORLD && <[type]> != FLOOR:
       #this way, there's no little holes on the ground after breaking walls that are on the floor
@@ -369,6 +370,8 @@ build_system_handler:
     - modifyblock <[remove_blocks]> air
 
     - flag <[blocks]> build:!
+    #not doing build DOT existed, since it'll mess up other checks
+    - flag <[blocks].filter[has_flag[build_existed]]> build_existed:!
 
     #order: first placed -> last placed
     - define priority_order <list[wall|floor|stair|pyramid]>
@@ -420,10 +423,11 @@ build_system_handler:
             #- debugblock <[tile].blocks> d:3m color:0,0,0,150 if:<[is_root]>
 
             #-FAKE ROOT CHECK
+            #ONLY doing this for WORLD tiles, because it works fine with regular builds
             - define fake_root:!
             #fake root means that it's not *actually* connected to the tile
             #getting the *previous* tile, to check if this root tile was really connected to it
-            - if <[is_root]> && <[previous_tile].exists>:
+            - if <[center].flag[build.placed_by]||null> == WORLD && <[is_root]> && <[previous_tile].exists>:
               - if !<[previous_tile].intersects[<[tile]>]> || <[previous_tile].intersection[<[tile]>].blocks.filter[material.name.equals[air].not].is_empty>:
                 #- debugblock <[tile].blocks> d:3m color:155,0,0,150
                 - define fake_root True
@@ -547,7 +551,7 @@ build_system_handler:
         - define override_blocks <[top_points].include[<[bot_points]>].filter[flag[build.center].flag[build.type].equals[pyramid].not]>
 
         #so it doesn't completely override any previously placed tiles
-        - define set_blocks      <[total_set_blocks].filter[has_flag[build].not].include[<[own_stair_blocks]>].include[<[override_blocks]>]>
+        - define set_blocks      <[total_set_blocks].filter[has_flag[build.center].not].include[<[own_stair_blocks]>].include[<[override_blocks]>]>
 
         #-don't include edited blocks
         - define set_blocks      <[set_blocks].filter[has_flag[build.edited].not]>
@@ -555,7 +559,7 @@ build_system_handler:
         #-don't include blocks that existed there before hand
         #existing blocks are either world-placed blocks, or just terrain blocks
         - define existing_blocks <proc[get_existing_blocks].context[<list_single[<[set_blocks]>]>]>
-        - flag <[existing_blocks]> build.existed
+        - flag <[existing_blocks]> build_existed
 
         - define set_blocks      <[set_blocks].exclude[<[existing_blocks]>]>
 
@@ -567,7 +571,7 @@ build_system_handler:
         - define consecutive_stair_blocks <[set_connector_blocks].filter[flag[build.center].flag[build.type].equals[stair]].filter[material.direction.equals[<[direction]>]]>
         - define set_blocks               <[set_connector_blocks].exclude[<[consecutive_stair_blocks]>].exclude[<[override_blocks]>].filter[has_flag[build.edited].not]>
         - define existing_blocks <proc[get_existing_blocks].context[<list_single[<[set_blocks]>]>]>
-        - flag <[existing_blocks]> build.existed
+        - flag <[existing_blocks]> build_existed
 
         - define set_blocks      <[set_blocks].exclude[<[existing_blocks]>]>
 
@@ -600,7 +604,7 @@ build_system_handler:
 
         - define set_blocks <[total_blocks].exclude[<[exclude_blocks]>].filter[has_flag[build.edited].not].deduplicate>
         - define existing_blocks <proc[get_existing_blocks].context[<list_single[<[set_blocks]>]>]>
-        - flag <[existing_blocks]> build.existed
+        - flag <[existing_blocks]> build_existed
 
         - define set_blocks      <[set_blocks].exclude[<[existing_blocks]>]>
 
@@ -734,7 +738,7 @@ place_pyramid:
 
     - define set_blocks      <[block_data].parse[get[loc]].filter[has_flag[build.edited].not]>
     - define existing_blocks <proc[get_existing_blocks].context[<list_single[<[set_blocks]>]>]>
-    - flag <[existing_blocks]> build.existed
+    - flag <[existing_blocks]> build_existed
 
     - define set_blocks      <[set_blocks].exclude[<[existing_blocks]>]>
 
@@ -742,7 +746,7 @@ place_pyramid:
 
     - if !<[center].has_flag[build.edited]>:
       - if <[center].material.name> != air:
-        - flag <[center]> build.existed
+        - flag <[center]> build_existed
       - else:
         - modifyblock <[center]> <[base_material]>_slab
 
