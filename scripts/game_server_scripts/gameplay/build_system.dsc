@@ -387,7 +387,7 @@ build_system_handler:
 
     #There's only six four (or less) for each cardinal
     #direction, so we use a foreach, and go through each one.
-    - foreach <[branches].deduplicate> as:starting_tile:
+    - foreach <[branches]> as:starting_tile:
         #The tiles to check are a list of tiles that we need to get siblings of.
         #Each tile in this list gets checked once, and removed.
         - define tiles_to_check <list[<[starting_tile]>]>
@@ -410,7 +410,7 @@ build_system_handler:
 
             - define center <[tile].center.flag[build.center]>
 
-            - foreach next if:<[center].chunk.is_loaded>
+            - foreach next if:<[center].chunk.is_loaded.not>
 
             - define type   <[center].flag[build.type]>
 
@@ -465,7 +465,6 @@ build_system_handler:
         #That means we know it's not touching ground anywhere, so now we want to break
         #each tile. So we go through the structure list, and break each one (however you handle that.)
         #-break the tiles
-        #- define sounds_played_at <list[]>
         - foreach <[structure]> as:tile:
 
           #do you get mats from world structures that are broken by chain?
@@ -482,10 +481,7 @@ build_system_handler:
           #everything is being re-applied anyways, so it's ok
           - ~modifyblock <[tile].blocks> air
           #-often too many sounds compared to blocks breaking? (i just made modifyblock waitable)
-          #- if <[sounds_played_at].contains[<[tile].center>]>:
           - playsound <[tile].center> sound:<[sound]> pitch:0.8
-
-          #- define sounds_played_at:<[sounds_played_at].include[<[tile].center>]>
 
           - flag <[blocks]> build:!
 
