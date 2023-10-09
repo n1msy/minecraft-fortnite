@@ -188,7 +188,8 @@ dmodels_reset_model_position:
 
         - teleport <[host]> <[root_entity].flag[emote_loc]>
         #<[center].with_yaw[<[center].yaw.add[180]>]>
-        - invisible <[host]> false if:<[host].is_online>
+        #the if check is so the invisibility isn't removed if the player is moved to the bus mid-emote
+        - invisible <[host]> false if:<[host].is_online> if:!<player.has_flag[fort.on_bus]>
         - fakeequip <[host]> for:<server.online_players> reset if:<[host].is_online>
         #- adjust <[host]> gamemode:<[host].flag[fort.emote_gamemode]>
 
