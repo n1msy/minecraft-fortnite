@@ -110,6 +110,8 @@ pregame_island_handler:
 
     #-start countdown if there are enough people ready
     #second check is in case more people join during the countdown and it still going on, dont start another one
+    #wait a bit after the last person before starting the queue
+    - wait 2s
     - if <[players].size> >= <script[nimnite_config].data_key[minimum_players]> && !<server.has_flag[fort.temp.game_starting]>:
       - run pregame_island_handler.countdown
 
@@ -124,13 +126,18 @@ pregame_island_handler:
     - if <server.online_players.exclude[<player>].size> == 0:
       - remove <world[pregame_island].entities[text_display].filter[has_flag[lobby_circle_square]]>
 
-    - definemap data:
-        game_server: <bungee.server>
-        status: AVAILABLE
-        mode: <server.flag[fort.mode]||solo>
-        players: <server.online_players_flagged[fort]>
-    #send all the player data, or just remove the current one?
-    - bungeerun fort_lobby fort_bungee_tasks.set_status def:<[data]>
+    - if <server.has_flag[fort.temp.available]>:
+      - definemap data:
+          game_server: <bungee.server>
+          status: AVAILABLE
+          mode: <server.flag[fort.mode]||solo>
+          players: <server.online_players_flagged[fort]>
+      #send all the player data, or just remove the current one?
+      - bungeerun fort_lobby fort_bungee_tasks.set_status def:<[data]>
+
+    #don't play the death animation if they are teleporting via the circle or they're spectating (already dead)
+    - if !<player.has_flag[fort.lobby_teleport]> && !<player.has_flag[fort.spectating]>:
+      - run fort_global_handler.death_fx.anim
 
     - flag player fort:!
 

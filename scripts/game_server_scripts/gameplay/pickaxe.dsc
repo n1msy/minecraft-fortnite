@@ -62,10 +62,15 @@ fort_pic_handler:
       - define # 8 if:<[#].equals[0]>
       - define pitch <list[0.529732|0.594604|0.667420|0.707107|0.793701|0.890899|1.0|1.059463].get[<[#]>]>
       #make amethyst sfx non randomized by going through the rp?
-      #- playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:0 volume:0.25
+      # playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:0 volume:0.25
       - playsound <player> sound:BLOCK_NOTE_BLOCK_PLING pitch:<[pitch]> volume:0.4
 
+    #-harvest material
+    #side note: thank fucking god i was smart enough to add a "placed by world" flag for man-made structures
+    - if <[center].has_flag[build.natural]> || <[center].flag[build.placed_by]||null> == WORLD:
+      - run fort_pic_handler.harvest def:<map[structure=<[struct]>;type=<[mat_type]>]>
 
+    #i feel like there's a cleaner way for this in the config
     - if !<[center].has_flag[build.natural]>:
       - define max_health <script[nimnite_config].data_key[materials.<[mat_type]>.hp]>
       #show the health at the center of the tile
@@ -74,7 +79,8 @@ fort_pic_handler:
       # - for natural structures:
       #server flag
       - define struct_name <[center].flag[build.natural.name]>
-      - define max_health  <server.flag[fort.structure.<[struct_name]>.health]>
+      #- define max_health  <server.flag[fort.structure.<[struct_name]>.health]>
+      - define max_health   <script[nimnite_config].data_key[structures.<[struct_name]>.health]>
 
       #-this is still susceptible to change!
       #show the health in front of the block destroyed?
@@ -97,6 +103,8 @@ fort_pic_handler:
         - run fort_pic_handler.weak_point def:<map[center=<[center]>]>
 
       - stop
+
+    #-TILE BREAKS HERE
 
     - flag player fort.build_health:!
 
@@ -348,76 +356,17 @@ fort_pic_handler:
         - modifyblock <[leaf]> air
         - playeffect effect:BLOCK_CRACK at:<[leaf].center> offset:0 special_data:<[leaf_mat]> quantity:2 visibility:100
 
-  tree:
-
-    - define damage 50
-
-    #-weak point
-    - if <[block].has_flag[build.weak_point]>:
-      - flag player fort.weak_point:++ duration:2s
-      - define damage <[damage].mul[2]>
-      - flag <[block].flag[build.weak_point]> broken if:<[block].flag[build.weak_point].is_spawned>
-      - flag <[block]> build.weak_point:!
-      - define # <player.flag[fort.weak_point].mod[8]>
-      - define # 8 if:<[#].equals[0]>
-      - define pitch <list[0.529732|0.594604|0.667420|0.707107|0.793701|0.890899|1.0|1.059463].get[<[#]>]>
-      - playsound <player> sound:BLOCK_NOTE_BLOCK_PLING pitch:<[pitch]> volume:0.4
-
-    #-tree
-    - run fort_pic_handler.harvest def:<map[structure=tree;type=wood]>
-
-    - define tree        <[block].flood_fill[50].types[*wood|*slab|*fence*]>
-    #excluding in case there are any of the same fences
-    - define leaves      <[tree].last.find_blocks[*leaves|*fence*].within[17].exclude[<[tree]>]>
-    - define tree_blocks <[tree].include[<[leaves]>]>
-
-    - define max_health <script[nimnite_config].data_key[structures.tree.hp]>
-
-    - if !<[block].has_flag[build.health]>:
-      - define new_health <[max_health].sub[<[damage]>]>
-    - else:
-      - define new_health <[block].flag[build.health].sub[<[damage]>]>
-
-    - if <[new_health]> > 0:
-      - flag <[tree_blocks]> build.health:<[new_health]>
-
-      - run fort_pic_handler.display_build_health def:<map[loc=<[block]>;health=<[new_health]>;max_health=<[max_health]>]>
-
-      - define progress <element[10].sub[<[new_health].div[<[max_health]>].mul[10]>]>
-      - foreach <[tree_blocks]> as:b:
-        - blockcrack <[b]> progress:<[progress]> players:<server.online_players>
-
-      - if <[tree_blocks].filter[has_flag[build.weak_point]].is_empty>:
-        - run fort_pic_handler.weak_point def:<map.with[tree_blocks].as[<[tree_blocks]>]>
-
-      - stop
-
-    - flag player fort.build_health:!
-    - flag <[tree_blocks]> build:!
-
-    - define tree_mat <[tree].first.material>
-    - foreach <[tree].sub_lists[5]> as:blocks:
-      - modifyblock <[blocks]> air
-      - playsound <[blocks].first> sound:BLOCK_WOOD_BREAK pitch:0.8
-      - playeffect effect:BLOCK_CRACK at:<[blocks].parse[center]> offset:0 special_data:<[tree_mat]> quantity:10 visibility:100
-      - wait 2t
-
-    - if <[leaves].any>:
-      - define leaf_mat <[leaves].first.material>
-      - modifyblock <[leaves]> air
-      - playsound <[leaves].first> sound:BLOCK_GRASS_BREAK pitch:0.8
-      - playeffect effect:BLOCK_CRACK at:<[leaves].parse[center]> offset:0 special_data:<[leaf_mat]> quantity:2 visibility:100
-
   harvest:
   - define struct <[data].get[structure]>
   - define type <[data].get[type]>
   - define mult <script[nimnite_config].data_key[harvesting_multiplier]>
 
-  - define qty <util.random.int[5].to[6].mul[<[mult]>]>
+  #idk what the quantity number should be
+  - define qty <util.random.int[4].to[7].mul[<[mult]>]>
   - define total_qty <[qty]>
   - define loc <player.eye_location.forward[2].left[1]>
 
-  - run fort_pic_handler.mat_count def:<map[qty=<[qty]>;mat=wood;action=add]>
+  - run fort_pic_handler.mat_count def:<map[qty=<[qty]>;mat=<[type]>;action=add]>
 
   #-waiting for text displays to unbork with fonts...
   - define icon <&chr[A<map[wood=111;brick=222;metal=333].get[<[type]>]>].font[icons]>
@@ -433,13 +382,13 @@ fort_pic_handler:
   - if !<[harvest_display].exists>:
     - spawn <entity[text_display].with[text=<[text]>;pivot=center;scale=1,1,1;background_color=transparent]> <[loc]> save:harvest_display
     - define harvest_display <entry[harvest_display].spawned_entity>
-    - run fort_pic_handler.bounce_anim def:<map[e=<[harvest_display]>]>
     - adjust <[harvest_display]> hide_from_players
     - adjust <player> show_entity:<[harvest_display]>
 
   - flag <[harvest_display]> qty:<[total_qty]>
   - flag player fort.harvest_display:<[harvest_display]> duration:2s
   - adjust <[harvest_display]> text:<[text]>
+  - run fort_pic_handler.bounce_anim def:<map[e=<[harvest_display]>]>
 
   #probably better way of doing this using whiles?
   - waituntil !<player.has_flag[fort.harvest_display]> || <player.flag[fort.harvest_display]> != <[harvest_display]> max:15s
@@ -458,17 +407,18 @@ fort_pic_handler:
 
   bounce_anim:
   - define e <[data].get[e]>
+  - define speed 2
 
   - wait 2t
   - adjust <[e]> interpolation_start:0
-  - adjust <[e]> scale:<location[2,2,2]>
-  - adjust <[e]> interpolation_duration:2t
+  - adjust <[e]> scale:<location[1.35,1.35,1.35]>
+  - adjust <[e]> interpolation_duration:<[speed]>t
 
-  - wait 2t
+  - wait <[speed]>t
 
   - adjust <[e]> interpolation_start:0
   - adjust <[e]> scale:<location[1,1,1]>
-  - adjust <[e]> interpolation_duration:2t
+  - adjust <[e]> interpolation_duration:<[speed]>t
 
 
   display_build_health:

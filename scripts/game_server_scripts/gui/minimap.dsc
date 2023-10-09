@@ -164,16 +164,15 @@ minimap:
     # - [ Full map ] - #
     - define neg_spacing <proc[spacing].context[-1]>
     - define border_radius 4
-    - define map <list[]>
-    - repeat 16:
+    - define map:!
+
+    #-shader does the map-tile handling
+    - repeat 64:
       - define zeroes <element[0].repeat[<element[3].sub[<[value].length>]>]>
       - define char A<[zeroes]><[value]>
-      - define row:->:<&chr[<[char]>].font[map]>
-      - if <[value].mod[8]> == 0:
-        - define map <[map].include[<&sp.repeat[<[border_radius].sub[1]>]><[row].separated_by[<[neg_spacing]>]><&sp.repeat[<[border_radius].sub[1]>]>]>
-        - define row:!
-    - define map <[map].separated_by[<n.repeat[5]>].color[76,0,0]>
+      - define map:->:<&chr[<[char]>].font[map].color[<color[1,1,<[value]>]>]>
 
+    - define map <[map].unseparated>
     # - circle
     - define actualX <[circle_x]>
     - define actualY <[circle_y]>
@@ -207,8 +206,8 @@ minimap:
     - define twitch_icon  <&chr[14].font[icons]>
     - define twitter_icon <&chr[15].font[icons]>
 
-    - define actionbar_text "<[youtube_icon]> Nimsy <[twitch_icon]> FlimsyNimsy <[twitter_icon]> N1msy"
+    - define socials "<[youtube_icon]> Nimsy <[twitch_icon]> FlimsyNimsy <[twitter_icon]> N1msy"
 
     #show storm timer info in tablist too?
-    - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><n><[map]><n.repeat[5]><[actionbar_text]><n>
+    - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><[map]>|<n><[socials]><n>
     #<&chr[999].font[icons]><n.repeat[5]>

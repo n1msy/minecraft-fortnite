@@ -1,341 +1,3 @@
-
-#/ex schematic create name:tilted_towers_1 area:<player.we_selection> <player.location> flags
-
-#these tasks are for fixing trees that i placed when the world was called something else
-fort_set_world_flags:
-  type: task
-  debug: false
-  script:
-  - define sel <player.we_selection>
-  - define world <player.world>
-
-  - narrate "Finding blocks..."
-  - define blocks <[sel].blocks_flagged[build.center]>
-  - narrate <&a>Found.
-  - wait 1t
-  - narrate "Setting flags..."
-  - foreach <[blocks]> as:bl:
-    - define center <[bl].flag[build.center].with_world[<[world]>]>
-    - flag <[bl]> build.center:<[center]>
-    - if <[bl].has_flag[build.structure]>:
-      - flag <[bl]> build.structure:<[bl].flag[build.structure].with_world[<[world]>]>
-    - wait 1t
-
-  - narrate <&a><&l>Done.
-
-fort_set_world:
-  type: task
-  debug: false
-  script:
-
-  - if <player.has_flag[asd]>:
-    - flag player asd:!
-    - stop
-
-  - flag player asd
-  - define world <player.world>
-  - while <player.has_flag[asd]> && <player.is_online>:
-    - define target_loc <player.eye_location.ray_trace[default=air;range=200]>
-    - define centers <[target_loc].find_blocks_flagged[build.center].within[20].parse[flag[build.center]].deduplicate>
-    - define incorrect_centers <[centers].filter[world.equals[<[world]>].not]>
-    - foreach <[incorrect_centers]> as:c:
-      - debugblock <[c].with_world[<[world]>].flag[build.structure].with_world[<[world]>].outline> color:255,49,49,50 d:2t players:<player>
-
-    - define correct_centers <[centers].exclude[<[incorrect_centers]>]>
-    - foreach <[correct_centers]> as:c:
-      - debugblock <[c].flag[build.structure].outline> color:84,255,69,50 d:2t players:<player>
-
-    - wait 1t
-  - flag player asd:!
-
-fort_set_world_handler:
-  type: world
-  debug: false
-  events:
-    on player left clicks block flagged:asd:
-    - define world <player.world>
-    - define target_loc <player.eye_location.ray_trace[default=air;range=200]>
-    - define centers <[target_loc].find_blocks_flagged[build.center].within[20].parse[flag[build.center]].deduplicate>
-    - define incorrect_centers <[centers].filter[world.equals[<[world]>].not]>
-    - foreach <[incorrect_centers]> as:c:
-      - define struct <[c].with_world[<[world]>].flag[build.structure].with_world[<[world]>]>
-      - flag <[c].with_world[<[world]>]> build.structure:<[struct]>
-      - flag <[struct].blocks_flagged[build.center].filter[flag[build.center].equals[<[c]>]]> build.center:<[c].with_world[<[world]>]>
-    - narrate <&a>Fixed.
-
-tile_visualiser_command:
-  type: command
-  name: tv
-  debug: false
-  description: View the tile you're looking at in the form of debugblocks
-  usage: /tv
-  aliases:
-    - tv
-  script:
-  - if <player.has_flag[tv]>:
-    - flag player tv:!
-    - stop
-  - narrate "tile visualiser program initiated"
-  - flag player tv
-  - while <player.has_flag[tv]>:
-    - define target_block <player.cursor_on||null>
-    - if <[target_block]> != null && <[target_block].has_flag[build.center]>:
-      - define center <[target_block].flag[build.center]>
-      - define blocks <[center].flag[build.structure].blocks.filter[flag[build.center].equals[<[center]>]]>
-      - debugblock <[blocks]> d:2t color:0,0,0,75
-    - wait 1t
-  - narrate "tile visualiser program terminated"
-
-save_build:
-  type: command
-  name: save_build
-  debug: false
-  description: Save the tile build as a schematic.
-  usage: /save_build (name)
-  script:
-
-  - define name <context.args.first||null>
-  - if <[name]> == null:
-    - narrate "<&c>Invalid schematic name."
-    - stop
-
-  - define selection <player.we_selection||null>
-  - if <[selection]> == null:
-    - narrate "<&c>You must make a selection!"
-    - stop
-
-  - define world <player.world>
-
-  - define structure <player.we_selection.blocks_flagged[build.structure].parse[flag[build.structure]]||null>
-  - if <[structure].is_empty> || <[structure]> == null:
-    - narrate "<&c>Invalid selection!"
-    - stop
-
-  - if <schematic.list.contains[<[name]>]>:
-    - ~schematic unload name:<[name]>
-
-  - if <util.has_file[schematics/<[name]>.schem]>:
-    - narrate "<&7>Overwriting current <&dq><&f><[name]>.schem<&7><&dq> file..."
-    - adjust system delete_file:schematics/<[name]>.schem
-
-  - narrate "<&7>Temporarily setting each center to glass..."
-  - define air_blocks <list[]>
-  - foreach <[structure]> as:tile:
-    #we dont have to check if the blocks belong to that tile, since we have to just replace air blocks with any block anyways
-    - define add_air_blocks <[tile].blocks.filter[material.name.equals[air]]>
-    - define air_blocks <[air_blocks].include[<[add_air_blocks]>]>
-
-  - if <[air_blocks].any>:
-    - ~modifyblock <[air_blocks]> glass
-    - flag <[air_blocks]> build.air
-
-  - narrate "<&a><[air_blocks].size> <&7>air centers set."
-
-  - narrate "<&7>Finding vector data for <&a><[structure].size> <&7>tiles..."
-
-  - foreach <[structure]> as:tile:
-    - define tile <[tile].with_world[<[world]>]>
-    - define center      <[tile].center.flag[build.center].with_world[<[world]>]||null>
-    - if <[center]> == null:
-      - teleport <player> <[tile].center>
-      - narrate "<&c>This tile structure's center returned null. Please fix it and try again."
-      - stop
-
-    - if <[center].flag[build.structure].with_world[<[world]>]||null> == null:
-      - teleport <player> <[tile].center>
-      - narrate "<&c>This tile structure's center returned null. Please fix it and try again."
-      - stop
-
-    - define blocks      <[tile].blocks.filter[flag[build.center].with_world[<[world]>].equals[<[center]>]]>
-    - foreach <[blocks]> as:b:
-      - define vector <[center].sub[<[b]>]>
-      - flag <[b]> build.center_vector:<[vector].with_world[<[world]>]>
-      #- announce <[vector].with_world[<[world]>]> to_console
-    - flag <[center]> build.min_vector:<[center].flag[build.structure].with_world[<[world]>].min.sub[<[center]>]>
-    - flag <[center]> build.max_vector:<[center].flag[build.structure].with_world[<[world]>].max.sub[<[center]>]>
-
-  - schematic create name:<[name]> area:<player.we_selection> <player.location> flags
-
-  - if <[air_blocks].any>:
-    - ~modifyblock <[air_blocks]> air
-    - flag <[air_blocks]> build.air:!
-
-  - narrate "<&7>Saving schematic as <&dq><&f><[name]>.schem<&7><&dq>..."
-  - ~schematic save name:<[name]>
-  - narrate <&a>Done!
-
-rotate_build:
-  type: command
-  name: rotate_build
-  debug: false
-  description: Rotate a build by 90 degrees.
-  usage: /rotate_build (name)
-  tab complete:
-  - determine <schematic.list>
-  script:
-
-  - define name <context.args.first||null>
-  - if <[name]> == null:
-    - narrate "<&c>Invalid schematic name."
-    - stop
-
-  - if !<util.has_file[schematics/<[name]>.schem]>:
-    - narrate "<&c>This schematic doesn't exist!"
-    - stop
-
-  - if !<schematic.list.contains[<[name]>]>:
-    - narrate "<&7>Loading schematic..."
-    - ~schematic load name:<[name]>
-    - narrate "<&a>Schematic loaded."
-
-  - narrate "<&7>Rotating structure by <&a>90 <&7>degrees..."
-  #- schematic rotate name:<[name]> angle:90
-
-  - define total_blocks <schematic[<[name]>].cuboid[<player.location>].blocks_flagged[build]>
-  - narrate <[total_blocks].size>
-
-  #- narrate "<&7>Finding vector data for <&a><[structure].size> <&7>tiles..."
-
-  - narrate <&a>Done!
-
-remove_build:
-  type: command
-  name: remove_build
-  debug: false
-  description: Remove the build you're looking at.
-  usage: /remove_build
-  script:
-
-  - define selection <player.we_selection||null>
-  - if <[selection]> == null:
-    - narrate "<&c>You must make a selection!"
-    - stop
-
-  - define blocks <player.we_selection.blocks_flagged[build]||null>
-  - if <[blocks].is_empty> || <[blocks]> == null:
-    - narrate "<&c>Invalid selection!"
-    - stop
-
-  - narrate "<&7>Removing build blocks..."
-
-  - modifyblock <[blocks]> air
-  - flag <[blocks]> build:!
-
-  - narrate <&a>Done!
-
-undo_build:
-  type: command
-  name: undo_build
-  debug: false
-  description: Remove the build you're looking at.
-  usage: /undo_build
-  script:
-
-  - if !<schematic.list.contains[undo]> || !<player.has_flag[fort_build.undo_loc]>:
-    - narrate "<&c>Can't undo."
-    - stop
-
-  - define origin <player.flag[fort_build.undo_loc]>
-  - define cuboid <schematic[undo].cuboid[<[origin]>]>
-
-  - flag <[cuboid].blocks> build:!
-
-  - ~schematic paste name:undo <[origin]>
-
-  - narrate <&a>Done!
-
-paste_build:
-  type: command
-  name: paste_build
-  debug: false
-  description: Paste the tile build as a schematic.
-  usage: /paste_build (name)
-  tab complete:
-  - determine <schematic.list.filter[starts_with[fort_structure].not]>
-  script:
-
-  - define name <context.args.first||null>
-  - if <[name]> == null:
-    - narrate "<&c>Invalid schematic name."
-    - stop
-
-  - if !<util.has_file[schematics/<[name]>.schem]>:
-    - narrate "<&c>This schematic doesn't exist!"
-    - stop
-
-  - if !<schematic.list.contains[<[name]>]>:
-    - narrate "<&7>Loading schematic..."
-    - ~schematic load name:<[name]>
-    - narrate "<&a>Schematic loaded."
-
-  - define origin <player.location>
-  - define world  <[origin].world>
-  - narrate "<&7>Applying vector data to new locations..."
-
-  #-undo command
-
-  - if <schematic.list.contains[undo]>:
-    - ~schematic unload name:undo
-
-  - if <util.has_file[schematics/undo.schem]>:
-    - adjust system delete_file:schematics/undo.schem
-  - flag player fort_build.undo_loc:<[origin]>
-  - schematic create name:undo area:<schematic[<[name]>].cuboid[<[origin]>]> <[origin]> flags
-  - ~schematic save name:undo
-
-  - ~schematic paste name:<[name]> <[origin]> noair
-
-  - define total_blocks <schematic[<[name]>].cuboid[<[origin]>].blocks.filter[has_flag[build.center]]>
-
-  #- playeffect effect:FLAME at:<[total_blocks]> visibility:300 offset:0
-  - foreach <[total_blocks]> as:b:
-    - define center_vector <[b].flag[build.center_vector].with_world[<[world]>]||null>
-    - if <[center_vector]> == null:
-      - announce <&c><[b]>/<[center_vector]> to_console
-      - foreach next
-
-    - flag <[b]> build.center_vector:<[center_vector]>
-
-    - define new_center    <[b].add[<[center_vector]>].with_world[<[world]>]>
-    - flag <[b]> build.center:<[new_center]>
-    #also get the new cuboid tags for structure data
-    - if <[new_center].simple> == <[b].simple>:
-      - define min_vector <[b].flag[build.min_vector].with_world[<[world]>]>
-      - define min        <[new_center].add[<[min_vector]>]>
-      - define max_vector <[b].flag[build.max_vector].with_world[<[world]>]>
-      - define max        <[new_center].add[<[max_vector]>]>
-      - define struct     <[min].to_cuboid[<[max]>].with_world[<[world]>]>
-      - flag <[b]> build.min_vector:<[min_vector]>
-      - flag <[b]> build.max_vector:<[max_vector]>
-      - flag <[b]> build.structure:<[struct]>
-
- # - wait 1s
-  - narrate "<&7>Getting air blocks..."
-  - define structure <schematic[<[name]>].cuboid[<[origin]>].blocks_flagged[build.structure].parse[flag[build.structure]]||null>
-  - define air_blocks <list[]>
-  - foreach <[structure]> as:tile:
-  #  #we dont have to check if the blocks belong to that tile, since we have to just replace air blocks with any block anyways
-    - define add_air_blocks <[tile].blocks_flagged[build.air]>
-    - define air_blocks <[air_blocks].include[<[add_air_blocks]>]>
-
-  - if <[air_blocks].any>:
-    - ~modifyblock <[air_blocks]> air
-    - flag <[air_blocks]> build.air:!
-    - narrate "<&7>Turned <&a><[air_blocks].size> <&7>blocks back into air."
-
-  - narrate <&a>Done!
-  #- wait 5m
-
-  #- modifyblock <[total_blocks]> air
-  #- flag <[total_blocks]> build:!
-
-a:
-  type: task
-  debug: false
-  script:
-  - foreach <script[build_system_handler].queues> as:q:
-    - queue <[q]> clear
-
 build_tiles:
   type: task
   debug: false
@@ -466,8 +128,10 @@ build_system_handler:
         - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:5 visibility:100
         - modifyblock <[b]> air
       - flag player build.edit_mode:!
+      - playsound <player> sound:BLOCK_GRAVEL_BREAK pitch:1
       - stop
 
+    - playsound <player> sound:BLOCK_GRAVEL_BREAK pitch:1.75
     - define eye_loc      <player.eye_location>
     - define target_block <[eye_loc].ray_trace[return=block;range=4.5;default=air]>
     - if !<[target_block].has_flag[build.center]>:
@@ -505,7 +169,13 @@ build_system_handler:
       - flag <[edited_blocks]> build.edited:!
       - flag player build.edit_mode.blocks:!
       - stop
-    - flag player build.material:<map[wood=brick;brick=metal;metal=wood].get[<player.flag[build.material]>]>
+    - define new_mat <map[wood=brick;brick=metal;metal=wood].get[<player.flag[build.material]>]>
+    - define sound   <map[wood=ITEM_ARMOR_EQUIP_LEATHER;brick=ITEM_ARMOR_EQUIP_GENERIC;metal=ITEM_ARMOR_EQUIP_NETHERITE].get[<[new_mat]>]>
+
+    - flag player build.material:<[new_mat]>
+
+    - playsound <player> sound:<[sound]> pitch:1.75 volume:0.5
+
     #- flag player build.
     - inject update_hud
 
@@ -529,6 +199,20 @@ build_system_handler:
       - define build_type <player.flag[build.type]>
       - define material <player.flag[build.material]>
 
+        #automatically switch mats if you're out of the current material
+      - if <player.flag[fort.<[material]>.qty]||0> < 10:
+        - define other_mats <list[wood|brick|metal].exclude[<[material]>]>
+        - foreach <[other_mats]> as:mat:
+          - if <player.flag[fort.<[mat]>.qty]||0> > 10:
+            - define switched True
+            - flag player build.material:<[mat]>
+            - define material <[mat]>
+            - inject update_hud
+            - foreach stop
+        - stop if:<[switched].exists.not>
+
+      - run fort_pic_handler.mat_count def:<map[qty=10;mat=<[material]>;action=remove]>
+
       #because walls and floors override stairs
       - define total_blocks <[tile].blocks>
       - define override_blocks <[total_blocks].filter[has_flag[build.center]].filter_tag[<list[pyramid|stair].contains[<[filter_value].flag[build.center].flag[build.type]>]>]>
@@ -549,8 +233,7 @@ build_system_handler:
       - flag <[center]> build.type:<[build_type]>
       - flag <[center]> build.health:<[health]>
       - flag <[center]> build.material:<[material]>
-
-      - flag <[center]> build.placed_by:WORLD
+      - flag <[center]> build.placed_by:<player>
 
       - flag <[blocks]> build.center:<[center]>
 
@@ -571,7 +254,7 @@ build_system_handler:
 
     - define edit_tile    <player.flag[build.edit_mode.tile]>
     - define eye_loc      <player.eye_location>
-    - define target_block <[eye_loc].ray_trace[return=block;range=4.5;default=air]>
+    - define target_block <[eye_loc].ray_trace[return=block;range=5;default=air]>
     #if they're not even looking at an edit block
     - if !<[target_block].has_flag[build.center]>:
       - stop
@@ -631,7 +314,9 @@ build_system_handler:
     - define center <[center].flag[build.center]>
     - define type <[center].flag[build.type]>
 
-    - inject build_system_handler.replace_tiles
+    #so build structures aren't replaced with the default builds
+    - if <[center].flag[build.placed_by]||null> != WORLD:
+      - inject build_system_handler.replace_tiles
 
     #-actually removing the original tile
     #so it only includes the parts of the tile that are its own (since each cuboid intersects by one)
@@ -642,33 +327,12 @@ build_system_handler:
 
     - flag <[blocks]> build:!
 
-    ###MAKE SURE WHEN A WOOD/FLOOR IS REPLACED, THE CORRECT MATERIAL THERE IS REPLACED TOO
-
-    ####OR JUST CANCEL REPLACING TILES (EITHER WORKS, BUT REMOVING TILE REPLACE MAKES IT LOOK A LITTLE WORSE)
-
-    ##########SLABS ALSO WORK FOR FLOORS
-
-
-    #Here's a quick oversight of what you'll need to know though. Each "tile" is a 5x5 cuboid that overlaps each other, so they're basically 4x4s that look like this.
-    #All you have to do is *replace* the already-placed materials with blocks that are similar to the ones in Fortnite, and I recommend creating some sort of pallete for 5x5
-    #tiles to have some sort of consistency between all the buildings, in case you notice some tiles are being re-used. You'll have to have Fortite open as well to look
-    #at the correct textures of the map.
-    #You also have to add the doors and windows, and feel free to break any already-placed blocks too if you find it necessary.
-    # **Also, I'd appreciate it so so much if you or one of your builders used replay mod**
-
-  #if you type /tv and hover over a "tile", you can see what blocks it occupies. you can place blocks in any of the regions that the tile occupies, just make sure it makes sense for example if you broke it
-
-    #TODO: CHANGE HEALTH VALUES OF WORLD TILES TO ACCURATE ONES USING "GET ALL TILES" SYSTEM (MAKE IT ALL 450?)
-
-
-    #order: first placed -> last placed
-    - define priority_order <list[wall|floor|stair|pyramid]>
-    - foreach <[replace_tiles_data].parse_tag[<[parse_value]>/<[priority_order].find[<[parse_value].get[build_type]>]>].sort_by_number[after[/]].parse[before[/]]> as:tile_data:
-      #don't replace world blocks
-      - if <[tile_data].get[center].flag[build.placed_by]> == WORLD && <list[stair|pyramid].contains[<[tile_data].get[build_type]>]>:
-        #&& <list[stair|pyramid].contains[<[tile_data].get[build_type]>]>
-        - foreach next
-      - run build_system_handler.place def:<[tile_data]>
+    #checking if it exists in case it wasn't replaced (because of world structures)
+    - if <[replace_tiles_data].exists>:
+      #order: first placed -> last placed
+      - define priority_order <list[wall|floor|stair|pyramid]>
+      - foreach <[replace_tiles_data].parse_tag[<[parse_value]>/<[priority_order].find[<[parse_value].get[build_type]>]>].sort_by_number[after[/]].parse[before[/]]> as:tile_data:
+        - run build_system_handler.place def:<[tile_data]>
 
     - run build_system_handler.remove_tiles def:<map[tile=<[tile]>;center=<[center]>]>
 
@@ -1034,8 +698,8 @@ build_toggle:
     - define lb <element[<&l><&lb>].color[<[bc]>]>
     - define rb <element[<&l><&rb>].color[<[bc]>]>
 
-    - define l_button     <[lb]><&l><&keybind[key.attack].color[<[lc]>]><[rb]>
-    - define r_button     <[lb]><&l><&keybind[key.use].color[<[rc]>]><[rb]>
+    - define l_button     <[lb]><element[<&l>L].color[<[lc]>]><[rb]>
+    - define r_button     <[lb]><element[<&l>R].color[<[rc]>]><[rb]>
     - define drop_key     <&keybind[key.drop].font[build_text]>
     - define drop_button  <[lb]><element[<&l><[drop_key]>].color[<[dt]>]><[rb]>
 
@@ -1083,7 +747,22 @@ build_toggle:
         - flag player build.type:<[type]>
         - inject build_tiles.<[type]>
 
+        # keeping this here, just in case, but we might not need it and can let players break the terrain with the builds, since it gives more freedom
+        # AND the world regenerates each match anyways
+
+        #checks if:
+        # 1) there's something unbreakable there
+        # 2) if there's already a build there (and if that build is NOT a pyramid or a stair (since those can be "overwritten"))
+        #if none pass, it's buildable
         - define can_build True
+        - define unbreakable_blocks <[display_blocks].filter[material.name.equals[air].not].filter[has_flag[build].not]>
+        #this way, grass and shit is overwritten because screw that
+
+        - if <[unbreakable_blocks].filter[material.vanilla_tags.contains[replaceable_plants].not].any> || <[final_center].has_flag[build.center]>:
+          #make sure you can place walls around stairs and pyramids (in that order)
+          #made it so you cant place stairs on stairs and pyramids on pyramids
+          - if !<[final_center].has_flag[build.center]> || !<list[pyramid|stair].contains[<[final_center].flag[build.center].flag[build.type]>]> || <list[pyramid|stair].contains[<[type]>]>:
+            - define can_build False
 
         - define build_color 45,167,237,150
         - if <player.flag[fort.<[material]>.qty]||0> < 10:
@@ -1104,3 +783,11 @@ build_toggle:
 
     - actionbar <&sp>
     - flag player build:!
+
+#test:
+  #type: task
+  #debug: false
+  #script:
+    #- spawn ITEM_DISPLAY[item=stone] <player.location.above[2]> save:e
+    #- define e <entry[e].spawned_entity>
+    #- adjust <[e]> display_entity_data:<map[transformation_scale=<location[0,1,0]>]>

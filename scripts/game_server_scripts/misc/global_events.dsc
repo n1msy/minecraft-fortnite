@@ -367,8 +367,6 @@ fort_global_handler:
   #-create the "on your knees" animation or no? because the player fades away anyways
     anim:
       - define loc <player.location>
-
-      - wait 2s
       - run dmodels_spawn_model def.model_name:emotes def.location:<[loc].above[2.1]> def.yaw:<[loc].yaw> save:result
       - define spawned <entry[result].created_queue.determination.first||null>
       - run dmodels_set_scale def.root_entity:<[spawned]> def.scale:1.87,1.87,1.87
@@ -383,8 +381,6 @@ fort_global_handler:
       - run fort_global_handler.death_fx.squares def:<map[loc=<[loc]>]>
       - wait 6t
       - run fort_global_handler.death_fx.circles def:<map[loc=<[loc]>]>
-
-      #- playsound <[loc]> sound:BLOCK_ANVIL_DESTROY pitch:2
 
     ray:
       - define loc <[data].get[loc].above[2.535]>

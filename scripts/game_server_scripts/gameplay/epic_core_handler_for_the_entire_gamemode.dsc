@@ -1,5 +1,6 @@
 #/ex narrate <location[75.5,0,55.5].points_around_y[radius=50;points=16].to_polygon.with_y_min[0].with_y_max[300].outline>
 #/globaldisplay transform 2 ~ 0 ~ 1600 300 1600 80
+
 stand_to_display_ent_testing:
   type: task
   debug: false
@@ -208,8 +209,12 @@ fort_bus_handler:
       - chunkload <[bus_start].chunk> duration:30s
       - waituntil <[bus_start].chunk.is_loaded> rate:1s max:15s
 
-    #- define bus_start <player.location.above[2].with_pitch[0]>
-    #- define yaw <[bus_start].yaw>
+    #randomize this, or make it so players are in the same bus if they queued at the same time?
+    - define players <server.online_players_flagged[fort]>
+
+    #-teleport just one of the players to that location, just so the entities don't despawn
+    #they sometimes despawn and start erroring
+    - teleport <[players].random> <[bus_start]>
 
     - run dmodels_spawn_model def.model_name:battle_bus def.location:<[bus_start]> save:bus
     - define bus <entry[bus].created_queue.determination.first||null>
@@ -275,11 +280,10 @@ fort_bus_handler:
       - mount <[part]>|<[controller]>
 
       - flag server fort.temp.bus.controllers:->:<[controller]>
+      - define total_controllers:->:<[controller]>
       - flag <[controller]> vector_loc:<[part_loc].sub[<[bus_start]>]>
       #- wait 1t
 
-    #randomize this, or make it so players are in the same bus if they queued at the same time?
-    - define players <server.online_players_flagged[fort]>
     #-mount every player with 10 random players in the bus
     - foreach <[players].sub_lists[10]> as:group:
       - define available_seats <[total_seats]>
@@ -308,8 +312,14 @@ fort_bus_handler:
     - define jump_text   "<element[<&l>PRESS].color[<color[71,0,0]>]> <[sneak_button]> <element[<&l>TO JUMP].color[<color[71,0,0]>]>"
 
     - define distance 2304
-    - define seats       <server.flag[fort.temp.bus.seats]>
-    - define controllers <server.flag[fort.temp.bus.controllers]>
+
+    ###the seats are sometimes "not spawned" ?
+    #- define seats       <server.flag[fort.temp.bus.seats]>
+    #trying this instead...
+    - define seats       <[total_seats]>
+    #- define controllers <server.flag[fort.temp.bus.controllers]>
+    #trying this too
+    - define controllers <[total_controllers]>
 
     - repeat <[distance]>:
 
