@@ -1,24 +1,12 @@
 #TODO: clean up this entire thing; it's pretty unorganized and ugly
 #-play wood/brick/metal sounds (and cancel the other breaking sound) when breaking tiles?
 
-test:
+clear_build_queues:
   type: task
   debug: false
   script:
-    - define tile <player.cursor_on.flag[build.center].flag[build.structure]>
-    - define center <[tile].center.flag[build.center]>
-    - define t <player.flag[test]>
-    #this time, with PITCH, since it can go above and below too
-    - narrate <[t].center.flag[build.center]>
-    - define pose    <[center].face[<[t].center.flag[build.center]>]>
-    - define t_yaw   <[pose].yaw>
-    - define t_pitch <[pose].pitch>
-    #- narrate <[pose].yaw>/<[t_pitch]>
-    - define section <[tile].intersection[<[t]>].blocks.parse[with_pose[<[t_pitch]>,<[t_yaw]>]]>
-    #if there's no actual material that's connecting the tiles together, then it's *not* a nearby tile
-
-    #wall to wall can be: to the left, to the right, above, and below
-    - modifyblock <[section].parse[forward]> diamond_block
+    - foreach <script[build_system_handler].queues> as:q:
+      - queue clear <[q]>
 
 tile_visualiser_command:
   type: command
@@ -399,7 +387,7 @@ build_system_handler:
 
     #There's only six four (or less) for each cardinal
     #direction, so we use a foreach, and go through each one.
-    - foreach <[branches]> as:starting_tile:
+    - foreach <[branches].deduplicate> as:starting_tile:
         #The tiles to check are a list of tiles that we need to get siblings of.
         #Each tile in this list gets checked once, and removed.
         - define tiles_to_check <list[<[starting_tile]>]>
@@ -419,65 +407,65 @@ build_system_handler:
             #if it doesn't, it's already removed
             - foreach next if:!<[tile].center.has_flag[build.center]>
 
+
+            - define center <[tile].center.flag[build.center]>
+
+            - foreach next if:<[center].chunk.is_loaded>
+
+            - define type   <[center].flag[build.type]>
+
+            - define is_root <proc[is_root].context[<[center]>|<[type]>]>
+
+            #- [For Debug Purposes]
+            #- debugblock <[tile].blocks> d:3m color:0,0,0,150 if:<[is_root]>
+
+            #-FAKE ROOT CHECK
+            - define fake_root:!
+            #fake root means that it's not *actually* connected to the tile
+            #getting the *previous* tile, to check if this root tile was really connected to it
+            - if <[is_root]> && <[previous_tile].exists>:
+              - if !<[previous_tile].intersects[<[tile]>]> || <[previous_tile].intersection[<[tile]>].blocks.filter[material.name.equals[air].not].is_empty>:
+                #- debugblock <[tile].blocks> d:3m color:155,0,0,150
+                - define fake_root True
+
             #If the tile is touching the ground, then skip this branch. The
             #tiles_to_check and structure lists get flushed out and we start
             #on the next branch. When we next the foreach, we are
             #also breaking out of the while, so we don't need to worry about
             #keeping track (like you had with has_root)
+            - foreach next if:<[is_root].and[<[fake_root].exists.not>]>
 
-            - define center <[tile].center.flag[build.center]>
-            - define type   <[center].flag[build.type]>
-
-            #- [For Debug Purposes]
-            #- debugblock <[tile].blocks> d:3m color:0,0,0,150 if:<proc[is_root].context[<[center]>|<[type]>]>
-            - foreach next if:<proc[is_root].context[<[center]>|<[type]>]>
             #If the tile ISN'T touching the ground, then first, we remove it
             #from the tiles to check list, because obvi we've already checked
             #it.
+
             - define tiles_to_check:<-:<[tile]>
-            #Next, we get every surrounding tile, but only if they're not already
-            #in the structure list. That means that we don't keep rechecking tiles
-            #we've already checked.
-            - define surrounding_tiles <proc[get_surrounding_tiles].context[<[tile]>|<[center]>].exclude[<[structure]>]>
-            #only get the surrounding tiles if they're actually connected (not by air blocks), if it's a world block
 
-            #-ONLY if the broken tile was a wall and the connecting tiles are floors
-            - if <[center].flag[build.placed_by]> == WORLD && <[type]> == WALL:
-              - foreach <[surrounding_tiles]> as:t:
-                - define t_type <[t].center.flag[build.type]>
-                - if <[t_type]> == FLOOR:
-                  - define yaw <[center].face[<[t].center.flag[build.center]>].yaw>
-                  - define section <[tile].intersection[<[t]>].blocks.parse[with_yaw[<[yaw]>]]>
-                  #if there's no actual material that's connecting the tiles together, then it's *not* a nearby tile
-                  - if <[section].filter[backward_flat.material.name.equals[air].not].is_empty>:
-                    - define surrounding_tiles:<-:<[t]>
+            - if <[fake_root].exists>:
+              #it's called a "fake root", because it's not actually connected to the tile, but it's still a root, so it shouldn't break
+              - define structure <[structure].exclude[<[tile]>]>
+            - else:
 
-                #second check makes is so only up/down/left/right works
-                - else if <[t_type]> == WALL && <[t].center.face[<[center]>].yaw> != 45:
-                  #this time, with PITCH, since it can go above and below too
-                  - define pose    <[center].face[<[t].center.flag[build.center]>]>
-                  - define t_yaw   <[pose].yaw>
-                  - define t_pitch <[pose].pitch>
-                  #- narrate <[pose].yaw>/<[t_pitch]>
-                  - define section <[tile].intersection[<[t]>].blocks.parse[with_pose[<[t_pitch]>,<[t_yaw]>]]>
-                  #if there's no actual material that's connecting the tiles together, then it's *not* a nearby tile
+              - define previous_tile <[tile]>
 
-                  #wall to wall can be: to the left, to the right, above, and below
-                  #- modifyblock <[section].parse[forward].filter[material.name.equals[air].not]> diamond_block
-                  - if <[section].filter[forward.material.name.equals[air].not].is_empty>:
-                    - define surrounding_tiles:<-:<[t]>
+              #Next, we get every surrounding tile, but only if they're not already
+              #in the structure list. That means that we don't keep rechecking tiles
+              #we've already checked.
+              - define surrounding_tiles <proc[get_surrounding_tiles].context[<[tile]>|<[center]>].exclude[<[structure]>]>
+              #only get the surrounding tiles if they're actually connected (not by air blocks), if it's a world block
 
-            #We add all these new tiles to the structure, and since we already excluded
-            #the previous list of tiles in the structure, we don't need to deduplicate.
-            - define structure:|:<[surrounding_tiles]>
-            #Since these are all new tiles, we need to check them as well.
-            - define tiles_to_check:|:<[surrounding_tiles]>
+              #We add all these new tiles to the structure, and since we already excluded
+              #the previous list of tiles in the structure, we don't need to deduplicate.
+              - define structure:|:<[surrounding_tiles]>
+              #Since these are all new tiles, we need to check them as well.
+              - define tiles_to_check:|:<[surrounding_tiles]>
 
             - wait 1t
         #If we get to this point, then that means we didn't skip out early with foreach.
         #That means we know it's not touching ground anywhere, so now we want to break
         #each tile. So we go through the structure list, and break each one (however you handle that.)
         #-break the tiles
+        #- define sounds_played_at <list[]>
         - foreach <[structure]> as:tile:
 
           #do you get mats from world structures that are broken by chain?
@@ -493,8 +481,11 @@ build_system_handler:
             - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
           #everything is being re-applied anyways, so it's ok
           - ~modifyblock <[tile].blocks> air
-          #-often too many sounds compared to blocks breaking? (i just made modifyblock waitable, maybe that fixed it)
+          #-often too many sounds compared to blocks breaking? (i just made modifyblock waitable)
+          #- if <[sounds_played_at].contains[<[tile].center>]>:
           - playsound <[tile].center> sound:<[sound]> pitch:0.8
+
+          #- define sounds_played_at:<[sounds_played_at].include[<[tile].center>]>
 
           - flag <[blocks]> build:!
 
