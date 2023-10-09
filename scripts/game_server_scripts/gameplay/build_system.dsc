@@ -314,9 +314,7 @@ build_system_handler:
     - define center <[center].flag[build.center]>
     - define type <[center].flag[build.type]>
 
-    #so build structures aren't replaced with the default builds
-    - if <[center].flag[build.placed_by]||null> != WORLD:
-      - inject build_system_handler.replace_tiles
+    - inject build_system_handler.replace_tiles
 
     #-actually removing the original tile
     #so it only includes the parts of the tile that are its own (since each cuboid intersects by one)
@@ -327,12 +325,10 @@ build_system_handler:
 
     - flag <[blocks]> build:!
 
-    #checking if it exists in case it wasn't replaced (because of world structures)
-    - if <[replace_tiles_data].exists>:
-      #order: first placed -> last placed
-      - define priority_order <list[wall|floor|stair|pyramid]>
-      - foreach <[replace_tiles_data].parse_tag[<[parse_value]>/<[priority_order].find[<[parse_value].get[build_type]>]>].sort_by_number[after[/]].parse[before[/]]> as:tile_data:
-        - run build_system_handler.place def:<[tile_data]>
+    #order: first placed -> last placed
+    - define priority_order <list[wall|floor|stair|pyramid]>
+    - foreach <[replace_tiles_data].parse_tag[<[parse_value]>/<[priority_order].find[<[parse_value].get[build_type]>]>].sort_by_number[after[/]].parse[before[/]]> as:tile_data:
+      - run build_system_handler.place def:<[tile_data]>
 
     - run build_system_handler.remove_tiles def:<map[tile=<[tile]>;center=<[center]>]>
 
@@ -401,12 +397,12 @@ build_system_handler:
 
           - define blocks <[tile].blocks.filter[flag[build.center].equals[<[tile].center.flag[build.center]||null>]]>
 
+          #everything is being re-applied anyways, so it's ok
+          - ~modifyblock <[tile].blocks> air
+          #-often too many sounds compared to blocks breaking? (i just made modifyblock waitable, maybe that fixed it)
           - playsound <[tile].center> sound:<[tile].center.material.block_sound_data.get[break_sound]> pitch:0.8
           - foreach <[tile].blocks> as:b:
             - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
-
-          #everything is being re-applied anyways, so it's ok
-          - modifyblock <[tile].blocks> air
 
           - flag <[blocks]> build:!
 
@@ -437,8 +433,9 @@ build_system_handler:
           #doing this instead of center, since pyramid center is a slab
           material: <[c_tile_center].flag[build.material]>
 
+      ##only adding player-placed tiles to replace tile data (since world-placed shouldn't be replaced with player builds, but flag replace is ok)
       #doing this so AFTER the original tile is completely removed
-      - define replace_tiles_data:<[replace_tiles_data].include[<[tile_data]>]>
+      - define replace_tiles_data:<[replace_tiles_data].include[<[tile_data]>]> if:<[c_tile_center].flag[build.placed_by].equals[WORLD].not>
 
       #make the connectors a part of the other tile
       - flag <[connecting_blocks]> build.center:<[c_tile_center]>
@@ -470,7 +467,10 @@ build_system_handler:
         - define override_blocks <[top_points].include[<[bot_points]>].filter[flag[build.center].flag[build.type].equals[pyramid].not]>
 
         #so it doesn't completely override any previously placed tiles
-        - define set_blocks <[total_set_blocks].filter[has_flag[build].not].include[<[own_stair_blocks]>].include[<[override_blocks]>]>
+        - define set_blocks    <[total_set_blocks].filter[has_flag[build].not].include[<[own_stair_blocks]>].include[<[override_blocks]>]>
+
+        #don't include edited blocks
+        - define set_blocks    <[set_blocks].filter[has_flag[build.edited].not]>
 
         - define direction <[center].yaw.simple>
         - define material <[base_material]>_stairs[direction=<[direction]>]
@@ -478,8 +478,9 @@ build_system_handler:
 
         #if they're stairs and they are going in the same direction, to keep the stairs "smooth", forget about adding connectors to them
         - define consecutive_stair_blocks <[set_connector_blocks].filter[flag[build.center].flag[build.type].equals[stair]].filter[material.direction.equals[<[direction]>]]>
+        - define set_blocks               <[set_connector_blocks].exclude[<[consecutive_stair_blocks]>].exclude[<[override_blocks]>].filter[has_flag[build.edited].not]>
 
-        - modifyblock <[set_connector_blocks].exclude[<[consecutive_stair_blocks]>].exclude[<[override_blocks]>]> <map[oak=oak_planks;brick=bricks;cobblestone=cobblestone].get[<[base_material]>]>
+        - modifyblock <[set_blocks]> <map[oak=oak_planks;brick=bricks;cobblestone=cobblestone].get[<[base_material]>]>
 
       - case pyramid:
         - run place_pyramid def:<[center]>|<[base_material]>
@@ -507,7 +508,7 @@ build_system_handler:
           - define exclude_blocks <[top_points].include[<[bot_points]>].parse[with_pose[0,0]]>
 
         - define set_blocks <[total_blocks].exclude[<[exclude_blocks]>]>
-        - modifyblock <[set_blocks]> <map[oak=oak_planks;brick=bricks;cobblestone=cobblestone].get[<[base_material]>]>
+        - modifyblock <[set_blocks].filter[has_flag[build.edited].not]> <map[oak=oak_planks;brick=bricks;cobblestone=cobblestone].get[<[base_material]>]>
 
 find_connected_tiles:
   type: procedure
@@ -622,8 +623,8 @@ place_pyramid:
           - if !<[s].has_flag[build.center]> || <list[stair|pyramid].contains[<[s].flag[build.center].flag[build.type]>]>:
             - define block_data <[block_data].include[<map[loc=<[s]>;mat=<[side_mat]>]>]>
 
-    - modifyblock <[block_data].parse[get[loc]]> <[block_data].parse[get[mat]]>
-    - modifyblock <[center]> <[base_material]>_slab
+    - modifyblock <[block_data].parse[get[loc]].filter[has_flag[build.edited].not]> <[block_data].parse[get[mat]]>
+    - modifyblock <[center]> <[base_material]>_slab if:<[center].has_flag[build.edited].not>
 
 
 stair_blocks_gen:

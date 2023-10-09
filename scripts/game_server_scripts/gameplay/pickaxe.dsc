@@ -341,16 +341,17 @@ fort_pic_handler:
     #-tree animation
     - else:
 
+      #in fort there's no "animation" like this, but i like it
       - define wood_blocks <[blocks].filter[material.block_sound_data.get[break_sound].contains_text[wood]]>
       - define leaves      <[blocks].exclude[<[wood_blocks]>]>
-      - foreach <[wood_blocks].sub_lists[5]> as:sub_blocks:
+      - foreach <[wood_blocks].sub_lists[8]> as:sub_blocks:
         - modifyblock <[sub_blocks]> air
         - define sound <[sub_blocks].first.after_last[_].equals[leaves].if_true[BLOCK_GRASS_BREAK].if_false[BLOCK_WOOD_BREAK]>
         - playsound <[sub_blocks].first> sound:<[sound]> pitch:0.8
         - playeffect effect:BLOCK_CRACK at:<[sub_blocks].parse[center]> offset:0 special_data:<[sub_blocks].first.material> quantity:10 visibility:100
         - wait 2t
 
-      - playsound <[center]> sound:BLOCK_GRASS_BREAK pitch:0.8
+      - playsound <[center]> sound:BLOCK_GRASS_BREAK pitch:0.8 volume:1.2
       - foreach <[leaves]> as:leaf:
         - define leaf_mat <[leaf].material>
         - modifyblock <[leaf]> air
