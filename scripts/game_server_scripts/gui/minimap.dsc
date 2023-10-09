@@ -112,8 +112,8 @@ minimap:
     ## - [ CIRCLE ] - ##
     # circle display
     #- circle x and y is in worldspace
-    - define circle_x 0
-    - define circle_y 0
+    - define circle_x 900
+    - define circle_y 900
     - define storm_id 5
     - define relX     <[circle_x].sub[<[loc].x>].add[2048].max[0].min[4095]>
     - define relZ     <[circle_y].sub[<[loc].z>].add[2048].max[0].min[4095]>
@@ -142,7 +142,7 @@ minimap:
     - define circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
     - define purple_circle_display <&chr[E003].font[map].color[<[circle_color]>]>
 
-    - define title <[compass_display]><[whole_map]><[marker]><proc[spacing].context[<[circle_offset].add[<[purple_offset]>].sub[2].sub[<[tiles].size>]>]><[circle_display]><proc[spacing].context[<[purple_offset].sub[<[circle_offset].sub[1]>]>]><[purple_circle_display]>
+    - define title <[compass_display]><[whole_map]><[marker]><proc[spacing].context[<[circle_offset].add[<[purple_offset]>].sub[2].sub[<[tiles].size>]>]><[circle_display]><proc[spacing].context[<[purple_offset].sub[<[circle_offset].sub[1]>]>]><[purple_circle_display]><proc[spacing].context[-2]>
 
     - define spacing <map[1=7;2=10;3=13].get[<[yaw].length>]>
     #or: <element[16].sub[<[yaw].length.mul[3]>]>
@@ -174,8 +174,8 @@ minimap:
 
     - define map <[map].unseparated>
     # - circle
-    - define actualX <[circle_x]>
-    - define actualY <[circle_y]>
+    - define actualX <[circle_x].sub[<[top_left_x]>]>
+    - define actualY <[circle_y].sub[<[top_left_z]>]>
     - define r_ <[actualX].mod[256]>
     - define g_ <[actualY].mod[256]>
     #- narrate <[actualX].div[256].round_down>/<[actualY].div[256].round_down>
@@ -190,9 +190,9 @@ minimap:
     - define rot_data <[yaw].is[LESS].than[0].if_true[<[yaw].add[360]>].if_false[<[yaw]>].div[360].mul[64].round_down>
     #- narrate <[rot_data]>
 
-    #max is 128
-    - define x <[loc].x.add[512].div[2].round_down>
-    - define y <[loc].z.add[512].div[2].round_down>
+    # 0 - 511
+    - define x <[loc].x.sub[<[top_left_x]>].div[4].round_down>
+    - define y <[loc].z.sub[<[top_left_z]>].div[4].round_down>
     - define full_marker_red <[rot_data].add[<[x].div[256].round_down.mul[64]>].add[<[y].div[256].round_down.mul[128]>]>
     #- define full_marker_red <[rot_data].div[8].round>
     #- narrate <[]>
