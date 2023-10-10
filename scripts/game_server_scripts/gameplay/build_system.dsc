@@ -430,6 +430,7 @@ build_system_handler:
               - if !<[previous_tile].intersects[<[tile]>]> || <[previous_tile].intersection[<[tile]>].blocks.filter[material.name.equals[air].not].is_empty>:
                 #- debugblock <[tile].blocks> d:3m color:155,0,0,150
                 - define fake_root True
+              #-ARCH check (in buildings)
 
             #If the tile is touching the ground, then skip this branch. The
             #tiles_to_check and structure lists get flushed out and we start
