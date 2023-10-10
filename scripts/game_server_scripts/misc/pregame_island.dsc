@@ -187,6 +187,20 @@ pregame_island_handler:
     #stop lobby circle animation
     - flag server fort.lobby_circle_enabled:!
 
+    # - Player Setup - #
+    #teams automatically are removed when server restart
+
+    #in parties, the team name would be the name of the party leader
+    - foreach <[players]> as:p:
+      - define name <[p].name>
+      - team name:<[name]> add:<[p]>
+      - team name:<[name]> option:FRIENDLY_FIRE status:NEVER
+      #so other teams can't see their names
+      - team name:<[name]> option:NAME_TAG_VISIBILITY status:FOR_OTHER_TEAMS
+      #so you can't see anyone that's invisible
+      - team name:<[name]> option:SEE_INVISIBLE status:NEVER
+
+
     - run fort_core_handler
 
   bus_removal:
