@@ -126,19 +126,6 @@ bake_structures:
     - narrate "<&a>Structure data baked! <&7>(<&b><[structure].size><&7> tiles, <&b><[total_roots].size||null><&7> roots)"
 
 
-test:
-  type: task
-  debug: false
-  script:
-  - define center <player.cursor_on.flag[build.center]>
-  - define tile   <[center].flag[build.structure]>
-
-  #if the second to last bottom strip of the wall is air, it means it's not connected to the ground
-  - define strip <[tile].blocks.filter[flag[build.center].equals[<[center]>]].filter[y.equals[<[center].below.y>]]>
-  - if <[strip].filter[material.name.equals[air].not].is_empty>:
-    - narrate fake_root
-  #- debugblock <[strip]> d:3m color:155,0,0,150
-
 clear_build_queues:
   type: task
   debug: false

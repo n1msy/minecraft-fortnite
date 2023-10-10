@@ -1,6 +1,9 @@
 #/ex narrate <location[75.5,0,55.5].points_around_y[radius=50;points=16].to_polygon.with_y_min[0].with_y_max[300].outline>
 #/globaldisplay transform 2 ~ 0 ~ 1600 300 1600 80
 
+
+#TODO: ADD SOUND FOR TICK TOK 12 SECONDS BEFORE "STORM EYE SHRINKING" + ALARM
+
 stand_to_display_ent_testing:
   type: task
   debug: false
@@ -113,6 +116,9 @@ fort_core_handler:
 
     - define icon <&chr[<map[bus=0025;fall=0003;grace_period=B005;storm_shrink=0005].get[<[phase]>]>].font[icons]>
 
+    - define players <server.online_players_flagged[fort]>
+    - run FORT_CORE_HANDLER.announcement_sounds.main
+
     - if <[diameter].exists>:
       - define storm_center <server.flag[fort.temp.storm_center]>
       - execute as_server "globaldisplay transform storm <[storm_center].simple.before_last[,].replace_text[,].with[ ]> <[diameter]> 600 <[diameter]><[seconds].mul[20]>"
@@ -133,6 +139,8 @@ fort_core_handler:
       - case grace_period:
         - define announce_icon <&chr[B006].font[icons]>
         - define text "STORM EYE <[FORMING]||SHRINKS> IN"
+
+        - playsound <[players]> sound:BLOCK_BEACON_DEACTIVATE pitch:1.2 volume:0.3 if:!<[forming].exists>
 
         - if <[seconds]> <= 60:
           - define +spacing <proc[spacing].context[86]>
@@ -172,6 +180,19 @@ fort_core_handler:
 
       - wait 1s
 
+  announcement_sounds:
+    main:
+      - define players <server.online_players_flagged[fort]>
+      - wait 15t
+      - playsound <[players]> sound:BLOCK_NOTE_BLOCK_SNARE pitch:0.75 volume:0.1
+      - wait 3.5t
+      #-either _BIT or _XYLOPHONE idk
+      - playsound <[players]> sound:BLOCK_NOTE_BLOCK_XYLOPHONE volume:0.3 pitch:0.7
+      - wait 2t
+      - playsound <[players]> sound:BLOCK_NOTE_BLOCK_XYLOPHONE volume:0.3 pitch:1.19
+      - wait 2t
+      - playsound <[players]> sound:BLOCK_NOTE_BLOCK_XYLOPHONE volume:0.3 pitch:0.898
+
 fort_bus_handler:
   type: world
   debug: false
@@ -186,7 +207,9 @@ fort_bus_handler:
       - determine passively cancelled
       - stop
 
-    ####playsound when jumping off
+    - playsound <player> sound:BLOCK_NOTE_BLOCK_BASS pitch:0.75 volume:0.7
+    - playsound <player> sound:ITEM_TRIDENT_RETURN pitch:1.2 volume:0.8
+    - playsound <player> sound:ENTITY_VEX_AMBIENT pitch:1.5
 
     - flag player fort.on_bus:!
     - flag server fort.temp.bus.passengers:<-:<player>
