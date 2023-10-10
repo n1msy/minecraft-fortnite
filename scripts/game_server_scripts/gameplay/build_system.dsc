@@ -1,6 +1,19 @@
 #TODO: clean up this entire thing; it's pretty unorganized and ugly
 #-play wood/brick/metal sounds (and cancel the other breaking sound) when breaking tiles?
 
+test:
+  type: task
+  debug: false
+  script:
+  - define center <player.cursor_on.flag[build.center]>
+  - define tile   <[center].flag[build.structure]>
+
+  #if the second to last bottom strip of the wall is air, it means it's not connected to the ground
+  - define strip <[tile].blocks.filter[flag[build.center].equals[<[center]>]].filter[y.equals[<[center].below.y>]]>
+  - if <[strip].filter[material.name.equals[air].not].is_empty>:
+    - narrate fake_root
+  #- debugblock <[strip]> d:3m color:155,0,0,150
+
 clear_build_queues:
   type: task
   debug: false
@@ -424,13 +437,29 @@ build_system_handler:
             #-FAKE ROOT CHECK
             #ONLY doing this for WORLD tiles, because it works fine with regular builds
             - define fake_root:!
+            - define is_arch:!
             #fake root means that it's not *actually* connected to the tile
             #getting the *previous* tile, to check if this root tile was really connected to it
             - if <[center].flag[build.placed_by]||null> == WORLD && <[is_root]> && <[previous_tile].exists>:
+              #- debugblock <[tile].blocks> d:3m color:155,0,0,150
               - if !<[previous_tile].intersects[<[tile]>]> || <[previous_tile].intersection[<[tile]>].blocks.filter[material.name.equals[air].not].is_empty>:
                 #- debugblock <[tile].blocks> d:3m color:155,0,0,150
                 - define fake_root True
-              #-ARCH check (in buildings)
+              #-ARCH check (in buildings, only applies to walls)
+              - if <[type]> == WALL:
+                - define t_blocks <[tile].blocks.filter[flag[build.center].equals[<[center]>]]>
+                #check for arches
+                - define strip_1 <[t_blocks].filter[y.equals[<[center].y.sub[1]>]]>
+                #check for stuff like *fences*
+                - define strip_2 <[t_blocks].filter[y.equals[<[center].y>]]>
+                #if the second to last bottom strip of the wall is air, it means it's not connectewd to the ground
+                #this means that the first check failed, meaning that it's connected to the ground; so it's rooted, but it's not a real root
+                - if <[strip_1].filter[material.name.equals[air].not].is_empty>:
+                  - define fake_root True
+                  - define is_arch   True
+
+                - else if <[strip_2].filter[material.name.equals[air].not].is_empty>:
+                  - define fake_root True
 
             #If the tile is touching the ground, then skip this branch. The
             #tiles_to_check and structure lists get flushed out and we start
@@ -447,7 +476,8 @@ build_system_handler:
 
             - if <[fake_root].exists>:
               #it's called a "fake root", because it's not actually connected to the tile, but it's still a root, so it shouldn't break
-              - define structure <[structure].exclude[<[tile]>]>
+              #because arches should break
+              - define structure <[structure].exclude[<[tile]>]> if:!<[is_arch].exists>
             - else:
 
               - define previous_tile <[tile]>
@@ -907,6 +937,12 @@ build_toggle:
         - if <[tile].blocks.filter[has_flag[build.center]].filter[flag[build.center].has_flag[build.natural]].any>:
           - define can_build False
 
+        #-so you can't place builds too far away
+        - define too_far False
+        - if <[final_center].distance[<player.eye_location>]> > 5:
+          - define can_build False
+          - define too_far True
+
         - define build_color 45,167,237,150
         - if <player.flag[fort.<[material]>.qty]||0> < 10:
           - define build_color 219,55,55,150
@@ -918,7 +954,7 @@ build_toggle:
           - debugblock <[display_blocks]> d:2t color:<[build_color]>
         - else:
           - flag player build.struct:!
-          - debugblock <[display_blocks]> d:2t color:219,55,55,150
+          - debugblock <[display_blocks]> d:2t color:219,55,55,150 if:!<[too_far]>
 
       - actionbar <[text]>
 
