@@ -97,7 +97,7 @@ fort_global_handler:
     - stop if:<context.item.has_flag[action]||false>
     - if <util.list_numbers[from=19;to=27].contains[<context.slot>]> && <context.item.material.name> != air:
       - stop
-    - if <list[2|3|4|5].contains[<context.slot>]> && <context.clicked_inventory.inventory_type> == PLAYER:
+    - if <list[2|3|4|5|6].contains[<context.slot>]> && <context.clicked_inventory.inventory_type> == PLAYER:
       #remove/re-add rarity bg
       #if they're clicking WITH a fort item or ON one, update the rarity
       - if <context.item.has_flag[rarity]> || <context.cursor_item.has_flag[rarity]>:
