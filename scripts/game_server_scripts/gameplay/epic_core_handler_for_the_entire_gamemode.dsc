@@ -346,6 +346,8 @@ fort_bus_handler:
     #-mount every player with 10 random players in the bus
     - foreach <[players].sub_lists[10]> as:group:
       - define available_seats <[total_seats]>
+      #in case they were somehow invisible for everyone (most likely due to emotes)
+      - invisible <[group]> false for:<[group]>
       #make those players only visible to that group
       - invisible <[group]> true for:<[players].exclude[<[group]>]>
 
