@@ -252,7 +252,7 @@ fort_bus_handler:
     - flag server fort.temp.bus.passengers:<-:<player>
 
     - teleport <player> <player.location.below[1.5]>
-    - invisible false for:<server.online_players>
+    - invisible reset
 
     - run fort_glider_handler.fall
 
@@ -373,7 +373,7 @@ fort_bus_handler:
           - run fort_glider_handler.fall player:<[passenger]>
 
         #remove invisibility
-        - invisible <[passengers]> false for:<server.online_players>
+        - invisible <[passengers]> reset
         - flag server fort.temp.bus.passengers:<list[]>
         - define passengers <list[]>
 

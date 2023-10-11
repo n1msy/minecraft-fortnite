@@ -78,6 +78,8 @@ pregame_island_handler:
     #clear previous fort flags in case it wasn't
     - flag player fort:!
 
+    #in case they're invis
+    - invisible <player> reset
     - teleport <player> <server.flag[fort.pregame.spawn].random_offset[10,0,10]>
 
     - flag player fort.wood.qty:0
