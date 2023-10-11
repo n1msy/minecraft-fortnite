@@ -1095,6 +1095,7 @@ build_toggle:
         - if <player.flag[fort.<[material]>.qty]||0> < 10:
           - define build_color 219,55,55,150
 
+        #show debug blocks to spectating players too?
         - if <[can_build]>:
           #-set flags
           - flag player build.struct:<[tile]>

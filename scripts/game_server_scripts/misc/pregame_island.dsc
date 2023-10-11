@@ -86,6 +86,8 @@ pregame_island_handler:
     - flag player fort.brick.qty:0
     - flag player fort.metal.qty:0
 
+    - flag player fort.kills:0
+
     - foreach <list[light|medium|heavy|shells|rockets]> as:ammo_type:
       - flag player fort.ammo.<[ammo_type]>:999
 

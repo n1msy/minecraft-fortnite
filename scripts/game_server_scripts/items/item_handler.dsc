@@ -147,6 +147,7 @@ fort_item_handler:
   drop_everything:
 
     - define drops <player.inventory.list_contents>
+    - define loc   <player.location>
 
     - flag player fort.emote:!
 

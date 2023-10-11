@@ -1,6 +1,9 @@
 #-basically everything that's not the map
 
 ##update every element of the hud every time, or just isolate things to update?
+
+##im starting to think i should isolate to improve performance, not sure though
+
 #ie update_slots, update_mats, update_health
 update_hud:
   type: task
@@ -99,8 +102,6 @@ update_hud:
 
   - define timer       <server.flag[fort.temp.timer].if_null[-].font[hud_text]>
 
-    #<time[2069/01/01].add[<[secs_in_queue]>].format[m:ss]
-  ##- define time       <element[0:00].font[hud_text]>
   - define time_      <element[<[timer_icon]> <[timer]>].color[<color[50,0,0]>]>
 
   - define alive_icon <&chr[0002].font[icons]>
@@ -108,8 +109,7 @@ update_hud:
   - define alive      <element[<server.online_players_flagged[!fort.spectating].size>].font[hud_text]>
   - define alive_     <element[<[alive_icon]> <[alive]>].color[<color[51,0,0]>]>
 
-  - define kills      <element[-].font[hud_text]>
-  ##- define kills      <element[0].font[hud_text]>
+  - define kills      <element[<player.flag[fort.kills]||->].font[hud_text]>
   - define kills_icon <&chr[0001].font[icons]>
   - define kills_     <element[<[kills_icon]> <[kills]>].color[<color[52,0,0]>]>
 
@@ -121,8 +121,13 @@ update_hud:
   - define small_bar <[small_health_bar].color[<color[<[health_r]>,1,2]>]><proc[spacing].context[-106]><[small_shield_bar].color[<color[<[shield_r]>,1,1]>]>
   - define team_bars <[small_bar]><element[<proc[spacing].context[-106]><[name]>].color[<color[61,0,0]>]>
 
-  - sidebar set title:<empty> values:<[ammo_]>|<[shield_]>|<[health_]>|<[build_]>|<[slots_]>|<[wood_]>|<[brick_]>|<[metal_]>|<[time_]>|<[alive_]>|<[kills_]>|<[team_bars]>|<proc[spacing].context[500]>
+  #show hud to spectators too
+  #no need to share minimap, since it'd be the same exact as the player spectating
+  - define shared_players <server.online_players_flagged[fort.spectating].filter[flag[fort.spectating].equals[<player>]].include[<player>]>
 
+  - sidebar set title:<empty> values:<[ammo_]>|<[shield_]>|<[health_]>|<[build_]>|<[slots_]>|<[wood_]>|<[brick_]>|<[metal_]>|<[time_]>|<[alive_]>|<[kills_]>|<[team_bars]>|<proc[spacing].context[500]> players:<[shared_players]>
+
+  #update inventory for spectators too? i dont think so
   - inject hud_handler.update_inventory
 
 hud_handler:
@@ -138,7 +143,7 @@ hud_handler:
     - inject update_hud
 
     on player scrolls their hotbar:
-    - if <player.has_flag[fort.using_glider]>:
+    - if <player.has_flag[fort.using_glider]> || <player.has_flag[fort.spectating]>:
       - determine passively cancelled
       - stop
 

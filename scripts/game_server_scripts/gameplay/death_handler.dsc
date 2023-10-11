@@ -6,9 +6,12 @@ fort_death_handler:
     #check if players *don't* have fort.spectating, in case they *somehow* die while spectating?
     #not going to, because it's pretty much impossible. I'll do it if i see it happen once
 
-    on player death flagged:fort:
+    #so they can't use the teleport feature vanilla mc has
+    on player teleports cause:SPECTATE flagged:fort.spectating:
     - determine passively cancelled
-    - run fort_death_handler.death
+
+    on player stops spectating flagged:fort.spectating:
+    - determine passively cancelled
 
     on player damaged by VOID flagged:fort:
     - determine passively cancelled
@@ -17,14 +20,24 @@ fort_death_handler:
     on player death:
     - define cause  <context.cause||null>
     - define killer <context.damager||null>
-    - define loc    <player.location>
-
 
     - determine passively cancelled
-    - run fort_death_handler.death
-
     #dont use the vanilla drop mechanic
     - determine passively <list[]>
+
+    - run fort_death_handler.death
+
+    #-Update kill count + players left
+    - if <[killer]> != null:
+      #track *who* they kill?
+      # flag <[killer]> fort.killed_players:->:<player>
+      - flag <[killer]> fort.kills:++
+      - define players    <server.online_players_flagged[fort]>
+      #update alive players
+      - define alive_icon <&chr[0002].font[icons]>
+      - sidebar set_line scores:3 values:<element[<[alive_icon]> <server.online_players_flagged[!fort.spectating].size>].font[hud_text].color[<color[51,0,0]>]> players:<[players]>
+
+      - run update_hud player:<[killer]> if:<[killer].is_player>
 
   death:
     #using queued player
@@ -32,13 +45,18 @@ fort_death_handler:
     - define killer <[data].get[killer]||null>
 
     #don't drop items on pregame island
-    - run fort_item_handler.drop_everything if:<player.world.equals[nimnite_map]>
+    - run fort_item_handler.drop_everything if:<player.world.name.equals[nimnite_map]>
     - run fort_death_handler.fx.anim
 
     - if <player.is_online>:
       #if they die without a killer, just spectate a random player that's alive
       - if <[killer]> == null:
-        - define killer <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].first>
+        - define killer <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].first||null>
+      #in case the player who won somehow dies (which wont happen (hopefully))
+      #disable damage after the dub has been taken
+      - if <[killer]> == null:
+        - stop
+      - flag player fort.spectating:<[killer]>
       - adjust <player> spectator_target:<[killer]>
 
   fx:

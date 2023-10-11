@@ -19,6 +19,10 @@ fort_ammo_box:
     qty: 1
 
 
+###############
+###############   INSTEAD OF FLAGGING THE SERVER FOR CHEST LOCATIONS, FLAG THE *WORLD*
+###############
+
 fort_chest_handler:
   type: world
   debug: false

@@ -1,8 +1,3 @@
-
-##create a death task
-##run it when a player is damaged by VOID
-##run it when the player's y is below a certain amount (from glidering)
-
 fort_global_handler:
   type: world
   debug: false
