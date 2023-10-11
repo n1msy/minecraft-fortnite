@@ -119,15 +119,12 @@ fort_lobby_handler:
 
     #in case they hit a player and not click a block
     on player damages entity flagged:fort.menu.selected_button priority:-10:
+    - determine passively cancelled
     - inject fort_lobby_handler.button_press
 
     #in case they click it from far
     on player left clicks block flagged:fort.menu.selected_button priority:-10:
     #the attack cooldown is removed via rp
-    - inject fort_lobby_handler.button_press
-
-    on player damages entity flagged:fort.menu.selected_button priority:-10:
-    - determine passively cancelled
     - inject fort_lobby_handler.button_press
 
     #### - [ OPTIMIZE / PRETTIFY THIS CODE ] ###
