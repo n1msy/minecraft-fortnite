@@ -75,8 +75,12 @@ fort_lobby_handler:
     - adjust <player> flying:true
 
     - adjust <player> fly_speed:0.02
+
+    #hide instead of invis, so players can click through other players
     #- adjust <player> hide_from_players
+    #do invis or no? (only doing it to hide the player's hand)
     - invisible state:true
+
     - inventory clear
     - sidebar remove
     - if <player.has_flag[minimap]>:
@@ -113,8 +117,13 @@ fort_lobby_handler:
     - if <context.cause> == QUIT:
       - stop
 
+    #in case they hit a player and not click a block
+    on player damages entity flagged:fort.menu.selected_button priority:-10:
+    - inject fort_lobby_handler.button_press
+
     #in case they click it from far
     on player left clicks block flagged:fort.menu.selected_button priority:-10:
+    #the attack cooldown is removed via rp
     - inject fort_lobby_handler.button_press
 
     on player damages entity flagged:fort.menu.selected_button priority:-10:
@@ -148,8 +157,6 @@ fort_lobby_handler:
     - flag player fort.menu.name:<entry[name_text].spawned_entity>
     - adjust <player> show_entity:<entry[name_text].spawned_entity>
 
-    #show hud (dont show hud)
-    #- inject update_hud
 
     #get the middle location
     - define button_loc <server.flag[fort.menu.play_button_hitboxes].get[2].location>
