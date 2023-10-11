@@ -86,7 +86,7 @@ minimap:
       - define chars:->:<[char]>
 
     - define tiles:!
-    - define in_game <player.world.name.equals[nimnite_map].or[<player.name.equals[asd988]>]>
+    - define in_game <[world].name.equals[nimnite_map].or[<player.name.equals[asd988]>]>
     - define displayId 4
     - repeat 4:
       - define displayId <[value].sub[1]> if:<[in_game]>
@@ -200,7 +200,7 @@ minimap:
     - define real_b <[y].mod[256]>
     #null is if it's oob
     - define full_marker_color <color[<[full_marker_red]>,<[real_g]>,<[real_b]>]||null>
-    - define full_marker       <&chr[E000].font[map].color[<[full_marker_color]>].if_null[<empty>]>
+    - define full_marker       <[world].name.equals[nimnite_map].if_true[<&chr[E000].font[map].color[<[full_marker_color]>].if_null[<empty>]>].if_false[<empty>]>
 
     - define youtube_icon <&chr[13].font[icons]>
     - define twitch_icon  <&chr[14].font[icons]>

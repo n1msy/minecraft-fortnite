@@ -1,9 +1,11 @@
+#TODO: make the break speed consistent across the three mats?
+
 fort_pickaxe_default:
   type: item
   material: netherite_pickaxe
   display name: <&chr[1].font[item_name]><&f><&l><element[Pickaxe].font[item_name]>
   enchantments:
-  - efficiency:5
+  - efficiency:3
   mechanisms:
     custom_model_data: 1
     hides: ALL
