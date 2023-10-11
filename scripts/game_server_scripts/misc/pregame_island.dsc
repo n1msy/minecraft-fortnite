@@ -151,6 +151,9 @@ pregame_island_handler:
     - define bus_icon    <&chr[A025].font[icons]>
     - define clock_icon  <&chr[0004].font[icons]>
 
+    #-pay bus honking sound too?
+    - run FORT_CORE_HANDLER.announcement_sounds.main
+
     - flag server fort.temp.game_starting
     #flagging phase for hud updating manually too
     - flag server fort.temp.phase:bus

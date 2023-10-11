@@ -644,7 +644,12 @@ build_system_handler:
         #-break the tiles
         - foreach <[structure]> as:tile:
 
-          #do you get mats from world structures that are broken by chain?
+          #attempts to fix the "too many sounds compare to tiles" issue
+          - if !<[tile].center.has_flag[build.center]>:
+            - foreach next
+
+          #- announce <[tile].center.flag[build.center]> to_console
+          #do you get mats from world structures that are broken by chain? (i dont think so)
 
           - wait 3t
 

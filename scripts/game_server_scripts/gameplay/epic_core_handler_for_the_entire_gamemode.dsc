@@ -1,8 +1,11 @@
 #/ex narrate <location[75.5,0,55.5].points_around_y[radius=50;points=16].to_polygon.with_y_min[0].with_y_max[300].outline>
 #/globaldisplay transform 2 ~ 0 ~ 1600 300 1600 80
 
+######CREATE A WHILE TO CHECK IF THE ENTITIES ARE SPAWNED OR NOT; (since they despawn sometimes) REPEAT UNTIL THEY ARE SPAWNED.
 
 #TODO: ADD SOUND FOR TICK TOK 12 SECONDS BEFORE "STORM EYE SHRINKING" + ALARM
+
+##on server start, adjust the mining speed of all materials to a thing?
 
 stand_to_display_ent_testing:
   type: task
@@ -154,6 +157,8 @@ fort_core_handler:
         - define announce_icon <&chr[A005].font[icons]>
         - define text "STORM EYE SHRINKING"
 
+        - playsound <[players]> sound:ENTITY_ILLUSIONER_PREPARE_BLINDNESS pitch:0.9 volume:0.3
+
         - if <[seconds]> <= 60:
           - define +spacing <proc[spacing].context[82]>
           - define -spacing <proc[spacing].context[-112]>
@@ -171,6 +176,9 @@ fort_core_handler:
       - flag server fort.temp.timer:<[timer]>
       - sidebar set_line scores:5 values:<element[<[icon]> <[timer]>].font[hud_text].color[<color[50,0,0]>]> players:<[players]>
 
+      - if <[phase]> == GRACE_PERIOD && !<[forming].exists> && <[seconds_left]> == 12:
+        - run FORT_CORE_HANDLER.announcement_sounds.tick_tock
+
       #do this in a separate task?
       #-turn this info into titles instead of bossbars?
       - if <[value]> <= 5:
@@ -180,6 +188,7 @@ fort_core_handler:
 
       - wait 1s
 
+  ##make these sounds MIDI via noteblock studio & resourcepack instead? (that way when the server lags, the tune doesn't turn bad)
   announcement_sounds:
     main:
       - define players <server.online_players_flagged[fort]>
@@ -192,6 +201,30 @@ fort_core_handler:
       - playsound <[players]> sound:BLOCK_NOTE_BLOCK_XYLOPHONE volume:0.3 pitch:1.19
       - wait 2t
       - playsound <[players]> sound:BLOCK_NOTE_BLOCK_XYLOPHONE volume:0.3 pitch:0.898
+
+    tick_tock:
+
+    - define players <server.online_players_flagged[fort]>
+
+    #for 12 seconds
+    - repeat 15:
+      #get louder over time
+      - define vol <[value].mul[0.035]>
+
+      - if <[value]> > 5 && <[value].mod[2]> == 0:
+        #pitch is from 1.1 to 1.5
+        #there's 5 of these sfx in 10 seconds
+        #volume goes up to 0.35
+        - define vol_ <[value].mul[0.0179]>
+        #last one becomes a little quieter
+        - if <[value]> == 14:
+          - define vol_ 0.1
+        - playsound <[players]> sound:BLOCK_BEACON_ACTIVATE pitch:<[value].mul[0.05].add[1]> volume:<[vol_]>
+
+      - playsound <[players]> sound:BLOCK_NOTE_BLOCK_HAT pitch:1.85 volume:<[vol]>
+      - wait 9t
+      - playsound <[players]> sound:BLOCK_NOTE_BLOCK_HAT pitch:1.3 volume:<[vol]>
+      - wait 9t
 
 fort_bus_handler:
   type: world
@@ -207,9 +240,12 @@ fort_bus_handler:
       - determine passively cancelled
       - stop
 
-    - playsound <player> sound:BLOCK_NOTE_BLOCK_BASS pitch:0.75 volume:0.7
-    - playsound <player> sound:ITEM_TRIDENT_RETURN pitch:1.2 volume:0.8
-    - playsound <player> sound:ENTITY_VEX_AMBIENT pitch:1.5
+    #BLOCK_SHULKER_BOX_OPEN pitch:0 could work too
+    #ENTITY_EVOKER_CAST_SPELL pitch:1.3
+    - playsound <player> sound:BLOCK_CONDUIT_DEACTIVATE pitch:1.2 volume:0.25
+    #- playsound <player> sound:BLOCK_NOTE_BLOCK_BASS pitch:0.75 volume:0.7
+    #- playsound <player> sound:ITEM_TRIDENT_RETURN pitch:1.2 volume:0.8
+    #- playsound <player> sound:ENTITY_VEX_AMBIENT pitch:1.5
 
     - flag player fort.on_bus:!
     - flag server fort.temp.bus.passengers:<-:<player>
