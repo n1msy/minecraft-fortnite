@@ -142,7 +142,7 @@ pregame_island_handler:
 
     #don't play the death animation if they are teleporting via the circle or they're spectating (already dead)
     - if !<player.has_flag[fort.lobby_teleport]> && !<player.has_flag[fort.spectating]>:
-      - run fort_global_handler.death_fx.anim
+      - run fort_death_handler.death
 
     - flag player fort:!
 
@@ -257,7 +257,7 @@ pregame_island_handler:
           - adjust <[fx]> translation:<[end_translation]>
           - adjust <[fx]> scale:0,0,0
           - adjust <[fx]> interpolation_duration:50t
-          - run fort_global_handler.death_fx.remove_square def:<map[square=<[fx]>;wait=52]>
+          - run fort_death_handler.fx.remove_square def:<map[square=<[fx]>;wait=52]>
         - else:
           - wait 1t
 

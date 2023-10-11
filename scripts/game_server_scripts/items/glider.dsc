@@ -59,7 +59,7 @@ fort_glider_handler:
     - define deploy_text   "<[sneak_button]> <element[<&l>DEPLOY GLIDER].color[<color[71,0,0]>]>"
     - define undeploy_text "<[sneak_button]> <element[<&l>UNDEPLOY GLIDER].color[<color[71,0,0]>]>"
 
-    - while !<player.is_on_ground> && <player.is_online> && <player.is_spawned>:
+    - while !<player.is_on_ground> && <player.is_online> && !<player.has_flag[fort.spectating]>:
 
       - define loc        <player.location>
       - define eye_loc  <player.eye_location>
@@ -147,13 +147,17 @@ fort_glider_handler:
 
       - wait 1t
 
+      - if <[loc].y> < -42:
+        - run fort_death_handler.death
+        - stop
+
     #this should in theory ALWAYS be toggled to off since it will always take out the glider no matter what
     - run fort_glider_handler.toggle_glider
 
     - adjust <player> stop_sound:minecraft:item.elytra.flying
 
     #-in case they die
-    - if <player.is_spawned>:
+    - if !<player.has_flag[fort.spectating]>:
       - playsound <player.location> sound:BLOCK_ANCIENT_DEBRIS_STEP pitch:2
       - run fort_global_handler.land_fx
 

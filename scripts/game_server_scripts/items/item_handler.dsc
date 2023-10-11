@@ -140,3 +140,53 @@ fort_item_handler:
 
     - team name:<[rarity]> add:<[drop]> color:<map[Common=GRAY;Uncommon=GREEN;Rare=AQUA;Epic=LIGHT_PURPLE;Legendary=GOLD].get[<[rarity]>]>
     - adjust <[drop]> glowing:true
+
+
+  # - [ DROP ALL ITEMS ] - #
+  #safely drops all items, mats, and ammo in a player's inventory
+  drop_everything:
+
+    - define drops <player.inventory.list_contents>
+
+    - flag player fort.emote:!
+
+    - if <player.has_flag[build]>:
+      - define drops <player.flag[build.last_inventory]>
+      #dont really need to remove this flag, since the while also checks if the player is alive but oh well
+      - flag player build:!
+
+    #so clickable shit in the inventory doesn't drop
+    - define drops <[drops].filter[has_flag[action].not].filter[has_flag[type].not]>
+
+    #turn any scoped guns back into unscoped
+    - if <player.has_flag[fort.gun_scoped]>:
+      - define gun_in_hand <player.item_in_hand>
+      - define cmd         <[gun_in_hand].custom_model_data>
+      - define drops <[drops].exclude[<[gun_in_hand]>].include[<[gun_in_hand].with[custom_model_data=<[cmd].sub[1]>]>]>
+      - flag player fort.gun_scoped:!
+
+    #-drop ammo
+    - foreach <list[light|medium|heavy|shells|rockets]> as:ammo_type:
+      - if <player.flag[fort.ammo.<[ammo_type]>]> > 0:
+        - define qty <player.flag[fort.ammo.<[ammo_type]>]>
+        - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[qty]>;loc=<[loc]>]>
+        - flag player fort.ammo.<[ammo_type]>:0
+
+    #-drop mats
+    - foreach <list[wood|brick|metal]> as:mat:
+      - if <player.flag[fort.<[mat]>.qty]> > 0:
+        - define qty <player.flag[fort.<[mat]>.qty]>
+        - run fort_pic_handler.drop_mat def:<map[mat=<[mat]>;qty=<[qty]>]>
+        - flag player fort.<[mat]>.qty:0
+
+    #-drop guns
+    - foreach <[drops].filter[script.name.starts_with[gun_]]> as:gun:
+      - run fort_gun_handler.drop_gun def:<map[gun=<[gun]>]>
+
+    #-drop all items (consumables)
+    - foreach <[drops].filter[script.name.starts_with[fort_item_]]> as:item:
+      - run fort_item_handler.drop_item def:<map[item=<[item].script.name>;qty=<[item].quantity>;loc=<[loc]>]>
+
+    #no need to exclude the fort_pic, since it's not being dropped by any of these
+    #clearing inventory in case players were holding the pencil and blueprint while building
+    - inventory clear

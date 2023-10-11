@@ -128,8 +128,9 @@ fort_core_handler:
 
     - choose <[phase]>:
       - case bus:
+        - run fort_bus_handler.start_bus
         #wait for the bus to actually spawn before startnig the timer
-        - ~run fort_bus_handler.start_bus
+        #- waituntil <server.has_flag[fort.temp.bus.ready]>
 
         - define announce_icon <&chr[A025].font[icons]>
         - define text "DOORS WILL OPEN IN"
@@ -263,35 +264,29 @@ fort_bus_handler:
     - define yaw        <util.random.int[0].to[360]>
 
     - define bus_start  <[center].with_yaw[<[yaw]>].forward[1152].face[<[center]>]>
-    - define yaw        <[bus_start].yaw>`
+    - define yaw        <[bus_start].yaw>
 
     #-doing this in case the seats aren't spawned in correctly (if it has missing entities, so it doesn't break)
 
     #randomize this, or make it so players are in the same bus if they queued at the same time?
     - define players <server.online_players_flagged[fort]>
 
-    #bus model itself always spawns in correctly
-    - run dmodels_spawn_model def.model_name:battle_bus def.location:<[bus_start]> save:bus
-    - define bus <entry[bus].created_queue.determination.first||null>
-    - run dmodels_set_scale def.root_entity:<[bus]> def.scale:1.3,1.3,1.3
-
-    - flag server fort.temp.bus.model:<[bus]>
-
-    - define seats_ready False
-    - while <[seats_ready].not>:
-      - inject fort_bus_handler.setup_seats
+    - define busy_ready False
+    - while <[busy_ready].not>:
+      - inject fort_bus_handler.setup_bus
 
       - define seats_to_check <server.flag[fort.temp.bus.seats]>
       #if a SINGLE seat isn't spawned, then re-do the entire thing
       #(if i really wanted to, we could just check for which seat and just spawn that one, but this is way easier)
-      - if <[seats_to_check].filter[is_spawned.not].is_empty>:
-        - define seats_ready True
+      - if <[seats_to_check].filter[is_spawned.not].is_empty> && <[bus].is_spawned>:
+        - define busy_ready True
         #no need for while stop, but whatevs
         - while stop
       - else:
         - remove <[seats_to_check].filter[is_spawned]>
+        - run dmodels_delete def.root_entity:<[bus]> if:<[bus].is_spawned>
         - define total_seats:!
-        - flag server fort.temp.bus.seats:!
+        - flag server fort.temp.bus:!
 
       - wait 1t
 
@@ -368,9 +363,10 @@ fort_bus_handler:
       #not in the first if check, so the bus still moves forwards a little after dropping players
       - if <server.flag[fort.temp.phase]> == grace_period && <[passengers].any>:
         - foreach <[passengers]> as:passenger:
-          - flag <[passenger]> fort.on_bus:!
+          #- flag <[passenger]> fort.on_bus:!
           - teleport <[passenger]> <[passenger].location.below[1.5]>
           - run fort_glider_handler.fall player:<[passenger]>
+        - flag <[passengers]> fort.on_bus:!
 
         #remove invisibility
         - invisible <[passengers]> reset
@@ -394,8 +390,8 @@ fort_bus_handler:
 
       - wait 1t
 
-    - if <[bus].is_spawned>:
-      - remove <[bus]>
+    #- remove <[bus]> if:<[bus].is_spawned>
+    - run dmodels_delete def.root_entity:<[bus]> if:<[bus].is_spawned>
 
     - foreach <server.flag[fort.temp.bus.seats]> as:seat:
       - remove <[seat]> if:<[seat].is_spawned>
@@ -407,11 +403,17 @@ fort_bus_handler:
 
     - flag server fort.temp.bus:!
 
-  setup_seats:
+  setup_bus:
 
     - if !<[bus_start].chunk.is_loaded>:
       - chunkload <[bus_start].chunk> duration:30s
       - waituntil <[bus_start].chunk.is_loaded> rate:1s max:15s
+
+    - run dmodels_spawn_model def.model_name:battle_bus def.location:<[bus_start]> save:bus
+    - define bus <entry[bus].created_queue.determination.first||null>
+    - run dmodels_set_scale def.root_entity:<[bus]> def.scale:1.3,1.3,1.3
+
+    - flag server fort.temp.bus.model:<[bus]>
 
     - define seat_origin <[bus_start].below[1]>
     #<[bus_start].below[1]> (pre armor stand mounts)
