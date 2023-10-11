@@ -3,8 +3,6 @@ fort_emote_handler:
   debug: false
   events:
 
-    #on player damages int
-
     on player clicks in inventory slot:2|3|4|5:
     - if <context.clicked_inventory.inventory_type> != CRAFTING:
       - stop
@@ -65,6 +63,9 @@ fort_emote_handler:
 
     - wait 1t
     - inventory close
+
+    on player damages INTERACTION flagged:fort.emote:
+    - flag player fort.emote:!
 
     on player clicks block flagged:fort.emote:
     - flag player fort.emote:!

@@ -1,3 +1,6 @@
+#-show death in third person?
+#eh might be too buggy
+
 fort_death_handler:
   type: world
   debug: false
@@ -42,13 +45,25 @@ fort_death_handler:
   death:
     #using queued player
 
+
+    #TODO: ADD A SHADER THING THAT POSITIONS ACTIONBAR TO SHOW "ELIMINATED ____" (use the same one for PLACED BY)
+
     - define killer <[data].get[killer]||null>
 
     #don't drop items on pregame island
     - run fort_item_handler.drop_everything if:<player.world.name.equals[nimnite_map]>
     - run fort_death_handler.fx.anim
 
+
+    - define killer_name <[killer].name.if_null[<player.name>]>
+    - title "title:<&f><&l>ELIMINATED BY" subtitle:<&e><&l><element[<[killer_name]>].font[elim_text]>
+
+    #this is before adding the fort.spectating flag, so no need to remove the dead player from the list
+    - define placement <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].size>
+    - actionbar <element[<&f><&l>YOU PLACED <&r>#<&e><&l><[placement]>].font[item_name]>
+
     - if <player.is_online>:
+
       #if they die without a killer, just spectate a random player that's alive
       - if <[killer]> == null:
         - define killer <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].first||null>
