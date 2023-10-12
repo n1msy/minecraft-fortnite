@@ -140,7 +140,7 @@ fort_explosive_handler:
         #deduplicating in case the player was already in the list
         - define nearby_entities <[nearby_entities].include[<[hb].flag[emote.hitbox.host]>].deduplicate>
 
-    - hurt <[body_damage].div[5]> <[nearby_entities]> source:<player>
+    - hurt <[body_damage].div[5]> <[nearby_entities]> source:<player> cause:BLOCK_EXPLOSION
 
   explosion_fx:
     - define grenade_loc <[data].get[grenade_loc]>

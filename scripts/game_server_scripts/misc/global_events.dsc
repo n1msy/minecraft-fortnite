@@ -82,10 +82,13 @@ fort_global_handler:
         - define entity <[entity].flag[spawned_dmodel_emotes].flag[emote_hitbox]>
       - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round>;entity=<context.entity>;color=<[color]>]>
 
+    - if <context.damager.is_player||false>:
+      - flag <[e]> fort.last_damager:<context.damager> duration:10s
+
     - if <[e].is_player>:
       - wait 1t
       - adjust <queue> linked_player:<[e]>
-      - inject update_hud
+      - run update_hud
 
     #since you only have access to 1-6 slots, and the other slots are category names
     #WAY better way of doing this but my brain is too tired to think rn

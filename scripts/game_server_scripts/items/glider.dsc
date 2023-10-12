@@ -151,6 +151,9 @@ fort_glider_handler:
         - run fort_death_handler.death
         - stop
 
+    #-added a safety to remove the glider, not sure if it works or not though
+    - wait 1t
+
     #this should in theory ALWAYS be toggled to off since it will always take out the glider no matter what
     - run fort_glider_handler.toggle_glider
 

@@ -1,3 +1,5 @@
+#TODO: when player leaves spectate, send em to menu
+
 #-show death in third person?
 #eh might be too buggy
 
@@ -27,8 +29,7 @@ fort_death_handler:
 
     on player death:
     - define cause  <context.cause||null>
-    - define killer <context.damager||null>
-
+    - define killer <context.damager||<player.flag[fort.last_damager]||null>>
     - determine passively cancelled
     #dont use the vanilla drop mechanic
     - determine passively <list[]>
@@ -44,6 +45,8 @@ fort_death_handler:
       - playsound <[killer]> sound:ENTITY_PLAYER_ATTACK_CRIT pitch:0.9 volume:1
       - actionbar "<&chr[1].font[elim_text]><element[<&l>ELIMINATED].font[elim_text]> <element[<&c><&l><player.name>].font[elim_text]>" targets:<[killer]>
 
+    # - [ Killfeed ] - #
+
     #-Update alive players (players left)
     - define players    <server.online_players_flagged[fort]>
     - define alive_icon <&chr[0002].font[icons]>
@@ -51,9 +54,6 @@ fort_death_handler:
 
   death:
     #using queued player
-
-
-    #TODO: ADD A SHADER THING THAT POSITIONS ACTIONBAR TO SHOW "ELIMINATED ____" (use the same one for PLACED BY)
 
     - define killer <[data].get[killer]||null>
 
@@ -69,7 +69,7 @@ fort_death_handler:
     - define placement <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].size>
     - actionbar <&chr[1].font[elim_text]><element[<&l>YOU PLACED <&r>#<&e><&l><[placement]>].font[elim_text]>
 
-
+    # - [ Spectating System ] - #
     #if they die without a killer, just spectate a random player that's alive
     - if <[killer]> != null:
       - define player_to_spectate <[killer]>
