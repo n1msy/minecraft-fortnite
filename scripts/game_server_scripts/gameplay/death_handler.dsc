@@ -28,15 +28,16 @@ fort_death_handler:
     #dont use the vanilla drop mechanic
     - determine passively <list[]>
 
-    - run fort_death_handler.death
+    - run fort_death_handler.death def:<map[killer=<[killer]>]>
 
     #-Update kill count + players left
     - if <[killer]> != null:
       #track *who* they kill?
       # flag <[killer]> fort.killed_players:->:<player>
       - flag <[killer]> fort.kills:++
-      - playsound <[killer]> sound:ENTITY_PLAYER_ATTACK_STRONG pitch:0.9 volume:0.5
-      - actionbar "<element[<&l>ELIMINATED].color[<color[71,0,0]>]> <element[<&l><player.name>].color[<color[73,0,0]>]>" targets:<[killer]>
+      #ENTITY_PLAYER_ATTACK_STRONG -> would use this, but it's not loud enough
+      - playsound <[killer]> sound:ENTITY_PLAYER_ATTACK_CRIT pitch:0.9 volume:1
+      - actionbar "<&chr[1].font[elim_text]><element[<&l>ELIMINATED].font[elim_text]> <element[<&c><&l><player.name>].font[elim_text]>" targets:<[killer]>
       - define players    <server.online_players_flagged[fort]>
       #update alive players
       - define alive_icon <&chr[0002].font[icons]>
@@ -58,11 +59,11 @@ fort_death_handler:
 
 
     - define killer_name <[killer].name.if_null[<player.name>]>
-    - title "title:<&f><&l>ELIMINATED BY" subtitle:<&e><&l><element[<[killer_name]>].font[elim_text]>
+    - title title:<&e><&l><[killer_name].font[elim_player]><&r> subtitle:<&chr[1].font[elim_text]><&l><element[ELIMINATED BY].font[elim_text]>
 
     #this is before adding the fort.spectating flag, so no need to remove the dead player from the list
     - define placement <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].size>
-    - actionbar <element[<&l>YOU PLACED <&r>#].color[<color[71,0,0]>]><&l><[placement].color[<color[75,0,0]>]>
+    - actionbar <&chr[1].font[elim_text]><element[<&l>YOU PLACED <&r>#<&e><&l><[placement]>].font[elim_text]>
 
     - if <player.is_online>:
 
