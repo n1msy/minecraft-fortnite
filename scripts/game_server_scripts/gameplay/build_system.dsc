@@ -310,6 +310,7 @@ build_system_handler:
         center: <[tile_center]>
         build_type: <[build_type]>
         material: <[material]>
+        is_editing: True
     #"reset" the tile while in edit mode to let players be able to click the blocks the wanna edit
     - run build_system_handler.place def:<[tile_data]>
     - flag player build.edit_mode.tile:<[tile]>
@@ -707,6 +708,8 @@ build_system_handler:
     - define center <[data].get[center]>
     - define build_type <[data].get[build_type]>
 
+    - define is_editing <[data].get[is_editing]||false>
+
     - define base_material <map[wood=oak;brick=brick;metal=cobblestone].get[<[data].get[material]>]>
 
     - choose <[build_type]>:
@@ -732,7 +735,7 @@ build_system_handler:
         - define set_blocks      <[total_set_blocks].filter[has_flag[build.center].not].include[<[own_stair_blocks]>].include[<[override_blocks]>]>
 
         #-don't include edited blocks
-        - define set_blocks      <[set_blocks].filter[has_flag[build.edited].not]>
+        - define set_blocks      <[set_blocks].filter[has_flag[build.edited].not]> if:!<[is_editing]>
 
         #-don't include blocks that existed there before hand
         #existing blocks are either world-placed blocks, or just terrain blocks
@@ -748,6 +751,7 @@ build_system_handler:
         #if they're stairs and they are going in the same direction, to keep the stairs "smooth", forget about adding connectors to them
         - define consecutive_stair_blocks <[set_connector_blocks].filter[flag[build.center].flag[build.type].equals[stair]].filter[material.direction.equals[<[direction]>]]>
         - define set_blocks               <[set_connector_blocks].exclude[<[consecutive_stair_blocks]>].exclude[<[override_blocks]>].filter[has_flag[build.edited].not]>
+        - define set_blocks               <[set_blocks].filter[has_flag[build.edited].not]> if:!<[is_editing]>
         - define existing_blocks <proc[get_existing_blocks].context[<list_single[<[set_blocks]>]>]>
         - flag <[existing_blocks]> build_existed
 
@@ -756,7 +760,7 @@ build_system_handler:
         - modifyblock <[set_blocks]> <map[oak=oak_planks;brick=bricks;cobblestone=cobblestone].get[<[base_material]>]>
 
       - case pyramid:
-        - run place_pyramid def:<[center]>|<[base_material]>
+        - run place_pyramid def:<[center]>|<[base_material]>|<[is_editing]>
 
       #floors/walls
       - default:
@@ -780,7 +784,8 @@ build_system_handler:
           #with_pose part removes yaw/pitch data so we can exclude it from total blocks
           - define exclude_blocks <[top_points].include[<[bot_points]>].parse[with_pose[0,0]]>
 
-        - define set_blocks <[total_blocks].exclude[<[exclude_blocks]>].filter[has_flag[build.edited].not].deduplicate>
+        - define set_blocks <[total_blocks].exclude[<[exclude_blocks]>].deduplicate>
+        - define set_blocks <[set_blocks].filter[has_flag[build.edited].not]> if:!<[is_editing]>
         - define existing_blocks <proc[get_existing_blocks].context[<list_single[<[set_blocks]>]>]>
         - flag <[existing_blocks]> build_existed
 
@@ -869,7 +874,7 @@ is_root:
 place_pyramid:
   type: task
   debug: false
-  definitions: center|base_material
+  definitions: center|base_material|is_editing
   script:
   #required definitions:
   # - <[center]>
@@ -916,6 +921,7 @@ place_pyramid:
             - define block_data <[block_data].include[<map[loc=<[s]>;mat=<[side_mat]>]>]>
 
     - define set_blocks      <[block_data].parse[get[loc]].filter[has_flag[build.edited].not]>
+    - define set_blocks      <[set_blocks].filter[has_flag[build.edited].not]> if:<[is_editing]>
     - define existing_blocks <proc[get_existing_blocks].context[<list_single[<[set_blocks]>]>]>
     - flag <[existing_blocks]> build_existed
 

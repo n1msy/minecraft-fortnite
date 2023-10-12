@@ -8,7 +8,7 @@ fort_global_handler:
     #on player receives tablist update:
     #- determine cancelled
 
-    on player breaks block with:!fort_pickaxe_*:
+    on player breaks block with:!fort_pickaxe_* flagged:fort:
     - determine cancelled
 
     on block fades:
@@ -279,7 +279,7 @@ fort_global_handler:
     - adjust <[e]> opacity:255
 
     - wait 3t
-    - remove <[e]>
+    - remove <[e]> if:<[e].is_spawned>
 
   open_drop_menu:
   #required definitions: <[icon]>, <[qty]>, and much more..

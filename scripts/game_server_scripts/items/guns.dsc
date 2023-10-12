@@ -178,6 +178,7 @@ fort_gun_handler:
 
 
     - if <[gun].has_flag[sniper]>:
+      - playsound <player> sound:ITEM_SPYGLASS_USE pitch:1
       - equip head:carved_pumpkin
       - adjust <player> fov_multiplier:1
       #hide the gun
@@ -243,6 +244,7 @@ fort_gun_handler:
     - run fort_gun_handler.shoot def:<map[gun=<[gun]>]>
 
   reset_sniper_scope:
+    - playsound <player> sound:ITEM_SPYGLASS_USE pitch:1
     - equip head:air
     - adjust <player> fov_multiplier
     - cast SLOW_DIGGING remove

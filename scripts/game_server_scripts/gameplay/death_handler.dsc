@@ -35,6 +35,8 @@ fort_death_handler:
       #track *who* they kill?
       # flag <[killer]> fort.killed_players:->:<player>
       - flag <[killer]> fort.kills:++
+      - playsound <[killer]> sound:ENTITY_PLAYER_ATTACK_STRONG pitch:0.9 volume:0.5
+      - actionbar "<element[<&l>ELIMINATED].color[<color[71,0,0]>]> <element[<&l><player.name>].color[<color[73,0,0]>]>" targets:<[killer]>
       - define players    <server.online_players_flagged[fort]>
       #update alive players
       - define alive_icon <&chr[0002].font[icons]>
@@ -60,7 +62,7 @@ fort_death_handler:
 
     #this is before adding the fort.spectating flag, so no need to remove the dead player from the list
     - define placement <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].size>
-    - actionbar <element[<&f><&l>YOU PLACED <&r>#<&e><&l><[placement]>].font[item_name]>
+    - actionbar <element[<&l>YOU PLACED <&r>#].color[<color[71,0,0]>]><&l><[placement].color[<color[75,0,0]>]>
 
     - if <player.is_online>:
 
