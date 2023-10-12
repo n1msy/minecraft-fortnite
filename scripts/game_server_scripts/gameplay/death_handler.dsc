@@ -15,6 +15,11 @@ fort_death_handler:
 
     on player stops spectating flagged:fort.spectating:
     - determine passively cancelled
+    #when they leave for example
+    - define player_spectating <player.flag[fort.spectating]>
+    - if !<[player_spectating].is_online> || <[player_spectating].has_flag[fort.spectating]>:
+      - stop
+    - narrate "<element[<&l><player.name>].color[<color[#ffb62e]>]> <&7>has stopped spectating you" targets:<[player_spectating]>
 
     on player damaged by VOID flagged:fort:
     - determine passively cancelled
@@ -30,7 +35,7 @@ fort_death_handler:
 
     - run fort_death_handler.death def:<map[killer=<[killer]>]>
 
-    #-Update kill count + players left
+    #-Update kill count
     - if <[killer]> != null:
       #track *who* they kill?
       # flag <[killer]> fort.killed_players:->:<player>
@@ -38,12 +43,11 @@ fort_death_handler:
       #ENTITY_PLAYER_ATTACK_STRONG -> would use this, but it's not loud enough
       - playsound <[killer]> sound:ENTITY_PLAYER_ATTACK_CRIT pitch:0.9 volume:1
       - actionbar "<&chr[1].font[elim_text]><element[<&l>ELIMINATED].font[elim_text]> <element[<&c><&l><player.name>].font[elim_text]>" targets:<[killer]>
-      - define players    <server.online_players_flagged[fort]>
-      #update alive players
-      - define alive_icon <&chr[0002].font[icons]>
-      - sidebar set_line scores:3 values:<element[<[alive_icon]> <server.online_players_flagged[!fort.spectating].size>].font[hud_text].color[<color[51,0,0]>]> players:<[players]>
 
-      - run update_hud player:<[killer]> if:<[killer].is_player>
+    #-Update alive players (players left)
+    - define players    <server.online_players_flagged[fort]>
+    - define alive_icon <&chr[0002].font[icons]>
+    - sidebar set_line scores:3 values:<element[<[alive_icon]> <server.online_players_flagged[!fort.spectating].size>].font[hud_text].color[<color[51,0,0]>]> players:<[players]>
 
   death:
     #using queued player
@@ -65,17 +69,32 @@ fort_death_handler:
     - define placement <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].size>
     - actionbar <&chr[1].font[elim_text]><element[<&l>YOU PLACED <&r>#<&e><&l><[placement]>].font[elim_text]>
 
-    - if <player.is_online>:
 
-      #if they die without a killer, just spectate a random player that's alive
-      - if <[killer]> == null:
-        - define killer <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].first||null>
-      #in case the player who won somehow dies (which wont happen (hopefully))
-      #disable damage after the dub has been taken
-      - if <[killer]> == null:
-        - stop
-      - flag player fort.spectating:<[killer]>
-      - adjust <player> spectator_target:<[killer]>
+    #if they die without a killer, just spectate a random player that's alive
+    - if <[killer]> != null:
+      - define player_to_spectate <[killer]>
+    - else:
+      - define player_to_spectate <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].first||null>
+
+    #add a spectators flag to the player being spectated too, or no?
+
+    #in case the player who won somehow dies (which can happen if they leave before game ends fr)
+    #disable damage after the dub has been taken
+    - if <[player_to_spectate]> == null:
+      - stop
+
+    #move the player's current spectators to whoever they are spectating too
+    - define spectators <server.online_players_flagged[fort.spectating].filter[flag[fort.spectating].equals[<player>]]>
+    - define spectators <[spectators].include[<player>]> if:<player.is_online>
+
+    - foreach <[spectators]> as:spectator:
+      - flag <[spectator]> fort.spectating:<[player_to_spectate]>
+      - adjust <[spectator]> spectator_target:<[player_to_spectate]>
+      - narrate "<&7>You are now spectating <element[<&l><[player_to_spectate].name>].color[<color[#ffb62e]>]>" targets:<[spectator]>
+      - narrate "<element[<&l><[spectator].name>].color[<color[#ffb62e]>]> <&7>is now spectating you" targets:<[player_to_spectate]>
+
+    #update their hud so its correctly updated for spectating players too
+    - run update_hud player:<[player_to_spectate]>
 
   fx:
   #-create the "on your knees" animation or no? because the player fades away anyways

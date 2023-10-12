@@ -1,10 +1,6 @@
 #/ex narrate <location[75.5,0,55.5].points_around_y[radius=50;points=16].to_polygon.with_y_min[0].with_y_max[300].outline>
 #/globaldisplay transform 2 ~ 0 ~ 1600 300 1600 80
 
-######CREATE A WHILE TO CHECK IF THE ENTITIES ARE SPAWNED OR NOT; (since they despawn sometimes) REPEAT UNTIL THEY ARE SPAWNED.
-
-#TODO: ADD SOUND FOR TICK TOK 12 SECONDS BEFORE "STORM EYE SHRINKING" + ALARM
-
 ##on server start, adjust the mining speed of all materials to a thing?
 
 stand_to_display_ent_testing:
