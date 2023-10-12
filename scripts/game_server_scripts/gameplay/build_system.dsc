@@ -429,6 +429,11 @@ build_system_handler:
 
     #-add edit
     - if !<[target_block].has_flag[build.edited]>:
+      - define edited_blocks <[edit_tile].blocks.filter[flag[build.center].equals[<[target_block].flag[build.center]>].if_null[false]].filter[has_flag[build.edited]]>
+      #-so the max blocks you can edit out is 9 (so you can't edit out an entire tile)
+      - if <[edited_blocks].size> == 9:
+        - playsound <player> sound:ENTITY_VILLAGER_NO pitch:2
+        - stop
       - playsound <player> sound:BLOCK_GRAVEL_BREAK pitch:1.5
       - flag <[target_block]> build.edited
       #this flag is for checking which blocks the player edited during the session, in case they toggle
