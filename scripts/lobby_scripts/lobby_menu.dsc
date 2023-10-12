@@ -12,9 +12,6 @@ fort_lobby_handler:
     on player changes food level:
     - determine cancelled
 
-    on player damages entity flagged:fort.in_menu:
-    - determine cancelled
-
     on player hears sound key:entity.player.attack.nodamage:
     - determine cancelled
 
@@ -75,6 +72,7 @@ fort_lobby_handler:
     - adjust <player> flying:true
 
     - adjust <player> fly_speed:0.02
+    - adjust <player> gamemode:ADVENTURE
 
     #hide instead of invis, so players can click through other players
     #- adjust <player> hide_from_players
@@ -118,9 +116,9 @@ fort_lobby_handler:
       - stop
 
     #in case they hit a player and not click a block
-    on player damages entity flagged:fort.menu.selected_button priority:-10:
+    on player damages entity flagged:fort.in_menu priority:-10:
     - determine passively cancelled
-    - inject fort_lobby_handler.button_press
+    - inject fort_lobby_handler.button_press if:<player.has_flag[fort.menu.selected_button]>
 
     #in case they click it from far
     on player left clicks block flagged:fort.menu.selected_button priority:-10:
