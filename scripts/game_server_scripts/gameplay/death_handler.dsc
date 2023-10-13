@@ -88,9 +88,15 @@ fort_death_handler:
     - define placement <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].size>
     - actionbar <&chr[1].font[elim_text]><element[<&l>YOU PLACED <&r>#<&e><&l><[placement]>].font[elim_text]>
 
+    #this check means dont look for any spectators if players die and they're still on the pregame island
+    - if <server.has_flag[fort.temp.available]>:
+      - stop
+
     #killfeed (if they quit and didn't actually die)
     - if <[quit]>:
-      - define msg_template <script[nimnite_config].data_key[quit].random>
+      - define msg_template <script[nimnite_config].data_key[killfeed.quit].random.parse_minimessage>
+      - define death_message <[msg_template].replace_text[_player_].with[<player.name>]>
+      - announce <[death_message]>
 
     # - [ Spectating System ] - #
     #if they die without a killer, just spectate a random player that's alive
