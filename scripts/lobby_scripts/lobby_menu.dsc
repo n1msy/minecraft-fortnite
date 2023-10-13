@@ -129,8 +129,10 @@ fort_lobby_handler:
     #### - [ OPTIMIZE / PRETTIFY THIS CODE ] ###
     on player join:
     #player join message
+    - determine passively NONE
     - define name <player.name>
-    - determine passively "<&chr[0001].font[denizen:announcements]> <&9><[name]>"
+
+    - announce "<&chr[0001].font[denizen:announcements]> <&9><[name]>"
     - announce to_console "<&8><&lb><&a>+<&8><&rb> <&f><[name]>"
 
     - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
