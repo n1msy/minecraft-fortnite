@@ -4,12 +4,6 @@ fort_global_handler:
   definitions: data
   events:
 
-    on shutdown:
-    - if !<bungee.list_servers.contains[fort_lobby]>:
-      - stop
-    - foreach <server.online_players> as:p:
-      - adjust <[p]> send_to:fort_lobby
-
     #-only show teammates in tablist?
     #on player receives tablist update:
     #- determine cancelled
