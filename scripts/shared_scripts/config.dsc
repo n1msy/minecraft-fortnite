@@ -36,7 +36,7 @@ nimnite_config:
     gun_default:
     #show distance if over 50m
     #with a ___ part is added in the handler
-      - <gray>_killer_ Eliminated <red><bold>_player_<gray>
+      - <gray>_killer_ Eliminated <red><bold>_player_
 
     # - [ From Void ] - #
     #i added these myself
