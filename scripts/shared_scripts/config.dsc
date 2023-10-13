@@ -24,60 +24,60 @@ nimnite_config:
     # - [ From Weapons ] - #
     pickaxe:
     #either pickaxe, hand, or gun (im gonna make it this way on purpose, just to spice it up, not because im lazy or anything -> this commentary is for people in the future to show them I KNOW THIS HAPPENS)
-      - <&7>_killer_ Bludgeoned <&c><&l>_player_
+      - <gray>_killer_ Bludgeoned <red><bold>_player_
     shotgun:
-      - <&7>_killer_ shotgunned <&c><&l>_player_
+      - <gray>_killer_ shotgunned <red><bold>_player_
     sniper:
     #show distance
-      - <&7>_killer_ Sniped <&c><&l>_player_
+      - <gray>_killer_ Sniped <red><bold>_player_
     sniper_noscope:
     #show distance
-      - <&7>_killer_ NO-SCOPED <&c><&l>_player_
+      - <gray>_killer_ NO-SCOPED <red><bold>_player_
     gun_default:
     #show distance if over 50m
     #with a ___ part is added in the handler
-      - <&7>_killer_ Eliminated <&c><&l>_player_<&7>
+      - <gray>_killer_ Eliminated <red><bold>_player_<gray>
 
     # - [ From Void ] - #
     #i added these myself
     self_void:
-      - <&c><&l>_player_ <&7>got fell into the void
+      - <red><bold>_player_ <gray>got fell into the void
     enemy_void:
-      - <&7>_killer_ threw <&c><&l>_player_ <&7>into the void
+      - <gray>_killer_ threw <red><bold>_player_ <gray>into the void
 
     # - [ From Fall ] - #
     self_fall:
     #show distance (idk how, unless using waituntil every jump)
-      - <&c><&l>_player_ <&7>didn't stick the landing
+      - <red><bold>_player_ <gray>didn't stick the landing
     enemy_fall:
-      - <&7>_killer_ introduced <&c><&l>_player_ <&7>to Gravity
-      - <&7>_killer_ Eliminated <&c><&l>_player_ <&7>with a great fall
+      - <gray>_killer_ introduced <red><bold>_player_ <gray>to Gravity
+      - <gray>_killer_ Eliminated <red><bold>_player_ <gray>with a great fall
 
     # - [ From Explosion ] - #
     self_explosion:
-      - <&c><&l>_player_ <&7>is <&7><&o>Literally <&7>on fire
-      - <&c><&l>_player_ <&7>went out with a <&l>BANG
-      - <&c><&l>_player_ <&7>went out with a <&l>BOOM
+      - <red><bold>_player_ <gray>is <gray><&o>Literally <gray>on fire
+      - <red><bold>_player_ <gray>went out with a <&l>BANG
+      - <red><bold>_player_ <gray>went out with a <&l>BOOM
     enemy_explosion:
-      - <&7>_killer_ <&sq>sploded <&c><&l>_player_
+      - <gray>_killer_ <&sq>sploded <red><bold>_player_
 
     # - [ From Storm ] - #
     self_storm:
     #idk if this one is right, but im adding them anyways
-      - <&c><&l>_player_ <&7>got lost in the storm
+      - <red><bold>_player_ <gray>got lost in the storm
     enemy_storm:
-      - <&7>_killer_ eliminated <&c><&l>_player_ <&7>in the storm
+      - <gray>_killer_ eliminated <red><bold>_player_ <gray>in the storm
 
     # - [ Leave/Self-Death ] - #
     self_death:
-      - <&c><&l>_player_ <&7>played themselves
+      - <red><bold>_player_ <gray>played themselves
     quit:
-      - <&c><&l>_player_ <&7>check out early
-      - <&c><&l>_player_ <&7>took the L
+      - <red><bold>_player_ <gray>check out early
+      - <red><bold>_player_ <gray>took the L
 
     #don't really need this, using the quit event instead
     #kick:
-    #  - <&c><&l>_player_ <&7>was struck by the Banhammer
+    #  - <red><bold>_player_ <gray>was struck by the Banhammer
 
   structures:
     #was using server flags for these, but now using config system...
