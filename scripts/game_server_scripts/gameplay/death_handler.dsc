@@ -15,6 +15,14 @@ fort_death_handler:
     on player teleports cause:SPECTATE flagged:fort.spectating:
     - determine passively cancelled
 
+    after player spectates player flagged:fort.spectating:
+    #we don't really need the second check in reality, but ill keep it for debugging/future needs
+    #no need to remove spectate flag either, since when they quit flag is removed
+    - wait 4s
+    - while <player.is_online> && <player.has_flag[fort.spectating]>:
+      - actionbar <&chr[1].font[elim_text]><element[<&l><&lb><&e><&l>SNEAK<&f><&l><&rb> <&c><&l>LEAVE MATCH].font[elim_text]>
+      - wait 2s
+
     on player stops spectating flagged:fort.spectating:
     - determine passively cancelled
     - define player_spectating <player.flag[fort.spectating]>
@@ -22,6 +30,7 @@ fort_death_handler:
     - if !<[player_spectating].is_online> || <[player_spectating].has_flag[fort.spectating]>:
       - stop
     - narrate "<element[<&l><player.name>].color[<color[#ffb62e]>]> <&7>has stopped spectating you" targets:<[player_spectating]>
+    - adjust <player> send_to:fort_lobby
 
     on player damaged by VOID flagged:fort:
     - determine passively cancelled
