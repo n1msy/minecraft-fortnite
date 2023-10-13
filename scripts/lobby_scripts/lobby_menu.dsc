@@ -68,11 +68,12 @@ fort_lobby_handler:
     - flag player fort.in_menu
     - if <context.cause> != JOIN:
       - run fort_lobby_handler.lobby_tp
+
+    - adjust <player> gamemode:ADVENTURE
     - adjust <player> can_fly:true
     - adjust <player> flying:true
 
     - adjust <player> fly_speed:0.02
-    - adjust <player> gamemode:ADVENTURE
 
     #hide instead of invis, so players can click through other players
     #- adjust <player> hide_from_players
