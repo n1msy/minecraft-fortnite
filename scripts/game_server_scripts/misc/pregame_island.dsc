@@ -1,7 +1,5 @@
 
-##make sure to disable lobby circle fx after game starts
 ##make sure to flag the server for different modes with "fort.mode"
-
 
 pregame_island_handler:
   type: world
@@ -162,7 +160,7 @@ pregame_island_handler:
     - define bus_icon    <&chr[A025].font[icons]>
     - define clock_icon  <&chr[0004].font[icons]>
 
-    #-pay bus honking sound too?
+    - run FORT_CORE_HANDLER.announcement_sounds.bus_honk
     - run FORT_CORE_HANDLER.announcement_sounds.main
 
     - flag server fort.temp.game_starting
@@ -178,6 +176,8 @@ pregame_island_handler:
       - bossbar update fort_info title:<[+spacing]><[bus_icon]><[-spacing]><&l><element[BATTLE BUS LAUNCHING IN].font[lobby_text]><&sp><element[<&d><&l><[seconds]> Seconds].font[lobby_text]> color:YELLOW players:<[players]>
       - sidebar set_line scores:5 values:<element[<&chr[0025].font[icons]> <[timer]>].font[hud_text].color[<color[50,0,0]>]> players:<[players]>
 
+      #-bus engine revving
+      - playsound <[players]> sound:ENTITY_MINECART_RIDING pitch:1 volume:0.1 if:<[seconds].equals[1]>
       - wait 1s
       - define players <server.online_players_flagged[fort]>
       - if <[players].size> < <[min_players]>:
@@ -262,7 +262,8 @@ pregame_island_handler:
           - define fx <entry[fx].spawned_entity>
           - flag <[fx]> lobby_circle_square
 
-          - wait 1t
+          #wait 2t to fix backdrop
+          - wait 2t
 
           - adjust <[fx]> interpolation_start:0
           - adjust <[fx]> translation:<[end_translation]>

@@ -1,5 +1,3 @@
-#TODO: when player leaves spectate, send em to menu
-
 #-show death in third person?
 #eh might be too buggy
 

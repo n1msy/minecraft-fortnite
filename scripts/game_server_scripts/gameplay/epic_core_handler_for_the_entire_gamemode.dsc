@@ -3,42 +3,11 @@
 
 ##on server start, adjust the mining speed of all materials to a thing?
 
-##add "F" to thank the bus driver
-
-stand_to_display_ent_testing:
-  type: task
-  debug: false
-  script:
-  - if <player.has_flag[stand]>:
-    - remove <player.flag[stand]>
-
-  - if <player.has_flag[ent]>:
-    - remove <player.flag[ent]>
-
-  - if <player.has_flag[ent1]>:
-    - remove <player.flag[ent1]>
-
-  - define loc <player.location.forward_flat[2].above[2].with_pose[0,0]>
-
-  - spawn <entity[ARMOR_STAND].with[gravity=false;collidable=false;invulnerable=true;visible=true]> <[loc].below[1.48]> save:stand
-  - define stand <entry[stand].spawned_entity>
-
-  - spawn <entity[item_display].with[item=iron_block;scale=0.1,0.1,0.1;glowing=true]> <[loc]> save:ent
-  - define ent <entry[ent].spawned_entity>
-
-  - spawn <entity[item_display].with[item=iron_block;scale=0.1,0.1,0.1;glowing=true;glow_color=yellow]> <[loc]> save:ent1
-  - define ent1 <entry[ent1].spawned_entity>
-
-  - mount <[ent]>|<[stand]>
-
-  - flag player stand:<[stand]>
-  - flag player ent:<[ent]>
-  - flag player ent1:<[ent1]>
-
-####todo:
+#todo:
 ###create storm and show it to all players
-###add sounds for when the announcents appear
 ###find random center to place circle
+
+#/ex title title:<&chr[10].font[icons].color[<color[77,0,0]>]> fade_in:0 fade_out:0 stay:5m
 
 fort_core_handler:
   type: task
@@ -188,6 +157,9 @@ fort_core_handler:
 
       - wait 1s
 
+  #victory:
+    
+
   ##make these sounds MIDI via noteblock studio & resourcepack instead? (that way when the server lags, the tune doesn't turn bad)
   announcement_sounds:
     main:
@@ -225,6 +197,14 @@ fort_core_handler:
       - wait 9t
       - playsound <[players]> sound:BLOCK_NOTE_BLOCK_HAT pitch:1.3 volume:<[vol]>
       - wait 9t
+
+    bus_honk:
+      - define players <server.online_players_flagged[fort]>
+      - playsound <[players]> sound:BLOCK_NOTE_BLOCK_DIDGERIDOO pitch:1.415 volume:0.85
+      - wait 4t
+      - playsound <[players]> sound:BLOCK_NOTE_BLOCK_DIDGERIDOO pitch:1.415 volume:0.85
+      - wait 6t
+      - playsound <[players]> sound:BLOCK_NOTE_BLOCK_DIDGERIDOO pitch:1.415 volume:0.85
 
 fort_bus_handler:
   type: world
@@ -288,8 +268,6 @@ fort_bus_handler:
 
       - wait 1t
 
-    - mount <[bus_driver]>|<[drivers_seat]>
-
     - define bus_parts <[bus].flag[dmodel_parts]>
     - foreach <[bus_parts]> as:part:
       #for some reason gotta offset the armor stand a little bit
@@ -326,6 +304,7 @@ fort_bus_handler:
     - define bus_driver <entry[bus_driver].created_npc>
     - adjust <[bus_driver]> skin_blob:<script[nimnite_config].data_key[Spitfire_Skin]>
     - adjust <[bus_driver]> name_visible:false
+    - mount <[bus_driver]>|<[drivers_seat]>
 
     - flag server fort.temp.bus.driver:<[bus_driver]>
 
@@ -372,6 +351,11 @@ fort_bus_handler:
         - invisible <[passengers]> reset
         - flag server fort.temp.bus.passengers:<list[]>
         - define passengers <list[]>
+
+      #-play battle bus wind sound
+      #- playsound <[passengers]> sound:ITEM_ELYTRA_FLYING pitch:0.5 volume:0.15 if:<[value].mod[400].equals[1]>
+      #i would make the "bass" beat too, but it'll be bad if tps drops
+      - playsound <[passengers]> sound:ENTITY_MINECART_INSIDE volume:0.04 if:<[value].mod[110].equals[1]>
 
       - define new_loc <[bus_start].forward[<[value]>]>
 

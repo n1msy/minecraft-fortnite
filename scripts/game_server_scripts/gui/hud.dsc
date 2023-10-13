@@ -168,6 +168,13 @@ hud_handler:
     - if <player.has_flag[fort.using_glider]>:
       - stop
 
+    - if <player.has_flag[fort.on_bus]>:
+      - if !<player.has_flag[fort.thanked_bus_driver]>:
+        #teammates are orange? idc
+        - announce "<&c><&l><player.name> <&7>thanked the bus driver"
+        - flag player fort.thanked_bus_driver
+      - stop
+
     - define new_type <map[inv=build;build=inv].get[<player.flag[fort.inv_type]||inv>]>
     - flag player fort.inv_type:<[new_type]>
 

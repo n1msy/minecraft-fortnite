@@ -17,7 +17,6 @@
 ##play a noise when falling for enemies to indicate they're falling?
 
 ##might be a bit too many particle effects; if too laggy, tone it down
-
 fort_glider_handler:
   type: world
   debug: false
@@ -26,7 +25,8 @@ fort_glider_handler:
     on player drops item flagged:for.using_glider:
     - determine cancelled
 
-    on player starts sneaking flagged:fort.using_glider:
+    #after, to prevent the even from firing multiple times (like when jumping off bus)
+    after player starts sneaking flagged:fort.using_glider:
     - if <player.has_flag[fort.using_glider.locked]>:
       - stop
 
@@ -48,6 +48,8 @@ fort_glider_handler:
       - define build_mode True
       - run build_toggle
 
+    #cancel battle bus wind sound in case they were on it
+    #- adjust <player> stop_sound:minecraft:item.elytra.flying
     - adjust <player> item_slot:9
     #<item[gold_nugget].with[custom_model_data=23]>
 
