@@ -35,14 +35,15 @@ nimnite_config:
       - <&7>_killer_ NO-SCOPED <&c><&l>_player_
     gun_default:
     #show distance if over 50m
-      - <&7>_killer_ Eliminated <&c><&l>_player_ <&7>with a _gun_type_
+    #with a ___ part is added in the handler
+      - <&7>_killer_ Eliminated <&c><&l>_player_<&7>
 
     # - [ From Void ] - #
     #i added these myself
     self_void:
-      - <&c><&l>_player_ <&7>got swallowed by the abyss
+      - <&c><&l>_player_ <&7>got fell into the void
     enemy_void:
-      - <&7>_killer_ threw <&c><&l>_player_ <&7>into the abyss
+      - <&7>_killer_ threw <&c><&l>_player_ <&7>into the void
 
     # - [ From Fall ] - #
     self_fall:
