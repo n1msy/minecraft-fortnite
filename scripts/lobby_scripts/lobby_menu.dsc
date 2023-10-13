@@ -128,6 +128,10 @@ fort_lobby_handler:
 
     #### - [ OPTIMIZE / PRETTIFY THIS CODE ] ###
     on player join:
+    #player join message
+    - define name <player.name>
+    - determine passively "<&chr[0001].font[denizen:announcements]> <&9><[name]>"
+    - announce to_console "<&8><&lb><&a>+<&8><&rb> <&f><[name]>"
 
     - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
 
@@ -141,7 +145,7 @@ fort_lobby_handler:
 
     - define pad_loc <server.flag[fort.menu.pads].first.location>
     - define npc_loc <[pad_loc].face[<player.eye_location>].with_pitch[0]>
-    - create PLAYER <player.name> <[npc_loc]> save:player_npc
+    - create PLAYER <[name]> <[npc_loc]> save:player_npc
     - define player_npc <entry[player_npc].created_npc>
     - adjust <[player_npc]> hide_from_players
     - adjust <[player_npc]> name_visible:false
@@ -149,7 +153,7 @@ fort_lobby_handler:
 
     - flag player fort.menu.player_npc:<[player_npc]>
 
-    - spawn <entity[text_display].with[text=<player.name><n><&c>Not Ready;background_color=transparent;pivot=CENTER;scale=1,1,1;hide_from_players=true]> <[npc_loc].above[1.5]> save:name_text
+    - spawn <entity[text_display].with[text=<[name]><n><&c>Not Ready;background_color=transparent;pivot=CENTER;scale=1,1,1;hide_from_players=true]> <[npc_loc].above[1.5]> save:name_text
     - flag player fort.menu.name:<entry[name_text].spawned_entity>
     - adjust <player> show_entity:<entry[name_text].spawned_entity>
 
@@ -194,6 +198,7 @@ fort_lobby_handler:
 
     ## - [ MAKE THIS CLEANER ] - ##
     on player quit priority:-10:
+    - determine passively NONE
     - define uuid <player.uuid>
 
     - flag player fort.quitting

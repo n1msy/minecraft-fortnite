@@ -31,6 +31,14 @@ fort_bungee_handler:
           #send all the player data, or just remove the current one?
           - run fort_bungee_tasks.set_data def:<[data]>
 
+    on bungee player leaves network:
+    - if <bungee.server> != fort_lobby:
+      - stop
+    #-only announce this in the fort lobby, not in-game
+    - define name <context.name>
+    - announce "<&chr[0002].font[denizen:announcements]> <&9><[name]>"
+    - announce to_console "<&8><&lb><&c>-<&8><&rb> <&f><[name]>"
+
 
 
 fort_bungee_tasks:
