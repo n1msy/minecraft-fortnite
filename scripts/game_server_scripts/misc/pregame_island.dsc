@@ -74,6 +74,7 @@ pregame_island_handler:
     - flag server fort.temp.available
 
     on player join:
+    - determine passively "<&9><&l><player.name> <&7>joined the match"
 
     #clear previous fort flags in case it wasn't
     - flag player fort:!
@@ -130,9 +131,11 @@ pregame_island_handler:
     - adjust <player> send_to:fort_lobby
 
     on player quit:
+    #remove quit message
     - if <server.online_players.exclude[<player>].size> == 0:
       - remove <world[pregame_island].entities[text_display].filter[has_flag[lobby_circle_square]]>
 
+    #if it's still in the pregame lobbe island
     - if <server.has_flag[fort.temp.available]>:
       - definemap data:
           game_server: <bungee.server>
@@ -141,6 +144,9 @@ pregame_island_handler:
           players: <server.online_players_flagged[fort]>
       #send all the player data, or just remove the current one?
       - bungeerun fort_lobby fort_bungee_tasks.set_status def:<[data]>
+      - determine passively "<&9><&l><player.name> <&7>quit"
+    - else:
+      - determine passively NONE
 
     #don't play the death animation if they are teleporting via the circle or they're spectating (already dead)
     - if !<player.has_flag[fort.lobby_teleport]> && !<player.has_flag[fort.spectating]>:
