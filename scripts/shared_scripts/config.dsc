@@ -72,7 +72,7 @@ nimnite_config:
     self_death:
       - <red><bold>_player_ <gray>played themselves
     quit:
-      - <red><bold>_player_ <gray>check out early
+      - <red><bold>_player_ <gray>checked out early
       - <red><bold>_player_ <gray>took the L
 
     #don't really need this, using the quit event instead
