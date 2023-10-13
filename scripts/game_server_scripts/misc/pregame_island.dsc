@@ -144,7 +144,7 @@ pregame_island_handler:
 
     #don't play the death animation if they are teleporting via the circle or they're spectating (already dead)
     - if !<player.has_flag[fort.lobby_teleport]> && !<player.has_flag[fort.spectating]>:
-      - run fort_death_handler.death
+      - run fort_death_handler.death def:<map[quit=true]>
 
     - flag player fort:!
 

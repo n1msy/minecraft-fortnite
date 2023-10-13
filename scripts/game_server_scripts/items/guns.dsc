@@ -997,7 +997,7 @@ gun_pump_shotgun:
     custom_model_data: 1
     hides: ALL
   flags:
-    type: shotgun
+    type: Shotgun
     #this value can be changed
     rarity: common
     icon_chr: 13
@@ -1074,7 +1074,7 @@ gun_tactical_shotgun:
     custom_model_data: 23
     hides: ALL
   flags:
-    type: shotgun
+    type: Shotgun
     #this value can be changed
     rarity: common
     icon_chr: 14
@@ -1155,7 +1155,7 @@ gun_assault_rifle:
     custom_model_data: 3
     hides: ALL
   flags:
-    type: ar
+    type: Rifle
     #this value can be changed
     rarity: common
     icon_chr: 1
@@ -1220,7 +1220,7 @@ gun_burst_assault_rifle:
     custom_model_data: 26
     hides: ALL
   flags:
-    type: ar
+    type: Rifle
     #this value can be changed
     rarity: common
     icon_chr: 3
@@ -1287,7 +1287,7 @@ gun_tactical_smg:
     custom_model_data: 7
     hides: ALL
   flags:
-    type: smg
+    type: SMG
     #this value can be changed
     rarity: uncommon
     icon_chr: 12
@@ -1350,7 +1350,7 @@ gun_smg:
     custom_model_data: 9
     hides: ALL
   flags:
-    type: smg
+    type: SMG
     #this value can be changed
     rarity: common
     icon_chr: 11
@@ -1416,7 +1416,7 @@ gun_bolt_action_sniper_rifle:
     custom_model_data: 11
     hides: ALL
   flags:
-    type: sniper
+    type: Sniper
     #this value can be changed
     rarity: common
     sniper: true
@@ -1481,7 +1481,7 @@ gun_revolver:
     custom_model_data: 12
     hides: ALL
   flags:
-    type: pistol
+    type: Pistol
     #this value can be changed
     rarity: common
     icon_chr: 6
@@ -1544,7 +1544,7 @@ gun_pistol:
     custom_model_data: 16
     hides: ALL
   flags:
-    type: pistol
+    type: Pistol
     #this value can be changed
     rarity: common
     icon_chr: 5
@@ -1606,7 +1606,7 @@ gun_grenade_launcher:
     custom_model_data: 18
     hides: ALL
   flags:
-    type: rpg
+    type: RPG
     #this value can be changed
     rarity: rare
     #meaning it's not a conventional gun
@@ -1664,7 +1664,7 @@ gun_rocket_launcher:
     custom_model_data: 20
     hides: ALL
   flags:
-    type: rpg
+    type: RPG
     #this value can be changed
     rarity: rare
     #meaning it's not a conventional gun

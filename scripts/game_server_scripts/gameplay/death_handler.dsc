@@ -17,22 +17,32 @@ fort_death_handler:
 
     on player stops spectating flagged:fort.spectating:
     - determine passively cancelled
-    #when they leave for example
     - define player_spectating <player.flag[fort.spectating]>
+    #(second check in case the other player died and is spectating someone else now)
     - if !<[player_spectating].is_online> || <[player_spectating].has_flag[fort.spectating]>:
       - stop
     - narrate "<element[<&l><player.name>].color[<color[#ffb62e]>]> <&7>has stopped spectating you" targets:<[player_spectating]>
 
     on player damaged by VOID flagged:fort:
     - determine passively cancelled
-    - run fort_death_handler.death
+    - hurt <player.health> cause:VOID
+
+    #don't run it, instead kill them with VOID cause, so the death message is correct
+    #- run fort_death_handler.death
 
     on player death:
     - define cause  <context.cause||null>
     - define killer <context.damager||<player.flag[fort.last_damager]||null>>
+
     - determine passively cancelled
+
     #dont use the vanilla drop mechanic
     - determine passively <list[]>
+
+    #-killfeed
+    #don't really need to inject, but it's much cleaner
+    #updating kill feed before death effect, for gun distance to be calculated
+    - inject fort_death_handler.killfeed
 
     - run fort_death_handler.death def:<map[killer=<[killer]>]>
 
@@ -45,10 +55,9 @@ fort_death_handler:
       - playsound <[killer]> sound:ENTITY_PLAYER_ATTACK_CRIT pitch:0.9 volume:1
       - actionbar "<&chr[1].font[elim_text]><element[<&l>ELIMINATED].font[elim_text]> <element[<&c><&l><player.name>].font[elim_text]>" targets:<[killer]>
 
-    # - [ Killfeed ] - #
-
     #-Update alive players (players left)
-    - define players    <server.online_players_flagged[fort]>
+    #excluding killer, since their hud updates already in .death
+    - define players    <server.online_players_flagged[fort].exclude[<[killer]>]>
     - define alive_icon <&chr[0002].font[icons]>
     - sidebar set_line scores:3 values:<element[<[alive_icon]> <server.online_players_flagged[!fort.spectating].size>].font[hud_text].color[<color[51,0,0]>]> players:<[players]>
 
@@ -56,6 +65,7 @@ fort_death_handler:
     #using queued player
 
     - define killer <[data].get[killer]||null>
+    - define quit   <[data].get[quit]||false>
 
     #don't drop items on pregame island
     - run fort_item_handler.drop_everything if:<player.world.name.equals[nimnite_map]>
@@ -68,6 +78,10 @@ fort_death_handler:
     #this is before adding the fort.spectating flag, so no need to remove the dead player from the list
     - define placement <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].size>
     - actionbar <&chr[1].font[elim_text]><element[<&l>YOU PLACED <&r>#<&e><&l><[placement]>].font[elim_text]>
+
+    #killfeed (if they quit and didn't actually die)
+    - if <[quit]>:
+      - define msg_template <script[nimnite_config].data_key[quit].random>
 
     # - [ Spectating System ] - #
     #if they die without a killer, just spectate a random player that's alive
@@ -95,6 +109,63 @@ fort_death_handler:
 
     #update their hud so its correctly updated for spectating players too
     - run update_hud player:<[player_to_spectate]>
+
+  ## - [ Killfeed ] - ##
+  killfeed:
+  #injected "on player death", just for the sake of cleanliness
+    - define name <player.name>
+    - define killer_name <[killer].name||null>
+
+    - if <[killer]> == <player>:
+    #-self death
+      - define msg_template <script[nimnite_config].data_key[killfeed.self_death].random.parse_minimessage>
+    - else:
+      #-kill type is either SELF (if there's no killer) or ENEMY (if there is a killer)
+      - define kill_type <[killer].equals[null].if_true[self].if_false[enemy]>
+      - choose <[cause]>:
+        - case BLOCK_EXPLOSION:
+          - define msg_template <script[nimnite_config].data_key[killfeed.<[killtype]>_explosion].random.parse_minimessage>
+
+        - case FALL:
+          - define msg_template <script[nimnite_config].data_key[killfeed.<[killtype]>_fall].random.parse_minimessage>
+
+        #from storm
+        - case WORLD_BORDER:
+          - define msg_template <script[nimnite_config].data_key[killfeed.<[killtype]>_storm].random.parse_minimessage>
+
+        - case VOID:
+          - define msg_template <script[nimnite_config].data_key[killfeed.<[killtype]>_void].random.parse_minimessage>
+
+        - case ENTITY_ATTACK:
+          #if it's entity attack, then it means killer *has* to exist
+          - define weapon <[killer].item_in_hand>
+          #fallback is in case they used an item with no script attached (ie air)
+          - if <[weapon].script.name.starts_with[gun_]||false>:
+            - define gun_type <[weapon].flag[type]>
+            - define distance <[killer].location.distance[<player.location>].round>
+            - choose <[gun_type]>:
+              - case shotgun:
+                - define msg_template <script[nimnite_config].data_key[killfeed.shotgun].random.parse_minimessage>
+              - case sniper:
+                - if !<[killer].has_flag[fort.gun_scoped]>:
+                  - define msg_template "<script[nimnite_config].data_key[killfeed.sniper_noscope].random.parse_minimessage> <&7>(<&f><[distance]> m<&7>)"
+                - else:
+                  - define msg_template "<script[nimnite_config].data_key[killfeed.sniper].random.parse_minimessage> <&7>(<&f><[distance]> m<&7>)"
+              - default:
+                - define msg_template "<script[nimnite_config].data_key[killfeed.gun_default].random.parse_minimessage> <&7>with a <[gun_type]>"
+                - if <[distance]> > 50:
+                  - define msg_template "<[msg_template]> <&7>(<&f><[distance]> m<&7>)"
+          - else:
+            #default is pickaxe msg
+            - define msg_template <script[nimnite_config].data_key[killfeed.pickaxe].random.parse_minimessage>
+
+    - if <[msg_template].exists>:
+      - define death_message <[msg_template].replace_text[_killer_].with[<[killer_name]>].replace_text[_player_].with[<[name]>]>
+    - else:
+    #-in case the cause was none of these, let players know to report it (unknown)
+      - define death_message "<&c><&l><[name]> <&7>died for some reason... <element[<&f><&l><&lb><&e><&l>HOVER<&f><&l><&rb>].on_hover[<&f>Hey, if you see this message, this is an <&c>error<&f>.<n><&f>Please let Nimsy know. <&7>CAUSE: <&a><[cause]>]>"
+
+    - announce <[death_message]>
 
   fx:
   #-create the "on your knees" animation or no? because the player fades away anyways
