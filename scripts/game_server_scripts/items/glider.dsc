@@ -17,12 +17,19 @@
 ##play a noise when falling for enemies to indicate they're falling?
 
 ##might be a bit too many particle effects; if too laggy, tone it down
+
+######GLIDER STILL NOT REMOVING WHEN HITTING THE GROUND
+
 fort_glider_handler:
   type: world
   debug: false
   events:
 
-    on player drops item flagged:for.using_glider:
+    on player clicks block flagged:fort.using_glider:
+    - determine passively cancelled
+    - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
+
+    on player drops item flagged:fort.using_glider:
     - determine cancelled
 
     #after, to prevent the even from firing multiple times (like when jumping off bus)
@@ -153,11 +160,12 @@ fort_glider_handler:
         - run fort_death_handler.death
         - stop
 
-    #-added a safety to remove the glider, not sure if it works or not though
-    - wait 1t
+    #-added a safety to remove the glider, not sure if it works or not though -> just tested, still not working, changed to 2t to see if it'll work
+    #- wait 2t
 
     #this should in theory ALWAYS be toggled to off since it will always take out the glider no matter what
-    - run fort_glider_handler.toggle_glider
+    #^this doesn't work, currently trying remove_glider. I will keep it this way if it works
+    - run fort_glider_handler.remove_glider
 
     - adjust <player> stop_sound:minecraft:item.elytra.flying
 
@@ -220,7 +228,7 @@ fort_glider_handler:
       - flag player fort.using_glider.deployed:<[glider]>
 
       #"remove" the players hand from frame, so it *looks* like they're holding the glider (even though it's a random item)
-      - give <item[gold_nugget].with[display=<&sp>;custom_model_data=23]> slot:9 to:<player.inventory>
+      - give <item[gold_nugget].with[display=<&sp>;custom_model_data=23;flag=glider:true]> slot:9 to:<player.inventory>
 
       #- run dmodels_spawn_model def.player:<player> def.model_name:emotes def.location:<[loc].above[2]> def.yaw:<[yaw]> save:result
       #- define gliding_model <entry[result].created_queue.determination.first||null>
@@ -248,3 +256,28 @@ fort_glider_handler:
       - adjust <[glider]> translation:0,1.6,0
       - adjust <[glider]> scale:1,1,1
       - adjust <[glider]> interpolation_duration:10t
+
+  remove_glider:
+    - define loc   <player.location>
+    - define yaw   <[loc].yaw>
+
+    - define glider <player.flag[fort.using_glider.deployed]>
+    - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[yaw].sub[180].to_radians>]>]>
+
+    - playsound <player> sound:ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM pitch:1.5 volume:1
+    - playsound <player> sound:ENTITY_PLAYER_ATTACK_NODAMAGE pitch:0.3 volume:1.5
+
+    - flag <[glider]> undeploy_anim duration:10t
+    - adjust <[glider]> interpolation_start:0
+    - adjust <[glider]> left_rotation:<[left_rotation]>
+    - adjust <[glider]> translation:0,-0.5,0
+    - adjust <[glider]> scale:0,0,0
+    - adjust <[glider]> interpolation_duration:10t
+
+    - take slot:9 from:<player.inventory>
+
+    - flag player fort.using_glider.deployed:!
+
+    - wait 10t
+
+    - remove <[glider]>

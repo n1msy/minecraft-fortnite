@@ -52,7 +52,7 @@ fort_commands:
       #-circular transparent outline
       #i think this might be off-center?
       - define radius 1.1
-      - define cyl_height 1
+      - define cyl_height 1.7
 
       - define center <[loc].below[2.2]>
 
@@ -66,7 +66,7 @@ fort_commands:
         #- define plane_loc <[plane_loc].face[<[loc]>]>
         #- define plane_loc <[plane_loc].with_yaw[<[plane_loc].yaw.mul[-1]>].with_pitch[0]>
 
-        - spawn <entity[item_display].with[item=<item[white_stained_glass_pane].with[custom_model_data=2]>;translation=0,0.8,0;scale=1.2505,1.7,1.2505]> <[plane_loc].above[1.75].face[<[loc]>].with_pitch[0]> save:plane
+        - spawn <entity[item_display].with[item=<item[white_stained_glass_pane].with[custom_model_data=2]>;translation=0,0.8,0;scale=1.2505,<[cyl_height]>,1.2505]> <[plane_loc].above[1.75].face[<[loc]>].with_pitch[0]> save:plane
         - define plane     <entry[plane].spawned_entity>
         - flag server fort.pregame.lobby_circle.planes:->:<[plane]>
 

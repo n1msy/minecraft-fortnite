@@ -29,7 +29,7 @@ fort_global_handler:
     - if !<[e].is_living>:
       - stop
 
-    - if <[e].world.name> == pregame_island:
+    - if <[e].world.name> == pregame_island || <server.flag[fort.temp.phase]||null> == END:
       - determine passively cancelled
       - stop
 

@@ -42,9 +42,13 @@ fort_death_handler:
     - define killer <context.damager||<player.flag[fort.last_damager]||null>>
 
     - determine passively cancelled
+    #-don't die if the phase is END
+    - if <server.flag[fort.temp.phase]||null> == END:
+      - stop
 
-    #dont use the vanilla drop mechanic
-    - determine passively <list[]>
+    #i have no clue how this happened, but it did
+    - if <player.has_flag[fort.using_gilder]>:
+      - stop
 
     #-killfeed
     #don't really need to inject, but it's much cleaner
@@ -61,12 +65,6 @@ fort_death_handler:
       #ENTITY_PLAYER_ATTACK_STRONG -> would use this, but it's not loud enough
       - playsound <[killer]> sound:ENTITY_PLAYER_ATTACK_CRIT pitch:0.9 volume:1
       - actionbar "<&chr[1].font[elim_text]><element[<&l>ELIMINATED].font[elim_text]> <element[<&c><&l><player.name>].font[elim_text]>" targets:<[killer]>
-
-    #-Update alive players (players left)
-    #excluding killer, since their hud updates already in .death
-    - define players    <server.online_players_flagged[fort].exclude[<[killer]>]>
-    - define alive_icon <&chr[0002].font[icons]>
-    - sidebar set_line scores:3 values:<element[<[alive_icon]> <server.online_players_flagged[!fort.spectating].size>].font[hud_text].color[<color[51,0,0]>]> players:<[players]>
 
   death:
     #using queued player
@@ -96,6 +94,17 @@ fort_death_handler:
       - define death_message <[msg_template].replace_text[_player_].with[<player.name>]>
       - announce <[death_message]>
 
+    #-Update alive players (players left)
+    #excluding killer, since their hud updates already in .death
+    - define players       <server.online_players_flagged[fort].exclude[<[killer]>]>
+    - define players_alive <server.online_players_flagged[!fort.spectating]>
+    - define alive_icon <&chr[0002].font[icons]>
+
+    - sidebar set_line scores:4 values:<element[<[alive_icon]> <[players_alive].size>].font[hud_text].color[<color[51,0,0]>]> players:<[players]>
+
+    # - [ Victory Check ] - #
+    - run fort_core_handler.victory_check def:<map[dead_player=<player>]>
+
     # - [ Spectating System ] - #
     #if they die without a killer, just spectate a random player that's alive
     - if <[killer]> != null:
@@ -108,12 +117,16 @@ fort_death_handler:
     #in case the player who won somehow dies (which can happen if they leave before game ends fr)
     #disable damage after the dub has been taken
     - if <[player_to_spectate]> == null:
+      #if the team who won leaves, just send everyone else back too
+      - if <server.flag[fort.temp.phase]> == end:
+        - inject fort_core_handler.reset_server
       - stop
 
     #move the player's current spectators to whoever they are spectating too
     - define spectators <server.online_players_flagged[fort.spectating].filter[flag[fort.spectating].equals[<player>]]>
     - define spectators <[spectators].include[<player>]> if:<player.is_online>
 
+    #spectating sometimes doesn't work
     - foreach <[spectators]> as:spectator:
       - flag <[spectator]> fort.spectating:<[player_to_spectate]>
       - adjust <[spectator]> spectator_target:<[player_to_spectate]>
@@ -137,17 +150,17 @@ fort_death_handler:
       - define kill_type <[killer].equals[null].if_true[self].if_false[enemy]>
       - choose <[cause]>:
         - case BLOCK_EXPLOSION:
-          - define msg_template <script[nimnite_config].data_key[killfeed.<[killtype]>_explosion].random.parse_minimessage>
+          - define msg_template <script[nimnite_config].data_key[killfeed.<[kill_type]>_explosion].random.parse_minimessage>
 
         - case FALL:
-          - define msg_template <script[nimnite_config].data_key[killfeed.<[killtype]>_fall].random.parse_minimessage>
+          - define msg_template <script[nimnite_config].data_key[killfeed.<[kill_type]>_fall].random.parse_minimessage>
 
         #from storm
         - case WORLD_BORDER:
-          - define msg_template <script[nimnite_config].data_key[killfeed.<[killtype]>_storm].random.parse_minimessage>
+          - define msg_template <script[nimnite_config].data_key[killfeed.<[kill_type]>_storm].random.parse_minimessage>
 
         - case VOID:
-          - define msg_template <script[nimnite_config].data_key[killfeed.<[killtype]>_void].random.parse_minimessage>
+          - define msg_template <script[nimnite_config].data_key[killfeed.<[kill_type]>_void].random.parse_minimessage>
 
         - case ENTITY_ATTACK:
           #if it's entity attack, then it means killer *has* to exist

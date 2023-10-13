@@ -4,7 +4,7 @@
 pregame_island_handler:
   type: world
   debug: false
-  definitions: square
+  definitions: data
   events:
 
     on server start:
@@ -46,6 +46,12 @@ pregame_island_handler:
     - announce "<&b>[Nimnite]<&r> Setting all <&e>floor loot<&r>... <&c>Coming Soon." to_console
     #- announce "<&b>[Nimnite]<&r> Setting all <&e>floor loot<&r>..." to_console
     #- announce "<&b>[Nimnite]<&r> Done (<&a>0<&r>)" to_console
+
+    #reset the notable (since its also being used after victory)
+    - define ellipsoid <server.flag[fort.pregame.lobby_circle.loc].to_ellipsoid[1.3,3,1.3]>
+    - note <[ellipsoid]> as:fort_lobby_circle
+
+    - remove <world[pregame_island].entities[dropped_item]>
 
     - run pregame_island_handler.lobby_circle.anim
     - announce "<&b>[Nimnite]<&r> Set lobby circle animation in world <&dq><&e>fort_pregame_island<&r><&dq>" to_console
@@ -144,6 +150,12 @@ pregame_island_handler:
       #send all the player data, or just remove the current one?
       - bungeerun fort_lobby fort_bungee_tasks.set_status def:<[data]>
       - determine passively "<&9><&l><player.name> <&7>quit"
+      #so update the pregame island (since if they leave via lobby teleport circle, the death event wont fire)
+      - if <player.has_flag[fort.lobby_teleport]>:
+        - define players       <server.online_players_flagged[fort].exclude[<player>]>
+        - define alive_icon <&chr[0002].font[icons]>
+        - sidebar set_line scores:4 values:<element[<[alive_icon]> <[players].size>].font[hud_text].color[<color[51,0,0]>]> players:<[players]>
+
     - else:
       - determine passively NONE
 
@@ -152,6 +164,10 @@ pregame_island_handler:
       - run fort_death_handler.death def:<map[quit=true]>
 
     - flag player fort:!
+
+    #-if nobody is left on the server (there's no need to wait the whole 1 minute before server restarting)
+    - if <server.flag[fort.temp.phase]||null> == END && <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].is_empty>:
+      - inject fort_core_handler.reset_server
 
   countdown:
     - define min_players <script[nimnite_config].data_key[minimum_players]>
@@ -237,19 +253,21 @@ pregame_island_handler:
 
   lobby_circle:
     anim:
-      - define loc <server.flag[fort.pregame.lobby_circle.loc].with_pose[0,0]>
-      - define circle <server.flag[fort.pregame.lobby_circle.circle]>
+      - define loc <[data].get[loc].above[0.3].with_pitch[0]||<server.flag[fort.pregame.lobby_circle.loc].with_pose[0,0]>>
+      - define circle <[data].get[circle]||<server.flag[fort.pregame.lobby_circle.circle]>>
 
       #in case server was shut down incorrectly (or before a match was started)
       - remove <world[pregame_island].entities[text_display].filter[has_flag[lobby_circle_square]]>
 
       - flag server fort.lobby_circle_enabled
 
-      - while <server.has_flag[fort.lobby_circle_enabled]>:
-        - if <[circle].is_spawned>:
-          - adjust <[circle]> interpolation_start:0
-          - adjust <[circle]> left_rotation:<quaternion[0,0,1,0].mul[<location[0,0,-1].to_axis_angle_quaternion[<[loop_index].div[85]>]>]>
-          - adjust <[circle]> interpolation_duration:1t
+      - while <[circle].is_spawned> && <server.has_flag[fort.lobby_circle_enabled]>:
+
+        - playsound <[loc]> sound:BLOCK_BEACON_AMBIENT pitch:1.2 volume:1.2 if:<[loop_index].mod[30].equals[1]>
+
+        - adjust <[circle]> interpolation_start:0
+        - adjust <[circle]> left_rotation:<quaternion[0,0,1,0].mul[<location[0,0,-1].to_axis_angle_quaternion[<[loop_index].div[85]>]>]>
+        - adjust <[circle]> interpolation_duration:2t
 
         #-square
         #second check is if it's greater than 0, otherwise they'll keep on spawning and not be removed?
@@ -271,7 +289,7 @@ pregame_island_handler:
           - adjust <[fx]> interpolation_duration:50t
           - run fort_death_handler.fx.remove_square def:<map[square=<[fx]>;wait=52]>
         - else:
-          - wait 1t
+          - wait 2t
 
       #remove entities in case they weren't already (or if server shuts down)
       - remove <world[pregame_island].entities[text_display].filter[has_flag[lobby_circle_square]]>
