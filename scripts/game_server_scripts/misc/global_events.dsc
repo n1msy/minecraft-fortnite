@@ -87,6 +87,8 @@ fort_global_handler:
 
     - if <[e].is_player>:
       - wait 1t
+      #don't update their hud after they die
+      - stop if:<[e].has_flag[fort.spectating]>
       - adjust <queue> linked_player:<[e]>
       - run update_hud
 

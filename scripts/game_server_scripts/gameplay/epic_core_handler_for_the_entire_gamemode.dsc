@@ -3,6 +3,8 @@
 
 ##on server start, adjust the mining speed of all materials to a thing?
 
+##add "F" to thank the bus driver
+
 stand_to_display_ent_testing:
   type: task
   debug: false
@@ -286,13 +288,6 @@ fort_bus_handler:
 
       - wait 1t
 
-    - create PLAYER <&sp> <[drivers_seat_loc]> save:bus_driver
-    - define bus_driver <entry[bus_driver].created_npc>
-    - adjust <[bus_driver]> skin_blob:<script[nimnite_config].data_key[Spitfire_Skin]>
-    - adjust <[bus_driver]> name_visible:false
-
-    - flag server fort.temp.bus.driver:<[bus_driver]>
-
     - mount <[bus_driver]>|<[drivers_seat]>
 
     - define bus_parts <[bus].flag[dmodel_parts]>
@@ -322,8 +317,17 @@ fort_bus_handler:
         - mount <[passenger]>|<[r_seat]>
         - define available_seats:<-:<[r_seat]>
 
+
     - flag <[players]> fort.on_bus
     - flag server fort.temp.bus.passengers:<[players]>
+
+    #-bus driver
+    - create PLAYER <&sp> <[drivers_seat_loc]> save:bus_driver
+    - define bus_driver <entry[bus_driver].created_npc>
+    - adjust <[bus_driver]> skin_blob:<script[nimnite_config].data_key[Spitfire_Skin]>
+    - adjust <[bus_driver]> name_visible:false
+
+    - flag server fort.temp.bus.driver:<[bus_driver]>
 
     #logic for finding bus starting position
     #map is 2304x2304
