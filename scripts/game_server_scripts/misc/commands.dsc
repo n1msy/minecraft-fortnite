@@ -21,8 +21,8 @@ fort_commands:
         - narrate "<&7>Type /fort pregame_setup to set."
 
     - case lobby_teleport:
-      - define loc <player.location.round.above[0.5]>
-      #- define loc <server.flag[fort.pregame.lobby_circle.loc]>
+      #- define loc <player.location.round.above[0.5]>
+      - define loc <server.flag[fort.pregame.lobby_circle.loc]>
       - flag server fort.pregame.lobby_circle.loc:<[loc]>
 
       - define loc <[loc].with_pose[0,0]>

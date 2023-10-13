@@ -90,7 +90,7 @@ pregame_island_handler:
     - flag player fort.kills:0
 
     - foreach <list[light|medium|heavy|shells|rockets]> as:ammo_type:
-      - flag player fort.ammo.<[ammo_type]>:999
+      - flag player fort.ammo.<[ammo_type]>:0
 
     - heal
     - adjust <player> gamemode:survival
@@ -125,6 +125,7 @@ pregame_island_handler:
 
     # - [ Return to Lobby Menu ] - #
     on player enters fort_lobby_circle:
+    - flag player fort.lobby_teleport
     - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
     - cast LEVITATION duration:8t amplifier:3 no_ambient no_clear no_icon hide_particles
     - wait 7t
@@ -184,6 +185,8 @@ pregame_island_handler:
         - sidebar set_line scores:5 values:<element[<[clock_icon]> -].font[hud_text].color[<color[50,0,0]>]> players:<[players]>
 
         - flag server fort.temp:!
+        #so this flag isn't removed (probably a better way to do this but eh)
+        - flag server fort.temp.available
         - stop
 
     - definemap data:
