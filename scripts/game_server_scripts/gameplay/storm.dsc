@@ -36,15 +36,16 @@ fort_storm_handler:
   ## - [ CREATE STORM ] - ##
   create:
     - execute as_server "globaldisplay destroy storm"
+    - flag server fort.temp.storm:!
+
     ##
 
     - define diameter 2048
 
     #center is the world's spawn
     - define storm_center <world[nimnite_map].spawn_location.with_y[20]>
-    - define formatted_loc <[storm_center].simple.before_last[,].replace_text[,].with[ ]>
 
-    - execute as_server "globaldisplay create storm paper{CustomModelData:19} <[formatted_loc]> <[diameter]> 150 <[diameter]>"
+    - execute as_server "globaldisplay create storm paper{CustomModelData:19} <[storm_center].x> <[storm_center].y> <[storm_center].z> <[diameter]> 150 <[diameter]>"
     - execute as_server "globaldisplay player add storm @a"
 
     - define circle_radius <[diameter].div[2].round>
@@ -59,7 +60,7 @@ fort_storm_handler:
   ## - [ SET NEW STORM ] - ##
   #just setting new data and for the white circle
   set_new:
-    - define new_diameter 200
+    - define new_diameter 100
     ##
 
     #save current storm data
@@ -87,7 +88,7 @@ fort_storm_handler:
 
     - define ticks <[seconds].mul[20]>
 
-    - execute as_server "globaldisplay transform storm <[start_center].x> <[start_center].y> <[start_center].z> <[end_diameter]> 150 <[end_diameter]> <[ticks]>"
+    - execute as_server "globaldisplay transform storm <[end_center].x> <[end_center].y> <[end_center].z> <[end_diameter]> 150 <[end_diameter]> <[ticks]>"
 
     #how many points between the two centers
     - define center_increment   <[start_center].distance[<[end_center]>].div[<[ticks]>]>

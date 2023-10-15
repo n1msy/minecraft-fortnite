@@ -117,7 +117,7 @@ minimap:
       - define next_storm_center <server.flag[fort.temp.storm.new_center]>
       #- circle x and y is in worldspace
       - define circle_x <[next_storm_center].x>
-      - define circle_y <[next_storm_center].y>
+      - define circle_y <[next_storm_center].z>
       - define storm_id <map[1600=1;800=2;400=3;200=4;100=5;50=6;35=7;20=8;0=9].get[<[next_storm_diameter]>]>
       - define relX     <[circle_x].sub[<[loc].x>].add[2048].max[0].min[4095]>
       - define relZ     <[circle_y].sub[<[loc].z>].add[2048].max[0].min[4095]>
@@ -130,13 +130,13 @@ minimap:
       - define circle_display <&chr[E001].font[map].color[<[circle_color]>]>
 
       ## - [ PURPLE CIRCLE ] - ##
-    - if <server.has_flag[fort.temp.storm.center]>:
+      #only show purple circle when white circle shows
       #CURRENT storm center & diameter
       - define storm_center   <server.flag[fort.temp.storm.center]>
       - define storm_diameter <server.flag[fort.temp.storm.diameter]>
 
       - define circle_x <[storm_center].x>
-      - define circle_y <[storm_center].y>
+      - define circle_y <[storm_center].z>
 
       - define storm_radius <[storm_diameter].div[2]>
 
@@ -146,9 +146,9 @@ minimap:
       - define g_       <[relZ].mod[256]>
       - define b_       <[relX].div[256].round_down.add[<[relZ].div[256].round_down.mul[16]>]>
       # static size
-      #- define purple_offset   <[storm_radius].mul[32].round_down>
+      - define purple_offset   <[storm_radius].mul[32].round_down>
       # idle animation with sin for example
-      - define purple_offset   <[storm_radius].add[<[world].duration_since_created.in_seconds.mul[2].sin>].mul[32].round_down>
+      #- define purple_offset   <[storm_radius].add[<[world].duration_since_created.in_seconds.mul[2].sin>].mul[32].round_down>
 
       - define circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
       - define purple_circle_display <&chr[E003].font[map].color[<[circle_color]>]>
