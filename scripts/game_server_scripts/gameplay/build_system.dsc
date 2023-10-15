@@ -338,7 +338,6 @@ build_system_handler:
 
     - playsound <player> sound:<[sound]> pitch:1.75 volume:0.5
 
-    #- flag player build.
     - inject update_hud
 
     #-place

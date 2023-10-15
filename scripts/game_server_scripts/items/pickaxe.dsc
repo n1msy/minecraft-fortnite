@@ -218,7 +218,7 @@ fort_pic_handler:
   - define scale         <location[0.5,0.5,0.5]>
   - define translation   <location[0,-0.25,0]>
   - define text_shadowed true
-  - define opacity 255
+  - define opacity       255
   - spawn <entity[text_display].with[text=<[text]>;background_color=transparent;pivot=<[pivot]>;scale=<[scale]>;text_shadowed=<[text_shadowed]>;opacity=<[opacity]>;translation=<[translation]>]> <[loc]> save:e
   - define e <entry[e].spawned_entity>
 
@@ -245,6 +245,7 @@ fort_pic_handler:
     - adjust <[e]> interpolation_start:0
     - adjust <[e]> scale:<location[5,5,5]>
     - adjust <[e]> interpolation_duration:3t
+    #opacity no work?
     - adjust <[e]> opacity:0
   - else:
     #naturally exit (not hit)
@@ -297,6 +298,12 @@ fort_pic_handler:
 
     - define current_qty <player.flag[fort.<[mat]>.qty]>
 
+    - define mat#     <list[wood|brick|metal].find[<[mat]>]>
+    - define line     <map[wood=8;brick=7;metal=6].get[<[mat]>]>
+    - define icon     <&chr[A00<[mat#]>].font[icons]>
+    #selected icon in case they select it
+    - define sel_icon <&chr[A0<[mat#]><[mat#]>].font[icons]>
+
     - if <[action]> == add:
       - if <player.flag[fort.<[mat]>.qty].add[<[qty]>]> > 999:
         - define total     <[current_qty].add[<[qty]>]>
@@ -316,15 +323,31 @@ fort_pic_handler:
       #- define item_slot <map[wood=19;brick=20;metal=21].get[<[mat]>]>
       #- inventory set o:<[item].with[quantity=<player.flag[fort.<[mat]>.qty]>]> slot:<[item_slot]>
       - repeat <[qty]>:
-        - define override_qty.<[mat]>:<[current_qty].add[<[value]>]>
-        - inject update_hud
+
+        - define mat_qty  <[current_qty].add[<[value]>]>
+        - define mat_icon <[icon]>
+        - if <player.flag[build.material]||null> == <[mat]>:
+          - define mat_icon <[sel_icon]>
+
+        - define mat_text <&sp.repeat[<element[3].sub[<[mat_qty].length>]>]><[mat_qty].font[hud_text]>
+        - define mat_     <element[<[mat_icon]><proc[spacing].context[-32]><[mat_text]>].color[<color[4<[mat#]>,0,0]>]>
+        - sidebar set_line scores:<[line]> values:<[mat_]>
+
         - wait 1t
 
     - else if <[action]> == remove:
       - flag player fort.<[mat]>.qty:-:<[qty]>
       - repeat <[qty]>:
-        - define override_qty.<[mat]>:<[current_qty].sub[<[value]>]>
-        - inject update_hud
+
+        - define mat_qty  <[current_qty].sub[<[value]>]>
+        - define mat_icon <[icon]>
+        - if <player.flag[build.material]||null> == <[mat]>:
+          - define mat_icon <[sel_icon]>
+
+        - define mat_text <&sp.repeat[<element[3].sub[<[mat_qty].length>]>]><[mat_qty].font[hud_text]>
+        - define mat_     <element[<[mat_icon]><proc[spacing].context[-32]><[mat_text]>].color[<color[4<[mat#]>,0,0]>]>
+        - sidebar set_line scores:<[line]> values:<[mat_]>
+
         - wait 1t
 
   break_natural_structure:

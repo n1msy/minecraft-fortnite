@@ -94,6 +94,7 @@ fort_storm_handler:
     - define center_increment   <[start_center].distance[<[end_center]>].div[<[ticks]>]>
     - define diameter_increment <[end_diameter].sub[<[start_diameter]>].div[<[ticks]>]>
 
+    - flag server fort.temp.storm.animating
     #for debug purposes
     #- define final_center <[start_center].face[<[end_center]>].forward[<[center_increment].mul[<[ticks]>]>].round>
 
@@ -113,3 +114,4 @@ fort_storm_handler:
 
       - wait 1t
 
+    - flag server fort.temp.storm.animating:!
