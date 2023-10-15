@@ -56,6 +56,14 @@ fort_global_handler:
         - stop
       - else:
         - determine passively <[damage]>
+    #-storm ignores shield
+    - else if <context.cause> == WORLD_BORDER:
+      #not putting this if with the (top) if, since shield logic would apply on the final hit before death
+      #don't give the player "hit" effect (it gets annoying)
+      - if <[damage]> < <[e].health>:
+        - determine passively cancelled
+        - adjust <[e]> health:<[e].health.sub[<[damage]>]>
+
     #-if not shield, just use regular damage system
     ##check this some time: in fort, is the damage indicator blue, even if the target takes damage
     ##for both shield and white health?

@@ -49,7 +49,7 @@ fort_core_handler:
   - define seconds       200
   - define phase         GRACE_PERIOD
   - define forming:!
-  - flag server fort.temp.storm_dps:1
+  - flag server fort.temp.storm.dps:1
   - run fort_storm_handler.set_new def.new_diameter:1600
   - inject fort_core_handler.timer
   #storm eye shrinking 3 minutes
@@ -74,7 +74,7 @@ fort_core_handler:
   #storm eye shrinks in 1 Minute 30 seconds
   - define seconds       90
   - define phase         GRACE_PERIOD
-  - flag server fort.temp.storm_dps:2
+  - flag server fort.temp.storm.dps:2
   - run fort_storm_handler.set_new def.new_diameter:400
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute 30 seconds
@@ -88,7 +88,7 @@ fort_core_handler:
   - define seconds       80
   - define phase         GRACE_PERIOD
   - define new_diameter  200
-  - flag server fort.temp.storm_dps:5
+  - flag server fort.temp.storm.dps:5
   - run fort_storm_handler.set_new def.new_diameter:200
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute 10 seconds
@@ -101,7 +101,7 @@ fort_core_handler:
   #storm eye shrinks in 50 Seconds
   - define seconds       50
   - define phase         GRACE_PERIOD
-  - flag server fort.temp.storm_dps:8
+  - flag server fort.temp.storm.dps:8
   - run fort_storm_handler.set_new def.new_diameter:100
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute
@@ -114,7 +114,7 @@ fort_core_handler:
   #storm eye shrinks in 30 Seconds
   - define seconds       30
   - define phase         GRACE_PERIOD
-  - flag server fort.temp.storm_dps:10
+  - flag server fort.temp.storm.dps:10
   - run fort_storm_handler.set_new def.new_diameter:50
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute

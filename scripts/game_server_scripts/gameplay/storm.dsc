@@ -21,9 +21,6 @@ fort_storm_handler:
     #- cast BLINDNESS duration:15t hide_particles no_ambient no_icon no_clear
     - time player reset
     - weather player reset
-    - while <player.is_online> && !<player.has_flag[fort.spectating]> && <player.has_flag[fort.in_storm]>:
-      - hurt <server.flag[fort.temp.storm_dps]||1> cause:WORLD_BORDER
-      - wait 1s
 
     # - [ ENTERING THE STORM ] - #
     on player exits fort_storm_circle flagged:!fort.in_storm:
@@ -32,6 +29,13 @@ fort_storm_handler:
     #- cast BLINDNESS duration:15t hide_particles no_ambient no_icon no_clear
     - time player 13000
     - weather player storm
+    - while <player.is_online> && !<player.has_flag[fort.spectating]> && <player.has_flag[fort.in_storm]>:
+      - wait 1s
+      - define loc <player.location.above>
+      - playeffect effect:ELECTRIC_SPARK at:<[loc]> offset:0.33 quantity:10 visibility:30
+      - playeffect effect:REDSTONE at:<[loc]> offset:0.3 quantity:10 special_data:1.2|<color[#ec73ff]>
+      - playsound <player> sound:BLOCK_LARGE_AMETHYST_BUD_BREAK pitch:2 volume:0.6
+      - hurt <server.flag[fort.temp.storm.dps].div[5]||0.2> cause:WORLD_BORDER
 
   ## - [ CREATE STORM ] - ##
   create:
