@@ -13,15 +13,25 @@ fort_storm_handler:
   debug: false
   definitions: new_diameter|seconds
   events:
-    on player enters fort_storm_circle:
-    - narrate entered_circle
-    #- define storm_circle <ellipsoid[fort_storm_circle].shell.filter[y.equals[<player.location.y.round.sub[5]>]]>
-    #- playeffect effect:FLAME offset:0 at:<[storm_circle]> visibility:500
 
-    on player exits fort_storm_circle:
-    - narrate exited_circle
-    #- define storm_circle <ellipsoid[fort_storm_circle].shell.filter[y.equals[<player.location.y.round.sub[5]>]]>
-    #- playeffect effect:FLAME offset:0 at:<[storm_circle]> visibility:500
+    # - [ EXITING THE STORM ] - #
+    #checking flagged: so it doesn't fire multiple times
+    on player enters fort_storm_circle flagged:fort.in_storm:
+    - flag player fort.in_storm:!
+    #- cast BLINDNESS duration:15t hide_particles no_ambient no_icon no_clear
+    - time player reset
+    - weather player reset
+    - while <player.is_online> && !<player.has_flag[fort.spectating]> && <player.has_flag[fort.in_storm]>:
+      - hurt <server.flag[fort.temp.storm_dps]||1> cause:WORLD_BORDER
+      - wait 1s
+
+    # - [ ENTERING THE STORM ] - #
+    on player exits fort_storm_circle flagged:!fort.in_storm:
+    - flag player fort.in_storm
+    #remember: night vision plays a part in showing the purple sky
+    #- cast BLINDNESS duration:15t hide_particles no_ambient no_icon no_clear
+    - time player 13000
+    - weather player storm
 
   ## - [ CREATE STORM ] - ##
   create:
@@ -49,7 +59,7 @@ fort_storm_handler:
   ## - [ SET NEW STORM ] - ##
   #just setting new data and for the white circle
   set_new:
-    - define new_diameter 400
+    - define new_diameter 200
     ##
 
     #save current storm data
@@ -76,9 +86,8 @@ fort_storm_handler:
     - define end_diameter   <server.flag[fort.temp.storm.new_diameter]>
 
     - define ticks <[seconds].mul[20]>
-    - define center_formatted <[end_center].simple.before_last[,].replace_text[,].with[ ]>
 
-    - execute as_server "globaldisplay transform storm <[center_formatted]> <[end_diameter]> 150 <[end_diameter]> <[ticks]>"
+    - execute as_server "globaldisplay transform storm <[start_center].x> <[start_center].y> <[start_center].z> <[end_diameter]> 150 <[end_diameter]> <[ticks]>"
 
     #how many points between the two centers
     - define center_increment   <[start_center].distance[<[end_center]>].div[<[ticks]>]>

@@ -115,6 +115,7 @@ bake_structures:
               - define tiles_to_check:|:<[surrounding_tiles]>
 
             - wait 1t
+            #<[loop_index].mod[10].is[OR_MORE].than[10]>
 
     - define structure   <[structure].deduplicate>
     - define total_roots <[total_roots].deduplicate>
@@ -290,7 +291,6 @@ build_system_handler:
       - playsound <player> sound:BLOCK_GRAVEL_BREAK pitch:1
       - stop
 
-    - playsound <player> sound:BLOCK_GRAVEL_BREAK pitch:1.75
     - define eye_loc      <player.eye_location>
     - define target_block <[eye_loc].ray_trace[return=block;range=4.5;default=air]>
     - if !<[target_block].has_flag[build.center]>:
@@ -299,6 +299,8 @@ build_system_handler:
     #so players cant edit other player's builds
     - if <[target_block].flag[build.center].flag[build.placed_by]> != <player>:
       - stop
+
+    - playsound <player> sound:BLOCK_GRAVEL_BREAK pitch:1.75
 
     - define tile_center <[target_block].flag[build.center]>
     - define tile        <[tile_center].flag[build.structure]>
