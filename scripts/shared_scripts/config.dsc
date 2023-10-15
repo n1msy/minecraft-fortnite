@@ -41,43 +41,43 @@ nimnite_config:
     # - [ From Void ] - #
     #i added these myself
     self_void:
-      - <red><bold>_player_ <gray>got fell into the void
+      - <red><bold>_player_<reset> <gray>got fell into the void
     enemy_void:
-      - <gray>_killer_ threw <red><bold>_player_ <gray>into the void
+      - <gray>_killer_ threw <red><bold>_player_<reset> <gray>into the void
 
     # - [ From Fall ] - #
     self_fall:
     #show distance (idk how, unless using waituntil every jump)
-      - <red><bold>_player_ <gray>didn't stick the landing
+      - <red><bold>_player_<reset> <gray>didn't stick the landing
     enemy_fall:
-      - <gray>_killer_ introduced <red><bold>_player_ <gray>to Gravity
-      - <gray>_killer_ Eliminated <red><bold>_player_ <gray>with a great fall
+      - <gray>_killer_ introduced <red><bold>_player_<reset> <gray>to Gravity
+      - <gray>_killer_ Eliminated <red><bold>_player_<reset> <gray>with a great fall
 
     # - [ From Explosion ] - #
     self_explosion:
-      - <red><bold>_player_ <gray>is <gray><&o>Literally <gray>on fire
-      - <red><bold>_player_ <gray>went out with a <&l>BANG
-      - <red><bold>_player_ <gray>went out with a <&l>BOOM
+      - <red><bold>_player_<reset> <gray>is <gray><&o>Literally <gray>on fire
+      - <red><bold>_player_<reset> <gray>went out with a <&l>BANG
+      - <red><bold>_player_<reset> <gray>went out with a <&l>BOOM
     enemy_explosion:
       - <gray>_killer_ <&sq>sploded <red><bold>_player_
 
     # - [ From Storm ] - #
     self_storm:
     #idk if this one is right, but im adding them anyways
-      - <red><bold>_player_ <gray>got lost in the storm
+      - <red><bold>_player_<reset> <gray>got lost in the storm
     enemy_storm:
-      - <gray>_killer_ eliminated <red><bold>_player_ <gray>in the storm
+      - <gray>_killer_ eliminated <red><bold>_player_<reset> <gray>in the storm
 
     # - [ Leave/Self-Death ] - #
     self_death:
-      - <red><bold>_player_ <gray>played themselves
+      - <red><bold>_player_<reset> <gray>played themselves
     quit:
-      - <red><bold>_player_ <gray>checked out early
-      - <red><bold>_player_ <gray>took the L
+      - <red><bold>_player_<reset> <gray>checked out early
+      - <red><bold>_player_<reset> <gray>took the L
 
     #don't really need this, using the quit event instead
     #kick:
-    #  - <red><bold>_player_ <gray>was struck by the Banhammer
+    #  - <red><bold>_player_<reset> <gray>was struck by the Banhammer
 
   structures:
     #was using server flags for these, but now using config system...
