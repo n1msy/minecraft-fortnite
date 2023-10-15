@@ -7,13 +7,8 @@
 ##add a "follow line" to the lobby menu by putting the circle at that location
 ##SET THE VICTORY FLAGS
 
-###create storm and show it to all players
-###find random center to place circle
-
 
 ##this could probably be organized into multiple files
-
-
 
 #####################BUS DRIVER STILL NOT FIXED
 
@@ -43,97 +38,106 @@ fort_core_handler:
 
   #-Storm forms
   #storm forming in 1 Minute
-  - define seconds 60
-  - define phase   GRACE_PERIOD
-  - define forming FORMING
+  - define seconds       60
+  - define phase         GRACE_PERIOD
+  - define forming       FORMING
+  #aka map size
+  - define new_diameter  2304
   - inject fort_core_handler.timer
 
   #-stage 1
   #storm eye shrinks in 3 minutes 20 seconds
-  - define seconds 200
-  - define phase   GRACE_PERIOD
+  - define seconds       200
+  - define phase         GRACE_PERIOD
   - define forming:!
+  #for white circle
+  - define new_diameter  1600
+
   - inject fort_core_handler.timer
   #storm eye shrinking 3 minutes
   - define seconds  180
   - define phase    STORM_SHRINK
-  - define diameter 1600
+  #- define diameter 1600
   - inject fort_core_handler.timer
 
   #-stage 2
   #storm eye shrinks in 2 minutes
-  - define seconds  120
-  - define phase    GRACE_PERIOD
+  - define seconds       120
+  - define phase         GRACE_PERIOD
+  - define new_diameter  800
   - inject fort_core_handler.timer
   #storm eye shrinking 2 minutes
   - define seconds  120
   - define phase    STORM_SHRINK
-  - define diameter 800
+  #- define diameter 800
   - inject fort_core_handler.timer
 
   #-stage 3
   #storm eye shrinks in 1 Minute 30 seconds
-  - define seconds  90
-  - define phase    GRACE_PERIOD
+  - define seconds       90
+  - define phase         GRACE_PERIOD
+  - define new_diameter  400
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute 30 seconds
   - define seconds  90
   - define phase    STORM_SHRINK
-  - define diameter 400
+  #- define diameter 400
   - inject fort_core_handler.timer
 
   #-stage 4
   #storm eye shrinks in 1 Minute 20 Seconds
-  - define seconds  80
-  - define phase    GRACE_PERIOD
+  - define seconds       80
+  - define phase         GRACE_PERIOD
+  - define new_diameter  200
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute 10 seconds
   - define seconds  70
   - define phase    STORM_SHRINK
-  - define diameter 200
+  #- define diameter 200
   - inject fort_core_handler.timer
 
   #-stage 5
   #storm eye shrinks in 50 Seconds
-  - define seconds  50
-  - define phase    GRACE_PERIOD
+  - define seconds       50
+  - define phase         GRACE_PERIOD
+  - define new_diameter  100
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute
   - define seconds  60
   - define phase    STORM_SHRINK
-  - define diameter 100
+  #- define diameter 100
   - inject fort_core_handler.timer
 
   #-stage 6
   #storm eye shrinks in 30 Seconds
-  - define seconds  30
-  - define phase    GRACE_PERIOD
+  - define seconds       30
+  - define phase         GRACE_PERIOD
+  - define new_diameter  50
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute
   - define seconds  60
   - define phase    STORM_SHRINK
-  - define diameter 50
   - inject fort_core_handler.timer
 
   #-stage 7
   #storm eye shrinking 55 seconds
-  - define seconds  55
-  - define phase    STORM_SHRINK
-  - define diameter 35
+  - define seconds       55
+  - define phase         STORM_SHRINK
+  - define new_diameter  35
   - inject fort_core_handler.timer
 
   #-stage 8
   #storm eye shrinking 45 seconds
-  - define seconds  45
-  - define phase    STORM_SHRINK
-  - define diameter 20
+  - define seconds      45
+  - define phase        STORM_SHRINK
+  - define new_diameter 20
   - inject fort_core_handler.timer
 
   #-stage 9
   #storm eye shrinking 1 Minute 15 seconds
-  - define seconds  75
-  - define phase    STORM_SHRINK
-  - define diameter 0
+  - define seconds      75
+  - define phase        STORM_SHRINK
+  - define new_diameter 0
   - inject fort_core_handler.timer
 
   timer:
@@ -148,10 +152,6 @@ fort_core_handler:
 
     - define players <server.online_players_flagged[fort]>
     - run FORT_CORE_HANDLER.announcement_sounds.main
-
-    - if <[phase]> == STORM_SHRINK:
-      - define storm_center <server.flag[fort.temp.storm_center]>
-      - execute as_server "globaldisplay transform storm <[storm_center].simple.before_last[,].replace_text[,].with[ ]> <[diameter]> 600 <[diameter]><[seconds].mul[20]>"
 
     - choose <[phase]>:
       - case bus:
@@ -210,6 +210,7 @@ fort_core_handler:
 
       #flag is for hud
       - flag server fort.temp.timer:<[timer]>
+      - flag server fort.temp.timer_seconds:<[seconds_left]>
       - sidebar set_line scores:5 values:<element[<[icon]> <[timer]>].font[hud_text].color[<color[50,0,0]>]> players:<[players]>
 
       - if <[phase]> == GRACE_PERIOD && !<[forming].exists> && <[seconds_left]> == 12:

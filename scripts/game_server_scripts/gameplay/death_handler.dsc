@@ -46,10 +46,6 @@ fort_death_handler:
     - if <server.flag[fort.temp.phase]||null> == END:
       - stop
 
-    #i have no clue how this happened, but it did
-    - if <player.has_flag[fort.using_gilder]>:
-      - stop
-
     #-killfeed
     #don't really need to inject, but it's much cleaner
     #updating kill feed before death effect, for gun distance to be calculated

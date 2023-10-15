@@ -51,6 +51,13 @@ pregame_island_handler:
     - define ellipsoid <server.flag[fort.pregame.lobby_circle.loc].to_ellipsoid[1.3,3,1.3]>
     - note <[ellipsoid]> as:fort_lobby_circle
 
+    #create the storm circle off-rip (so the event doesn't break)
+    - define diameter 2048
+    - define storm_center <world[nimnite_map].spawn_location.with_y[20]>
+    - define circle_radius <[diameter].div[2].round>
+    - define storm_circle <[storm_center].to_ellipsoid[<[circle_radius]>,10000,<[circle_radius]>]>
+    - note <[storm_circle]> as:fort_storm_circle
+
     - remove <world[pregame_island].entities[dropped_item]>
 
     - run pregame_island_handler.lobby_circle.anim

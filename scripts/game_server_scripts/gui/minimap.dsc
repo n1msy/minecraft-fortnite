@@ -109,40 +109,53 @@ minimap:
     - define oldRotation     <[curRotation]>
     - define compass_display <&chr[B000].font[map].color[<[rotation_color]>]>
 
-    ## - [ CIRCLE ] - ##
+    ## - [ CIRCLE (if it exists) ] - ##
     # circle display
-    #- circle x and y is in worldspace
-    - define circle_x 900
-    - define circle_y 900
-    - define storm_id 5
-    - define relX     <[circle_x].sub[<[loc].x>].add[2048].max[0].min[4095]>
-    - define relZ     <[circle_y].sub[<[loc].z>].add[2048].max[0].min[4095]>
-    - define r_       <[relX].mod[256]>
-    - define g_       <[relZ].mod[256]>
-    - define b_       <[relX].div[256].round_down.add[<[relZ].div[256].round_down.mul[16]>]>
-    - define circle_offset   <[storm_id]>
+    #getting the NEW one, since the white circle is showing where the storm will be NEXT
+    - define next_storm_diameter <server.flag[fort.temp.storm.new_diameter]||2304>
+    - if <[next_storm_diameter]> <= 1600:
+      - define next_storm_center <server.flag[fort.temp.storm.new_center]>
+      #- circle x and y is in worldspace
+      - define circle_x <[next_storm_center].x>
+      - define circle_y <[next_storm_center].y>
+      - define storm_id <map[1600=1;800=2;400=3;200=4;100=5;50=6;35=7;20=8;0=9].get[<[next_storm_diameter]>]>
+      - define relX     <[circle_x].sub[<[loc].x>].add[2048].max[0].min[4095]>
+      - define relZ     <[circle_y].sub[<[loc].z>].add[2048].max[0].min[4095]>
+      - define r_       <[relX].mod[256]>
+      - define g_       <[relZ].mod[256]>
+      - define b_       <[relX].div[256].round_down.add[<[relZ].div[256].round_down.mul[16]>]>
+      - define circle_offset   <[storm_id]>
 
-    - define circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
-    - define circle_display <&chr[E001].font[map].color[<[circle_color]>]>
+      - define circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
+      - define circle_display <&chr[E001].font[map].color[<[circle_color]>]>
 
-    ## - [ PURPLE CIRCLE ] - ##
-    - define circle_x 10
-    - define circle_y 10
-    - define storm_radius 30.5
-    - define relX     <[circle_x].sub[<[loc].x>].add[2048].max[0].min[4095]>
-    - define relZ     <[circle_y].sub[<[loc].z>].add[2048].max[0].min[4095]>
-    - define r_       <[relX].mod[256]>
-    - define g_       <[relZ].mod[256]>
-    - define b_       <[relX].div[256].round_down.add[<[relZ].div[256].round_down.mul[16]>]>
-    # static size
-    #- define purple_offset   <[storm_radius].mul[32].round_down>
-    # idle animation with sin for example
-    - define purple_offset   <[storm_radius].add[<[world].duration_since_created.in_seconds.mul[3].sin>].mul[32].round_down>
+      ## - [ PURPLE CIRCLE ] - ##
+    - if <server.has_flag[fort.temp.storm.center]>:
+      #CURRENT storm center & diameter
+      - define storm_center   <server.flag[fort.temp.storm.center]>
+      - define storm_diameter <server.flag[fort.temp.storm.diameter]>
 
-    - define circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
-    - define purple_circle_display <&chr[E003].font[map].color[<[circle_color]>]>
+      - define circle_x <[storm_center].x>
+      - define circle_y <[storm_center].y>
 
-    - define title <[compass_display]><[whole_map]><[marker]><proc[spacing].context[<[circle_offset].add[<[purple_offset]>].sub[2].sub[<[tiles].size>]>]><[circle_display]><proc[spacing].context[<[purple_offset].sub[<[circle_offset].sub[1]>]>]><[purple_circle_display]><proc[spacing].context[-2]>
+      - define storm_radius <[storm_diameter].div[2]>
+
+      - define relX     <[circle_x].sub[<[loc].x>].add[2048].max[0].min[4095]>
+      - define relZ     <[circle_y].sub[<[loc].z>].add[2048].max[0].min[4095]>
+      - define r_       <[relX].mod[256]>
+      - define g_       <[relZ].mod[256]>
+      - define b_       <[relX].div[256].round_down.add[<[relZ].div[256].round_down.mul[16]>]>
+      # static size
+      #- define purple_offset   <[storm_radius].mul[32].round_down>
+      # idle animation with sin for example
+      - define purple_offset   <[storm_radius].add[<[world].duration_since_created.in_seconds.mul[2].sin>].mul[32].round_down>
+
+      - define circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
+      - define purple_circle_display <&chr[E003].font[map].color[<[circle_color]>]>
+
+      - define title <[compass_display]><[whole_map]><[marker]><proc[spacing].context[<[circle_offset].add[<[purple_offset]>].sub[2].sub[<[tiles].size>]>]><[circle_display]><proc[spacing].context[<[purple_offset].sub[<[circle_offset].sub[1]>]>]><[purple_circle_display]><proc[spacing].context[-2]>
+    - else:
+      - define title <[compass_display]><[whole_map]><[marker]><proc[spacing].context[-2]>
 
     - define spacing <map[1=7;2=10;3=13].get[<[yaw].length>]>
     #or: <element[16].sub[<[yaw].length.mul[3]>]>
@@ -174,15 +187,19 @@ minimap:
 
     - define map <[map].unseparated>
     # - circle
-    - define actualX <[circle_x].sub[<[top_left_x]>]>
-    - define actualY <[circle_y].sub[<[top_left_z]>]>
-    - define r_ <[actualX].mod[256]>
-    - define g_ <[actualY].mod[256]>
-    #- narrate <[actualX].div[256].round_down>/<[actualY].div[256].round_down>
-    - define b_ <[storm_id].mul[16]>
-    #- narrate <[r_]>,<[g_]>,<[b_]>
-    - define full_circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
-    - define full_circle_display <&chr[E002].font[map].color[<[full_circle_color]>]>
+    - define full_circle_display <empty>
+
+    ##full map circle display temporarily disabled
+    #- if <[storm_diameter]> <= 1600:
+    #  - define actualX <[circle_x].sub[<[top_left_x]>]>
+    #  - define actualY <[circle_y].sub[<[top_left_z]>]>
+    #  - define r_ <[actualX].mod[256]>
+    #  - define g_ <[actualY].mod[256]>
+    #  #- narrate <[actualX].div[256].round_down>/<[actualY].div[256].round_down>
+    #  - define b_ <[storm_id].mul[16]>
+    #  #- narrate <[r_]>,<[g_]>,<[b_]>
+    #  - define full_circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
+    #  - define full_circle_display <&chr[E002].font[map].color[<[full_circle_color]>]>
 
     # - marker
     #for full map

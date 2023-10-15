@@ -36,6 +36,10 @@ fort_global_handler:
     - define damage <context.damage>
     - define shield <[e].armor_bonus||null>
 
+    - if <context.cause> == FLY_INTO_WALL && <[e].has_flag[fort.using_glider]>:
+      - determine passively cancelled
+      - stop
+
     #-fall damage ignores shield
     - if <context.cause> == FALL:
       - if <[e].has_flag[fort.using_glider]>:
