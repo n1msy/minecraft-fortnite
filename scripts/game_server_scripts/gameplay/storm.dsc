@@ -35,12 +35,12 @@ fort_storm_handler:
 
   ## - [ CREATE STORM ] - ##
   create:
-    - execute as_server "globaldisplay destroy storm"
-    - flag server fort.temp.storm:!
+    #- execute as_server "globaldisplay destroy storm"
+    #- flag server fort.temp.storm:!
 
     ##
 
-    - define diameter 2048
+    - define diameter 2150
 
     #center is the world's spawn
     - define storm_center <world[nimnite_map].spawn_location.with_y[20]>
@@ -60,7 +60,7 @@ fort_storm_handler:
   ## - [ SET NEW STORM ] - ##
   #just setting new data and for the white circle
   set_new:
-    - define new_diameter 100
+    #- define new_diameter 100
     ##
 
     #save current storm data
@@ -77,7 +77,7 @@ fort_storm_handler:
 
   ## - [ RESIZE/TRANSFORM STORM ] - ##
   resize:
-    - define seconds 5
+    #- define seconds 5
     ##
 
     - define start_center   <server.flag[fort.temp.storm.center]>

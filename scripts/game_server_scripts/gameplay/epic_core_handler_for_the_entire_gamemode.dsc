@@ -41,48 +41,46 @@ fort_core_handler:
   - define seconds       60
   - define phase         GRACE_PERIOD
   - define forming       FORMING
-  #aka map size
-  - define new_diameter  2304
   - inject fort_core_handler.timer
+  - run fort_storm_handler.create
 
   #-stage 1
   #storm eye shrinks in 3 minutes 20 seconds
   - define seconds       200
   - define phase         GRACE_PERIOD
   - define forming:!
-  #for white circle
-  - define new_diameter  1600
   - flag server fort.temp.storm_dps:1
+  - run fort_storm_handler.set_new def.new_diameter:1600
   - inject fort_core_handler.timer
   #storm eye shrinking 3 minutes
   - define seconds  180
   - define phase    STORM_SHRINK
-  #- define diameter 1600
+  - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
 
   #-stage 2
   #storm eye shrinks in 2 minutes
   - define seconds       120
   - define phase         GRACE_PERIOD
-  - define new_diameter  800
+  - run fort_storm_handler.set_new def.new_diameter:800
   - inject fort_core_handler.timer
   #storm eye shrinking 2 minutes
   - define seconds  120
   - define phase    STORM_SHRINK
-  #- define diameter 800
+  - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
 
   #-stage 3
   #storm eye shrinks in 1 Minute 30 seconds
   - define seconds       90
   - define phase         GRACE_PERIOD
-  - define new_diameter  400
   - flag server fort.temp.storm_dps:2
+  - run fort_storm_handler.set_new def.new_diameter:400
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute 30 seconds
   - define seconds  90
   - define phase    STORM_SHRINK
-  #- define diameter 400
+  - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
 
   #-stage 4
@@ -91,57 +89,62 @@ fort_core_handler:
   - define phase         GRACE_PERIOD
   - define new_diameter  200
   - flag server fort.temp.storm_dps:5
+  - run fort_storm_handler.set_new def.new_diameter:200
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute 10 seconds
   - define seconds  70
   - define phase    STORM_SHRINK
-  #- define diameter 200
+  - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
 
   #-stage 5
   #storm eye shrinks in 50 Seconds
   - define seconds       50
   - define phase         GRACE_PERIOD
-  - define new_diameter  100
   - flag server fort.temp.storm_dps:8
+  - run fort_storm_handler.set_new def.new_diameter:100
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute
   - define seconds  60
   - define phase    STORM_SHRINK
-  #- define diameter 100
+  - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
 
   #-stage 6
   #storm eye shrinks in 30 Seconds
   - define seconds       30
   - define phase         GRACE_PERIOD
-  - define new_diameter  50
   - flag server fort.temp.storm_dps:10
+  - run fort_storm_handler.set_new def.new_diameter:50
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute
   - define seconds  60
   - define phase    STORM_SHRINK
+  - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
 
   #-stage 7
   #storm eye shrinking 55 seconds
   - define seconds       55
   - define phase         STORM_SHRINK
-  - define new_diameter  35
+  - run fort_storm_handler.set_new def.new_diameter:35
+  - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
 
   #-stage 8
   #storm eye shrinking 45 seconds
   - define seconds      45
   - define phase        STORM_SHRINK
-  - define new_diameter 20
+  - run fort_storm_handler.set_new def.new_diameter:20
+  - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
 
   #-stage 9
   #storm eye shrinking 1 Minute 15 seconds
   - define seconds      75
   - define phase        STORM_SHRINK
-  - define new_diameter 0
+  - run fort_storm_handler.set_new def.new_diameter:0
+  - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
 
   timer:
