@@ -12,6 +12,11 @@ fort_commands:
   script:
   - choose <context.args.first||null>:
 
+    - case skip:
+    #skip the phase
+      - flag server fort.temp.phase_skipped
+      - narrate "<&a>Skipping current phase."
+
     # - [ SETUP COMMANDS ] - #
     - case lobby_setup:
       - run fort_lobby_setup

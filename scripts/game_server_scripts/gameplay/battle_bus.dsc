@@ -90,18 +90,13 @@ fort_bus_handler:
         - mount <[passenger]>|<[r_seat]>
         - define available_seats:<-:<[r_seat]>
 
-
     - flag <[players]> fort.on_bus
     - flag server fort.temp.bus.passengers:<[players]>
 
     #-bus driver
-    - create PLAYER <&sp> <[drivers_seat_loc]> save:bus_driver
-    - define bus_driver <entry[bus_driver].created_npc>
-    - adjust <[bus_driver]> skin_blob:<script[nimnite_config].data_key[Spitfire_Skin]>
-    - adjust <[bus_driver]> name_visible:false
-    - mount <[bus_driver]>|<[drivers_seat]>
 
-    - flag server fort.temp.bus.driver:<[bus_driver]>
+    #-create the bus driver
+    - run fort_bus_handler.add_driver
 
     #logic for finding bus starting position
     #map is 2304x2304
@@ -140,7 +135,9 @@ fort_bus_handler:
           #- flag <[passenger]> fort.on_bus:!
           - teleport <[passenger]> <[passenger].location.below[1.5]>
           - run fort_glider_handler.fall player:<[passenger]>
-        - flag <[passengers]> fort.on_bus:!
+        #not only removing it from passengers, in case players somehow fell off and they still have the flag
+        - flag <server.online_players> fort.on_bus:!
+        #- flag <[passengers]> fort.on_bus:!
 
         #remove invisibility
         - invisible <[passengers]> reset
@@ -178,9 +175,22 @@ fort_bus_handler:
     - foreach <server.flag[fort.temp.bus.controllers]> as:c:
       - remove <[c]> if:<[c].is_spawned>
 
-    - remove <[bus_driver]> if:<[bus_driver].is_spawned>
+    - remove <server.flag[fort.temp.bus.driver]>
 
     - flag server fort.temp.bus:!
+
+  add_driver:
+    - wait 2s
+    - define drivers_seat <server.flag[fort.temp.bus.seats].first>
+    - define driver_loc   <[drivers_seat].location>
+    - create PLAYER <&sp> <[driver_loc]> save:bus_driver
+    - define bus_driver <entry[bus_driver].created_npc>
+
+    - mount <[bus_driver]>|<[drivers_seat]>
+    - flag server fort.temp.bus.driver:<[bus_driver]>
+
+    - adjust <[bus_driver]> skin_blob:<script[nimnite_config].data_key[Spitfire_Skin]>
+    - adjust <[bus_driver]> name_visible:false
 
   setup_bus:
 

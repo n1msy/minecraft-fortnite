@@ -6,6 +6,8 @@
 
 #####################BUS DRIVER STILL NOT FIXED
 
+##add a "DOUBLE SNEAK" to leave match
+
 fort_core_handler:
   type: task
   debug: false
@@ -36,7 +38,9 @@ fort_core_handler:
   - define phase         GRACE_PERIOD
   - define forming       FORMING
   - inject fort_core_handler.timer
-  - run fort_storm_handler.create
+
+  #injecting, since we gotta wait for the flag to generate
+  - inject fort_storm_handler.create
 
   #-stage 1
   #storm eye shrinks in 3 minutes 20 seconds
@@ -44,7 +48,7 @@ fort_core_handler:
   - define phase         GRACE_PERIOD
   - define forming:!
   - flag server fort.temp.storm.dps:1
-  - run fort_storm_handler.set_new def.new_diameter:1600
+  - ~run fort_storm_handler.set_new def.new_diameter:1600
   - inject fort_core_handler.timer
   #storm eye shrinking 3 minutes
   - define seconds  180
@@ -56,7 +60,7 @@ fort_core_handler:
   #storm eye shrinks in 2 minutes
   - define seconds       120
   - define phase         GRACE_PERIOD
-  - run fort_storm_handler.set_new def.new_diameter:800
+  - ~run fort_storm_handler.set_new def.new_diameter:800
   - inject fort_core_handler.timer
   #storm eye shrinking 2 minutes
   - define seconds  120
@@ -69,7 +73,7 @@ fort_core_handler:
   - define seconds       90
   - define phase         GRACE_PERIOD
   - flag server fort.temp.storm.dps:2
-  - run fort_storm_handler.set_new def.new_diameter:400
+  - ~run fort_storm_handler.set_new def.new_diameter:400
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute 30 seconds
   - define seconds  90
@@ -83,7 +87,7 @@ fort_core_handler:
   - define phase         GRACE_PERIOD
   - define new_diameter  200
   - flag server fort.temp.storm.dps:5
-  - run fort_storm_handler.set_new def.new_diameter:200
+  - ~run fort_storm_handler.set_new def.new_diameter:200
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute 10 seconds
   - define seconds  70
@@ -96,7 +100,7 @@ fort_core_handler:
   - define seconds       50
   - define phase         GRACE_PERIOD
   - flag server fort.temp.storm.dps:8
-  - run fort_storm_handler.set_new def.new_diameter:100
+  - ~run fort_storm_handler.set_new def.new_diameter:100
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute
   - define seconds  60
@@ -109,7 +113,7 @@ fort_core_handler:
   - define seconds       30
   - define phase         GRACE_PERIOD
   - flag server fort.temp.storm.dps:10
-  - run fort_storm_handler.set_new def.new_diameter:50
+  - ~run fort_storm_handler.set_new def.new_diameter:50
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute
   - define seconds  60
@@ -121,7 +125,7 @@ fort_core_handler:
   #storm eye shrinking 55 seconds
   - define seconds       55
   - define phase         STORM_SHRINK
-  - run fort_storm_handler.set_new def.new_diameter:35
+  - ~run fort_storm_handler.set_new def.new_diameter:35
   - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
 
@@ -129,7 +133,7 @@ fort_core_handler:
   #storm eye shrinking 45 seconds
   - define seconds      45
   - define phase        STORM_SHRINK
-  - run fort_storm_handler.set_new def.new_diameter:20
+  - ~run fort_storm_handler.set_new def.new_diameter:20
   - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
 
@@ -137,7 +141,7 @@ fort_core_handler:
   #storm eye shrinking 1 Minute 15 seconds
   - define seconds      75
   - define phase        STORM_SHRINK
-  - run fort_storm_handler.set_new def.new_diameter:0
+  - ~run fort_storm_handler.set_new def.new_diameter:0
   - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
 
@@ -205,7 +209,8 @@ fort_core_handler:
         - define -spacing <proc[spacing].context[-89]>
 
     - repeat <[seconds]>:
-      - define players      <server.online_players_flagged[fort]>
+      #for some reason it includes npcs?
+      - define players      <server.online_players_flagged[fort].filter[is_npc.not]>
       - define seconds_left <[seconds].sub[<[value]>]>
       - define timer        <time[2069/01/01].add[<[seconds_left]>].format[m:ss]>
 
@@ -230,6 +235,12 @@ fort_core_handler:
 
       - if <server.has_flag[fort.temp.restarting_server]>:
         - stop
+
+      - if <server.has_flag[fort.temp.phase_skipped]>:
+        - announce "<&7><&o>This phase was skipped by an admin."
+        - flag server fort.temp.phase_skipped:!
+        - repeat stop
+
 
       - wait 1s
 
@@ -260,6 +271,7 @@ fort_core_handler:
     - title title:<&chr[10].font[icons].color[<color[77,0,0]>]> fade_in:0 fade_out:0 stay:10m targets:<[winners]>
     - playsound <[winners]> sound:ENTITY_PLAYER_LEVELUP pitch:0
 
+    - flag <[winners]> fort.winner
     - flag server fort.temp.winners:<[winners]>
 
     #######set player victory flags
@@ -269,24 +281,25 @@ fort_core_handler:
 
     # - [ RETURN TO MENU SPAWNER ] - #
     #no need to worry about removing it, since the world is removed
-    - wait 1s
-    - define loc <[death_loc].above[2].with_pitch[90].ray_trace.with_pitch[-90]>
-    - flag server fort.temp.last_death_loc:<[loc]>
+    #- wait 1s
+    #- define loc <[death_loc].above[2].with_pitch[90].ray_trace.with_pitch[-90]>
+    #- flag server fort.temp.last_death_loc:<[loc]>
 
+    #-no need to do this, just add a "DOUBLE SNEAK" to leave
     #-this way, the line on the minimap points at where the "return to lobby" thing is
-    - flag server fort.temp.storm.new_center:<[loc]>
-    - flag server fort.temp.storm.new_diameter:0
+    #- flag server fort.temp.storm.new_center:<[loc]>
+    #- flag server fort.temp.storm.new_diameter:20
 
-    - inject fort_core_handler.spawn_lobby_circle
+    #- inject fort_core_handler.spawn_lobby_circle
 
-    - define ellipsoid <[loc].to_ellipsoid[1.3,3,1.3]>
-    - note <[ellipsoid]> as:fort_lobby_circle
+    #- define ellipsoid <[loc].to_ellipsoid[1.3,3,1.3]>
+    #- note <[ellipsoid]> as:fort_lobby_circle
 
     #wait for elim text and anything else to disappear
     - wait 1s
 
     - while <[winners].filter[is_online].any>:
-      - actionbar <&chr[1].font[elim_text]><element[<&f>Follow the line on your minimap to <&c>leave<&r> the match.].font[elim_text]> targets:<[winners].filter[is_online]>
+      - actionbar <&chr[1].font[elim_text]><element[<&e><&l>Double-Sneak <&f>to <&c>leave<&r> the match.].font[elim_text]> targets:<[winners].filter[is_online]>
       - wait 2s
 
   reset_server:
