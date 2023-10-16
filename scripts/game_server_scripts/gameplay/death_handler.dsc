@@ -72,6 +72,9 @@ fort_death_handler:
     - run fort_item_handler.drop_everything if:<player.world.name.equals[nimnite_map]>
     - run fort_death_handler.fx.anim
 
+    #in case they were in the storm
+    - flag player fort.in_storm:!
+
 
     - define killer_name <[killer].name.if_null[<player.name>]>
     - title title:<&e><&l><[killer_name].font[elim_player]><&r> subtitle:<&chr[1].font[elim_text]><&l><element[ELIMINATED BY].font[elim_text]>

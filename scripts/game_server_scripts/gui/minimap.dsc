@@ -149,7 +149,7 @@ minimap:
       - define purple_offset   <[storm_radius].mul[32].round_down>
       # idle animation with sin for example
       #(only play idle animation when the storm isn't moving)
-      - define purple_offset   <[storm_radius].add[<[world].duration_since_created.in_seconds.mul[2].sin>].mul[32].round_down> if:!<server.has_flag[fort.temp.storm.animating]>
+      - define purple_offset   <[storm_radius].add[<[world].duration_since_created.in_seconds.mul[1.5].sin>].mul[32].round_down> if:!<server.has_flag[fort.temp.storm.animating]>
 
       - define circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
       - define purple_circle_display <&chr[E003].font[map].color[<[circle_color]>]>
