@@ -1,14 +1,8 @@
-#/ex narrate <location[75.5,0,55.5].points_around_y[radius=50;points=16].to_polygon.with_y_min[0].with_y_max[300].outline>
-#/globaldisplay transform 2 ~ 0 ~ 1600 300 1600 80
-
 ##on server start, adjust the mining speed of all materials to a thing?
 
 #todo:
 ##add a "follow line" to the lobby menu by putting the circle at that location
 ##SET THE VICTORY FLAGS
-
-
-##this could probably be organized into multiple files
 
 #####################BUS DRIVER STILL NOT FIXED
 
@@ -278,6 +272,10 @@ fort_core_handler:
     - wait 1s
     - define loc <[death_loc].above[2].with_pitch[90].ray_trace.with_pitch[-90]>
     - flag server fort.temp.last_death_loc:<[loc]>
+
+    #-this way, the line on the minimap points at where the "return to lobby" thing is
+    - flag server fort.temp.storm.new_center:<[loc]>
+    - flag server fort.temp.storm.new_diameter:0
 
     - inject fort_core_handler.spawn_lobby_circle
 
