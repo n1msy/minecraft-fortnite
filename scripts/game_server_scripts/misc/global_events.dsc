@@ -8,6 +8,15 @@ fort_global_handler:
     #on player receives tablist update:
     #- determine cancelled
 
+    on player starts sneaking flagged:fort.winner:
+    - if <player.has_flag[fort.double_sneak_to_leave]>:
+      - adjust <player> send_to:fort_lobby
+      - stop
+    - flag player fort.double_sneak_to_leave duration:4t
+
+    on NPC despawns:
+    - determine cancelled
+
     on player breaks block with:!fort_pickaxe_* flagged:fort:
     - determine cancelled
 
@@ -36,7 +45,7 @@ fort_global_handler:
     - define damage <context.damage>
     - define shield <[e].armor_bonus||null>
 
-    - if <context.cause> == FLY_INTO_WALL && <[e].has_flag[fort.using_glider]>:
+    - if <context.cause> == FLY_INTO_WALL || <[e].has_flag[fort.using_glider]>:
       - determine passively cancelled
       - stop
 

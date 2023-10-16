@@ -72,6 +72,9 @@ fort_death_handler:
     - run fort_item_handler.drop_everything if:<player.world.name.equals[nimnite_map]>
     - run fort_death_handler.fx.anim
 
+    #in case they were in the storm
+    - flag player fort.in_storm:!
+
 
     - define killer_name <[killer].name.if_null[<player.name>]>
     - title title:<&e><&l><[killer_name].font[elim_player]><&r> subtitle:<&chr[1].font[elim_text]><&l><element[ELIMINATED BY].font[elim_text]>
@@ -99,7 +102,8 @@ fort_death_handler:
     - sidebar set_line scores:4 values:<element[<[alive_icon]> <[players_alive].size>].font[hud_text].color[<color[51,0,0]>]> players:<[players]>
 
     # - [ Victory Check ] - #
-    - run fort_core_handler.victory_check def:<map[dead_player=<player>]>
+    #if is in case they player leaves after theyve won
+    - run fort_core_handler.victory_check def:<map[dead_player=<player>]> if:<server.flag[fort.temp.phase].equals[END].not>
 
     # - [ Spectating System ] - #
     #if they die without a killer, just spectate a random player that's alive

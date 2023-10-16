@@ -219,7 +219,7 @@ fort_pic_handler:
   - define translation   <location[0,-0.25,0]>
   - define text_shadowed true
   - define opacity       255
-  - spawn <entity[text_display].with[text=<[text]>;background_color=transparent;pivot=<[pivot]>;scale=<[scale]>;text_shadowed=<[text_shadowed]>;opacity=<[opacity]>;translation=<[translation]>]> <[loc]> save:e
+  - spawn <entity[text_display].with[text=<[text]>;background_color=transparent;pivot=<[pivot]>;scale=<[scale]>;text_shadowed=<[text_shadowed]>;opacity=<[opacity]>;translation=<[translation]>;opacity=<[opacity]>]> <[loc]> save:e
   - define e <entry[e].spawned_entity>
 
   - wait 2t

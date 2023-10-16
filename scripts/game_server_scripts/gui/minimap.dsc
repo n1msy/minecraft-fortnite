@@ -118,7 +118,7 @@ minimap:
       #- circle x and y is in worldspace
       - define circle_x <[next_storm_center].x>
       - define circle_y <[next_storm_center].z>
-      - define storm_id <map[1600=1;800=2;400=3;200=4;100=5;50=6;35=7;20=8;0=9].get[<[next_storm_diameter]>]>
+      - define storm_id <map[1600=1;800=2;400=3;200=4;100=5;50=6;35=7;20=8;1=9].get[<[next_storm_diameter]>]>
       - define relX     <[circle_x].sub[<[loc].x>].add[2048].max[0].min[4095]>
       - define relZ     <[circle_y].sub[<[loc].z>].add[2048].max[0].min[4095]>
       - define r_       <[relX].mod[256]>
@@ -149,7 +149,7 @@ minimap:
       - define purple_offset   <[storm_radius].mul[32].round_down>
       # idle animation with sin for example
       #(only play idle animation when the storm isn't moving)
-      - define purple_offset   <[storm_radius].add[<[world].duration_since_created.in_seconds.mul[2].sin>].mul[32].round_down> if:!<server.has_flag[fort.temp.storm.animating]>
+      #- define purple_offset   <[storm_radius].add[<[world].duration_since_created.in_seconds.mul[1.5].sin>].mul[32].round_down> if:!<server.has_flag[fort.temp.storm.animating]>
 
       - define circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
       - define purple_circle_display <&chr[E003].font[map].color[<[circle_color]>]>

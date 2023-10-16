@@ -17,24 +17,54 @@ fort_storm_handler:
     # - [ EXITING THE STORM ] - #
     #checking flagged: so it doesn't fire multiple times
     on player enters fort_storm_circle flagged:fort.in_storm:
-    - flag player fort.in_storm:!
-    #- cast BLINDNESS duration:15t hide_particles no_ambient no_icon no_clear
-    - time player reset
-    - weather player reset
+    - inject fort_storm_handler.exit_storm
 
     # - [ ENTERING THE STORM ] - #
     on player exits fort_storm_circle flagged:!fort.in_storm:
+    - inject fort_storm_handler.enter_storm
+
+  exit_storm:
+    #in case they already aren't in the storm
+    - if !<player.has_flag[fort.in_storm]>:
+      - stop
+
+    - flag player fort.in_storm:!
+    - cast BLINDNESS duration:10t hide_particles no_ambient no_icon no_clear
+    - playsound <player> sound:BLOCK_BEACON_POWER_SELECT pitch:1.5 volume:0.5
+    - adjust <player> stop_sound:minecraft:ambient.basalt_deltas.loop
+    - time player reset
+    - weather player reset
+
+  enter_storm:
+    - if <player.has_flag[fort.in_storm]>:
+      - stop
+
     - flag player fort.in_storm
     #remember: night vision plays a part in showing the purple sky
-    #- cast BLINDNESS duration:15t hide_particles no_ambient no_icon no_clear
+    - cast BLINDNESS duration:10t hide_particles no_ambient no_icon no_clear
+    - playsound <player> sound:BLOCK_BEACON_POWER_SELECT pitch:1.25 volume:0.5
     - time player 13000
     - weather player storm
     - while <player.is_online> && !<player.has_flag[fort.spectating]> && <player.has_flag[fort.in_storm]>:
+    #.mod should be like at mod[28.5], so there's a tiny pause between the sounds, but it's fine honestly
+      - playsound <player> sound:AMBIENT_BASALT_DELTAS_LOOP pitch:1.5 volume:0.3 if:<[loop_index].mod[29].equals[2]>
+
+      #cooldown check, this way, the timing of the lightning is not based on when players entered the storm
+      #happens thirty percent of the time
+      - if !<server.has_flag[fort.temp.storm.thunder_cooldown]> && <util.random_chance[10]>:
+        - define storm_players <server.online_players_flagged[fort.in_storm]>
+        - define random_loc <[storm_players].random.location.find.surface_blocks.within[40].random||null>
+        - if <[random_loc]> != null:
+          - strike <[random_loc]> no_damage
+          - flag server fort.temp.storm.thunder_cooldown duration:2s
+
       - wait 1s
+      - if !<player.is_online>:
+        - stop
       - define loc <player.location.above>
       - playeffect effect:ELECTRIC_SPARK at:<[loc]> offset:0.33 quantity:10 visibility:30
       - playeffect effect:REDSTONE at:<[loc]> offset:0.3 quantity:10 special_data:1.2|<color[#ec73ff]>
-      - playsound <player> sound:BLOCK_LARGE_AMETHYST_BUD_BREAK pitch:2 volume:0.6
+      - playsound <player> sound:BLOCK_LARGE_AMETHYST_BUD_BREAK pitch:2 volume:0.45
       - hurt <server.flag[fort.temp.storm.dps].div[5]||0.2> cause:WORLD_BORDER
 
   ## - [ CREATE STORM ] - ##
@@ -50,15 +80,18 @@ fort_storm_handler:
     - define storm_center <world[nimnite_map].spawn_location.with_y[20]>
 
     - execute as_server "globaldisplay create storm paper{CustomModelData:19} <[storm_center].x> <[storm_center].y> <[storm_center].z> <[diameter]> 150 <[diameter]>"
-    - execute as_server "globaldisplay player add storm @a"
+    #@a doesn't work?
+    #- execute as_server "globaldisplay player add storm @a"
+    - foreach <server.online_players.parse[name]> as:player_name:
+      - execute as_server "globaldisplay player add storm <[player_name]>"
+
+    - flag server fort.temp.storm.diameter:<[diameter]>
+    - flag server fort.temp.storm.center:<[storm_center]>
 
     - define circle_radius <[diameter].div[2].round>
     #- define storm_circle <[storm_center].points_around_y[radius=<[circle_radius]>;points=16].to_polygon.with_y_min[0].with_y_max[300]>
     - define storm_circle <[storm_center].to_ellipsoid[<[circle_radius]>,10000,<[circle_radius]>]>
     - note <[storm_circle]> as:fort_storm_circle
-
-    - flag server fort.temp.storm.diameter:<[diameter]>
-    - flag server fort.temp.storm.center:<[storm_center]>
 
 
   ## - [ SET NEW STORM ] - ##
@@ -71,10 +104,24 @@ fort_storm_handler:
     - define current_diameter <server.flag[fort.temp.storm.diameter]>
     - define current_center   <server.flag[fort.temp.storm.center]>
 
-    #doing radius, since we're getting it from the center of the circle
-    - define cur_radius <[current_diameter].div[2]>
-    - define x <util.random.int[-<[cur_radius]>].to[<[cur_radius]>]>
-    - define z <util.random.int[-<[cur_radius]>].to[<[cur_radius]>]>
+    #- define cur_radius <[current_diameter].div[2]>
+    #should be around half
+    - define cur_radius <[new_diameter]>
+
+    #this way the center won't be on the outskirts of the map or in the void
+    - define valid_center False
+    #- announce "[Storm Debug] Calculating next storm center..." to_console
+    - while <[valid_center].not>:
+      - define x <util.random.int[-<[cur_radius]>].to[<[cur_radius]>]>
+      - define z <util.random.int[-<[cur_radius]>].to[<[cur_radius]>]>
+      - define new_center <[current_center].add[<[x]>,0,<[z]>]>
+      #since edge water levels are below 40
+      #lowest y on land i think is like 20
+      #fallback is in case the center was somehow in the vid
+      - if <[new_center].with_pitch[90].ray_trace.y||-1> > 15:
+        - define valid_center True
+      - wait 1t
+    #- announce "[Storm Debug] Done!" to_console
 
     - flag server fort.temp.storm.new_center:<[current_center].add[<[x]>,0,<[z]>]>
     - flag server fort.temp.storm.new_diameter:<[new_diameter]>
@@ -112,6 +159,17 @@ fort_storm_handler:
       #- define storm_circle <[next_center].points_around_y[radius=<[circle_radius]>;points=16].to_polygon.with_y_min[0].with_y_max[300]>
       - define storm_circle <[next_center].to_ellipsoid[<[circle_radius]>,10000,<[circle_radius]>]>
       - note <[storm_circle]> as:fort_storm_circle
+
+      - if <[value].mod[20]> == 0:
+        - define players            <server.online_players_flagged[!fort.spectating]>
+        - define non_storm_players  <ellipsoid[fort_storm_circle].players.filter[has_flag[fort.spectating].not]>
+        - define storm_players      <[players].exclude[<[non_storm_players]>]>
+        #enter players who are in the storm now
+        - foreach <[storm_players]> as:p:
+          - run fort_storm_handler.enter_storm player:<[p]>
+        #exit players who were previously inside the storm but are now outside
+        - foreach <[non_storm_players].filter[has_flag[fort.in_storm]]> as:p:
+          - run fort_storm_handler.exit_storm player:<[p]>
 
       - flag server fort.temp.storm.center:<[next_center]>
       - flag server fort.temp.storm.diameter:<[next_diameter]>

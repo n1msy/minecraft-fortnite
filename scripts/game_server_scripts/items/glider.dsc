@@ -163,9 +163,7 @@ fort_glider_handler:
     #-added a safety to remove the glider, not sure if it works or not though -> just tested, still not working, changed to 2t to see if it'll work
     #- wait 2t
 
-    #this should in theory ALWAYS be toggled to off since it will always take out the glider no matter what
-    #^this doesn't work, currently trying remove_glider. I will keep it this way if it works
-    - run fort_glider_handler.remove_glider
+    - run fort_glider_handler.toggle_glider
 
     - adjust <player> stop_sound:minecraft:item.elytra.flying
 
@@ -176,9 +174,11 @@ fort_glider_handler:
 
     - adjust <player> item_slot:<[previous_slot]>
 
-    - flag player fort.using_glider:!
-
     - run build_toggle if:<[build_mode].exists>
+
+    #waiting in case the fall event fires and players take damage
+    - wait 1t
+    - flag player fort.using_glider:!
 
   toggle_glider:
 
@@ -218,6 +218,10 @@ fort_glider_handler:
       - remove <[glider]>
 
     - else:
+
+      - if <[glider].has_flag[undeploy_anim]>:
+        - stop
+
       - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
 
       #starting off with left rotation as the opposite direction (to give spinning effect)
@@ -260,6 +264,9 @@ fort_glider_handler:
   remove_glider:
     - define loc   <player.location>
     - define yaw   <[loc].yaw>
+
+    - if !<player.has_flag[fort.using_glider]> || <player.flag[fort.usin_glider.deployed].is_spawned.not||true>:
+      - stop
 
     - define glider <player.flag[fort.using_glider.deployed]>
     - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[yaw].sub[180].to_radians>]>]>
