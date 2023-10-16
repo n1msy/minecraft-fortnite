@@ -7,7 +7,7 @@ fort_emote_handler:
     - if <context.clicked_inventory.inventory_type> != CRAFTING:
       - stop
     - determine passively cancelled
-    - if <player.has_flag[fort.on_bus]> || <player.flag[fort.using_glider]>:
+    - if <player.has_flag[fort.on_bus]> || <player.has_flag[fort.using_glider]>:
       - stop
 
     - define emote <map[2=default;3=none;4=none;5=none].get[<context.slot>]>
