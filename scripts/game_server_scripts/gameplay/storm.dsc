@@ -18,7 +18,7 @@ fort_storm_handler:
     #checking flagged: so it doesn't fire multiple times
     on player enters fort_storm_circle flagged:fort.in_storm:
     - flag player fort.in_storm:!
-    - cast BLINDNESS duration:15t hide_particles no_ambient no_icon no_clear
+    - cast BLINDNESS duration:10t hide_particles no_ambient no_icon no_clear
     - playsound <player> sound:BLOCK_BEACON_POWER_SELECT pitch:1.5 volume:0.5
     - adjust <player> stop_sound:minecraft:ambient.basalt_deltas.loop
     - time player reset
@@ -28,7 +28,7 @@ fort_storm_handler:
     on player exits fort_storm_circle flagged:!fort.in_storm:
     - flag player fort.in_storm
     #remember: night vision plays a part in showing the purple sky
-    - cast BLINDNESS duration:15t hide_particles no_ambient no_icon no_clear
+    - cast BLINDNESS duration:10t hide_particles no_ambient no_icon no_clear
     - playsound <player> sound:BLOCK_BEACON_POWER_SELECT pitch:1.25 volume:0.5
     - time player 13000
     - weather player storm
