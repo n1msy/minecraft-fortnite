@@ -1,12 +1,9 @@
 ##on server start, adjust the mining speed of all materials to a thing?
 
 #todo:
-##add a "follow line" to the lobby menu by putting the circle at that location
 ##SET THE VICTORY FLAGS
 
 #####################BUS DRIVER STILL NOT FIXED
-
-##add a "DOUBLE SNEAK" to leave match
 
 fort_core_handler:
   type: task

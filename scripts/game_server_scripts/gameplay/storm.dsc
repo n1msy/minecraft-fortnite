@@ -29,11 +29,12 @@ fort_storm_handler:
       - stop
 
     - flag player fort.in_storm:!
-    - cast BLINDNESS duration:10t hide_particles no_ambient no_icon no_clear
+    - cast BLINDNESS remove
     - playsound <player> sound:BLOCK_BEACON_POWER_SELECT pitch:1.5 volume:0.5
     - adjust <player> stop_sound:minecraft:ambient.basalt_deltas.loop
-    - time player reset
+    #- time player reset
     - weather player reset
+    #- cast SPEED remove
 
   enter_storm:
     - if <player.has_flag[fort.in_storm]>:
@@ -42,10 +43,14 @@ fort_storm_handler:
     - flag player fort.in_storm
     #remember: night vision plays a part in showing the purple sky
     - cast BLINDNESS duration:10t hide_particles no_ambient no_icon no_clear
+    #- cast SPEED amplifier:1 duration:infinite hide_particles no_icon no_ambient no_clear
+    - cast BLINDNESS duration:infinite hide_particles no_icon no_ambient no_clear
     - playsound <player> sound:BLOCK_BEACON_POWER_SELECT pitch:1.25 volume:0.5
-    - time player 13000
+    #- time player 13000
     - weather player storm
     - while <player.is_online> && !<player.has_flag[fort.spectating]> && <player.has_flag[fort.in_storm]>:
+      #cancel the sprint in case they were sprinting when coming into the storm
+      - adjust <player> sprinting:false if:<player.is_sprinting>
     #.mod should be like at mod[28.5], so there's a tiny pause between the sounds, but it's fine honestly
       - playsound <player> sound:AMBIENT_BASALT_DELTAS_LOOP pitch:1.5 volume:0.3 if:<[loop_index].mod[29].equals[2]>
 
@@ -53,8 +58,8 @@ fort_storm_handler:
       #happens thirty percent of the time
       - if !<server.has_flag[fort.temp.storm.thunder_cooldown]> && <util.random_chance[10]>:
         - define storm_players <server.online_players_flagged[fort.in_storm]>
-        - define random_loc <[storm_players].random.location.find.surface_blocks.within[40].random||null>
-        - if <[random_loc]> != null:
+        - define random_loc <[storm_players].random.location.add[<location[40,0,0].rotate_around_y[<util.random.int[0].to[360].to_radians>]>].highest>
+        - if <[random_loc]> != null && <[random_loc].is_in[fort_storm_circle].not>:
           - strike <[random_loc]> no_damage
           - flag server fort.temp.storm.thunder_cooldown duration:2s
 

@@ -93,9 +93,9 @@ update_hud:
       - define timer_icon <&chr[0003].font[icons]>
     - case grace_period:
       #storm icon
-      - define timer_icon <&chr[0006].font[icons]>
-    - case storm_shrink:
       - define timer_icon <&chr[B005].font[icons]>
+    - case storm_shrink:
+      - define timer_icon <&chr[0005].font[icons]>
       #clock icon
     - default:
       - define timer_icon <&chr[0004].font[icons]>
