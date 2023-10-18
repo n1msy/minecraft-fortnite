@@ -74,6 +74,8 @@ fort_chest_handler:
 
     - narrate "<&c>Removed chest at <&f><[loc].simple>"
 
+    - modifyblock <[loc]> air
+
     - flag <[loc]> fort:!
     - flag server fort.chests:<-:<[loc]>
 
@@ -83,6 +85,8 @@ fort_chest_handler:
     - remove <[loc].flag[fort.ammo_box.text]> if:<[loc].flag[fort.ammo_box.text].is_spawned>
 
     - narrate "<&c>Removed ammo box at <&f><[loc].simple>"
+
+    - modifyblock <[loc]> air
 
     - flag <[loc]> fort:!
     - flag server fort.ammo_boxes:<-:<[loc]>

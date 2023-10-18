@@ -1,3 +1,22 @@
+fort_commands_handler:
+  type: world
+  debug: false
+  events:
+    on player clicks in inventory flagged:fort.model_menu:
+    - if <context.inventory> == <player.inventory>:
+      - stop
+    - define i <context.item>
+    - if !<[i].script.name.starts_with[fort_]||true>:
+      - stop
+    - determine passively cancelled
+
+    - give <[i]>
+    - narrate "<&7>Recieved <&a><[i].script.name.after[fort_].replace[_].with[ ].to_titlecase>"
+
+    on player closes inventory flagged:fort.model_menu:
+    - narrate "<&c>Closed Nimnite models menu."
+    - flag player fort.model_menu:!
+
 fort_commands:
   type: command
   name: fortnite
@@ -8,10 +27,18 @@ fort_commands:
   aliases:
   - fort
   tab completions:
-    1: <list[lobby_setup|lobby_teleport|pregame_spawn|fill_chests|fill_ammo_boxes|supply_drop]>
+    1: <list[models|lobby_setup|lobby_teleport|pregame_spawn|fill_chests|fill_ammo_boxes|supply_drop]>
   script:
   - choose <context.args.first||null>:
 
+    - case models:
+
+      - define models <list[chest|ammo_box]>
+      - define items  <[models].parse_tag[<item[fort_<[parse_value]>]>]>
+
+      - flag player fort.model_menu
+      - inventory open d:<inventory[generic[contents=<[items]>;size=9]]>
+      - narrate "<&a>Opened Nimnite models menu."
     - case skip:
     #skip the phase
       - flag server fort.temp.phase_skipped
