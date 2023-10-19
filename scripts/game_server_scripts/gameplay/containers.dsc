@@ -6,7 +6,7 @@ fort_chest:
     custom_model_data: 15
     hides: ALL
   flags:
-    qty: 1
+    material: wood
 
 fort_ammo_box:
   type: item
@@ -16,12 +16,7 @@ fort_ammo_box:
     custom_model_data: 17
     hides: ALL
   flags:
-    qty: 1
-
-
-###############
-###############   INSTEAD OF FLAGGING THE SERVER FOR CHEST LOCATIONS, FLAG THE *WORLD*
-###############
+    material: metal
 
 fort_chest_handler:
   type: world
@@ -55,14 +50,19 @@ fort_chest_handler:
     - flag <[loc]> fort.<[container_type]>.model:<entry[container].spawned_entity>
     - flag <[loc]> fort.<[container_type]>.text:<entry[container_text].spawned_entity>
     - flag <[loc]> fort.<[container_type]>.yaw:<[yaw].add[180]>
+    - flag <[loc]> fort.<[container_type]>.material:<context.item.flag[material]>
 
     #so it's not using the fx constantly when not in use
     - flag <[loc]> fort.<[container_type]>.opened
 
+    - define placed_on <context.location>
+    - if <[placed_on].has_flag[build.center]>:
+      - flag <[placed_on].flag[build.center]> build.attached_containers:->:<[loc]>
+
     - if <[container_type]> == ammo_box:
-      - flag server fort.ammo_boxes:->:<[loc]>
+      - flag <[loc].world> fort.ammo_boxes:->:<[loc]>
     - else:
-      - flag server fort.chests:->:<[loc]>
+      - flag <[loc].world> fort.chests:->:<[loc]>
 
     - narrate "<&a>Set <[container_type].replace[_].with[ ]> at <&f><[loc].simple>"
 
@@ -77,7 +77,7 @@ fort_chest_handler:
     - modifyblock <[loc]> air
 
     - flag <[loc]> fort:!
-    - flag server fort.chests:<-:<[loc]>
+    - flag <[loc].world> fort.chests:<-:<[loc]>
 
     on player breaks block location_flagged:fort.ammo_box:
     - define loc <context.location.center>
@@ -89,7 +89,7 @@ fort_chest_handler:
     - modifyblock <[loc]> air
 
     - flag <[loc]> fort:!
-    - flag server fort.ammo_boxes:<-:<[loc]>
+    - flag <[loc].world> fort.ammo_boxes:<-:<[loc]>
 
   open:
   #-handled in "guns.dsc" event "after player starts sneaking"
