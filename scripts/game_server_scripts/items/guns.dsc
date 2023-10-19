@@ -207,10 +207,17 @@ fort_gun_handler:
     - determine passively cancelled
     - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
 
+    on player right clicks entity with:gun_*:
+    - determine passively cancelled
+    - inject fort_gun_handler.use_gun
+
     on player right clicks block with:gun_*:
     - determine passively cancelled
+    - inject fort_gun_handler.use_gun
     #-cancel shooting while trying to reload
 
+
+  use_gun:
     - define gun        <player.item_in_hand>
     - define gun_name   <[gun].script.name.after[_]>
     - define gun_uuid   <[gun].flag[uuid]>
@@ -486,10 +493,11 @@ fort_gun_handler:
           - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round_down>;entity=<[target]>;color=<[color]>]>
           - adjust <player> reset_attack_cooldown
 
-        # - [ players can "shoot" the PLAY button ] - #
+        # - [ DAMAGE TO PROPS ] - #
         #my main concern is that people spam it with a gun and it causes issues
-        - else if <[target].has_flag[menu]>:
-          - inject fort_lobby_handler.button_press
+        - else if <[target].has_flag[fort.prop]>:
+          #rest of the hurt stuff is handled within the prop file itself
+          - run fort_prop_handler.damage_prop def:<map[prop_hb=<[target]>;damage=<[damage].mul[5]>]>
 
 
   custom_shoot:
@@ -832,15 +840,21 @@ fort_gun_handler:
 
     # - Impact (Potential: CAMPFIRE_COSY_SMOKE, SMOKE_NORMAL, SQUID_INK)
     - define particle_dest <[target_loc].face[<[eye_loc]>].forward[0.1]>
-    - playeffect at:<[particle_dest]> effect:sweep_attack offset:0 quantity:1 visibility:500 velocity:1.65,1.65,1.65
+    - playeffect at:<[particle_dest]> effect:sweep_attack offset:0 quantity:1 visibility:250 velocity:1.65,1.65,1.65
 
     # - Blood / Material hit
     - define mat <[target_block].material.name||null>
-    - if <[target]> != null:
+    #checking is living so ONLY living creatures get blood splatters, which means anything else that isn't defined (like supply drops)
+    #wont have effects from them
+    - if <[target]> != null && <[target].is_living>:
       #splatter: red_glazed_terracotta
-      - playeffect at:<[particle_dest]> effect:BLOCK_CRACK offset:0 quantity:3 visibility:500 special_data:red_wool
+      - playeffect at:<[particle_dest]> effect:BLOCK_CRACK offset:0 quantity:3 visibility:150 special_data:red_wool
+    - else if <[target]> != null && <[target].has_flag[fort.prop]>:
+      #first check in case the target was removed by prop handler
+      - define special_data <map[wood=OAK_PLANKS;brick=BRICKS;metal=IRON_BARS].get[<[target].flag[fort.prop.material]>]>
+      - playeffect at:<[particle_dest]> effect:BLOCK_CRACK offset:0 quantity:3 visibility:150 special_data:<[special_data]>
     - else if <[mat]> != null && <[mat]> != barrier:
-      - playeffect at:<[particle_dest]> effect:BLOCK_CRACK offset:0 quantity:8 visibility:500 special_data:<[mat]>
+      - playeffect at:<[particle_dest]> effect:BLOCK_CRACK offset:0 quantity:8 visibility:150 special_data:<[mat]>
 
   default_recoil_fx:
     - define particle_origin <[data].get[particle_origin]>

@@ -6,12 +6,13 @@ fort_commands_handler:
     - if <context.inventory> == <player.inventory>:
       - stop
     - define i <context.item>
+    - stop if:!<[i].script.exists>
     - if !<[i].script.name.starts_with[fort_]||true>:
       - stop
     - determine passively cancelled
 
     - give <[i]>
-    - narrate "<&7>Recieved <&a><[i].script.name.after[fort_].replace[_].with[ ].to_titlecase>"
+    - narrate "<&7>Recieved <&a><[i].display>"
 
     on player closes inventory flagged:fort.model_menu:
     - narrate "<&c>Closed Nimnite models menu."
@@ -33,8 +34,11 @@ fort_commands:
 
     - case models:
 
-      - define models <list[chest|ammo_box]>
-      - define items  <[models].parse_tag[<item[fort_<[parse_value]>]>]>
+      - define containers <list[chest|ammo_box]>
+      - define items      <[containers].parse_tag[<item[fort_<[parse_value]>]>]>
+
+      - define props      <list[bookshelf]>
+      - define items      <[items].include[<[props].parse_tag[<item[fort_prop_<[parse_value]>]>]>]>
 
       - flag player fort.model_menu
       - inventory open d:<inventory[generic[contents=<[items]>;size=9]]>

@@ -70,7 +70,7 @@ fort_pic_handler:
     #-harvest material
     #side note: thank fucking god i was smart enough to add a "placed by world" flag for man-made structures
     - if <[center].has_flag[build.natural]> || <[center].flag[build.placed_by]||null> == WORLD:
-      - run fort_pic_handler.harvest def:<map[structure=<[struct]>;type=<[mat_type]>]>
+      - run fort_pic_handler.harvest def:<map[type=<[mat_type]>]>
 
     #i feel like there's a cleaner way for this in the config
     - if !<[center].has_flag[build.natural]>:
@@ -383,7 +383,6 @@ fort_pic_handler:
         - playeffect effect:BLOCK_CRACK at:<[leaf].center> offset:0 special_data:<[leaf_mat]> quantity:2 visibility:100
 
   harvest:
-  - define struct <[data].get[structure]>
   - define type <[data].get[type]>
   - define mult <script[nimnite_config].data_key[harvesting_multiplier]>
 

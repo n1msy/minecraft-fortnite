@@ -47,17 +47,21 @@ fort_chest_handler:
     - modifyblock <[loc]> barrier
     - define loc <context.location.above.center>
 
+    - define placed_on <context.location>
+    - if <[placed_on].has_flag[build.center]>:
+      - define center_attached_to <[placed_on].flag[build.center]>
+      - flag <[center_attached_to]> build.attached_containers:->:<[loc]>
+
+    #instead of formatting the flag this way, i shouldve done it like
+    #fort.containers.type:CHEST, etc
     - flag <[loc]> fort.<[container_type]>.model:<entry[container].spawned_entity>
     - flag <[loc]> fort.<[container_type]>.text:<entry[container_text].spawned_entity>
     - flag <[loc]> fort.<[container_type]>.yaw:<[yaw].add[180]>
     - flag <[loc]> fort.<[container_type]>.material:<context.item.flag[material]>
+    - flag <[loc]> fort.<[container_type]>.attached_center:<[center_attached_to]> if:<[center_attached_to].exists>
 
     #so it's not using the fx constantly when not in use
     - flag <[loc]> fort.<[container_type]>.opened
-
-    - define placed_on <context.location>
-    - if <[placed_on].has_flag[build.center]>:
-      - flag <[placed_on].flag[build.center]> build.attached_containers:->:<[loc]>
 
     - if <[container_type]> == ammo_box:
       - flag <[loc].world> fort.ammo_boxes:->:<[loc]>
@@ -72,6 +76,9 @@ fort_chest_handler:
     - remove <[loc].flag[fort.chest.model]> if:<[loc].flag[fort.chest.model].is_spawned>
     - remove <[loc].flag[fort.chest.text]> if:<[loc].flag[fort.chest.text].is_spawned>
 
+    - if <[loc].has_flag[fort.chest.attached_center]>:
+      - flag <[loc].flag[fort.chest.attached_center]> build.attached_containers:<-:<[loc]>
+
     - narrate "<&c>Removed chest at <&f><[loc].simple>"
 
     - modifyblock <[loc]> air
@@ -84,12 +91,46 @@ fort_chest_handler:
     - remove <[loc].flag[fort.ammo_box.model]> if:<[loc].flag[fort.ammo_box.model].is_spawned>
     - remove <[loc].flag[fort.ammo_box.text]> if:<[loc].flag[fort.ammo_box.text].is_spawned>
 
+    - if <[loc].has_flag[fort.ammo_box.attached_center]>:
+      - flag <[loc].flag[fort.ammo_box.attached_center]> build.attached_containers:<-:<[loc]>
+
     - narrate "<&c>Removed ammo box at <&f><[loc].simple>"
 
     - modifyblock <[loc]> air
 
     - flag <[loc]> fort:!
     - flag <[loc].world> fort.ammo_boxes:<-:<[loc]>
+
+  break_container:
+    - define loc            <[data].get[loc]>
+    - define container_type <[loc].flag[fort].keys.first>
+    - define model          <[loc].flag[fort.<[container_type]>.model]>
+    - define text           <[loc].flag[fort.<[container_type]>.text]>
+    - remove <[model]> if:<[model].is_spawned>
+    - remove <[text]>  if:<[text].is_spawned>
+
+    - define mat_type <[loc].flag[fort.<[container_type]>.material]>
+    - definemap mat_data_list:
+        wood:
+          special_data: OAK_PLANKS
+          sound: BLOCK_CHERRY_WOOD_BREAK
+          pitch: 1.3
+        brick:
+          special_data: BRICKS
+          sound: BLOCK_MUD_BRICKS_BREAK
+          pitch: 1.2
+        metal:
+          special_data: IRON_BARS
+          sound: BLOCK_NETHERITE_BLOCK_BREAK
+          pitch: 1.2
+    - define mat_data <[mat_data_list].get[<[mat_type]>]>
+    #- define fx_loc <[prop_model].location.add[<[prop_model].translation>]>
+
+    - playsound <[fx_loc]> sound:<[mat_data].get[sound]> pitch:<[mat_data].get[pitch]>
+    - playeffect effect:BLOCK_CRACK at:<[fx_loc]> offset:0.3 special_data:<[mat_data].get[special_data]> quantity:25 visibility:30
+
+    - modifyblock <[loc]> air
+    - flag <[loc]> fort:!
 
   open:
   #-handled in "guns.dsc" event "after player starts sneaking"
