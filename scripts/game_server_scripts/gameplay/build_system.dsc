@@ -500,6 +500,17 @@ build_system_handler:
 
     - modifyblock <[remove_blocks]> air
 
+    - if <[center].flag[build.placed_by]> == WORLD:
+      #not breaking containers, because they dont break in fort either
+      #- define containers <[center].flag[build.attached_containers]||list<[]>>
+      #- foreach <[containers]> as:c_loc:
+        #- run fort_chest_handler.break_container def:<map[loc=<[c_loc]>]>
+      - define props <[center].flag[build.attached_props]||null>
+      - if <[props]> != null:
+        #should i check is_spawned, or just remove the attached prop flag from the tile?
+        - foreach <[props].filter[is_spawned]> as:prop_hb:
+          - run fort_prop_handler.break def:<map[prop_hb=<[prop_hb]>]>
+
     - flag <[blocks]> build:!
     #not doing build DOT existed, since it'll mess up other checks
     - flag <[blocks].filter[has_flag[build_existed]]> build_existed:!

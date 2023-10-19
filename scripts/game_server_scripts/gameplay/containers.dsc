@@ -101,37 +101,6 @@ fort_chest_handler:
     - flag <[loc]> fort:!
     - flag <[loc].world> fort.ammo_boxes:<-:<[loc]>
 
-  break_container:
-    - define loc            <[data].get[loc]>
-    - define container_type <[loc].flag[fort].keys.first>
-    - define model          <[loc].flag[fort.<[container_type]>.model]>
-    - define text           <[loc].flag[fort.<[container_type]>.text]>
-    - remove <[model]> if:<[model].is_spawned>
-    - remove <[text]>  if:<[text].is_spawned>
-
-    - define mat_type <[loc].flag[fort.<[container_type]>.material]>
-    - definemap mat_data_list:
-        wood:
-          special_data: OAK_PLANKS
-          sound: BLOCK_CHERRY_WOOD_BREAK
-          pitch: 1.3
-        brick:
-          special_data: BRICKS
-          sound: BLOCK_MUD_BRICKS_BREAK
-          pitch: 1.2
-        metal:
-          special_data: IRON_BARS
-          sound: BLOCK_NETHERITE_BLOCK_BREAK
-          pitch: 1.2
-    - define mat_data <[mat_data_list].get[<[mat_type]>]>
-    #- define fx_loc <[prop_model].location.add[<[prop_model].translation>]>
-
-    - playsound <[fx_loc]> sound:<[mat_data].get[sound]> pitch:<[mat_data].get[pitch]>
-    - playeffect effect:BLOCK_CRACK at:<[fx_loc]> offset:0.3 special_data:<[mat_data].get[special_data]> quantity:25 visibility:30
-
-    - modifyblock <[loc]> air
-    - flag <[loc]> fort:!
-
   open:
   #-handled in "guns.dsc" event "after player starts sneaking"
   #required definitions: look_loc, container_type
@@ -509,3 +478,33 @@ fort_chest_handler:
 
     - playeffect effect:REDSTONE at:<[sphere]> offset:0.1 quantity:1 visibility:100 special_data:1|<color[#c9c9c9]>
     - wait 1t
+
+  break_container:
+    - define loc            <[data].get[loc]>
+    - define container_type <[loc].flag[fort].keys.first>
+    - define model          <[loc].flag[fort.<[container_type]>.model]>
+    - define text           <[loc].flag[fort.<[container_type]>.text]>
+    - remove <[model]> if:<[model].is_spawned>
+    - remove <[text]>  if:<[text].is_spawned>
+
+    - define mat_type <[loc].flag[fort.<[container_type]>.material]>
+    - definemap mat_data_list:
+        wood:
+          special_data: OAK_PLANKS
+          sound: BLOCK_CHERRY_WOOD_BREAK
+          pitch: 1.3
+        brick:
+          special_data: BRICKS
+          sound: BLOCK_MUD_BRICKS_BREAK
+          pitch: 1.2
+        metal:
+          special_data: IRON_BARS
+          sound: BLOCK_NETHERITE_BLOCK_BREAK
+          pitch: 1.2
+    - define mat_data <[mat_data_list].get[<[mat_type]>]>
+
+    - playsound <[loc]> sound:<[mat_data].get[sound]> pitch:<[mat_data].get[pitch]>
+    - playeffect effect:BLOCK_CRACK at:<[loc]> offset:0.3 special_data:<[mat_data].get[special_data]> quantity:25 visibility:30
+
+    - modifyblock <[loc]> air
+    - flag <[loc]> fort:!

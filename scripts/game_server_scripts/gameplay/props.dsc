@@ -53,9 +53,9 @@ fort_prop_handler:
     - determine passively cancelled
     - ratelimit <player> 1t
     - define i   <context.item>
-    - define loc <context.location.above.center>
+    - define loc <context.location.above.center||null>
 
-    - if <[loc].material.name> != air:
+    - if <[loc]> == null || <[loc].material.name> != air:
       - narrate "<&c>Invalid spot."
       - stop
 
@@ -80,7 +80,7 @@ fort_prop_handler:
     - define placed_on <context.location>
     - if <[placed_on].has_flag[build.center]>:
       - define center_attached_to <[placed_on].flag[build.center]>
-      - flag <[center_attached_to]> build.attached_containers:->:<[loc]>
+      - flag <[center_attached_to]> build.attached_props:->:<[prop_hb]>
 
     - flag <[prop_hb]> fort.prop.model:<[prop_model]>
     - flag <[prop_hb]> fort.prop.material:<[i].flag[material]>
