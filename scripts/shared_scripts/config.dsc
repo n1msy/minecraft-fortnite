@@ -80,6 +80,7 @@ nimnite_config:
     #  - <red><bold>_player_<reset> <gray>was struck by the Banhammer
 
   structures:
+
     #was using server flags for these, but now using config system...
     #shouldn't i just flag all this data onto the trees themselves? -> only problem with that would be in case i wanted to change
     #structure data on the whim
