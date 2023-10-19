@@ -57,7 +57,8 @@ fort_prop_handler:
     - if <bungee.server> == BUILD:
       - stop
 
-    - if <[prop_hb].flag[fort.prop.material]> == unbreakable:
+    - if <[prop_hb].flag[fort.prop.health]> == unbreakable:
+      - run fort_prop_handler.damage_prop def:<map[prop_hb=<[prop_hb]>;damage=0]>
       - stop
 
     #-if players break it with a pickaxe, run the harvesting stuff
@@ -138,17 +139,6 @@ fort_prop_handler:
     - define health     <[prop_hb].flag[fort.prop.health]>
     - define damage     <[data].get[damage]>
 
-    - if <[health]> == unbreakable:
-      - stop
-
-    - run fort_prop_handler.damage_anim def:<map[prop_model=<[prop_model]>;mat_type=<[mat_type]>]>
-    - define new_health <[health].sub[<[damage]>]>
-
-    #-break it
-    - if <[new_health]> <= 0:
-      - run fort_prop_handler.break def:<map[prop_hb=<[prop_hb]>]>
-      - stop
-
     - define fx_loc <[prop_model].location.add[<[prop_model].translation>]>
     - definemap mat_data_list:
         wood:
@@ -165,6 +155,20 @@ fort_prop_handler:
           sound: BLOCK_NETHERITE_BLOCK_HIT
           pitch: 1.3
     - define mat_data <[mat_data_list].get[<[mat_type]>]>
+
+    - if <[health]> == unbreakable:
+      - playsound <[prop_hb].location> sound:BLOCK_STONE_BREAK pitch:2
+      - playeffect effect:BLOCK_CRACK at:<[fx_loc]> offset:0.1 special_data:<[mat_data].get[special_data]> quantity:10 visibility:30
+      - stop
+
+    - run fort_prop_handler.damage_anim def:<map[prop_model=<[prop_model]>;mat_type=<[mat_type]>]>
+    - define new_health <[health].sub[<[damage]>]>
+
+    #-break it
+    - if <[new_health]> <= 0:
+      - run fort_prop_handler.break def:<map[prop_hb=<[prop_hb]>]>
+      - stop
+
     - playeffect effect:BLOCK_CRACK at:<[fx_loc]> offset:0.1 special_data:<[mat_data].get[special_data]> quantity:10 visibility:30
     - playsound <[fx_loc]> sound:<[mat_data].get[sound]> pitch:<[mat_data].get[pitch]>
 
