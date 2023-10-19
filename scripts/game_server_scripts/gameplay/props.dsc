@@ -164,10 +164,16 @@ fort_prop_handler:
     - run fort_prop_handler.damage_anim def:<map[prop_model=<[prop_model]>;mat_type=<[mat_type]>]>
     - define new_health <[health].sub[<[damage]>]>
 
+    #remove the health display
+    - flag player fort.build_health:!
     #-break it
     - if <[new_health]> <= 0:
       - run fort_prop_handler.break def:<map[prop_hb=<[prop_hb]>]>
       - stop
+
+   # - define yaw <map[North=0;South=180;West=-90;East=90].get[<player.location.yaw.simple>]>
+    - define health_display_loc <[fx_loc].below>
+    - run fort_pic_handler.display_build_health def:<map[loc=<[health_display_loc]>;health=<[new_health]>;max_health=<item[fort_prop_<[prop_hb].flag[fort.prop.name]>].flag[health]>]>
 
     - playeffect effect:BLOCK_CRACK at:<[fx_loc]> offset:0.1 special_data:<[mat_data].get[special_data]> quantity:10 visibility:30
     - playsound <[fx_loc]> sound:<[mat_data].get[sound]> pitch:<[mat_data].get[pitch]>
