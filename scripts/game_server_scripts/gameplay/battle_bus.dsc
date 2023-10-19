@@ -94,9 +94,15 @@ fort_bus_handler:
     - flag server fort.temp.bus.passengers:<[players]>
 
     #-bus driver
+    ##not working for some reason
+    - create PLAYER <&sp> <[drivers_seat_loc]> save:bus_driver
+    - define bus_driver <entry[bus_driver].created_npc>
 
-    #-create the bus driver
-    - run fort_bus_handler.add_driver
+    - mount <[bus_driver]>|<[drivers_seat]>
+    - flag server fort.temp.bus.driver:<[bus_driver]>
+
+    - adjust <[bus_driver]> skin_blob:<script[nimnite_config].data_key[Spitfire_Skin]>
+    - adjust <[bus_driver]> name_visible:false
 
     #logic for finding bus starting position
     #map is 2304x2304
@@ -180,8 +186,8 @@ fort_bus_handler:
     - flag server fort.temp.bus:!
 
   add_driver:
-    - wait 2s
-    - define drivers_seat <server.flag[fort.temp.bus.seats].first>
+    #- define drivers_seat <server.flag[fort.temp.bus.seats].first>
+    - define drivers_seat <server.flag[fort.temp.bus.drivers_seat]>
     - define driver_loc   <[drivers_seat].location>
     - create PLAYER <&sp> <[driver_loc]> save:bus_driver
     - define bus_driver <entry[bus_driver].created_npc>
@@ -210,6 +216,7 @@ fort_bus_handler:
     - define drivers_seat_loc <[seat_origin].above.left[0.71].below[1.2].backward[0.1]>
     - spawn <entity[item_display].with[scale=0.1,0.1,0.1]> <[drivers_seat_loc]> save:drivers_seat
     - define drivers_seat <entry[drivers_seat].spawned_entity>
+    - flag server fort.temp.bus.drivers_seat:<[drivers_seat]>
     - flag server fort.temp.bus.seats:->:<[drivers_seat]>
     - flag <[drivers_seat]> vector_loc:<[drivers_seat_loc].sub[<[seat_origin]>]>
 

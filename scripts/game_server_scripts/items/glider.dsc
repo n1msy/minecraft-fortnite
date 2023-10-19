@@ -163,6 +163,7 @@ fort_glider_handler:
     #-added a safety to remove the glider, not sure if it works or not though -> just tested, still not working, changed to 2t to see if it'll work
     #- wait 2t
 
+    - flag player fort.using_glider.remove_on_land
     - run fort_glider_handler.toggle_glider
 
     - adjust <player> stop_sound:minecraft:item.elytra.flying
@@ -181,6 +182,9 @@ fort_glider_handler:
     - flag player fort.using_glider:!
 
   toggle_glider:
+
+    - if <player.has_flag[fort.using_glider.landed]>:
+      - stop
 
     - define loc   <player.location>
     - define yaw   <[loc].yaw>
@@ -209,6 +213,9 @@ fort_glider_handler:
       #- cast INVISIBILITY remove
       - flag player fort.using_glider.deployed:!
 
+      - if <player.has_flag[fort.using_glider.remove_on_land]>:
+        - flag player fort.using_glider.landed
+
       #- define gliding_model <player.flag[fort.using_glider.gliding_model]||null>
       #- if <[gliding_model]> != null:
         #- run dmodels_delete def.root_entity:<[gliding_model]>
@@ -219,8 +226,8 @@ fort_glider_handler:
 
     - else:
 
-      - if <[glider].has_flag[undeploy_anim]>:
-        - stop
+      #- if <[glider].has_flag[undeploy_anim]>:
+        #- stop
 
       - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
 

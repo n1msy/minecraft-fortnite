@@ -644,6 +644,11 @@ build_system_handler:
               #Since these are all new tiles, we need to check them as well.
               - define tiles_to_check:|:<[surrounding_tiles]>
 
+              ##this is added as an attempt to fix lag, untested
+            #so if it's too many tiles, it wont even load them
+              - if <[broken_tile_center].flag[build.placed_by]||null> == WORLD && <[loop_index]> >= 40:
+                - foreach stop
+
             - wait 1t
         #If we get to this point, then that means we didn't skip out early with foreach.
         #That means we know it's not touching ground anywhere, so now we want to break

@@ -107,10 +107,10 @@ fort_death_handler:
 
     # - [ Spectating System ] - #
     #if they die without a killer, just spectate a random player that's alive
-    - if <[killer]> != null:
+    - if <[killer]> != null && <[killer]> != <player>:
       - define player_to_spectate <[killer]>
     - else:
-      - define player_to_spectate <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].first||null>
+      - define player_to_spectate <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].exclude[<player>].first||null>
 
     #add a spectators flag to the player being spectated too, or no?
 
@@ -129,6 +129,10 @@ fort_death_handler:
     #spectating sometimes doesn't work
     - foreach <[spectators]> as:spectator:
       - flag <[spectator]> fort.spectating:<[player_to_spectate]>
+      #turning them spectator so theyd be invis on teleport to player
+      - adjust <[spectator]> gamemode:spectator
+      #if they're too far away, they wont spectate properly
+      - teleport <[spectator]> <[player_to_spectate].location>
       - adjust <[spectator]> spectator_target:<[player_to_spectate]>
       - narrate "<&7>You are now spectating <element[<&l><[player_to_spectate].name>].color[<color[#ffb62e]>]>" targets:<[spectator]>
       - narrate "<element[<&l><[spectator].name>].color[<color[#ffb62e]>]> <&7>is now spectating you" targets:<[player_to_spectate]>
