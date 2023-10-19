@@ -13,8 +13,19 @@ fort_prop_handler:
   debug: false
   definitions: data
   events:
-    #on player steps on barrier:
+    # - [ Special Props ] - #
+    on player steps on barrier:
     #could in theory let players sit on chairs if they stand on it
+    - if !<context.location.has_flag[fort.prop]>:
+      - stop
+    - define prop_hb <context.location.flag[fort.prop.hitbox]>
+    - stop if:!<[prop_hb].is_spawned>
+    - define name    <[prop_hb].flag[fort.prop.name]>
+    - choose <[name]>:
+      #only problem: the bounce is constantly the same height, not based on momentum, eh whatever
+      - case tires:
+        - playsound <context.location> sound:BLOCK_BAMBOO_WOOD_FALL pitch:1.1
+        - adjust <player> velocity:0,1,0
 
     on INTERACTION damaged:
     - stop if:<context.entity.has_flag[fort.prop].not>
@@ -146,6 +157,7 @@ fort_prop_handler:
           pitch: 1.4
         brick:
           special_data: BRICKS
+          #bone blocks work too
           sound: BLOCK_MUD_BRICKS_STEP
           pitch: 0.9
         metal:
@@ -340,7 +352,7 @@ fort_prop_bathtub:
 fort_prop_couch:
   type: item
   material: gold_nugget
-  display name: couch
+  display name: Couch
   mechanisms:
     custom_model_data: 33
     hides: ALL
