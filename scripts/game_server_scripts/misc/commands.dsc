@@ -37,11 +37,11 @@ fort_commands:
       - define containers <list[chest|ammo_box]>
       - define items      <[containers].parse_tag[<item[fort_<[parse_value]>]>]>
 
-      - define props      <list[bookshelf]>
-      - define items      <[items].include[<[props].parse_tag[<item[fort_prop_<[parse_value]>]>]>]>
+      - define props      <util.scripts.filter[name.starts_with[fort_prop_]].filter[data_key[type].equals[item]].parse[name.as[item]]>
+      - define items      <[items].include[<[props]>]>
 
       - flag player fort.model_menu
-      - inventory open d:<inventory[generic[contents=<[items]>;size=9]]>
+      - inventory open d:<inventory[generic[contents=<[items]>;size=18]]>
       - narrate "<&a>Opened Nimnite models menu."
     - case skip:
     #skip the phase

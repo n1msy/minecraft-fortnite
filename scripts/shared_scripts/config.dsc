@@ -152,7 +152,7 @@ nimnite_config:
     tall_rock_1:
       type: ROCK
       material: brick
-      material: 180
+      health: 180
 
     tall_rock_2:
       type: ROCK

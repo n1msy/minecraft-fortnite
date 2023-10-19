@@ -564,6 +564,10 @@ build_system_handler:
     #There's only six four (or less) for each cardinal
     #direction, so we use a foreach, and go through each one.
     - foreach <[branches]> as:starting_tile:
+
+        - if <[tile_check_timeout].exists>:
+          - foreach stop
+
         #The tiles to check are a list of tiles that we need to get siblings of.
         #Each tile in this list gets checked once, and removed.
         - define tiles_to_check <list[<[starting_tile]>]>
@@ -655,10 +659,15 @@ build_system_handler:
               #Since these are all new tiles, we need to check them as well.
               - define tiles_to_check:|:<[surrounding_tiles]>
 
+              #calculating total loop index, since there are whiles inside of foreaches
+              - define total_loop_index:++
               ##this is added as an attempt to fix lag, untested
+              #- actionbar <[total_loop_index]>
             #so if it's too many tiles, it wont even load them
-              - if <[broken_tile_center].flag[build.placed_by]||null> == WORLD && <[loop_index]> >= 40:
-                - foreach stop
+              #- if <[broken_tile_center].flag[build.placed_by]||null> == WORLD && <[total_loop_index]> >= 30:
+              #  - define tile_check_timeout True
+              #  - narrate :LSDKJF:SLDKFJ
+              #  - while stop
 
             - wait 1t
         #If we get to this point, then that means we didn't skip out early with foreach.
