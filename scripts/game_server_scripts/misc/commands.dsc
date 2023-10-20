@@ -52,9 +52,6 @@ fort_commands:
     - case lobby_setup:
       - run fort_lobby_setup
       - narrate "<&a>Nimnite lobby menu set."
-      - if !<server.has_flag[fort.pregame.spawn]>:
-        - narrate "<&c>[Warning] Pregame island hasn't been setup."
-        - narrate "<&7>Type /fort pregame_setup to set."
 
     - case lobby_teleport:
       #- define loc <player.location.round.above[0.5]>

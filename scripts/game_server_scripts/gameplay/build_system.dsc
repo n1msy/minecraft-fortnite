@@ -582,7 +582,10 @@ build_system_handler:
             #in which we check, we'll get to them all eventually, unless the
             #strucure is touching the ground, in which case it doesn't really
             #matter.
-            - define tile <[tiles_to_check].last>
+            - if <[loop_index].mod[2]> == 0:
+              - define tile <[tiles_to_check].first>
+            - else:
+              - define tile <[tiles_to_check].last>
 
             #if it doesn't, it's already removed
             - foreach next if:!<[tile].center.has_flag[build.center]>
@@ -874,7 +877,7 @@ get_surrounding_tiles:
   script:
     - define nearby_tiles <[center].find_blocks_flagged[build.center].within[5].filter[flag[build.center].has_flag[build.natural].not].filter[flag[build.center].has_flag[build.structure]].parse[flag[build.center].flag[build.structure]].deduplicate.exclude[<[tile]>]>
     - define connected_tiles <[nearby_tiles].filter[intersects[<[tile]>]]>
-    - determine <[connected_tiles]>
+    - determine <[connected_tiles].sort_by_value[y]>
 
 is_root:
   type: procedure
