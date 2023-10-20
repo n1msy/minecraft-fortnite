@@ -76,7 +76,7 @@ fort_pic_handler:
     - if !<[center].has_flag[build.natural]>:
       - define max_health <script[nimnite_config].data_key[materials.<[mat_type]>.hp]>
       #show the health at the center of the tile
-      - define health_display_loc <[center]>
+      - define health_display_loc <[center].flag[build.center].center.above[0.3]>
     - else:
       # - for natural structures:
       #server flag
@@ -84,9 +84,7 @@ fort_pic_handler:
       #- define max_health  <server.flag[fort.structure.<[struct_name]>.health]>
       - define max_health   <script[nimnite_config].data_key[structures.<[struct_name]>.health]>
 
-      #-this is still susceptible to change!
-      #show the health in front of the block destroyed?
-      - define health_display_loc <[block]>
+      - define health_display_loc <[center].with_y[<[center].flag[build.structure].min.y.sub[1.5]>]>
 
     - define new_health <[hp].sub[<[damage]>]>
 
@@ -447,30 +445,26 @@ fort_pic_handler:
 
 
   display_build_health:
-    - define yaw <map[North=0;South=180;West=-90;East=90].get[<player.location.yaw.simple>]>
+    #- define yaw <map[North=0;South=180;West=-90;East=90].get[<player.location.yaw.simple>]>
 
-    - define loc     <[data].get[loc].center.below[0.1].with_yaw[<[yaw]>].forward_flat>
+    - define loc     <[data].get[loc]>
     - define hp      <[data].get[health]>
     - define max_hp  <[data].get[max_health]>
-
-    #null fallback in case it's a wood structure
-    - if <[data].get[loc].flag[build.center].flag[build.type]||null> == floor:
-      - define loc <[loc].above>
 
     - if <player.has_flag[fort.build_health]> && <player.flag[fort.build_health].location> == <[loc]>:
       - define health_display <player.flag[fort.build_health]>
     - else:
-      - spawn <entity[text_display].with[pivot=center]> <[loc]> save:health_display
+      - spawn <entity[text_display].with[pivot=center;background_color=transparent;see_through=true;scale=0.7,0.7,0.7;translation=0,-0.35,0]> <[loc]> save:health_display
       - define health_display <entry[health_display].spawned_entity>
       - adjust <[health_display]> hide_from_players
       - adjust <player> show_entity:<[health_display]>
+    - flag player fort.build_health:<[health_display]> duration:5s
 
-    - flag player fort.build_health:<[health_display]> duration:3s
-
-    #-once custom fonts start working on text displays, replace this health bar system with the shader version
-    #- define neg <proc[spacing].context[-1]>
-    #- define health_text <&a><element[▋].repeat[<[hp].div[15].round_down>]><&8><element[▋].repeat[<[max_hp].sub[<[hp]>].div[15].round_down>]><&r><[hp]>｜<[max_hp]>
-    - define health_text "<&f><[hp].format_number> <&7>/ <&f><[max_hp].format_number>"
+    #health goes from 0 to 255
+    - define health_r <[hp].div[<[max_hp]>].mul[255].round_down>
+    - define bar_icon    <&chr[C005].font[icons].color[<[health_r]>,2,50]>
+    - define health_text "<[hp].format_number> <element[｜ <[max_hp].format_number>].color[209,255,196]>"
+    - define health_text <[bar_icon]><proc[spacing].context[-163]><[health_text]><proc[spacing].context[126]>
     - adjust <[health_display]> text:<[health_text]>
 
     - waituntil !<player.has_flag[fort.build_health]> || <player.flag[fort.build_health]> != <[health_display]> max:15s
