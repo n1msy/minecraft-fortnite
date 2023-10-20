@@ -255,6 +255,7 @@ fort_prop_bookshelf_small:
     material: wood
     health: 50
     translation: 0,0.797,0
+    barrier: true
     hitbox:
       height: 1.4
       width: 1.5
