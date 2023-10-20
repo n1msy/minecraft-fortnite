@@ -160,12 +160,13 @@ fort_storm_handler:
       - define next_center   <[start_center].forward[<[center_increment].mul[<[value]>]>].round>
       - define next_diameter <[start_diameter].add[<[diameter_increment].mul[<[value]>]>].round>
 
-      - define circle_radius <[next_diameter].div[2]>
-      #- define storm_circle <[next_center].points_around_y[radius=<[circle_radius]>;points=16].to_polygon.with_y_min[0].with_y_max[300]>
-      - define storm_circle <[next_center].to_ellipsoid[<[circle_radius]>,10000,<[circle_radius]>]>
-      - note <[storm_circle]> as:fort_storm_circle
-
       - if <[value].mod[20]> == 0:
+        - define circle_radius <[next_diameter].div[2]>
+        #- define storm_circle <[next_center].points_around_y[radius=<[circle_radius]>;points=16].to_polygon.with_y_min[0].with_y_max[300]>
+        - define storm_circle <[next_center].to_ellipsoid[<[circle_radius]>,10000,<[circle_radius]>]>
+        - note <[storm_circle]> as:fort_storm_circle
+        #resize storm notable every second isntead of tick, to prevent further lag
+
         - define players            <server.online_players_flagged[!fort.spectating]>
         - define non_storm_players  <ellipsoid[fort_storm_circle].players.filter[has_flag[fort.spectating].not]>
         - define storm_players      <[players].exclude[<[non_storm_players]>]>
@@ -180,5 +181,8 @@ fort_storm_handler:
       - flag server fort.temp.storm.diameter:<[next_diameter]>
 
       - wait 1t
+    #set the notable to the next value, in case the last tick wasn't at mod[20] == 0
+    - define storm_circle <[end_center].to_ellipsoid[<[end_diameter].div[2]>,10000,<[end_diameter].div[2]>]>
+    - note <[storm_circle]> as:fort_storm_circle
 
     - flag server fort.temp.storm.animating:!
