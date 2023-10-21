@@ -190,17 +190,32 @@ minimap:
     # - circle
     - define full_circle_display <empty>
 
-    ##full map circle display temporarily disabled
-    #- if <[storm_diameter]> <= 1600:
-    #  - define actualX <[circle_x].sub[<[top_left_x]>]>
-    #  - define actualY <[circle_y].sub[<[top_left_z]>]>
-    #  - define r_ <[actualX].mod[256]>
-    #  - define g_ <[actualY].mod[256]>
-    #  #- narrate <[actualX].div[256].round_down>/<[actualY].div[256].round_down>
-    #  - define b_ <[storm_id].mul[16]>
-    #  #- narrate <[r_]>,<[g_]>,<[b_]>
-    #  - define full_circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
-    #  - define full_circle_display <&chr[E002].font[map].color[<[full_circle_color]>]>
+    ## - [ FULL CIRCLE ] - ##
+    - if <[next_storm_center].exists>:
+      # circle_x and circle_y is in worldspace
+      - define circle_x <[next_storm_center].x>
+      - define circle_y <[next_storm_center].z>
+      - define actualX <[circle_x].sub[<[top_left_x]>].div[2].round_down>
+      - define actualY <[circle_y].sub[<[top_left_z]>].div[2].round_down>
+      - define r_ <[actualX].mod[256]>
+      - define g_ <[actualY].mod[256]>
+      - define b_ <[storm_id].mul[16].add[<[actualY].div[256].round_down.mul[4]>].add[<[actualX].div[256].round_down>]>
+      - define full_circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
+      - define full_circle_display <&chr[E002].font[map].color[<[full_circle_color]>]>
+
+      ## - [ FULL PURPLE CIRCLE ] - ##
+      - define circle_x <[storm_center].x>
+      - define circle_y <[storm_center].z>
+      # storm_radius is in blocks
+      - define sr <[storm_radius].mul[2].round_down>
+      - define actualX <[circle_x].sub[<[top_left_x]>].div[2].round_down>
+      - define actualY <[circle_y].sub[<[top_left_z]>].div[2].round_down>
+      - define r_ <[actualX].mod[256]>
+      - define g_ <[actualY].mod[256]>
+      - define b_ <[sr].mod[16].mul[16].add[<[actualY].div[256].round_down.mul[4]>].add[<[actualX].div[256].round_down>]>
+      - define full_purple_circle_color   <color[<[r_]>,<[g_]>,<[b_]>]>
+      - define full_purple_circle_display <&chr[E004].font[map].color[<[full_purple_circle_color]>]>
+      - define offset <[sr].div[16].round_down>
 
     # - marker
     #for full map
@@ -227,5 +242,7 @@ minimap:
     - define socials "<[youtube_icon]> Nimsy <[twitch_icon]> FlimsyNimsy <[twitter_icon]> N1msy"
 
     #show storm timer info in tablist too?
-    - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><[map]>|<n><[socials]><n>
-    #<&chr[999].font[icons]><n.repeat[5]>
+    - if <[next_storm_center].exists>:
+      - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><proc[spacing].context[<[offset].mul[2].sub[2]>]><[full_purple_circle_display]><n><[map]><n>|<n><[socials]><n>
+    - else:
+      - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><[map]>|<n><[socials]><n>

@@ -34,7 +34,7 @@ fort_storm_handler:
     - adjust <player> stop_sound:minecraft:ambient.basalt_deltas.loop
     #- time player reset
     - weather player reset
-    #- cast SPEED remove
+    - cast SPEED remove
 
   enter_storm:
     - if <player.has_flag[fort.in_storm]>:
@@ -43,7 +43,7 @@ fort_storm_handler:
     - flag player fort.in_storm
     #remember: night vision plays a part in showing the purple sky
     - cast BLINDNESS duration:10t hide_particles no_ambient no_icon no_clear
-    #- cast SPEED amplifier:1 duration:infinite hide_particles no_icon no_ambient no_clear
+    - cast SPEED amplifier:1 duration:infinite hide_particles no_icon no_ambient no_clear
     - cast BLINDNESS duration:infinite hide_particles no_icon no_ambient no_clear
     - playsound <player> sound:BLOCK_BEACON_POWER_SELECT pitch:1.25 volume:0.5
     #- time player 13000
@@ -79,7 +79,7 @@ fort_storm_handler:
 
     ##
 
-    - define diameter 2150
+    - define diameter 2304
 
     #center is the world's spawn
     - define storm_center <world[nimnite_map].spawn_location.with_y[20]>
@@ -112,13 +112,15 @@ fort_storm_handler:
     #- define cur_radius <[current_diameter].div[2]>
     #should be around half
     - define cur_radius <[new_diameter]>
+    #making the radius a little smaller than current, so the (starting) circle can actually be at least half showing on the map
+    - define smaller_radius <[cur_radius].sub[150]>
 
     #this way the center won't be on the outskirts of the map or in the void
     - define valid_center False
     #- announce "[Storm Debug] Calculating next storm center..." to_console
     - while <[valid_center].not>:
-      - define x <util.random.int[-<[cur_radius]>].to[<[cur_radius]>]>
-      - define z <util.random.int[-<[cur_radius]>].to[<[cur_radius]>]>
+      - define x <util.random.int[-<[smaller_radius]>].to[<[smaller_radius]>]>
+      - define z <util.random.int[-<[smaller_radius]>].to[<[smaller_radius]>]>
       - define new_center <[current_center].add[<[x]>,0,<[z]>]>
       #since edge water levels are below 40
       #lowest y on land i think is like 20

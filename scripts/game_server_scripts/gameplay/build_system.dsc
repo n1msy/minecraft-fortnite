@@ -591,7 +591,10 @@ build_system_handler:
             - foreach next if:!<[tile].center.has_flag[build.center]>
 
 
-            - define center <[tile].center.flag[build.center]>
+            #returns null i think whenever players die and they place the build
+            - define center <[tile].center.flag[build.center]||null>
+            - if <[center]> == null:
+              - stop
 
             - foreach next if:<[center].chunk.is_loaded.not>
 
