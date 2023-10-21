@@ -90,10 +90,10 @@ fort_prop_handler:
     - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
 
     - define cmd           <[i].custom_model_data>
-    #- define scale         1.25,1.25,1.25
     - define scale         <[i].flag[scale]||1,1,1>
-    #- define translation   0,0,0
+    #- define scale         1,1,1
     - define translation   <[i].flag[translation]||0,0,0>
+    #- define translation   0,0,0
 
     - define model_loc <[loc]>
 
@@ -102,7 +102,7 @@ fort_prop_handler:
     - spawn ITEM_DISPLAY[item=<[item]>;scale=<[scale]>;left_rotation=<[left_rotation]>;translation=<[translation]>] <[model_loc]> save:prop
     - define prop_model <entry[prop].spawned_entity>
 
-    #- spawn INTERACTION[height=1;width=1.5] <[model_loc].below[0.5]> save:prop_hitbox
+    #- spawn INTERACTION[height=1.31;width=1.15] <[model_loc].below[0.5]> save:prop_hitbox
     - spawn INTERACTION[height=<[i].flag[hitbox.height]>;width=<[i].flag[hitbox.width]>] <[model_loc].below[0.5]> save:prop_hitbox
     - define prop_hb <entry[prop_hitbox].spawned_entity>
 
@@ -313,6 +313,11 @@ fort_prop_television:
   flags:
     material: wood
     health: 50
+    scale: 0.9,0.9,0.9
+    barrier: true
+    hitbox:
+      height: 1.31
+      width: 1.15
 
 fort_prop_refrigerator:
   type: item
@@ -370,6 +375,9 @@ fort_prop_couch:
   flags:
     material: wood
     health: 50
+    hitbox:
+      height: 1.6
+      width: 2.6
 
 fort_prop_bed:
   type: item
