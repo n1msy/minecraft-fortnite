@@ -184,6 +184,10 @@ fort_core_handler:
           - define +spacing <proc[spacing].context[113]>
           - define -spacing <proc[spacing].context[-141]>
 
+        - if !<[forming].exists>:
+          #-supply drops during grace period only? idk how it works...
+          - run fort_chest_handler.random_supply_drop
+
       - case storm_shrink:
         - define announce_icon <&chr[A005].font[icons]>
         - define text "STORM EYE SHRINKING"

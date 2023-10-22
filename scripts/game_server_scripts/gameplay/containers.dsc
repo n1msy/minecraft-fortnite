@@ -266,6 +266,30 @@ fort_chest_handler:
         - flag <[loc]> fort.ammo_box.text:<entry[ammo_box_text].spawned_entity>
       - flag <[loc]> fort.ammo_box.opened:!
 
+  random_supply_drop:
+    - define current_diameter <server.flag[fort.temp.storm.diameter]>
+    - define current_center   <server.flag[fort.temp.storm.center]>
+
+    #making the radius a little smaller than current
+    - define radius <[current_diameter].div[2].sub[<[current_diameter].div[7]>]>
+
+    #this way the loc won't be on the outskirts of the map or in the void
+    - define valid_spot False
+    - while <[valid_spot].not>:
+      - define x <util.random.int[-<[radius]>].to[<[radius]>]>
+      - define z <util.random.int[-<[radius]>].to[<[radius]>]>
+      - define new_spot <[current_center].add[<[x]>,0,<[z]>]>
+      - if <[new_spot].with_pitch[90].ray_trace.y||-1> > 15:
+        - define valid_spot True
+      - wait 1t
+
+    - wait 7s
+
+    - if !<[new_spot].chunk.is_loaded>:
+      - chunkload <[new_spot].chunk> duration:3m
+      - waituntil <[new_spot].chunk.is_loaded> rate:1s max:15s
+    - run fort_chest_handler.send_supply_drop def:<map[loc=<[new_spot]>]>
+
   send_supply_drop:
 
     - define drop_loc <[data].get[loc].above[2.9]>

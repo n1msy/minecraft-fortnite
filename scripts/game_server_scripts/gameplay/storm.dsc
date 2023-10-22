@@ -113,18 +113,19 @@ fort_storm_handler:
     #should be around half
     - define cur_radius <[new_diameter]>
     #making the radius a little smaller than current, so the (starting) circle can actually be at least half showing on the map
-    - define smaller_radius <[cur_radius].sub[150]>
+    - define smaller_radius <[cur_radius].sub[<[cur_radius].div[5]>]>
 
     #this way the center won't be on the outskirts of the map or in the void
     - define valid_center False
     #- announce "[Storm Debug] Calculating next storm center..." to_console
+    #what if it's an infinite while loop since there's no y value greater than 15?
     - while <[valid_center].not>:
       - define x <util.random.int[-<[smaller_radius]>].to[<[smaller_radius]>]>
       - define z <util.random.int[-<[smaller_radius]>].to[<[smaller_radius]>]>
       - define new_center <[current_center].add[<[x]>,0,<[z]>]>
       #since edge water levels are below 40
       #lowest y on land i think is like 20
-      #fallback is in case the center was somehow in the vid
+      #fallback is in case the center was somehow in the void
       - if <[new_center].with_pitch[90].ray_trace.y||-1> > 15:
         - define valid_center True
       - wait 1t
