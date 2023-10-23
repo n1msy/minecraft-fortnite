@@ -271,7 +271,8 @@ fort_chest_handler:
     - define current_center   <server.flag[fort.temp.storm.center]>
 
     #making the radius a little smaller than current
-    - define radius <[current_diameter].div[2].sub[<[current_diameter].div[7]>]>
+    #.round because getting random.int not .decimal
+    - define radius <[current_diameter].div[2].sub[<[current_diameter].div[7]>].round>
 
     #this way the loc won't be on the outskirts of the map or in the void
     - define valid_spot False

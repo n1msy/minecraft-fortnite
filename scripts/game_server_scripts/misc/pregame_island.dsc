@@ -109,6 +109,8 @@ pregame_island_handler:
     - give fort_pickaxe_default slot:1
     - adjust <player> item_slot:1
 
+    #in case they had shields from the last game
+    - adjust <player> armor_bonus:0
     #in case they had the storm blind fx
     - adjust <player> remove_effects
     #so all houses/builds aren't dark

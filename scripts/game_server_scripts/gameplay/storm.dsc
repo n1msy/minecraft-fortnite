@@ -113,7 +113,8 @@ fort_storm_handler:
     #should be around half
     - define cur_radius <[new_diameter]>
     #making the radius a little smaller than current, so the (starting) circle can actually be at least half showing on the map
-    - define smaller_radius <[cur_radius].sub[<[cur_radius].div[5]>]>
+    #.round because getting random.int not .decimal
+    - define smaller_radius <[cur_radius].sub[<[cur_radius].div[6]>].round>
 
     #this way the center won't be on the outskirts of the map or in the void
     - define valid_center False
