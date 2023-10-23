@@ -204,6 +204,7 @@ minimap:
       - define full_circle_display <&chr[E002].font[map].color[<[full_circle_color]>]>
 
       ## - [ FULL PURPLE CIRCLE ] - ##
+    - if <server.has_flag[fort.temp.storm.center]>:
       - define circle_x <[storm_center].x>
       - define circle_y <[storm_center].z>
       # storm_radius is in blocks

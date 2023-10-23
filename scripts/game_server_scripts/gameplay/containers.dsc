@@ -280,11 +280,12 @@ fort_chest_handler:
       - define x <util.random.int[-<[radius]>].to[<[radius]>]>
       - define z <util.random.int[-<[radius]>].to[<[radius]>]>
       - define new_spot <[current_center].add[<[x]>,0,<[z]>]>
-      - if <[new_spot].with_pitch[90].ray_trace.y||-1> > 15:
+      - if <[new_spot].above[200].with_pitch[90].ray_trace.y||-1> > 15:
         - define valid_spot True
       - wait 1t
 
-    - wait 7s
+    - define new_spot <[new_spot].above[200].with_pitch[90].ray_trace>
+    - wait 5s
 
     - if !<[new_spot].chunk.is_loaded>:
       - chunkload <[new_spot].chunk> duration:3m

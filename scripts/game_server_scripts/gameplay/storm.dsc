@@ -37,7 +37,7 @@ fort_storm_handler:
     - cast SPEED remove
 
   enter_storm:
-    - if <player.has_flag[fort.in_storm]>:
+    - if <player.has_flag[fort.in_storm]> || <player.has_flag[fort.spectating]>:
       - stop
 
     - flag player fort.in_storm
@@ -123,7 +123,7 @@ fort_storm_handler:
     - while <[valid_center].not>:
       - define x <util.random.int[-<[smaller_radius]>].to[<[smaller_radius]>]>
       - define z <util.random.int[-<[smaller_radius]>].to[<[smaller_radius]>]>
-      - define new_center <[current_center].add[<[x]>,0,<[z]>]>
+      - define new_center <[current_center].above[200].add[<[x]>,0,<[z]>]>
       #since edge water levels are below 40
       #lowest y on land i think is like 20
       #fallback is in case the center was somehow in the void

@@ -128,17 +128,31 @@ fort_death_handler:
 
     #spectating sometimes doesn't work
     - foreach <[spectators]> as:spectator:
+      #flagging this NOT in separate task, so the hud can update correctly
       - flag <[spectator]> fort.spectating:<[player_to_spectate]>
-      #turning them spectator so theyd be invis on teleport to player
-      - adjust <[spectator]> gamemode:spectator
-      #if they're too far away, they wont spectate properly
-      - teleport <[spectator]> <[player_to_spectate].location>
-      - adjust <[spectator]> spectator_target:<[player_to_spectate]>
-      - narrate "<&7>You are now spectating <element[<&l><[player_to_spectate].name>].color[<color[#ffb62e]>]>" targets:<[spectator]>
-      - narrate "<element[<&l><[spectator].name>].color[<color[#ffb62e]>]> <&7>is now spectating you" targets:<[player_to_spectate]>
+      #-running this in separate queue as delayed function, since spectator_target mech is a little wonky and id like to add a delay
+      - run fort_death_handler.spectate_target <map[spectator=<[spectator]>;target=<[player_to_spectate]>]>
 
     #update their hud so its correctly updated for spectating players too
     - run update_hud player:<[player_to_spectate]>
+
+  spectate_target:
+    - define spectator <[data].get[spectator]>
+    - define target    <[data].get[target]>
+
+    #turning them spectator so theyd be invis on teleport to player
+    - adjust <[spectator]> gamemode:spectator
+    #if they're too far away, they wont spectate properly
+    - teleport <[spectator]> <[target].location>
+    #delay a little
+    - wait 2t
+    #since it's delayed, JUST IN CASE the player_to_spectate dies within those 2t
+    #might have to check if the target is online and living too in case they leave after theyve won and there's no one else to spectate?
+    - if <[spectator].flag[fort.spectating]> != <[target]> || <[target].has_flag[fort.spectating]> || !<[target].is_online>:
+      - stop
+    - adjust <[spectator]> spectator_target:<[target]>
+    - narrate "<&7>You are now spectating <element[<&l><[target].name>].color[<color[#ffb62e]>]>" targets:<[spectator]>
+    - narrate "<element[<&l><[spectator].name>].color[<color[#ffb62e]>]> <&7>is now spectating you" targets:<[target]>
 
   ## - [ Killfeed ] - ##
   killfeed:
