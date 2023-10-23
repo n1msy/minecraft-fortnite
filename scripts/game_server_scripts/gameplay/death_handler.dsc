@@ -131,7 +131,7 @@ fort_death_handler:
       #flagging this NOT in separate task, so the hud can update correctly
       - flag <[spectator]> fort.spectating:<[player_to_spectate]>
       #-running this in separate queue as delayed function, since spectator_target mech is a little wonky and id like to add a delay
-      - run fort_death_handler.spectate_target <map[spectator=<[spectator]>;target=<[player_to_spectate]>]>
+      - run fort_death_handler.spectate_target def:<map[spectator=<[spectator]>;target=<[player_to_spectate]>]>
 
     #update their hud so its correctly updated for spectating players too
     - run update_hud player:<[player_to_spectate]>

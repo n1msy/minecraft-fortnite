@@ -79,7 +79,7 @@ fort_storm_handler:
 
     ##
 
-    - define diameter 2304
+    - define diameter 2350
 
     #center is the world's spawn
     - define storm_center <world[nimnite_map].spawn_location.with_y[20]>
@@ -109,12 +109,11 @@ fort_storm_handler:
     - define current_diameter <server.flag[fort.temp.storm.diameter]>
     - define current_center   <server.flag[fort.temp.storm.center]>
 
-    #- define cur_radius <[current_diameter].div[2]>
     #should be around half
-    - define cur_radius <[new_diameter]>
+    - define radius <[new_diameter].div[2]>
     #making the radius a little smaller than current, so the (starting) circle can actually be at least half showing on the map
     #.round because getting random.int not .decimal
-    - define smaller_radius <[cur_radius].sub[<[cur_radius].div[6]>].round>
+    - define smaller_radius <[radius].sub[<[radius].div[10]>].round>
 
     #this way the center won't be on the outskirts of the map or in the void
     - define valid_center False

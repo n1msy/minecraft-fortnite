@@ -269,10 +269,11 @@ fort_chest_handler:
   random_supply_drop:
     - define current_diameter <server.flag[fort.temp.storm.diameter]>
     - define current_center   <server.flag[fort.temp.storm.center]>
+    - define current_radius <[current_diameter].div[2]>
 
     #making the radius a little smaller than current
     #.round because getting random.int not .decimal
-    - define radius <[current_diameter].div[2].sub[<[current_diameter].div[7]>].round>
+    - define radius <[current_radius].sub[<[current_radius].div[10]>].round>
 
     #this way the loc won't be on the outskirts of the map or in the void
     - define valid_spot False
@@ -284,7 +285,7 @@ fort_chest_handler:
         - define valid_spot True
       - wait 1t
 
-    - define new_spot <[new_spot].above[200].with_pitch[90].ray_trace>
+    - define new_spot <[new_spot].above[200].with_pitch[90].ray_trace.with_pitch[0]>
     - wait 5s
 
     - if !<[new_spot].chunk.is_loaded>:
