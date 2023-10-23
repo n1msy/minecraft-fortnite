@@ -12,7 +12,7 @@ fort_lobby_handler:
     on player changes food level:
     - determine cancelled
 
-    on player hears sound key:entity.player.attack.nodamage:
+    on player hears sound key:entity.player.attack*:
     - determine cancelled
 
     on shutdown:
