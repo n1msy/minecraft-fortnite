@@ -505,8 +505,7 @@ build_system_handler:
 
     - define remove_blocks <[tile].blocks.filter[has_flag[build_existed].not]>
 
-    #null fallback in case of natural structures
-    - if <[center].flag[build.placed_by]||null> == WORLD && <[type]> != FLOOR:
+    - if <[center].flag[build.placed_by]> == WORLD && <[type]> != FLOOR:
       #this way, there's no little holes on the ground after breaking walls that are on the floor
       #- if <[type]> == floor:
       #  - define keep_blocks <[remove_blocks].filter[below.material.name.equals[air].not].filter[flag[build.center].equals[<[center]>].not.if_null[true]]>
@@ -527,7 +526,9 @@ build_system_handler:
         #should i check is_spawned, or just remove the attached prop flag from the tile?
         - foreach <[props].filter[is_spawned]> as:prop_hb:
           - run fort_prop_handler.break def:<map[prop_hb=<[prop_hb]>]>
-
+    ######## [ DISABLED CHAIN SYSTEM FOR BUILDINGS ] ############
+      - stop
+    ########
     - flag <[blocks]> build:!
     #not doing build DOT existed, since it'll mess up other checks
     - flag <[blocks].filter[has_flag[build_existed]]> build_existed:!
