@@ -126,12 +126,8 @@ fort_explosive_handler:
     - define structure_damage <[data].get[structure_damage]>
     - define grenade_loc      <[data].get[grenade_loc]>
 
-    - define nearby_tiles <[grenade_loc].find_blocks_flagged[build.center].within[<[radius]>].parse[flag[build.center].flag[build.structure]].deduplicate>
-    - foreach <[nearby_tiles]> as:tile:
-      #in case it was removed earlier
-      - if !<[tile].center.has_flag[build.center]>:
-        - foreach next
-      - define center <[tile].center.flag[build.center]>
+    - define nearby_centers <[grenade_loc].find_blocks_flagged[build.center].within[<[radius]>].parse[flag[build.center]].deduplicate>
+    - foreach <[nearby_centers]> as:center:
       - run build_system_handler.structure_damage def:<map[center=<[center]>;damage=<[structure_damage]>]>
 
     - define nearby_entities <[grenade_loc].find_entities.within[<[radius]>]>

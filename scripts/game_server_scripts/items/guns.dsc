@@ -555,6 +555,8 @@ fort_gun_handler:
       - define origin     <[eye_loc].forward[1.5]>
       #- define origin     <[origin].below[0.2]> if:<player.has_flag[fort.gun_scoped]>
 
+      #-use item displays and display entities?
+
       #- spawn <entity[item_display].with[item=<item[gold_nugget].with[custom_model_data=14]>;scale=1,1,1]> <[origin]> save:e
       - spawn <entity[armor_stand].with[equipment=<map.with[helmet].as[<item[gold_nugget].with[custom_model_data=14]>]>;gravity=false;collidable=false;invulnerable=true;visible=false]> <[origin].below[1.685]> save:e
       - define rocket <entry[e].spawned_entity>

@@ -470,6 +470,13 @@ build_system_handler:
     - foreach <[blocks]> as:b:
       - blockcrack <[b]> progress:0 players:<server.online_players>
       - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
+
+    #-natural structures break a bit differently
+    - if <[center].has_flag[build.natural]>:
+      - define struct_type <[center].flag[build.type]>
+      - inject fort_pic_handler.break_natural_structure
+      - stop
+
     - inject build_system_handler.break
 
   break:
@@ -489,7 +496,8 @@ build_system_handler:
 
     - define remove_blocks <[tile].blocks.filter[has_flag[build_existed].not]>
 
-    - if <[center].flag[build.placed_by]> == WORLD && <[type]> != FLOOR:
+    #null fallback in case of natural structures
+    - if <[center].flag[build.placed_by]||null> == WORLD && <[type]> != FLOOR:
       #this way, there's no little holes on the ground after breaking walls that are on the floor
       #- if <[type]> == floor:
       #  - define keep_blocks <[remove_blocks].filter[below.material.name.equals[air].not].filter[flag[build.center].equals[<[center]>].not.if_null[true]]>

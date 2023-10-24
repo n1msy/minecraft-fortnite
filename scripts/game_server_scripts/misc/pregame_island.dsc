@@ -34,15 +34,18 @@ pregame_island_handler:
     - announce "<&b>[Nimnite]<&r> Created world <&dq><&a>nimnite_map<&r><&dq> from <&dq><&e>nimnite_map_template<&r><&dq>" to_console
 
     - foreach <list[chests|ammo_boxes]> as:container_type:
-      - define containers <server.flag[fort.<[container_type]>]||<list[]>>
+      #-not sure if spawning entities/flagging locations in unloaded chunks works or not?
+      - define containers <world[nimnite_map].flag[fort.<[container_type]>]||<list[]>>
       - announce "<&b>[Nimnite]<&r> Filling all <&e><[container_type].replace[_].with[ ]><&r>..." to_console
 
+      #not really a need to fill the ammo boxes in advance, but eh? (it's not really being filled either, since it randomizes upon opening)
       - foreach <[containers]> as:loc:
+          #there's a bunch of stuff we can leave out in these task scripts, since a new map is being added anyways. but eh
         - inject fort_chest_handler.fill_<map[chests=chest;ammo_boxes=ammo_box].get[<[container_type]>]>
 
       - announce "<&b>[Nimnite]<&r> Done (<&a><[containers].size><&r> filled)" to_console
 
-    ##################SET FLOOR LOOT TOO
+    ########################SET FLOOR LOOT TOO
     - announce "<&b>[Nimnite]<&r> Setting all <&e>floor loot<&r>... <&c>Coming Soon." to_console
     #- announce "<&b>[Nimnite]<&r> Setting all <&e>floor loot<&r>..." to_console
     #- announce "<&b>[Nimnite]<&r> Done (<&a>0<&r>)" to_console
