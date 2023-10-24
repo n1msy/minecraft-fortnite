@@ -72,26 +72,21 @@ fort_pic_handler:
     - if <[center].has_flag[build.natural]> || <[center].flag[build.placed_by]||null> == WORLD:
       - run fort_pic_handler.harvest def:<map[type=<[mat_type]>]>
 
+    #create a proc for finding max health? (since used in like 3 different places)
     #i feel like there's a cleaner way for this in the config
     - if !<[center].has_flag[build.natural]>:
       - define max_health <script[nimnite_config].data_key[materials.<[mat_type]>.hp]>
-      #show the health at the center of the tile
-      - define health_display_loc <[center].flag[build.center].center.above[0.3]>
     - else:
       # - for natural structures:
-      #server flag
       - define struct_name <[center].flag[build.natural.name]>
-      #- define max_health  <server.flag[fort.structure.<[struct_name]>.health]>
       - define max_health   <script[nimnite_config].data_key[structures.<[struct_name]>.health]>
-
-      - define health_display_loc <[center].with_y[<[center].flag[build.structure].min.y.sub[1.5]>]>
 
     - define new_health <[hp].sub[<[damage]>]>
 
     - if <[new_health]> > 0:
       - flag <[center]> build.health:<[new_health]>
 
-      - run fort_pic_handler.display_build_health def:<map[loc=<[health_display_loc]>;health=<[new_health]>;max_health=<[max_health]>]>
+      - run fort_pic_handler.display_build_health def:<map[tile_center=<[center]>;health=<[new_health]>;max_health=<[max_health]>]>
 
       - define progress <element[10].sub[<[new_health].div[<[max_health]>].mul[10]>]>
       - foreach <[blocks].filter[has_flag[build.existed].not]> as:b:
@@ -447,15 +442,26 @@ fort_pic_handler:
   display_build_health:
     #- define yaw <map[North=0;South=180;West=-90;East=90].get[<player.location.yaw.simple>]>
 
-    - define loc     <[data].get[loc]>
-    - define hp      <[data].get[health]>
-    - define max_hp  <[data].get[max_health]>
+    - define tile_center <[data].get[tile_center]>
+    - define hp          <[data].get[health]>
+    - define max_hp     <[data].get[max_health]>
 
+    #-find health bar loc
+    #i feel like there's a cleaner way for this in the config
+    - if !<[tile_center].has_flag[build.natural]>:
+      #show the health at the center of the tile
+      - define loc <[tile_center].flag[build.center].center.above[0.3]>
+    - else:
+      # - for natural structures:
+      - define loc <[tile_center].with_y[<[tile_center].flag[build.structure].min.y.sub[1.5]>]>
+
+    #-only show 1 health bar at a time?
     - if <player.has_flag[fort.build_health]> && <player.flag[fort.build_health].location> == <[loc]>:
       - define health_display <player.flag[fort.build_health]>
     - else:
       - spawn <entity[text_display].with[pivot=center;background_color=transparent;see_through=true;scale=0.7,0.7,0.7;translation=0,-0.35,0]> <[loc]> save:health_display
       - define health_display <entry[health_display].spawned_entity>
+      #show it to all players, or just them?
       - adjust <[health_display]> hide_from_players
       - adjust <player> show_entity:<[health_display]>
     - flag player fort.build_health:<[health_display]> duration:5s

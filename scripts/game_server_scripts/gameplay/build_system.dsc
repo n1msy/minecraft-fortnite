@@ -457,10 +457,19 @@ build_system_handler:
     - define mat_type <[center].flag[build.material]>
     #filtering so connected blocks aren't affected
     - define blocks   <[center].flag[build.structure].blocks.filter[flag[build.center].equals[<[center]>]]>
-    - define max_health <script[nimnite_config].data_key[materials.<[mat_type]>.hp]>
+    - if !<[center].has_flag[build.natural]>:
+      - define max_health <script[nimnite_config].data_key[materials.<[mat_type]>.hp]>
+    #for natural structures
+    - else:
+      - define struct_name <[center].flag[build.natural.name]>
+      - define max_health   <script[nimnite_config].data_key[structures.<[struct_name]>.health]>
+
     - define new_health <[hp].sub[<[structure_damage]>]>
     - if <[new_health]> > 0:
       - flag <[center]> build.health:<[new_health]>
+
+      - run fort_pic_handler.display_build_health def:<map[tile_center=<[center]>;health=<[new_health]>;max_health=<[max_health]>]>
+
       - define progress <element[10].sub[<[new_health].div[<[max_health]>].mul[10]>]>
       - foreach <[blocks]> as:b:
         - blockcrack <[b]> progress:<[progress]> players:<server.online_players>
