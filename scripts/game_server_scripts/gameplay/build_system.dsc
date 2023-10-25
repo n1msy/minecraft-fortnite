@@ -545,37 +545,6 @@ build_system_handler:
     - define broken_tile        <[data].get[tile]>
     - define broken_tile_center <[data].get[center]>
 
-    # - [ *Baked* Tile Removal ] - #
-    ##- if <[broken_tile_center].has_flag[build.baked]>:
-    ##  - narrate yes
-      #should we bake the centers too?
-    ##  - define structure <[broken_tile_center].flag[build.baked.structure]>
-      #structure is a list of TILES
-    ##  - define roots     <[broken_tile_center].flag[build.baked.roots]>
-      #roots are TILES
-
-    ##  - if <[roots].contains[<[broken_tile]>]>:
-    ##    - define roots:<-:<[broken_tile]>
-
-    ##  - if <[roots].any>:
-    ##    - foreach <[structure].parse[center.flag[build.center]]> as:center:
-    ##      - flag <[center]> build.baked.roots:<[roots]>
-    ##    - stop
-
-    ##  ##check if there are any roots nearby (placed by players)
-    ##  - narrate BREAKING_WHOLE_STRUCTURE
-    ##  - foreach <[structure]> as:tile:
-    ##    - wait 3t
-    ##    - define blocks <[tile].blocks.filter[flag[build.center].equals[<[tile].center.flag[build.center]||null>]]>
-    ##    - define sound <[tile].center.material.block_sound_data.get[break_sound]>
-    ##    - foreach <[tile].blocks> as:b:
-    ##      - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
-    ##    - ~modifyblock <[tile].blocks> air
-    ##    - playsound <[tile].center> sound:<[sound]> pitch:0.8
-    ##    - flag <[blocks]> build:!
-
-    ##  - stop
-
     #get_surrounding_tiles gets all the tiles connected to the inputted tile
     - define branches           <proc[get_surrounding_tiles].context[<[broken_tile]>|<[broken_tile_center]>].exclude[<[broken_tile]>]>
 
@@ -608,12 +577,14 @@ build_system_handler:
             #if it doesn't, it's already removed
             - foreach next if:!<[tile].center.has_flag[build.center]>
 
-
             #returns null i think whenever players die and they place the build
             - define center <[tile].center.flag[build.center]||null>
             - if <[center]> == null:
               - stop
 
+            ######## [ DISABLED CHAIN SYSTEM FOR BUILDINGS ] ############
+            - foreach next if:<[tile].flag[build.placed_by].equals[WORLD]||false>
+            ########
             - foreach next if:<[center].chunk.is_loaded.not>
 
             - define type   <[center].flag[build.type]>

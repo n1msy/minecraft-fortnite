@@ -134,7 +134,7 @@ fort_commands:
       - narrate "<&a>Set chest at <&f><[loc].simple>"
     - case fill_chests fill_ammo_boxes:
       - define container_type <map[fill_chests=chests;fill_ammo_boxes=ammo_boxes].get[<context.args.first>]>
-      - define containers <server.flag[fort.<[container_type]>]||<list[]>>
+      - define containers <player.world.flag[fort.<[container_type]>]||<list[]>>
       - narrate "<&7>Filling all <[container_type].replace[_].with[ ]>..."
 
       - foreach <[containers]> as:loc:
