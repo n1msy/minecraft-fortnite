@@ -448,12 +448,15 @@ fort_pic_handler:
 
     #-find health bar loc
     #i feel like there's a cleaner way for this in the config
-    - if !<[tile_center].has_flag[build.natural]>:
-      #show the health at the center of the tile
-      - define loc <[tile_center].flag[build.center].center.above[0.3]>
-    - else:
-      # - for natural structures:
-      - define loc <[tile_center].with_y[<[tile_center].flag[build.structure].min.y.sub[1.5]>]>
+    #making this check in case it's a non-PROP
+    - define loc <[tile_center]>
+    - if <[tile_center].has_flag[build]>:
+      - if !<[tile_center].has_flag[build.natural]>:
+        #show the health at the center of the tile
+        - define loc <[tile_center].flag[build.center].center.above[0.3]>
+      - else:
+        # - for natural structures:
+        - define loc <[tile_center].with_y[<[tile_center].flag[build.structure].min.y.sub[1.5]>]>
 
     #-only show 1 health bar at a time?
     - if <player.has_flag[fort.build_health]> && <player.flag[fort.build_health].location> == <[loc]>:
