@@ -118,7 +118,14 @@ fort_prop_handler:
         - modifyblock <[barrier_loc]> barrier
         - flag <[barrier_loc]> fort.prop.hitbox:<[prop_hb]>
         - flag <[prop_hb]> fort.prop.barriers:->:<[barrier_loc]>
-
+      #barriers around the bed
+      - if <[i].script.name.after_last[_]> == bed:
+        - define hb_loc <[prop_hb].location>
+        - define around <list[<[hb_loc].left>|<[hb_loc].right>|<[hb_loc].forward_flat>|<[hb_loc].backward_flat>|<[hb_loc].forward_flat.left>|<[hb_loc].forward_flat.right>|<[hb_loc].backward_flat.left>|<[hb_loc].backward_flat.right>]>
+        - foreach <[around]> as:barrier_loc:
+          - modifyblock <[barrier_loc]> barrier
+          - flag <[barrier_loc]> fort.prop.hitbox:<[prop_hb]>
+          - flag <[prop_hb]> fort.prop.barriers:->:<[barrier_loc]>
     - flag <[model_loc]> fort.prop.hitbox:<[prop_hb]>
 
     - flag <[prop_hb]> fort.prop.loc:<[model_loc]>
@@ -287,6 +294,11 @@ fort_prop_closet:
   flags:
     material: wood
     health: 50
+    translation: 0,0.797,0
+    barrier: true
+    hitbox:
+      height: 2.4
+      width: 1.5
 
 fort_prop_red_chair:
   type: item
@@ -389,6 +401,11 @@ fort_prop_bed:
   flags:
     material: wood
     health: 120
+    barrier: true
+    hitbox:
+      #added .01 because barriers get in the way
+      height: 1.01
+      width: 3.01
 
 fort_prop_tires:
   type: item
@@ -405,3 +422,38 @@ fort_prop_tires:
     hitbox:
       height: 1
       width: 1.5
+
+#-custom barrier block system for open/closed shipments
+fort_prop_shipment_open:
+  type: item
+  material: gold_nugget
+  display name: Shipment
+  mechanisms:
+    custom_model_data: 36
+    hides: ALL
+  flags:
+    material: metal
+    health: 600
+    scale: 1.25,1.25,1.25
+    hitbox:
+      height: 1
+      width: 1.5
+
+fort_prop_shipment_closed:
+  type: item
+  material: gold_nugget
+  display name: Shipment
+  mechanisms:
+    custom_model_data: 36
+    hides: ALL
+  flags:
+    material: metal
+    health: 600
+    scale: 1.25,1.25,1.25
+    hitbox:
+      height: 1
+      width: 1.5
+
+##temp models to add:
+#-bed
+#-crates (an open, and unopened one) (not yet)
