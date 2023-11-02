@@ -1,13 +1,9 @@
 #TODO: clean up this entire thing; it's pretty unorganized and ugly
+#things to clean:
+#make a proc for determining the "stairs" variant of the block
+#editing/resetting the edit for pyramids is buggy
 
-##HOLD OFF ON PRE-BAKING UNTIL FURNTIRUE IS ADDED
-
-##future for baking system: make sure you can place builds on it (and that they break)
-#this is an attempt to significantly reduce lag by storing the data of the entire structure and its root data
-#instead of looking for it in a while loop
-
-#-is there a better way to bake these structures?
-
+#testing
 bake_structures:
   type: task
   debug: false
@@ -730,13 +726,13 @@ build_system_handler:
       - flag <[connecting_blocks]> build.center:<[c_tile_center]>
 
   place:
-    - define tile <[data].get[tile]>
-    - define center <[data].get[center]>
+    - define tile       <[data].get[tile]>
+    - define center     <[data].get[center]>
     - define build_type <[data].get[build_type]>
 
     - define is_editing <[data].get[is_editing]||false>
 
-    - define base_material <map[wood=oak;brick=brick;metal=cobblestone].get[<[data].get[material]>]>
+    - define base_material <map[wood=oak;brick=brick;metal=weathered_copper].get[<[data].get[material]>]>
 
     - choose <[build_type]>:
 
@@ -771,7 +767,9 @@ build_system_handler:
         - define set_blocks      <[set_blocks].exclude[<[existing_blocks]>]>
 
         - define direction <[center].yaw.simple>
-        - define material <[base_material]>_stairs[direction=<[direction]>]
+        - define material <[base_material]>_stairs
+        - define material weathered_cut_copper_stairs if:<[base_material].equals[weathered_copper]>
+        - define material <[material]>[direction=<[direction]>]
         - modifyblock <[set_blocks]> <[material]>
 
         #if they're stairs and they are going in the same direction, to keep the stairs "smooth", forget about adding connectors to them
@@ -783,7 +781,7 @@ build_system_handler:
 
         - define set_blocks      <[set_blocks].exclude[<[existing_blocks]>]>
 
-        - modifyblock <[set_blocks]> <map[oak=oak_planks;brick=bricks;cobblestone=cobblestone].get[<[base_material]>]>
+        - modifyblock <[set_blocks]> <map[oak=oak_planks;brick=bricks;weathered_copper=weathered_copper].get[<[base_material]>]>
 
       - case pyramid:
         - run place_pyramid def:<[center]>|<[base_material]>|<[is_editing]>
@@ -817,7 +815,7 @@ build_system_handler:
 
         - define set_blocks      <[set_blocks].exclude[<[existing_blocks]>]>
 
-        - modifyblock <[set_blocks]> <map[oak=oak_planks;brick=bricks;cobblestone=cobblestone].get[<[base_material]>]>
+        - modifyblock <[set_blocks]> <map[oak=oak_planks;brick=bricks;weathered_copper=weathered_copper].get[<[base_material]>]>
 
 get_existing_blocks:
   type: procedure
@@ -910,7 +908,8 @@ place_pyramid:
     - define center <[center].with_yaw[0].with_pitch[0]>
 
     - define stairs <[base_material]>_stairs
-    - define block <map[oak=oak_planks;brick=bricks;cobblestone=cobblestone].get[<[base_material]>]>
+    - define stairs weathered_cut_copper_stairs if:<[base_material].equals[weathered_copper]>
+    - define block <map[oak=oak_planks;brick=bricks;weathered_copper=weathered_copper].get[<[base_material]>]>
 
     - repeat 2:
       - define layer_center <[center].below[<[value]>]>
@@ -959,7 +958,9 @@ place_pyramid:
       - if <[center].material.name> != air && <[center].flag[build.placed_by]||null> == WORLD:
         - flag <[center]> build_existed
       - else:
-        - modifyblock <[center]> <[base_material]>_slab
+        - define slab_mat <[base_material]>_slab
+        - define slab_mat weathered_cut_copper_slab if:<[base_material].equals[weathered_copper]>
+        - modifyblock <[center]> <[slab_mat]>
 
 stair_blocks_gen:
   type: procedure
