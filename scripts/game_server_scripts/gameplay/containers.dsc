@@ -199,7 +199,7 @@ fort_chest_handler:
     # - [ Guns ] - #
     #im not so sure about the chance for the common guns?
     #right now, they use the same values of as the category
-    - define gun_categories <map[ar=43;shotgun=22;smg=14;pistol=11;sniper=10;rpg=5]>
+    - define gun_categories <map[rifle=43;shotgun=22;smg=14;pistol=11;sniper=10;rpg=5]>
     - while !<[gun_type].exists>:
       - define type <[gun_categories].keys.get[<[loop_index].mod[6].add[1]>]>
       - if <util.random_chance[<[gun_categories].get[<[type]>]>]>:
