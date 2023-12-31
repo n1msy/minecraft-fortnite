@@ -212,7 +212,6 @@ fort_death_handler:
     - announce <[death_message]>
 
   fx:
-  #-create the "on your knees" animation or no? because the player fades away anyways
     anim:
       - define loc <player.location>
       - run dmodels_spawn_model def.model_name:emotes def.location:<[loc].above[2.1]> def.yaw:<[loc].yaw.add[180]> save:result
@@ -265,7 +264,7 @@ fort_death_handler:
     squares:
       - define loc <[data].get[loc].above[0.3]>
       - define drone_Loc <[loc].above[2.3]>
-        #shadowed or no?
+      #shadowed or no?
 
       #the effect also looks really cool in first person (when doing it in the player's position)
       - repeat 30:

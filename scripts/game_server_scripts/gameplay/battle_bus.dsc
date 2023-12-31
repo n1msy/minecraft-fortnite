@@ -213,7 +213,7 @@ fort_bus_handler:
     - define seat_origin <[bus_start].below[1]>
     #<[bus_start].below[1]> (pre armor stand mounts)
 
-    - define drivers_seat_loc <[seat_origin].above.left[0.71].below[1.2].backward[0.1]>
+    - define drivers_seat_loc <[seat_origin].above[1.65].left[0.71].below[1.2].backward[0.1]>
     - spawn <entity[item_display].with[scale=0.1,0.1,0.1]> <[drivers_seat_loc]> save:drivers_seat
     - define drivers_seat <entry[drivers_seat].spawned_entity>
     - flag server fort.temp.bus.drivers_seat:<[drivers_seat]>
