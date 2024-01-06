@@ -22,9 +22,10 @@ fort_pic_handler:
     - determine cancelled
 
     #each swing is 50 hp, each crit is 100
-    on player breaks block with:fort_pickaxe*:
+    #on player breaks block with:fort_pickaxe*:
+    #this way it also cancels any block breaking that isn't breakable
+    on player breaks block:
     - determine passively cancelled
-    #do we need this check?
     - stop if:<player.item_in_hand.script.name.starts_with[fort_pickaxe].not||true>
 
     - define block <context.location>
@@ -109,6 +110,8 @@ fort_pic_handler:
       - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
 
     - if <[center].has_flag[build.natural]>:
+      #sometimes the center isn't included
+      - define blocks <[blocks].include[<[center]>]>
       - inject fort_pic_handler.break_natural_structure
       - stop
 
@@ -344,6 +347,8 @@ fort_pic_handler:
         - wait 1t
 
   break_natural_structure:
+    ##minor problem: sometimes parts of the leaves/tree stay because there was a mistake
+    #-in the "tree removing" system, where the center loc's flags weren't reset.
 
     #sorting by y for trees so it goes
     - define blocks <[blocks].sort_by_number[y]>
