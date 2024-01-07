@@ -106,6 +106,10 @@ fort_chest_handler:
   #required definitions: look_loc, container_type
 
   - define loc <[look_loc]>
+
+  - if <[loc].has_flag[fort.<[container_type]>.opened]>:
+    - stop
+
   - define text_display <[loc].flag[fort.<[container_type]>.text]>
   - define text         <[text_display].text>
   - define container    <[loc].flag[fort.<[container_type]>.model]>
@@ -225,6 +229,11 @@ fort_chest_handler:
     - flag <[loc]> fort.chest.loot.item:<[item_to_drop]>
     - flag <[loc]> fort.chest.loot.gun:<[gun_to_drop]>
 
+    - if <server.has_flag[fort.temp.startup]>:
+      - flag <[loc]> fort.chest.opened:!
+      - run fort_chest_handler.chest_fx def:<map[loc=<[loc]>]>
+      - stop
+
     - if <[loc].has_flag[fort.chest.opened]>:
       - define text "<&7><&l>[<&e><&l>Sneak<&7><&l>] <&f><&l>Search"
       - if !<[loc].flag[fort.chest.model].is_spawned>:
@@ -250,6 +259,10 @@ fort_chest_handler:
 
     - flag <[loc]> fort.ammo_box.loot.ammo_type:<[ammo_to_drop]>
 
+
+    - if <server.has_flag[fort.temp.startup]>:
+      - flag <[loc]> fort.ammo_box.opened:!
+      - stop
 
     #this if runs only if the ammo box was already opened, otherwise there's no need for it to run
     - if <[loc].has_flag[fort.ammo_box.opened]>:
@@ -295,6 +308,8 @@ fort_chest_handler:
 
   send_supply_drop:
 
+    #-teleport the arrows and stuff to the drop area too, if its being intercepted by someone else?
+
     - define drop_loc <[data].get[loc].above[2.9]>
 
     - define size 2
@@ -323,8 +338,14 @@ fort_chest_handler:
 
     - spawn INTERACTION[height=6;width=2.5] <[start_loc].below[3]> save:hitbox
     - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=20]>;scale=<[size]>,<[size]>,<[size]>] <[start_loc]> save:supply_drop
+
     - define hb <entry[hitbox].spawned_entity>
     - define sp <entry[supply_drop].spawned_entity>
+
+    - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=20]>;scale=<[size]>,<[size]>,<[size]>] <[start_loc]> save:supply_drop
+
+    - spawn <entity[text_display].with[hide_from_players=true;pivot=center;background_color=transparent;see_through=true;scale=1.6,1.6,1.6;translation=0,-0.35,0]> <[start_loc].below[6]> save:health_display
+    - define health_display <entry[health_display].spawned_entity>
 
     - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=21]>;scale=3.25,3.25,3.25] <[drop_loc].below[1.25]> save:circle
     - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=22]>;scale=2.25,2.25,2.25] <[drop_loc].below[1.76]> save:arrows
@@ -332,6 +353,7 @@ fort_chest_handler:
     - define arrows <entry[arrows].spawned_entity>
 
     - flag <[hb]> fort.supply_drop.hitbox.model:<[sp]>
+    - flag <[hb]> fort.supply_drop.health_bar:<[health_display]>
     - flag <[hb]> fort.supply_drop.hitbox.health:150
     - flag <[hb]> fort.supply_drop.hitbox.loot.gun:<[gun_to_drop]>
 
@@ -350,9 +372,10 @@ fort_chest_handler:
     - foreach <[points]> as:loc:
 
       - if !<[sp].is_spawned>:
-        - remove <[hb]>     if:<[hb].is_spawned>
-        - remove <[circle]> if:<[circle].is_spawned>
-        - remove <[arrows]> if:<[arrows].is_spawned>
+        - remove <[hb]>             if:<[hb].is_spawned>
+        - remove <[circle]>         if:<[circle].is_spawned>
+        - remove <[arrows]>         if:<[arrows].is_spawned>
+        - remove <[health_display]> if:<[health_display].is_spawned>
         - stop
 
       - if <[loop_index].mod[20]> == 0:
@@ -363,6 +386,7 @@ fort_chest_handler:
         - run fort_chest_handler.supply_drop_smoke_fx def:<map[loc=<[drop_loc]>]>
 
       - teleport <[hb]> <[loc].below[3]>
+      - teleport <[health_display]> <[loc].below[3.5]>
       - adjust <[sp]> interpolation_start:0
       - adjust <[sp]> translation:<[loc].sub[<[sp].location>]>
       - adjust <[sp]> interpolation_duration:1t
@@ -385,19 +409,28 @@ fort_chest_handler:
 
       #instantly take it down
       - if !<[hb].has_flag[fort.supply_drop.hitbox.health]>:
+        - define drop_loc <[hb].location.with_pitch[90].ray_trace.with_pitch[0].above[2.9]>
         - adjust <[sp]> interpolation_start:0
         - adjust <[sp]> translation:<[drop_loc].sub[<[sp].location>]>
         - adjust <[sp]> interpolation_duration:0
-        - teleport <[hb]> <[drop_loc].below[3]>
+        - teleport <[hb]> <[drop_loc].below[2.9]>
+        - foreach stop
+
+      #-if someone placed a build underneath it before the drop loc
+      #doing .above/.below just to visualise better
+      - if <[hb].location.below[0.15].material.name> != air:
+        - define drop_loc <[hb].location.above[3]>
         - foreach stop
 
       - wait 1t
 
     #so it can't be damaged anymore when landed
     - flag <[hb]> fort.supply_drop.hitbox.health:!
+    - flag <[hb]> fort.supply_drop.health_bar:!
 
-    - remove <[circle]> if:<[circle].is_spawned>
-    - remove <[arrows]> if:<[arrows].is_spawned>
+    - remove <[circle]>         if:<[circle].is_spawned>
+    - remove <[arrows]>         if:<[arrows].is_spawned>
+    - remove <[health_display]> if:<[health_display].is_spawned>
 
     - run fort_chest_handler.supply_drop_land_fx def:<map[loc=<[drop_loc]>]>
 
@@ -420,6 +453,87 @@ fort_chest_handler:
     - wait 1t
     - run fort_chest_handler.supply_drop_activate_sfx def:<map[loc=<[drop_loc]>;hitbox=<[hb]>]>
 
+    - while <[hb].is_spawned> && <[sp].is_spawned>:
+      #if the build broke underneath it, start moving the supply drop down again
+      - if <[hb].location.below[0.15].material.name> == air:
+        - run fort_chest_handler.supply_drop_fall def:<map[hb=<[hb]>]>
+        - stop
+      - wait 10t
+
+  supply_drop_fall:
+  #should you be able to knock it down again? ill say sure for now, but it'll reset health because i want it to
+  - define hb <[data].get[hb]>
+  - define sp <[hb].flag[fort.supply_drop.hitbox.model]>
+  - define drop_loc <[hb].location.with_pitch[90].ray_trace.with_pitch[0]>
+
+  #remove the text and put it back when it lands again
+  - remove <[hb].flag[fort.supply_drop.hitbox.text]> if:<[hb].flag[fort.supply_drop.hitbox.text].is_spawned>
+
+  - spawn <entity[text_display].with[hide_from_players=true;pivot=center;background_color=transparent;see_through=true;scale=1.6,1.6,1.6;translation=0,-0.35,0]> <[hb].location> save:health_display
+  - define health_display <entry[health_display].spawned_entity>
+
+  - flag <[hb]> fort.supply_drop.hitbox.health:150
+  - flag <[hb]> fort.supply_drop.health_bar:<[health_display]>
+
+  - adjust <[hb]> width:2.5
+  - adjust <[hb]> height:6
+
+  - define points <[hb].location.points_between[<[drop_loc]>].distance[0.1]>
+  #updating each tick so players can see it "animated" even out of render distance
+  - foreach <[points]> as:loc:
+
+    - if !<[sp].is_spawned>:
+      - remove <[hb]>             if:<[hb].is_spawned>
+      - remove <[health_display]> if:<[health_display].is_spawned>
+      - stop
+
+    - teleport <[hb]> <[loc].below[3]>
+    - teleport <[health_display]> <[loc].below[3.5]>
+    - adjust <[sp]> interpolation_start:0
+    - adjust <[sp]> translation:<[loc].sub[<[sp].location>]>
+    - adjust <[sp]> interpolation_duration:1t
+
+    #instantly take it down
+    - if !<[hb].has_flag[fort.supply_drop.hitbox.health]>:
+      - define drop_loc <[hb].location.with_pitch[90].ray_trace.with_pitch[0].above[2.9]>
+      - adjust <[sp]> interpolation_start:0
+      - adjust <[sp]> translation:<[drop_loc].sub[<[sp].location>]>
+      - adjust <[sp]> interpolation_duration:0
+      - teleport <[hb]> <[drop_loc].below[2.9]>
+      - foreach stop
+
+    #-if someone placed a build underneath it before the drop loc
+    #doing .above/.below just to visualise better
+    - if <[hb].location.below[0.15].material.name> != air:
+      - define drop_loc <[hb].location.above[3]>
+      - foreach stop
+
+    - wait 1t
+
+  - run fort_chest_handler.supply_drop_land_fx def:<map[loc=<[drop_loc]>]>
+  - playsound <[drop_loc]> sound:BLOCK_ANVIL_FALL pitch:0 volume:3
+  - playsound <[drop_loc]> sound:BLOCK_AMETHYST_BLOCK_FALL pitch:0.6 volume:3
+  - playsound <[drop_loc]> sound:BLOCK_BONE_BLOCK_STEP pitch:0.75 volume:3
+  - playsound <[drop_loc]> sound:BLOCK_NETHERITE_BLOCK_FALL pitch:0 volume:3.5
+
+  - remove <[health_display]>
+  - flag <[hb]> fort.supply_drop.hitbox.health:!
+  - flag <[hb]> fort.supply_drop.health_bar:!
+
+  - adjust <[hb]> width:1.75
+  - adjust <[hb]> height:1.5
+
+  - define text "<&7><&l>[<&e><&l>Sneak<&7><&l>] <&f><&l>Search"
+  - spawn TEXT_DISPLAY[text=<[text]>;pivot=center;scale=1,1,1;view_range=0.04;see_through=false] <[hb].location.above[2]> save:text
+  - flag <[hb]> fort.supply_drop.hitbox.text:<entry[text].spawned_entity>
+
+  - while <[hb].is_spawned> && <[sp].is_spawned>:
+    #if the build broke underneath it, start moving the supply drop down again
+    - if <[hb].location.below[0.15].material.name> == air:
+      - run fort_chest_handler.supply_drop_fall def:<map[hb=<[hb]>]>
+      - stop
+    - wait 10t
+
   supply_drop_activate_sfx:
     - define hb <[data].get[hitbox]>
     - define drop_loc <[data].get[loc]>
@@ -441,7 +555,11 @@ fort_chest_handler:
   #-used by "after player starts sneaking" event in guns.dsc
     - define hb <player.eye_location.ray_trace_target[range=2.4;ignore=<player>]>
 
-    - define text_display <[hb].flag[fort.supply_drop.hitbox.text]>
+    - define text_display <[hb].flag[fort.supply_drop.hitbox.text]||null>
+    #if text display doesn't exist, that means the supply drop hasnt landed yet most likely, so don't
+    #let players open it
+    - if <[text_display]> == null:
+      - stop
     - define text         <[text_display].text>
     - define model        <[hb].flag[fort.supply_drop.hitbox.model]>
     - define drop_loc     <[hb].location.above[0.5]>

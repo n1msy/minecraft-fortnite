@@ -37,6 +37,9 @@ fort_glider_handler:
     - if <player.has_flag[fort.using_glider.locked]>:
       - stop
 
+    - if <player.has_flag[fort.bus_jumped]>:
+      - stop
+
     - run fort_glider_handler.toggle_glider
 
     #only for deployment, since custom gliding logic prevents sprinting already
@@ -178,7 +181,7 @@ fort_glider_handler:
     - run build_toggle if:<[build_mode].exists>
 
     #waiting in case the fall event fires and players take damage
-    - wait 1t
+    - wait 10t
     - flag player fort.using_glider:!
 
   toggle_glider:

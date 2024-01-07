@@ -472,7 +472,7 @@ fort_gun_handler:
             - if <[body_part]> == Head:
               - define color <&e>
               - playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:1.5
-            - if <[target].armor_bonus||0> > 0:
+            - if <[target].armor_bonus||0> >= 0:
               - define color <&b>
             - adjust <[target]> no_damage_duration:0
             #multiple pellets uses slightly different logic for the damage_indicator, so you findout when you check if <[hit_targets]> exists
@@ -489,6 +489,17 @@ fort_gun_handler:
           - flag <[target]> fort.supply_drop.hitbox.health:-:<[damage]>
           - if <[target].flag[fort.supply_drop.hitbox.health]> <= 0:
             - flag <[target]> fort.supply_drop.hitbox.health:!
+
+          - define health_display <[target].flag[fort.supply_drop.health_bar]>
+          - if <[health_display].is_spawned>:
+            - define hp     <[target].flag[fort.supply_drop.hitbox.health]||0>
+            - define max_hp 150
+            - adjust <[health_display]> show_to_players
+            - define health_r <[hp].div[<[max_hp]>].mul[255].round_down>
+            - define bar_icon    <&chr[C005].font[icons].color[<[health_r]>,2,50]>
+            - define health_text "<[hp].format_number> <element[｜ <[max_hp].format_number>].color[209,255,196]>"
+            - define health_text <[bar_icon]><proc[spacing].context[-163]><[health_text]><proc[spacing].context[126]>
+            - adjust <[health_display]> text:<[health_text]>
 
           #-show damage indicator even if it's 0?
           - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round_down>;entity=<[target]>;color=<[color]>]>

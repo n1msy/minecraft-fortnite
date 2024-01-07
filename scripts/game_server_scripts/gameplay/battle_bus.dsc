@@ -22,6 +22,9 @@ fort_bus_handler:
     - flag player fort.on_bus:!
     - flag server fort.temp.bus.passengers:<-:<player>
 
+    #this way, the sneak event doesn't fire twice and the glider doesn't immediately deply
+    - flag player fort.bus_jumped duration:1s
+
     - teleport <player> <player.location.below[1.5]>
     - invisible reset
 

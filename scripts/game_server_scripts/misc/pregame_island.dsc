@@ -30,20 +30,33 @@ pregame_island_handler:
 
     - ~filecopy origin:../../../../nimnite_map_template destination:../../nimnite_map overwrite
     - ~createworld nimnite_map
+    - gamerule <world[nimnite_map]> randomTickSpeed 0
 
     - announce "<&b>[Nimnite]<&r> Created world <&dq><&a>nimnite_map<&r><&dq> from <&dq><&e>nimnite_map_template<&r><&dq>" to_console
 
+
+
+    #-get a check of all the
+    #-mention the time elapsed for when filling all the chests?
     - foreach <list[chests|ammo_boxes]> as:container_type:
-      #-not sure if spawning entities/flagging locations in unloaded chunks works or not?
       - define containers <world[nimnite_map].flag[fort.<[container_type]>]||<list[]>>
       - announce "<&b>[Nimnite]<&r> Filling all <&e><[container_type].replace[_].with[ ]><&r>..." to_console
 
       #not really a need to fill the ammo boxes in advance, but eh? (it's not really being filled either, since it randomizes upon opening)
       - foreach <[containers]> as:loc:
           #there's a bunch of stuff we can leave out in these task scripts, since a new map is being added anyways. but eh
+        - if !<[loc].chunk.is_loaded>:
+          - define chunk <[loc].chunk>
+          - chunkload <[chunk]>
+          #saving to unload the chunks after setup is complete
+          ##unload all the chunks?
+          - define loaded_chunks:->:<[chunk]>
         - inject fort_chest_handler.fill_<map[chests=chest;ammo_boxes=ammo_box].get[<[container_type]>]>
 
       - announce "<&b>[Nimnite]<&r> Done (<&a><[containers].size><&r> filled)" to_console
+
+   # - waituntil <[containers_to_fill].is_empty> rate:1s
+   # - chunkload remove <[loaded_chunks]>
 
     ########################SET FLOOR LOOT TOO
     - announce "<&b>[Nimnite]<&r> Setting all <&e>floor loot<&r>... <&c>Coming Soon." to_console
@@ -246,7 +259,16 @@ pregame_island_handler:
       #so you can't see anyone that's invisible
       - team name:<[name]> option:SEE_INVISIBLE status:NEVER
 
-
+    #stop everyone from emoting
+    - flag <[players]> fort.emote:!
+    - flag <[players]> fort.disable_emotes duration:1s
+    #prevent players from switching to build / cancel their build mode
+    - flag <[players]> fort.disable_build duration:1s
+    #do this, or just add a simple flag for builds?
+    - foreach <[players].filter[has_flag[build]]> as:p:
+      - run build_toggle player:<[p]>
+    #wait for emotes to stop, then send
+    - wait 5t
     - run fort_core_handler
 
   bus_removal:

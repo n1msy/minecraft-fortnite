@@ -18,6 +18,11 @@ fort_pic_handler:
   debug: false
   definitions: data
   events:
+
+    on player damages entity with:fort_pickaxe*:
+    #do 20 damage consistenly
+    - determine 2
+
     on player fort_pickaxe* takes damage:
     - determine cancelled
 
@@ -29,6 +34,18 @@ fort_pic_handler:
     - stop if:<player.item_in_hand.script.name.starts_with[fort_pickaxe].not||true>
 
     - define block <context.location>
+
+    - if <[block].material.name> == WHEAT:
+      - modifyblock <[block]> air
+      - run fort_pic_handler.harvest def:<map[type=WOOD;qty=<util.random.int[1].to[3]>]>
+
+    - if <[block].material.name> == RAIL:
+      - modifyblock <[block]> air
+      - run fort_pic_handler.harvest def:<map[type=METAL;qty=<util.random.int[1].to[4]>]>
+
+   # - else if <[block].material.name> == WHEAT:
+      #- modifyblock <[block]> air
+      #- run fort_pic_handler.harvest def:<map[type=<[mat_type]>]>
 
     - if !<[block].has_flag[build.center]>:
       - stop
@@ -137,8 +154,10 @@ fort_pic_handler:
 
     on player right clicks !air with:fort_pickaxe*:
     #so they can't strip logs
-    - stop if:<context.location.material.name.contains_text[wood].not>
+    - stop if:<context.location.material.name.contains_any_text[wood|trap].not>
+    - stop if:<context.location.material.name.contains_text[door]>
     - determine cancelled
+    - ratelimit <player> 1t
 
     #infinite durability
     on fort_pickaxe* takes damage:
@@ -382,10 +401,12 @@ fort_pic_handler:
 
   harvest:
   - define type <[data].get[type]>
+  #in case we want some custom qty too
+  - define qty  <[data].get[qty]||null>
   - define mult <script[nimnite_config].data_key[harvesting_multiplier]>
 
   #idk what the quantity number should be
-  - define qty <util.random.int[4].to[7].mul[<[mult]>]>
+  - define qty <util.random.int[4].to[7].mul[<[mult]>]> if:<[qty].equals[null]>
   - define total_qty <[qty]>
   - define loc <player.eye_location.forward[2].left[1]>
 

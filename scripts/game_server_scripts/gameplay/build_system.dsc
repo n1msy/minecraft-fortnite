@@ -522,12 +522,14 @@ build_system_handler:
         #should i check is_spawned, or just remove the attached prop flag from the tile?
         - foreach <[props].filter[is_spawned]> as:prop_hb:
           - run fort_prop_handler.break def:<map[prop_hb=<[prop_hb]>]>
+
+      - flag <[blocks]> build:!
+      #not doing build DOT existed, since it'll mess up other checks
+      - flag <[blocks].filter[has_flag[build_existed]]> build_existed:!
+
     ######## [ DISABLED CHAIN SYSTEM FOR BUILDINGS ] ############
       - stop
     ########
-    - flag <[blocks]> build:!
-    #not doing build DOT existed, since it'll mess up other checks
-    - flag <[blocks].filter[has_flag[build_existed]]> build_existed:!
 
     #order: first placed -> last placed
     - define priority_order <list[wall|floor|stair|pyramid]>
@@ -1075,7 +1077,8 @@ build_toggle:
 
       - else if <[type]> != null:
 
-        - if <player.eye_location.ray_trace[return=block;range=4.5;default=air].has_flag[build.center]>:
+        - define block_looking_at <player.eye_location.ray_trace[return=block;range=4.5;default=air]>
+        - if <[block_looking_at].has_flag[build.center]> && <[block_looking_at].flag[build.center].flag[build.placed_by]> == <player>:
           - define text "<[edit_txt]> <[mat_txt]>"
         - else:
           - define text "<[build_txt]> <[mat_txt]>"

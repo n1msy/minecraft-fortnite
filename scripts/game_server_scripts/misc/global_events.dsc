@@ -255,7 +255,7 @@ fort_global_handler:
       - stop
     - flag player fort.drop_menu:!
 
-    on *grass*|dead_bush|fern physics:
+    on *grass*|dead_bush|fern|wheat physics:
     - determine cancelled
 
     #on blocks physics adjacent:down:

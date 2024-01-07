@@ -25,10 +25,15 @@ fort_death_handler:
     - determine passively cancelled
     - define player_spectating <player.flag[fort.spectating]>
     #(second check in case the other player died and is spectating someone else now)
+    #this event fires multiple times for some reason, so third check is to make sure this event already fired
+    #and don't do it again
     - if !<[player_spectating].is_online> || <[player_spectating].has_flag[fort.spectating]>:
+      - stop
+    - if <player.has_flag[fort.left_match]>:
       - stop
     - narrate "<element[<&l><player.name>].color[<color[#ffb62e]>]> <&7>has stopped spectating you" targets:<[player_spectating]>
     - adjust <player> send_to:fort_lobby
+    - flag player fort.left_match
 
     on player damaged by VOID flagged:fort:
     - determine passively cancelled
