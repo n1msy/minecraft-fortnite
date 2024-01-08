@@ -214,7 +214,7 @@ fort_chest_handler:
     - define guns <util.scripts.filter[name.starts_with[gun_]].exclude[<script[gun_particle_origin]>].parse[name.as[item]].parse_tag[<[parse_value]>/<[rarity_priority].get[<[parse_value].flag[rarity]>]>].sort_by_number[after[/]].parse[before[/]].filter[flag[type].equals[<[gun_type]>]]>
     - foreach <[guns]> as:g:
       - define rarities <[g].flag[rarities].exclude[common]>
-        #excluding, since common is the default if none other pass
+      #excluding, since common is the default if none other pass
       - foreach <[rarities].keys> as:r:
         - if <util.random_chance[<[g].flag[rarities.<[r]>.chance]>]>:
           - define rarity <[r]>
@@ -229,12 +229,11 @@ fort_chest_handler:
     - flag <[loc]> fort.chest.loot.item:<[item_to_drop]>
     - flag <[loc]> fort.chest.loot.gun:<[gun_to_drop]>
 
+    #just to skip a few checks
     - if <server.has_flag[fort.temp.startup]>:
       - flag <[loc]> fort.chest.opened:!
       - run fort_chest_handler.chest_fx def:<map[loc=<[loc]>]>
-      - stop
-
-    - if <[loc].has_flag[fort.chest.opened]>:
+    - else if <[loc].has_flag[fort.chest.opened]>:
       - define text "<&7><&l>[<&e><&l>Sneak<&7><&l>] <&f><&l>Search"
       - if !<[loc].flag[fort.chest.model].is_spawned>:
         - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=15]>;scale=1.25,1.25,1.25;left_rotation=0,1,0,0] <[loc]> save:chest

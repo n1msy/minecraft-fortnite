@@ -35,13 +35,13 @@ pregame_island_handler:
     - announce "<&b>[Nimnite]<&r> Created world <&dq><&a>nimnite_map<&r><&dq> from <&dq><&e>nimnite_map_template<&r><&dq>" to_console
 
 
-
     #-get a check of all the
     #-mention the time elapsed for when filling all the chests?
     - foreach <list[chests|ammo_boxes]> as:container_type:
       - define containers <world[nimnite_map].flag[fort.<[container_type]>]||<list[]>>
       - announce "<&b>[Nimnite]<&r> Filling all <&e><[container_type].replace[_].with[ ]><&r>..." to_console
 
+      - define containers_filled 0
       #not really a need to fill the ammo boxes in advance, but eh? (it's not really being filled either, since it randomizes upon opening)
       - foreach <[containers]> as:loc:
           #there's a bunch of stuff we can leave out in these task scripts, since a new map is being added anyways. but eh
@@ -52,6 +52,9 @@ pregame_island_handler:
           ##unload all the chunks?
           - define loaded_chunks:->:<[chunk]>
         - inject fort_chest_handler.fill_<map[chests=chest;ammo_boxes=ammo_box].get[<[container_type]>]>
+
+        #- define containers_filled:++
+        #- announce "<&b>[Nimnite]<&r> [DEBUG] <&e><[containers_filled]><&f>/<&a><[containers].size> <&f><[container_type]> filled." to_console
 
       - announce "<&b>[Nimnite]<&r> Done (<&a><[containers].size><&r> filled)" to_console
 
@@ -270,6 +273,39 @@ pregame_island_handler:
     #wait for emotes to stop, then send
     - wait 5t
     - run fort_core_handler
+
+  set_floor_loot:
+  - define floor_loot_spots <world[nimnite_map].flag[fort.floor_loot_locations]||<list[]>>
+
+  - define weight           0
+  - define total_weight     0
+  - define rand             <util.random.decimal[0].to[1]>
+
+  - define none_item <item[air].with[flag=floor_weight:0.22]>
+
+  - define guns      <util.scripts.filter[name.starts_with[gun_]].exclude[<script[gun_particle_origin]>].filter[has_flag[floor_weight]]>
+  - define ammo      <util.scripts.filter[name.starts_with[ammo_]]>
+  - define mats      <list[<item[oak_log].with[flag=floor_weight:2.8]>|<item[bricks].with[flag=floor_weight:2.1]>|<item[iron_block].with[flag=floor_weight:0.98]>]>
+
+  #this list has to be *sorted*
+  - define weighted_items   <list[<[none_item]>].include[<list[]>]>
+
+  - foreach <[floor_loot_spots]> as:loc:
+
+    #
+    #-find the item to choose for floor loot
+    - foreach <[weighted_items]> as:item:
+      - define item_weight  <[item].flag[floor_weight]>
+      - define total_weight <[total_weight].add[<[item_weight]>]>
+
+      - if <[rand]> <= <[total_weight]>:
+        - define item x
+        - foreach stop
+
+    #- define -
+
+  - drop <[item]> <[loc].above[0.5]>
+
 
   bus_removal:
     - if <server.has_flag[fort.temp.bus.model]>:

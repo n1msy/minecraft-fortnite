@@ -971,6 +971,8 @@ ammo_light:
     hides: ALL
   flags:
     qty: 1
+    floor_weight: 4.32
+    floor_qty: 14
 
 ammo_medium:
   type: item
@@ -981,6 +983,8 @@ ammo_medium:
     hides: ALL
   flags:
     qty: 1
+    floor_weight: 4.32
+    floor_qty: 14
 
 ammo_heavy:
   type: item
@@ -993,6 +997,8 @@ ammo_heavy:
     qty: 1
     #how much it should drop by chests
     drop_quantity: 6
+    floor_weight: 2.16
+    floor_qty: 6
 
 ammo_shells:
   type: item
@@ -1004,6 +1010,8 @@ ammo_shells:
   flags:
     qty: 1
     drop_quantity: 6
+    floor_weight: 3.45
+    floor_qty: 4
 
 ammo_rockets:
   type: item
@@ -1015,6 +1023,8 @@ ammo_rockets:
   flags:
     qty: 1
     drop_quantity: 3
+    floor_weight: 0.43
+    floor_qty: 2
 
 
 gun_pump_shotgun:
@@ -1055,6 +1065,7 @@ gun_pump_shotgun:
         custom_model_data: 1
       uncommon:
         chance: 34
+        floor_weight: 5.5
         damage: 101
         structure_damage: 49
         reload_time: 4.8
@@ -1062,6 +1073,7 @@ gun_pump_shotgun:
       rare:
         chance: 8
         damage: 110
+        floor_weight: 1.83
         structure_damage: 50
         reload_time: 4.4
         custom_model_data: 1
@@ -1125,6 +1137,7 @@ gun_tactical_shotgun:
     rarities:
       common:
         chance: 22
+        floor_weight: 5.25
         damage: 77
         structure_damage: 50
         reload_time: 6.27
@@ -1132,11 +1145,13 @@ gun_tactical_shotgun:
       uncommon:
         chance: 34
         damage: 81
+        floor_weight: 1.44
         structure_damage: 52
         reload_time: 5.99
         custom_model_data: 23
       rare:
         chance: 8
+        floor_weight: 0.53
         damage: 85
         structure_damage: 55
         reload_time: 5.7
@@ -1203,27 +1218,32 @@ gun_assault_rifle:
     rarities:
       common:
         chance: 43
+        floor_weight: 3.24
         damage: 30
         reload_time: 2.7
         custom_model_data: 3
       uncommon:
         chance: 39
+        floor_weight: 1.62
         damage: 31
         reload_time: 2.6
         custom_model_data: 3
       rare:
         chance: 39
+        floor_weight: 0.65
         damage: 33
         reload_time: 2.5
         custom_model_data: 3
       epic:
         chance: 2
+        floor_weight: 0.24
         damage: 35
         reload_time: 2.4
         icon_chr: 2
         custom_model_data: 5
       legendary:
         chance: 0.5
+        floor_weight: 0.06
         damage: 36
         reload_time: 2.2
         icon_chr: 2
@@ -1270,27 +1290,32 @@ gun_burst_assault_rifle:
     rarities:
       common:
         chance: 43
+        floor_weight: 3.07
         damage: 27
         reload_time: 2.9
         custom_model_data: 26
       uncommon:
         chance: 39
+        floor_weight: 1.23
         damage: 29
         reload_time: 2.7
         custom_model_data: 26
       rare:
         chance: 39
+        floor_weight: 0.46
         damage: 30
         reload_time: 2.6
         custom_model_data: 26
       epic:
         chance: 2
+        floor_weight: 0.185
         damage: 32
         reload_time: 2.5
         icon_chr: 4
         custom_model_data: 28
       legendary:
         chance: 0.5
+        floor_weight: 0.06
         damage: 33
         reload_time: 2.3
         icon_chr: 4
@@ -1336,16 +1361,19 @@ gun_tactical_smg:
       #no common tac smgs
       uncommon:
         chance: 22
+        floor_weight: 3.8
         damage: 18
         reload_time: 2.2
         custom_model_data: 7
       rare:
         chance: 34
+        floor_weight: 1.5
         damage: 19
         reload_time: 2.1
         custom_model_data: 7
       epic:
         chance: 1.36
+        floor_weight: 0.35
         damage: 20
         reload_time: 2.0
         custom_model_data: 7
@@ -1398,26 +1426,31 @@ gun_smg:
     rarities:
       common:
         chance: 14
+        floor_weight: 3.455
         damage: 16
         reload_time: 2.31
         custom_model_data: 9
       uncommon:
         chance: 39.7
+        floor_weight: 1.15
         damage: 17
         reload_time: 2.2
         custom_model_data: 9
       rare:
         chance: 9.33
+        floor_weight: 0.39
         damage: 18
         reload_time: 2.1
         custom_model_data: 9
       epic:
         chance: 1.59
+        floor_weight: 0.2279
         damage: 19
         reload_time: 2.0
         custom_model_data: 9
       legendary:
         chance: 0.4
+        floor_weight: 0.0848
         damage: 20
         reload_time: 1.89
         custom_model_data: 9
@@ -1479,16 +1512,19 @@ gun_bolt_action_sniper_rifle:
         custom_model_data: 11
       rare:
         chance: 25.86
+        floor_weight: 0.4
         damage: 110
         reload_time: 3
         custom_model_data: 11
       epic:
         chance: 2.76
+        floor_weight: 0.12
         damage: 116
         reload_time: 2.5
         custom_model_data: 11
       legendary:
         chance: 0.69
+        floor_weight: 0.05
         damage: 121
         reload_time: 2.35
         custom_model_data: 11
@@ -1529,16 +1565,19 @@ gun_revolver:
     rarities:
       common:
         chance: 11
+        floor_weight: 5.78
         damage: 54
         reload_time: 2.2
         custom_model_data: 12
       uncommon:
         chance: 61.3
+        floor_weight: 1.44
         damage: 57
         reload_time: 2.1
         custom_model_data: 12
       rare:
         chance: 24.5
+        floor_weight: 0.64
         damage: 60
         reload_time: 2
         custom_model_data: 12
@@ -1593,11 +1632,13 @@ gun_pistol:
     rarities:
       common:
         chance: 11
+        floor_weight: 5.78
         damage: 24
         reload_time: 1.54
         custom_model_data: 16
       uncommon:
         chance: 61.3
+        floor_weight: 1.44
         damage: 25
         reload_time: 1.47
         custom_model_data: 16
