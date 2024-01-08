@@ -116,7 +116,7 @@ fort_glider_handler:
 
         #- teleport <[gliding_model]> <[loc].above[2]>
 
-        - define velocity <[eye_loc].forward[1].sub[<[eye_loc]>].div[2].with_y[-0.25]>
+        - define velocity <[eye_loc].forward[1].sub[<[eye_loc]>].div[3].with_y[-0.25]>
         - adjust <player> velocity:<[velocity]>
 
         #how long they've been using the glider for (only used for sound effect currently)
