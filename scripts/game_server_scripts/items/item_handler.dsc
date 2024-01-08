@@ -13,7 +13,7 @@ fort_item_handler:
     - if <context.entity.has_flag[text_display]> && <context.entity.flag[text_display].is_spawned>:
       - remove <context.entity.flag[text_display]>
 
-    on gun_*|ammo_*|fort_item_* despawns:
+    on gun_*|ammo_*|fort_item_*|oak_log|bricks|iron_block despawns:
     - determine cancelled
 
     after player drops fort_item_*:
