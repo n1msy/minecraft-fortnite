@@ -154,8 +154,8 @@ fort_pic_handler:
 
     on player right clicks !air with:fort_pickaxe*:
     #so they can't strip logs
-    - stop if:<context.location.material.name.contains_any_text[wood|trap].not>
-    - stop if:<context.location.material.name.contains_text[door]>
+    - stop if:<context.location.material.name.contains_any_text[wood|trap].not||false>
+    - stop if:<context.location.material.name.contains_text[door]||false>
     - determine cancelled
     - ratelimit <player> 1t
 

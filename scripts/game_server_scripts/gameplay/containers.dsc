@@ -170,105 +170,8 @@ fort_chest_handler:
         - playsound <[loc]> sound:BLOCK_AMETHYST_BLOCK_CHIME pitch:1.5 volume:0.56
       - playeffect at:<[gold_shine].random[15]> effect:DUST_COLOR_TRANSITION offset:0 quantity:1 special_data:1|<color[#ffc02e]>|<color[#fff703]>
       - wait 4t
-
-  fill_chest:
-    #- handled in "commands.dsc"
-
-    #required definitions:
-    # - <[loc]> - #
-
-    #removing definitions since they're re-used for each chest
-    - define item_to_drop:!
-    - define gun_type:!
-    - define gun_to_drop:!
-    - define rarity:!
-
-    ## - [ Item Drops ] - ##
-    - define rarity_priority <map[common=1;uncommon=2;rare=3;epic=4;legendary=5]>
-    # - [ Materials ] - #
-    - define mat_to_drop <list[wood|brick|metal].random>
-
-    # - [ Items ] - #
-    #try to find out the same system as guns with the subtypes?
-    - define items <util.scripts.filter[name.starts_with[fort_item_]].exclude[<script[fort_item_handler]>].parse[name.as[item]].parse_tag[<[parse_value]>/<[rarity_priority].get[<[parse_value].flag[rarity]>]>].sort_by_number[after[/]].parse[before[/]]>
-    - while !<[item_to_drop].exists>:
-      - foreach <[items]> as:i:
-        - if <util.random_chance[<[i].flag[chance]>]>:
-          - define item_to_drop <[i]>
-          - foreach stop
-      - wait 1t
-
-    # - [ Guns ] - #
-    #im not so sure about the chance for the common guns?
-    #right now, they use the same values of as the category
-    - define gun_categories <map[rifle=43;shotgun=22;smg=14;pistol=11;sniper=10;rpg=5]>
-    - while !<[gun_type].exists>:
-      - define type <[gun_categories].keys.get[<[loop_index].mod[6].add[1]>]>
-      - if <util.random_chance[<[gun_categories].get[<[type]>]>]>:
-        - define gun_type <[type]>
-        - while stop
-      - wait 1t
-
-    - define guns <util.scripts.filter[name.starts_with[gun_]].exclude[<script[gun_particle_origin]>].parse[name.as[item]].parse_tag[<[parse_value]>/<[rarity_priority].get[<[parse_value].flag[rarity]>]>].sort_by_number[after[/]].parse[before[/]].filter[flag[type].equals[<[gun_type]>]]>
-    - foreach <[guns]> as:g:
-      - define rarities <[g].flag[rarities].exclude[common]>
-      #excluding, since common is the default if none other pass
-      - foreach <[rarities].keys> as:r:
-        - if <util.random_chance[<[g].flag[rarities.<[r]>.chance]>]>:
-          - define rarity <[r]>
-          - foreach stop
-      - if <[rarity].exists>:
-        - define gun_to_drop <[g].with[flag=rarity:<[rarity]>]>
-        - foreach stop
-    #default rarity is already the lowest
-    - define gun_to_drop  <[guns].first> if:!<[gun_to_drop].exists>
-
-    - flag <[loc]> fort.chest.loot.mat:<[mat_to_drop]>
-    - flag <[loc]> fort.chest.loot.item:<[item_to_drop]>
-    - flag <[loc]> fort.chest.loot.gun:<[gun_to_drop]>
-
-    #just to skip a few checks
-    - if <[loc].has_flag[fort.chest.opened]>:
-      #- announce "<&b>[Nimnite]<&r> [DEBUG] <&f>Filling chest @ <[loc].simple>..." to_console
-      - define text "<&7><&l>[<&e><&l>Sneak<&7><&l>] <&f><&l>Search"
-      - if !<[loc].flag[fort.chest.model].is_spawned>:
-        - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=15]>;scale=1.25,1.25,1.25;left_rotation=0,1,0,0] <[loc]> save:chest
-        - flag <[loc]> fort.chest.model:<entry[chest].spawned_entity>
-      - else:
-        - adjust <[loc].flag[fort.chest.model]> item:<item[gold_nugget].with[custom_model_data=15]>
-      - if !<[loc].flag[fort.chest.text].is_spawned>:
-        - spawn TEXT_DISPLAY[text=<[text]>;pivot=center;scale=1,1,1;view_range=0.035;see_through=true] <[loc].above[0.75]> save:chest_text
-        - flag <[loc]> fort.chest.text:<entry[chest_text].spawned_entity>
-      - flag <[loc]> fort.chest.opened:!
-      - run fort_chest_handler.chest_fx def:<map[loc=<[loc]>]>
-
-  fill_ammo_box:
-    #- handled in "commands.dsc"
-
-    #required definitions:
-    # - <[loc]> - #
-
-    #removing definitions since they're re-used for each ammo box
-    - define ammo_to_drop:!
-    - define ammo_to_drop <list[light|medium|heavy|shells|rockets].random>
-
-    - flag <[loc]> fort.ammo_box.loot.ammo_type:<[ammo_to_drop]>
-
-
-    - if <[loc].has_flag[fort.ammo_box.opened]>:
-    #this if runs only if the ammo box was already opened, otherwise there's no need for it to run
-      - define text "<&7><&l>[<&e><&l>Sneak<&7><&l>] <&f><&l>Search"
-      #in case the original model somehow despawned, otherwise just close it again (since its being filled)
-      - if !<[loc].flag[fort.ammo_box.model].is_spawned>:
-        - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=17]>;scale=1.25,1.25,1.25;left_rotation=0,1,0,0] <[loc]> save:ammo_box
-        - flag <[loc]> fort.ammo_box.model:<entry[ammo_box].spawned_entity>
-      - else:
-        - adjust <[loc].flag[fort.ammo_box.model]> item:<item[gold_nugget].with[custom_model_data=17]>
-
-      - if !<[loc].flag[fort.ammo_box.text].is_spawned>:
-        - spawn TEXT_DISPLAY[text=<[text]>;pivot=center;scale=1,1,1;view_range=0.035;see_through=true] <[loc].above[0.75]> save:ammo_box_text
-        - flag <[loc]> fort.ammo_box.text:<entry[ammo_box_text].spawned_entity>
-      - flag <[loc]> fort.ammo_box.opened:!
+    - if <server.has_flag[fort.temp.startup]>:
+      - announce "<&b>[Nimnite] <&f>DEBUG: Chest effects stopped @ <[loc]>" to_console
 
   random_supply_drop:
     - define current_diameter <server.flag[fort.temp.storm.diameter]>
@@ -641,3 +544,107 @@ fort_chest_handler:
 
     - modifyblock <[loc]> air
     - flag <[loc]> fort:!
+
+fort_fill_container:
+  type: task
+  debug: false
+  script:
+    - narrate yes
+  chest:
+    #- handled in "commands.dsc"
+
+    #required definitions:
+    # - <[loc]> - #
+
+    #removing definitions since they're re-used for each chest
+    - define item_to_drop:!
+    - define gun_type:!
+    - define gun_to_drop:!
+    - define rarity:!
+
+    ## - [ Item Drops ] - ##
+    - define rarity_priority <map[common=1;uncommon=2;rare=3;epic=4;legendary=5]>
+    # - [ Materials ] - #
+    - define mat_to_drop <list[wood|brick|metal].random>
+
+    # - [ Items ] - #
+    #try to find out the same system as guns with the subtypes?
+    - define items <util.scripts.filter[name.starts_with[fort_item_]].exclude[<script[fort_item_handler]>].parse[name.as[item]].parse_tag[<[parse_value]>/<[rarity_priority].get[<[parse_value].flag[rarity]>]>].sort_by_number[after[/]].parse[before[/]]>
+    - while !<[item_to_drop].exists>:
+      - foreach <[items]> as:i:
+        - if <util.random_chance[<[i].flag[chance]>]>:
+          - define item_to_drop <[i]>
+          - foreach stop
+      - wait 1t
+
+    # - [ Guns ] - #
+    #im not so sure about the chance for the common guns?
+    #right now, they use the same values of as the category
+    - define gun_categories <map[rifle=43;shotgun=22;smg=14;pistol=11;sniper=10;rpg=5]>
+    - while !<[gun_type].exists>:
+      - define type <[gun_categories].keys.get[<[loop_index].mod[6].add[1]>]>
+      - if <util.random_chance[<[gun_categories].get[<[type]>]>]>:
+        - define gun_type <[type]>
+        - while stop
+      - wait 1t
+
+    - define guns <util.scripts.filter[name.starts_with[gun_]].exclude[<script[gun_particle_origin]>].parse[name.as[item]].parse_tag[<[parse_value]>/<[rarity_priority].get[<[parse_value].flag[rarity]>]>].sort_by_number[after[/]].parse[before[/]].filter[flag[type].equals[<[gun_type]>]]>
+    - foreach <[guns]> as:g:
+      - define rarities <[g].flag[rarities].exclude[common]>
+      #excluding, since common is the default if none other pass
+      - foreach <[rarities].keys> as:r:
+        - if <util.random_chance[<[g].flag[rarities.<[r]>.chance]>]>:
+          - define rarity <[r]>
+          - foreach stop
+      - if <[rarity].exists>:
+        - define gun_to_drop <[g].with[flag=rarity:<[rarity]>]>
+        - foreach stop
+    #default rarity is already the lowest
+    - define gun_to_drop  <[guns].first> if:!<[gun_to_drop].exists>
+
+    - flag <[loc]> fort.chest.loot.mat:<[mat_to_drop]>
+    - flag <[loc]> fort.chest.loot.item:<[item_to_drop]>
+    - flag <[loc]> fort.chest.loot.gun:<[gun_to_drop]>
+
+    #just to skip a few checks
+    - if <[loc].has_flag[fort.chest.opened]>:
+      #- announce "<&b>[Nimnite]<&r> [DEBUG] <&f>Filling chest @ <[loc].simple>..." to_console
+      - define text "<&7><&l>[<&e><&l>Sneak<&7><&l>] <&f><&l>Search"
+      - if !<[loc].flag[fort.chest.model].is_spawned>:
+        - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=15]>;scale=1.25,1.25,1.25;left_rotation=0,1,0,0] <[loc]> save:chest
+        - flag <[loc]> fort.chest.model:<entry[chest].spawned_entity>
+      - else:
+        - adjust <[loc].flag[fort.chest.model]> item:<item[gold_nugget].with[custom_model_data=15]>
+      - if !<[loc].flag[fort.chest.text].is_spawned>:
+        - spawn TEXT_DISPLAY[text=<[text]>;pivot=center;scale=1,1,1;view_range=0.035;see_through=true] <[loc].above[0.75]> save:chest_text
+        - flag <[loc]> fort.chest.text:<entry[chest_text].spawned_entity>
+      - flag <[loc]> fort.chest.opened:!
+      - run fort_chest_handler.chest_fx def:<map[loc=<[loc]>]>
+
+  ammo_box:
+    #- handled in "commands.dsc"
+
+    #required definitions:
+    # - <[loc]> - #
+
+    #removing definitions since they're re-used for each ammo box
+    - define ammo_to_drop:!
+    - define ammo_to_drop <list[light|medium|heavy|shells|rockets].random>
+
+    - flag <[loc]> fort.ammo_box.loot.ammo_type:<[ammo_to_drop]>
+
+
+    - if <[loc].has_flag[fort.ammo_box.opened]>:
+    #this if runs only if the ammo box was already opened, otherwise there's no need for it to run
+      - define text "<&7><&l>[<&e><&l>Sneak<&7><&l>] <&f><&l>Search"
+      #in case the original model somehow despawned, otherwise just close it again (since its being filled)
+      - if !<[loc].flag[fort.ammo_box.model].is_spawned>:
+        - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=17]>;scale=1.25,1.25,1.25;left_rotation=0,1,0,0] <[loc]> save:ammo_box
+        - flag <[loc]> fort.ammo_box.model:<entry[ammo_box].spawned_entity>
+      - else:
+        - adjust <[loc].flag[fort.ammo_box.model]> item:<item[gold_nugget].with[custom_model_data=17]>
+
+      - if !<[loc].flag[fort.ammo_box.text].is_spawned>:
+        - spawn TEXT_DISPLAY[text=<[text]>;pivot=center;scale=1,1,1;view_range=0.035;see_through=true] <[loc].above[0.75]> save:ammo_box_text
+        - flag <[loc]> fort.ammo_box.text:<entry[ammo_box_text].spawned_entity>
+      - flag <[loc]> fort.ammo_box.opened:!

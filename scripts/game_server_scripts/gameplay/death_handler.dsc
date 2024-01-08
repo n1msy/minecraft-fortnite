@@ -58,6 +58,7 @@ fort_death_handler:
 
     - run fort_death_handler.death def:<map[killer=<[killer]>]>
 
+    ##does kill count update in hud?
     #-Update kill count
     - if <[killer]> != null:
       #track *who* they kill?
