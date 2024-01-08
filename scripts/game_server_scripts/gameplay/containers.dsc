@@ -167,7 +167,7 @@ fort_chest_handler:
     - define gold_shine <[p_loc].left[0.5].points_between[<[p_loc].right[0.55]>].distance[0.1]>
     - while !<[loc].has_flag[fort.chest.opened]> && <[loc].has_flag[fort.chest]>:
       - if <[loop_index].mod[5]> == 0:
-        - playsound <[loc]> sound:BLOCK_AMETHYST_BLOCK_CHIME pitch:1.5 volume:0.7
+        - playsound <[loc]> sound:BLOCK_AMETHYST_BLOCK_CHIME pitch:1.5 volume:0.6
       - playeffect at:<[gold_shine].random[15]> effect:DUST_COLOR_TRANSITION offset:0 quantity:1 special_data:1|<color[#ffc02e]>|<color[#fff703]>
       - wait 4t
 
