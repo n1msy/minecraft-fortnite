@@ -333,8 +333,6 @@ fort_chest_handler:
     - define hb <entry[hitbox].spawned_entity>
     - define sp <entry[supply_drop].spawned_entity>
 
-    - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=20]>;scale=<[size]>,<[size]>,<[size]>] <[start_loc]> save:supply_drop
-
     - spawn <entity[text_display].with[hide_from_players=true;pivot=center;background_color=transparent;see_through=true;scale=1.6,1.6,1.6;translation=0,-0.35,0]> <[start_loc].below[6]> save:health_display
     - define health_display <entry[health_display].spawned_entity>
 
