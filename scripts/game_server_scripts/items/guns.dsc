@@ -971,8 +971,8 @@ ammo_light:
     hides: ALL
   flags:
     qty: 1
+    drop_quantity: 18
     floor_weight: 4.32
-    floor_qty: 14
 
 ammo_medium:
   type: item
@@ -983,8 +983,8 @@ ammo_medium:
     hides: ALL
   flags:
     qty: 1
+    drop_quantity: 10
     floor_weight: 4.32
-    floor_qty: 14
 
 ammo_heavy:
   type: item
@@ -998,7 +998,6 @@ ammo_heavy:
     #how much it should drop by chests
     drop_quantity: 6
     floor_weight: 2.16
-    floor_qty: 6
 
 ammo_shells:
   type: item
@@ -1009,9 +1008,8 @@ ammo_shells:
     hides: ALL
   flags:
     qty: 1
-    drop_quantity: 6
+    drop_quantity: 4
     floor_weight: 3.45
-    floor_qty: 4
 
 ammo_rockets:
   type: item
@@ -1022,9 +1020,8 @@ ammo_rockets:
     hides: ALL
   flags:
     qty: 1
-    drop_quantity: 3
+    drop_quantity: 2
     floor_weight: 0.43
-    floor_qty: 2
 
 
 gun_pump_shotgun:
@@ -1512,19 +1509,19 @@ gun_bolt_action_sniper_rifle:
         custom_model_data: 11
       rare:
         chance: 25.86
-        floor_weight: 0.4
+        floor_weight: 0.35
         damage: 110
         reload_time: 3
         custom_model_data: 11
       epic:
         chance: 2.76
-        floor_weight: 0.12
+        floor_weight: 0.1
         damage: 116
         reload_time: 2.5
         custom_model_data: 11
       legendary:
         chance: 0.69
-        floor_weight: 0.05
+        floor_weight: 0.03
         damage: 121
         reload_time: 2.35
         custom_model_data: 11
@@ -1565,19 +1562,19 @@ gun_revolver:
     rarities:
       common:
         chance: 11
-        floor_weight: 5.78
+        floor_weight: 4
         damage: 54
         reload_time: 2.2
         custom_model_data: 12
       uncommon:
         chance: 61.3
-        floor_weight: 1.44
+        floor_weight: 0.9
         damage: 57
         reload_time: 2.1
         custom_model_data: 12
       rare:
         chance: 24.5
-        floor_weight: 0.64
+        floor_weight: 0.3
         damage: 60
         reload_time: 2
         custom_model_data: 12
@@ -1632,13 +1629,13 @@ gun_pistol:
     rarities:
       common:
         chance: 11
-        floor_weight: 5.78
+        floor_weight: 4
         damage: 24
         reload_time: 1.54
         custom_model_data: 16
       uncommon:
         chance: 61.3
-        floor_weight: 1.44
+        floor_weight: 1.2
         damage: 25
         reload_time: 1.47
         custom_model_data: 16

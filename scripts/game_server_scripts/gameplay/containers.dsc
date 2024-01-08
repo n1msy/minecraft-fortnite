@@ -144,9 +144,7 @@ fort_chest_handler:
       - define item_qty  <[item].flag[drop_quantity]>
       - define gun       <[loc].flag[fort.chest.loot.gun]>
       - define ammo_type <[gun].flag[ammo_type]>
-      - define ammo_qty  <[gun].flag[mag_size]>
-      - if <item[ammo_<[ammo_type]>].has_flag[drop_quantity]>:
-        - define ammo_qty <item[ammo_<[ammo_type]>].flag[drop_quantity]>
+      - define ammo_qty <item[ammo_<[ammo_type]>].flag[drop_quantity]>
 
       - run fort_pic_handler.drop_mat def:<map[mat=<[mat]>;qty=30;loc=<[drop_loc]>]>
       - run fort_item_handler.drop_item def:<map[item=<[item]>;qty=<[item_qty]>;loc=<[drop_loc]>]>
@@ -169,7 +167,7 @@ fort_chest_handler:
     - define gold_shine <[p_loc].left[0.5].points_between[<[p_loc].right[0.55]>].distance[0.1]>
     - while !<[loc].has_flag[fort.chest.opened]> && <[loc].has_flag[fort.chest]>:
       - if <[loop_index].mod[5]> == 0:
-        - playsound <[loc]> sound:BLOCK_AMETHYST_BLOCK_CHIME pitch:1.5 volume:0.5
+        - playsound <[loc]> sound:BLOCK_AMETHYST_BLOCK_CHIME pitch:1.5 volume:0.7
       - playeffect at:<[gold_shine].random[15]> effect:DUST_COLOR_TRANSITION offset:0 quantity:1 special_data:1|<color[#ffc02e]>|<color[#fff703]>
       - wait 4t
 
@@ -230,10 +228,8 @@ fort_chest_handler:
     - flag <[loc]> fort.chest.loot.gun:<[gun_to_drop]>
 
     #just to skip a few checks
-    - if <server.has_flag[fort.temp.startup]>:
-      - flag <[loc]> fort.chest.opened:!
-      - run fort_chest_handler.chest_fx def:<map[loc=<[loc]>]>
-    - else if <[loc].has_flag[fort.chest.opened]>:
+    - if <[loc].has_flag[fort.chest.opened]>:
+      #- announce "<&b>[Nimnite]<&r> [DEBUG] <&f>Filling chest @ <[loc].simple>..." to_console
       - define text "<&7><&l>[<&e><&l>Sneak<&7><&l>] <&f><&l>Search"
       - if !<[loc].flag[fort.chest.model].is_spawned>:
         - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=15]>;scale=1.25,1.25,1.25;left_rotation=0,1,0,0] <[loc]> save:chest
@@ -259,12 +255,8 @@ fort_chest_handler:
     - flag <[loc]> fort.ammo_box.loot.ammo_type:<[ammo_to_drop]>
 
 
-    - if <server.has_flag[fort.temp.startup]>:
-      - flag <[loc]> fort.ammo_box.opened:!
-      - stop
-
-    #this if runs only if the ammo box was already opened, otherwise there's no need for it to run
     - if <[loc].has_flag[fort.ammo_box.opened]>:
+    #this if runs only if the ammo box was already opened, otherwise there's no need for it to run
       - define text "<&7><&l>[<&e><&l>Sneak<&7><&l>] <&f><&l>Search"
       #in case the original model somehow despawned, otherwise just close it again (since its being filled)
       - if !<[loc].flag[fort.ammo_box.model].is_spawned>:
@@ -577,8 +569,7 @@ fort_chest_handler:
     - define gun <[hb].flag[fort.supply_drop.hitbox.loot.gun]>
     - define ammo_type <[gun].flag[ammo_type]>
     - define ammo_qty  <[gun].flag[mag_size]>
-    - if <item[ammo_<[ammo_type]>].has_flag[drop_quantity]>:
-      - define ammo_qty <item[ammo_<[ammo_type]>].flag[drop_quantity]>
+    - define ammo_qty <item[ammo_<[ammo_type]>].flag[drop_quantity]>
 
     - remove <[text_display]> if:<[text_display].is_spawned>
     - remove <[model]> if:<[model].is_spawned>

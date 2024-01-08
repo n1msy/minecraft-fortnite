@@ -137,6 +137,62 @@ nimnite_config:
       material: wood
       health: 200
 
+    #-Moisty Trees
+    moisty_1:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_2:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_3:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_4:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_5:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_6:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_7:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_8:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_9:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_tree:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_skinny_tree:
+      type: TREE
+      material: wood
+      health: 300
+
     #-Short Rocks
     short_rock_1:
       type: ROCK

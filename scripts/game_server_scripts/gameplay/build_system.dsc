@@ -499,7 +499,8 @@ build_system_handler:
     #so it only includes the parts of the tile that are its own (since each cuboid intersects by one)
     - define blocks <[tile].blocks.filter[flag[build.center].equals[<[center]>]]>
 
-    - define remove_blocks <[tile].blocks.filter[has_flag[build_existed].not]>
+    #so you don't break barrier blocks either (for chests and ammo boxes)
+    - define remove_blocks <[tile].blocks.filter[has_flag[build_existed].not].filter[material.name.equals[barrier].not]>
 
     - if <[center].flag[build.placed_by]> == WORLD && <[type]> != FLOOR:
       #this way, there's no little holes on the ground after breaking walls that are on the floor

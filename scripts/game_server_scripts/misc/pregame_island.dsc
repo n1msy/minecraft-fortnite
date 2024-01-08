@@ -52,8 +52,7 @@ pregame_island_handler:
           ##unload all the chunks?
           - define loaded_chunks:->:<[chunk]>
         - inject fort_chest_handler.fill_<map[chests=chest;ammo_boxes=ammo_box].get[<[container_type]>]>
-
-        #- define containers_filled:++
+        - define containers_filled:++
         #- announce "<&b>[Nimnite]<&r> [DEBUG] <&e><[containers_filled]><&f>/<&a><[containers].size> <&f><[container_type]> filled." to_console
 
       - announce "<&b>[Nimnite]<&r> Done (<&a><[containers].size><&r> filled)" to_console
@@ -61,10 +60,8 @@ pregame_island_handler:
    # - waituntil <[containers_to_fill].is_empty> rate:1s
    # - chunkload remove <[loaded_chunks]>
 
-    ########################SET FLOOR LOOT TOO
-    - announce "<&b>[Nimnite]<&r> Setting all <&e>floor loot<&r>... <&c>Coming Soon." to_console
-    #- announce "<&b>[Nimnite]<&r> Setting all <&e>floor loot<&r>..." to_console
-    #- announce "<&b>[Nimnite]<&r> Done (<&a>0<&r>)" to_console
+    - announce "<&b>[Nimnite]<&r> Setting all <&e>floor loot<&r>..." to_console
+    - inject pregame_island_handler.set_floor_loot
 
     #reset the notable (since its also being used after victory)
     - define ellipsoid <server.flag[fort.pregame.lobby_circle.loc].to_ellipsoid[1.3,3,1.3]>
@@ -277,35 +274,102 @@ pregame_island_handler:
   set_floor_loot:
   - define floor_loot_spots <world[nimnite_map].flag[fort.floor_loot_locations]||<list[]>>
 
-  - define weight           0
-  - define total_weight     0
-  - define rand             <util.random.decimal[0].to[1]>
+  - define loot_pool  <list[]>
 
-  - define none_item <item[air].with[flag=floor_weight:0.22]>
+  #divide percentages by 100 to get between 0 and 1
+  #-
+  - define total_guns <util.scripts.filter[name.starts_with[gun_]].exclude[<script[gun_particle_origin]>].parse[name.as[item]]>
+  - foreach <[total_guns]> as:gun:
+    #doing this in case some guns don't have certain rarities
+    - define rarities <[gun].flag[rarities].keys>
+    - foreach <[rarities]> as:rarity:
+      - if <[gun].has_flag[rarities.<[rarity]>.floor_weight]>:
+        - define weight    <[gun].flag[rarities.<[rarity]>.floor_weight].div[100]>
+        - define data      <map[item=<[gun]>;weight=<[weight]>]>
+        - define loot_pool <[loot_pool].include[<[data]>]>
 
-  - define guns      <util.scripts.filter[name.starts_with[gun_]].exclude[<script[gun_particle_origin]>].filter[has_flag[floor_weight]]>
-  - define ammo      <util.scripts.filter[name.starts_with[ammo_]]>
-  - define mats      <list[<item[oak_log].with[flag=floor_weight:2.8]>|<item[bricks].with[flag=floor_weight:2.1]>|<item[iron_block].with[flag=floor_weight:0.98]>]>
+  #maybe to make it more readable, just turn it into foreaches?
+  #-
+  - define items     <util.scripts.filter[name.starts_with[fort_item_]].exclude[<script[fort_item_handler]>].parse[name.as[item]]>
+  - foreach <[items]> as:i:
+    - if <[i].has_flag[floor_weight]>:
+      - define weight    <[i].flag[floor_weight].div[100]>
+      - define data      <map[item=<[i]>;weight=<[weight]>]>
+      - define loot_pool <[loot_pool].include[<[data]>]>
+  #-
+  - define ammo      <util.scripts.filter[name.starts_with[ammo_]].parse[name.as[item]]>
+  - foreach <[ammo]> as:am:
+    - define weight    <[am].flag[floor_weight].div[100]>
+    - define data      <map[item=<[am]>;weight=<[weight]>]>
+    - define loot_pool <[loot_pool].include[<[data]>]>
+  #-
+  - foreach <list[wood/2.8|brick/2.1|metal/0.98]> as:mat_data:
+    #input isn't as <item[]> for mats
+    - define item      <[mat_data].before[/]>
+    - define weight    <[mat_data].after[/].div[100]>
+    - define data      <map[item=<[item]>;weight=<[weight]>]>
+    - define loot_pool <[loot_pool].include[<[data]>]>
+  #-
+  - define total_weight 0
+  - foreach <[loot_pool].parse[get[weight]]> as:w:
+    - define total_weight:+:<[w]>
+
+  - define none_weight <element[1].sub[<[total_weight]>]>
+  - define none        <map[item=none;weight=<[none_weight]>]>
 
   #this list has to be *sorted*
-  - define weighted_items   <list[<[none_item]>].include[<list[]>]>
+  - define loot_pool <[loot_pool].include[<[none]>].sort_by_number[get[weight]].reverse>
 
   - foreach <[floor_loot_spots]> as:loc:
 
-    #
+    - define weight           0
+    - define total_weight     0
+    - define rand             <util.random.decimal[0].to[1]>
+
     #-find the item to choose for floor loot
-    - foreach <[weighted_items]> as:item:
-      - define item_weight  <[item].flag[floor_weight]>
+    - foreach <[loot_pool]> as:item_data:
+      - define item_weight  <[item_data].get[weight]>
       - define total_weight <[total_weight].add[<[item_weight]>]>
 
+      #if it passes the probability, drop the item
       - if <[rand]> <= <[total_weight]>:
-        - define item x
+        - define drop_item <[item_data].get[item]>
+        # - if [ none ]
+        - if <[drop_item]> == none:
+          - foreach stop
+        #
+        - define drop_loc  <[loc].above[0.5]>
+        - if !<[drop_loc].chunk.is_loaded>:
+          - define chunk <[loc].chunk>
+          - chunkload <[chunk]>
+
+        #i forgot we can't just use the drop command...
+        - define script_name <[drop_item].script.name||mat>
+        # - if : [ gun ]
+        - if <[script_name].starts_with[gun_]>:
+          - run fort_gun_handler.drop_gun def:<map[gun=<[drop_item]>;loc=<[drop_loc]>]>
+          #maybe there should be a more consistent way of specifying the item to be dropped?
+          - define ammo_type <[drop_item].flag[ammo_type]>
+          - define ammo_qty  <item[ammo_<[ammo_type]>].flag[drop_quantity]>
+          #should it be offset a little bit, or right on top of each other?
+          - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[ammo_qty]>;loc=<[drop_loc]>]>
+        # - if : [ ammo ]
+        - else if <[script_name].starts_with[ammo_]>:
+          #ugh feels unecessarily messy
+          - define ammo_type <[script_name].after[ammo_]>
+          - define ammo_qty  <[drop_item].flag[drop_quantity]>
+          - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[ammo_qty]>;loc=<[drop_loc]>]>
+        # - if [ item ]
+        - else if <[script_name].starts_with[fort_item_]>:
+          - define item_qty <[drop_item].flag[drop_quantity]||1>
+          - run fort_item_handler.drop_item def:<map[item=<[drop_item]>;qty=<[item_qty]>;loc=<[drop_loc]>]>
+        # - if [ mat ]
+        - else:
+          - run fort_pic_handler.drop_mat def:<map[mat=<[drop_item]>;qty=20;loc=<[drop_loc]>]>
         - foreach stop
 
-    #- define -
 
-  - drop <[item]> <[loc].above[0.5]>
-
+  - announce "<&b>[Nimnite]<&r> Done (<&a><[floor_loot_spots].size><&r> locations)" to_console
 
   bus_removal:
     - if <server.has_flag[fort.temp.bus.model]>:

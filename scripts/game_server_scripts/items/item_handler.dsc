@@ -115,7 +115,7 @@ fort_item_handler:
       - default:
         - define translation 0,0.75,0
 
-    - spawn <entity[text_display].with[text=<[text]>;pivot=center;scale=1,1,1;translation=<[translation]>]> <[drop].location> save:txt
+    - spawn <entity[text_display].with[text=<[text]>;pivot=center;scale=1,1,1;translation=<[translation]>;view_range=0.06]> <[drop].location> save:txt
     - define txt <entry[txt].spawned_entity>
     - mount <[txt]>|<[drop]>
 
