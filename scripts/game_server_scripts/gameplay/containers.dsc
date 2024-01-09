@@ -74,37 +74,6 @@ fort_chest_handler:
 
     - narrate "<&a>Set <[container_type].replace[_].with[ ]> at <&f><[loc].simple>"
 
-
-    on player breaks block location_flagged:fort.chest:
-    - define loc <context.location.center>
-    - remove <[loc].flag[fort.chest.model]> if:<[loc].flag[fort.chest.model].is_spawned>
-    - remove <[loc].flag[fort.chest.text]> if:<[loc].flag[fort.chest.text].is_spawned>
-
-    - if <[loc].has_flag[fort.chest.attached_center]>:
-      - flag <[loc].flag[fort.chest.attached_center]> build.attached_containers:<-:<[loc]>
-
-    - narrate "<&c>Removed chest at <&f><[loc].simple>"
-
-    - modifyblock <[loc]> air
-
-    - flag <[loc]> fort:!
-    - flag <[loc].world> fort.chests:<-:<[loc]>
-
-    on player breaks block location_flagged:fort.ammo_box:
-    - define loc <context.location.center>
-    - remove <[loc].flag[fort.ammo_box.model]> if:<[loc].flag[fort.ammo_box.model].is_spawned>
-    - remove <[loc].flag[fort.ammo_box.text]> if:<[loc].flag[fort.ammo_box.text].is_spawned>
-
-    - if <[loc].has_flag[fort.ammo_box.attached_center]>:
-      - flag <[loc].flag[fort.ammo_box.attached_center]> build.attached_containers:<-:<[loc]>
-
-    - narrate "<&c>Removed ammo box at <&f><[loc].simple>"
-
-    - modifyblock <[loc]> air
-
-    - flag <[loc]> fort:!
-    - flag <[loc].world> fort.ammo_boxes:<-:<[loc]>
-
   open:
   #-handled in "guns.dsc" event "after player starts sneaking"
   #required definitions: look_loc, container_type

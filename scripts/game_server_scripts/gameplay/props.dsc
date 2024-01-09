@@ -33,29 +33,6 @@ fort_prop_handler:
     - define prop_hb    <context.entity>
     - define prop_model <[prop_hb].flag[fort.prop.model]>
 
-    #-removing the props
-    - if <player.is_sneaking> && <player.is_op>:
-      - define loc        <[prop_hb].flag[fort.prop.loc]>
-      - define name       <[prop_hb].flag[fort.prop.name]>
-
-      - if <[prop_hb].has_flag[fort.prop.attached_center]>:
-        - flag <[prop_hb].flag[fort.prop.attached_center]> build.attached_containers:<-:<[prop_hb]>
-
-      - if <[prop_hb].has_flag[fort.prop.barriers]>:
-        - define barrier_locs <[prop_hb].flag[fort.prop.barriers]>
-        #side note: thank god builds flags start with build key instead of fort key, makes it much easier to remove the flag
-        - flag <[barrier_locs]> fort:!
-        - modifyblock <[barrier_locs]> air
-
-      - remove <[prop_model]>|<[prop_hb]>
-      - flag <player.world> fort.props:<-:<[loc]>
-      - narrate "<&c>Removed <[name].replace[_].with[<&sp>]> at <&f><[loc].simple>"
-      - stop
-
-    ##this is added for safety purposes
-    #just so no one accidentally hits the model and the flag data for its health is messed up
-    - if <bungee.server> == BUILD:
-      - stop
 
     - if <[prop_hb].flag[fort.prop.health]> == unbreakable:
       - run fort_prop_handler.damage_prop def:<map[prop_hb=<[prop_hb]>;damage=0]>

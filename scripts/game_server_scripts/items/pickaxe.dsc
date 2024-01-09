@@ -27,8 +27,8 @@ fort_pic_handler:
     - determine cancelled
 
     # - [ Weak point / Crit ] - #
-    on INTERACTION damaged flagged:fort.weak_point:
-
+    on INTERACTION damaged:
+    - stop if:<context.entity.has_flag[fort.weak_point].not>
     #-weak point check
     #two methods for weak point: method 1 make it directly *on* the block,
     #OR make it its own entity

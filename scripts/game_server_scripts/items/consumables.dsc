@@ -90,7 +90,7 @@ fort_consumable_handler:
     - choose <[name]>:
 
       - case bush:
-        - spawn <entity[item_display].with[item=<item[gold_nugget].with[custom_model_data=19]>;scale=1.2,1.2,1.2;translation=0,-0.75,0]> <player.location.with_pose[0,0].above> save:bush
+        - spawn <entity[item_display].with[item=<item[leather_helmet].with[custom_model_data=15]>;scale=1.2,1.2,1.2;translation=0,-0.75,0]> <player.location.with_pose[0,0].above> save:bush
         - define bush <entry[bush].spawned_entity>
         - mount <[bush]>|<player>
         - run fort_consumable_handler.use_bush def:<[bush]>
@@ -166,7 +166,7 @@ fort_consumable_handler:
 
 fort_item_bush:
   type: item
-  material: gold_nugget
+  material: leather_helmet
   display name: <&chr[1].font[item_name]><&f><&l><element[BUSH].font[item_name]>
   mechanisms:
     custom_model_data: 15
@@ -184,7 +184,7 @@ fort_item_bush:
 ## Heals
 fort_item_bandages:
   type: item
-  material: gold_nugget
+  material: leather_helmet
   display name: <&chr[1].font[item_name]><&f><&l><element[BANDAGES].font[item_name]>
   mechanisms:
     custom_model_data: 8
@@ -203,7 +203,7 @@ fort_item_bandages:
 
 fort_item_medkit:
   type: item
-  material: gold_nugget
+  material: leather_helmet
   display name: <&chr[1].font[item_name]><&f><&l><element[MED KIT].font[item_name]>
   mechanisms:
     custom_model_data: 9
@@ -220,7 +220,7 @@ fort_item_medkit:
 
 fort_item_small_shield_potion:
   type: item
-  material: gold_nugget
+  material: leather_helmet
   display name: <&chr[1].font[item_name]><&f><&l><element[SMALL SHIELD POTION].font[item_name]>
   mechanisms:
     custom_model_data: 11
@@ -238,7 +238,7 @@ fort_item_small_shield_potion:
 
 fort_item_shield_potion:
   type: item
-  material: gold_nugget
+  material: leather_helmet
   display name: <&chr[1].font[item_name]><&f><&l><element[SHIELD POTION].font[item_name]>
   mechanisms:
     custom_model_data: 12
