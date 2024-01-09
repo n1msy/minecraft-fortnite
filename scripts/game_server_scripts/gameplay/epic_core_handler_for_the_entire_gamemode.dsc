@@ -210,6 +210,11 @@ fort_core_handler:
         - define -spacing <proc[spacing].context[-89]>
 
     - repeat <[seconds]>:
+
+      - if <server.has_flag[fort.temp.pause_phase]>:
+        - announce "<&7><&o>Game has been paused by an admin."
+        - waituntil !<server.has_flag[fort.temp.pause_phase]> rate:1s
+
       #for some reason it includes npcs?
       - define players      <server.online_players_flagged[fort].filter[is_npc.not]>
       - define seconds_left <[seconds].sub[<[value]>]>

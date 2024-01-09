@@ -48,6 +48,14 @@ fort_commands:
       - flag server fort.temp.phase_skipped
       - narrate "<&a>Skipping current phase."
 
+    - case pause:
+      - if !<server.has_flag[fort.temp.pause_phase]>:
+        - flag server fort.temp.pause_phase
+        - narrate "<&a>Game paused."
+        - stop
+      - flag server fort.temp.pause_phase:!
+      - narrate "<&c>Game unpaused."
+
     # - [ SETUP COMMANDS ] - #
     - case lobby_setup:
       - run fort_lobby_setup

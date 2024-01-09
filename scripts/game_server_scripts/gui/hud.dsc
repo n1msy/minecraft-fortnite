@@ -147,6 +147,13 @@ hud_handler:
       - determine passively cancelled
       - stop
 
+    - if <player.has_flag[fort.on_bus]> && <script[nimnite_config].data_key[bus_view_mode]> == 2:
+      - determine passively cancelled
+      - wait 1t
+      #in case they cheese / spam it and somehow get out
+      - adjust <player> item_slot:9
+      - stop
+
     #(added wait instead of using after in event, so i can cancel event if necessary)
     - wait 1t
 
@@ -172,6 +179,10 @@ hud_handler:
       - stop
 
     - if <player.has_flag[fort.on_bus]>:
+      - stop
+
+    - if <player.has_flag[fort.on_bus]>:
+      - stop if:<player.has_flag[fort.on_bus.loading]>
       - if !<player.has_flag[fort.thanked_bus_driver]>:
         #teammates are orange? idc
         - announce "<&c><&l><player.name> <&7>thanked the bus driver"
@@ -181,6 +192,8 @@ hud_handler:
     - define new_type <map[inv=build;build=inv].get[<player.flag[fort.inv_type]||inv>]>
     - flag player fort.inv_type:<[new_type]>
 
+    #stop the emote
+    - flag player fort.emote:! if:<[new_type].equals[build]>
     - run build_toggle
 
     - inject update_hud

@@ -62,7 +62,7 @@ pregame_island_handler:
     # - [ filling chests / ammo boxes ] - #
     #-get a check of all the
     #-mention the time elapsed for when filling all the chests?
-    - foreach <list[chests|ammo_boxes]> as:container_type:
+    - foreach <list[]> as:container_type:
       - define containers <world[nimnite_map].flag[fort.<[container_type]>]||<list[]>>
       - announce "<&b>[Nimnite]<&r> Filling all <&e><[container_type].replace[_].with[ ]><&r>..." to_console
 
@@ -82,8 +82,8 @@ pregame_island_handler:
 
       - announce "<&b>[Nimnite]<&r> Done (<&a><[containers].size><&r> filled)" to_console
 
-    - flag server fort.unopened_chests:<world[nimnite_map].flag[fort.chests]||<list[]>>
-    - run fort_chest_handler.all_chest_effects
+   # - flag server fort.unopened_chests:<world[nimnite_map].flag[fort.chests]||<list[]>>
+   # - run fort_chest_handler.all_chest_effects
 
    # - waituntil <[containers_to_fill].is_empty> rate:1s
    # - chunkload remove <[loaded_chunks]>
@@ -220,7 +220,8 @@ pregame_island_handler:
       - determine passively NONE
 
     #don't play the death animation if they are teleporting via the circle or they're spectating (already dead)
-    - if !<player.has_flag[fort.lobby_teleport]> && !<player.has_flag[fort.spectating]>:
+    #OR if they're on the bus
+    - if !<player.has_flag[fort.lobby_teleport]> && !<player.has_flag[fort.spectating]> && !<player.has_flag[fort.on_bus]>:
       - run fort_death_handler.death def:<map[quit=true]>
 
     - flag player fort:!
@@ -294,14 +295,23 @@ pregame_island_handler:
 
     #stop everyone from emoting
     - flag <[players]> fort.emote:!
-    - flag <[players]> fort.disable_emotes duration:1s
+    #use duration flags, or just remove the flags manually?
+    #manually is more right duh
+    #using .loading so players can't thank the bus drive before they're even on it
+    - flag <[players]> fort.on_bus.loading
+    #- flag <[players]> fort.disable_emotes duration:5s
     #prevent players from switching to build / cancel their build mode
-    - flag <[players]> fort.disable_build duration:1s
+    #- flag <[players]> fort.disable_build duration:5s
     #do this, or just add a simple flag for builds?
     - foreach <[players].filter[has_flag[build]]> as:p:
       - run build_toggle player:<[p]>
+      #wait for build to fully disable before updating hud
+    - wait 2t
+    - foreach <[players]> as:p:
+      - adjust <[p]> item_slot:1
+      - run update_hud player:<[p]>
     #wait for emotes to stop, then send
-    - wait 5t
+    - wait 3t
     - run fort_core_handler
 
   set_floor_loot:

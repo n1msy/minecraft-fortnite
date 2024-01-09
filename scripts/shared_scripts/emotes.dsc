@@ -3,6 +3,8 @@ fort_emote_handler:
   debug: false
   events:
 
+    #-minor problem: can't emote while in build mode
+    #(probs because item updates every tick)
     on player clicks in inventory slot:2|3|4|5:
     - if <context.clicked_inventory.inventory_type> != CRAFTING:
       - stop

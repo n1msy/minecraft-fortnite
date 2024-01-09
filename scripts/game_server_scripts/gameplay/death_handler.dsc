@@ -129,7 +129,7 @@ fort_death_handler:
       - stop
 
     #move the player's current spectators to whoever they are spectating too
-    - define spectators <server.online_players_flagged[fort.spectating].filter[flag[fort.spectating].equals[<player>]]>
+    - define spectators <server.online_players_flagged[fort.spectating].filter[flag[fort.spectating].equals[<player>]].exclude[<player>]>
     - define spectators <[spectators].include[<player>]> if:<player.is_online>
 
     #spectating sometimes doesn't work
@@ -154,7 +154,8 @@ fort_death_handler:
     - wait 2t
     #since it's delayed, JUST IN CASE the player_to_spectate dies within those 2t
     #might have to check if the target is online and living too in case they leave after theyve won and there's no one else to spectate?
-    - if <[spectator].flag[fort.spectating]> != <[target]> || <[target].has_flag[fort.spectating]> || !<[target].is_online>:
+    #first check in case theres 2 players left and there's no one left to spectate?
+    - if <[spectator].flag[fort.spectating]||null> != <[target]> || <[target].has_flag[fort.spectating]> || !<[target].is_online>:
       - stop
     - adjust <[spectator]> spectator_target:<[target]>
     - narrate "<&7>You are now spectating <element[<&l><[target].name>].color[<color[#ffb62e]>]>" targets:<[spectator]>
