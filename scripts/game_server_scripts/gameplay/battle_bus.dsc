@@ -47,24 +47,7 @@ fort_bus_handler:
     #randomize this, or make it so players are in the same bus if they queued at the same time?
     - define players <server.online_players_flagged[fort]>
 
-    - define busy_ready False
-    - while <[busy_ready].not>:
-      - inject fort_bus_handler.setup_bus
-
-      - define seats_to_check <server.flag[fort.temp.bus.seats]>
-      #if a SINGLE seat isn't spawned, then re-do the entire thing
-      #(if i really wanted to, we could just check for which seat and just spawn that one, but this is way easier)
-      - if <[seats_to_check].filter[is_spawned.not].is_empty> && <[bus].is_spawned>:
-        - define busy_ready True
-        #no need for while stop, but whatevs
-        - while stop
-      - else:
-        - remove <[seats_to_check].filter[is_spawned]>
-        - run dmodels_delete def.root_entity:<[bus]> if:<[bus].is_spawned>
-        - define total_seats:!
-        - flag server fort.temp.bus:!
-
-      - wait 1t
+    - inject fort_bus_handler.setup_bus
 
     - define bus_parts <[bus].flag[dmodel_parts]>
     - foreach <[bus_parts]> as:part:
@@ -204,8 +187,7 @@ fort_bus_handler:
   setup_bus:
 
     - if !<[bus_start].chunk.is_loaded>:
-      - chunkload <[bus_start].chunk> duration:30s
-      - waituntil <[bus_start].chunk.is_loaded> rate:1s max:15s
+      - chunkload <[bus_start].chunk>
 
     - run dmodels_spawn_model def.model_name:battle_bus def.location:<[bus_start]> save:bus
     - define bus <entry[bus].created_queue.determination.first||null>
@@ -216,7 +198,11 @@ fort_bus_handler:
     - define seat_origin <[bus_start].below[1]>
     #<[bus_start].below[1]> (pre armor stand mounts)
 
+    #-instead of checking chunks, just load 1 random player in to load them, or no?
+    #checking chunks just in case
     - define drivers_seat_loc <[seat_origin].above[1.65].left[0.71].below[1.2].backward[0.1]>
+    - if !<[drivers_seat_loc].chunk.is_loaded>:
+      - chunkload <[drivers_seat_loc].chunk>
     - spawn <entity[item_display].with[scale=0.1,0.1,0.1]> <[drivers_seat_loc]> save:drivers_seat
     - define drivers_seat <entry[drivers_seat].spawned_entity>
     - flag server fort.temp.bus.drivers_seat:<[drivers_seat]>
@@ -225,6 +211,8 @@ fort_bus_handler:
 
     #dead center (of seat) = 1.256
     - define left_seat_1_loc <[drivers_seat_loc].left[0.075].backward[1.2].below[0.05]>
+    - if !<[left_seat_1_loc].chunk.is_loaded>:
+      - chunkload <[left_seat_1_loc].chunk>
     - spawn <entity[item_display].with[scale=0.1,0.1,0.1]> <[left_seat_1_loc]> save:left_seat_1
     - define left_seat_1 <entry[left_seat_1].spawned_entity>
     - flag server fort.temp.bus.seats:->:<[left_seat_1]>
@@ -232,6 +220,8 @@ fort_bus_handler:
     - define total_seats:->:<[left_seat_1]>
 
     - define left_seat_2_loc <[left_seat_1_loc].backward[1.0716]>
+    - if !<[left_seat_2_loc].chunk.is_loaded>:
+      - chunkload <[left_seat_2_loc].chunk>
     - spawn <entity[item_display].with[scale=0.1,0.1,0.1]> <[left_seat_2_loc]> save:left_seat_2
     - define left_seat_2 <entry[left_seat_2].spawned_entity>
     - flag server fort.temp.bus.seats:->:<[left_seat_2]>
@@ -240,6 +230,8 @@ fort_bus_handler:
 
     - repeat 3:
       - define side_seat_<[value]>_loc <[drivers_seat_loc].left[0.075].backward[<[value].sub[1].add[4]>].with_yaw[<[yaw].add[90]>].below[0.05]>
+      - if !<[side_seat_<[value]>_loc].chunk.is_loaded>:
+        - chunkload <[left_seat_2_loc].chunk>
       - spawn <entity[item_display].with[scale=0.1,0.1,0.1]> <[side_seat_<[value]>_loc]> save:side_seat_<[value]>
       - define side_seat_<[value]> <entry[side_seat_<[value]>].spawned_entity>
       - flag server fort.temp.bus.seats:->:<[side_seat_<[value]>]>
@@ -248,6 +240,8 @@ fort_bus_handler:
 
     - repeat 5:
       - define right_seat_<[value]>_loc <[drivers_seat_loc].right[1.53].backward[1.2].backward[<[value].sub[1].mul[1.0716]>].below[0.05]>
+      - if !<[right_seat_<[value]>_loc].chunk.is_loaded>:
+        - chunkload <[left_seat_2_loc].chunk>
       - spawn <entity[item_display].with[scale=0.1,0.1,0.1]> <[right_seat_<[value]>_loc]> save:right_seat_<[value]>
       - define right_seat_<[value]> <entry[right_seat_<[value]>].spawned_entity>
       - flag server fort.temp.bus.seats:->:<[right_seat_<[value]>]>
