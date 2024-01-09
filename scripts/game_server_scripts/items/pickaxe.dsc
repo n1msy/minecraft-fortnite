@@ -37,10 +37,6 @@ fort_pic_handler:
 
     - flag player fort.weak_point.hits:++ duration:2s
 
-    #when this flag is cleared, the hitbox & display are removed and the player's fort.weak_point.hitbox flag is cleared too
-    #(handled in fort_pic_handler.weak_point)
-    - flag <[hitbox]> fort.weak_point:!
-
     #-sfx
     #                         G   A    B    C    D   E    F#   G
     #what i found out by ear: 0.53|0.6|0.685|0.72|0.8|0.9|1.0|1.07
@@ -52,7 +48,14 @@ fort_pic_handler:
     # playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:0 volume:0.25
     - playsound <player> sound:BLOCK_NOTE_BLOCK_PLING pitch:<[pitch]> volume:0.4
 
-    ##do the damage here
+    - define center <[hitbox].flag[fort.weak_point.center]>
+    #when this flag is cleared, the hitbox & display are removed and the player's fort.weak_point.hitbox flag is cleared too
+    #(handled in fort_pic_handler.weak_point)
+    #clearing it before running damage_tile so another crit can spawn
+    - flag <[hitbox]> fort.weak_point:!
+    - flag player     fort.weak_point.hitbox:!
+    - run fort_pic_handler.damage_tile def:<map[center=<[center]>;damage=100]>
+
 
     #each swing is 50 hp, each crit is 100
     #on player breaks block with:fort_pickaxe*:
@@ -81,69 +84,7 @@ fort_pic_handler:
     #in case it was pasted from a different world (specifically for the pine trees, since i accidentally made em in a different world)
     - define center      <[block].flag[build.center].with_world[<[block].world>]>
 
-    - define hp          <[center].flag[build.health]>
-    - define mat_type    <[center].flag[build.material]>
-
-    - define struct      <[center].flag[build.structure]>
-    - define struct_type <[center].flag[build.type]>
-
-    #filtering so connected blocks aren't affected
-    - define blocks   <[struct].blocks.filter[flag[build.center].equals[<[center]>]]>
-    #so you can see the entirety of the floor/wall break
-    - if <list[wall|floor].contains[<[struct_type]>]>:
-      - define blocks <[struct].blocks>
-
-    - define damage 50
-
-    #-harvest material
-    #side note: thank fucking god i was smart enough to add a "placed by world" flag for man-made structures
-    - if <[center].has_flag[build.natural]> || <[center].flag[build.placed_by]||null> == WORLD:
-      - run fort_pic_handler.harvest def:<map[type=<[mat_type]>]>
-
-    #create a proc for finding max health? (since used in like 3 different places)
-    #i feel like there's a cleaner way for this in the config
-    - if !<[center].has_flag[build.natural]>:
-      - define max_health <script[nimnite_config].data_key[materials.<[mat_type]>.hp]>
-    - else:
-      # - for natural structures:
-      - define struct_name <[center].flag[build.natural.name]>
-      - define max_health   <script[nimnite_config].data_key[structures.<[struct_name]>.health]>
-
-    - define new_health <[hp].sub[<[damage]>]>
-
-    - if <[new_health]> > 0:
-      - flag <[center]> build.health:<[new_health]>
-
-      - run fort_pic_handler.display_build_health def:<map[tile_center=<[center]>;health=<[new_health]>;max_health=<[max_health]>]>
-
-      - define progress <element[10].sub[<[new_health].div[<[max_health]>].mul[10]>]>
-      - foreach <[blocks].filter[has_flag[build.existed].not]> as:b:
-        - blockcrack <[b]> progress:<[progress]> players:<server.online_players>
-
-      #weak points only appear if it takes more than two swings to break the structure
-      #only show up if a previous one isn't existing
-      - if <[new_health]> > 50 && !<player.has_flag[fort.weak_point.hitbox]>:
-        - run fort_pic_handler.weak_point def:<map[center=<[center]>]>
-
-      - stop
-
-    #-TILE BREAKS HERE
-
-    - flag player fort.build_health:!
-
-    #reset blockcrack in case a player places a wall in the same spot again
-    - foreach <[blocks].filter[has_flag[build.existed].not]> as:b:
-      - blockcrack <[b]> progress:0 players:<server.online_players>
-      - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
-
-    - if <[center].has_flag[build.natural]>:
-      #sometimes the center isn't included
-      - define blocks <[blocks].include[<[center]>]>
-      - inject fort_pic_handler.break_natural_structure
-      - stop
-
-    #otherwise, break the tile and anything else connected to it
-    - inject build_system_handler.break
+    - run fort_pic_handler.damage_tile def:<map[center=<[center]>;damage=50]>
 
     #switch between axe and pic
     #i *could* just remove the block when you click it, but the immersion would be ruined since you can't hold left click while farming
@@ -218,6 +159,71 @@ fort_pic_handler:
     - flag <[target]> qty:<[new_qty]>
     - adjust <[target]> custom_name:<[text]>
 
+  damage_tile:
+    - define center      <[data].get[center]>
+    - define damage      <[data].get[damage]>
+    - define hp          <[center].flag[build.health]>
+    - define mat_type    <[center].flag[build.material]>
+
+    - define struct      <[center].flag[build.structure]>
+    - define struct_type <[center].flag[build.type]>
+
+    #filtering so connected blocks aren't affected
+    - define blocks   <[struct].blocks.filter[flag[build.center].equals[<[center]>]]>
+    #so you can see the entirety of the floor/wall break
+    - if <list[wall|floor].contains[<[struct_type]>]>:
+      - define blocks <[struct].blocks>
+
+    #-harvest material
+    #side note: thank fucking god i was smart enough to add a "placed by world" flag for man-made structures
+    - if <[center].has_flag[build.natural]> || <[center].flag[build.placed_by]||null> == WORLD:
+      - run fort_pic_handler.harvest def:<map[type=<[mat_type]>]>
+
+    #create a proc for finding max health? (since used in like 3 different places)
+    #i feel like there's a cleaner way for this in the config
+    - if !<[center].has_flag[build.natural]>:
+      - define max_health <script[nimnite_config].data_key[materials.<[mat_type]>.hp]>
+    - else:
+      # - for natural structures:
+      - define struct_name <[center].flag[build.natural.name]>
+      - define max_health   <script[nimnite_config].data_key[structures.<[struct_name]>.health]>
+
+    - define new_health <[hp].sub[<[damage]>]>
+
+    - if <[new_health]> > 0:
+      - flag <[center]> build.health:<[new_health]>
+
+      - run fort_pic_handler.display_build_health def:<map[tile_center=<[center]>;health=<[new_health]>;max_health=<[max_health]>]>
+
+      - define progress <element[10].sub[<[new_health].div[<[max_health]>].mul[10]>]>
+      - foreach <[blocks].filter[has_flag[build.existed].not]> as:b:
+        - blockcrack <[b]> progress:<[progress]> players:<server.online_players>
+
+      #weak points only appear if it takes more than two swings to break the structure
+      #only show up if a previous one isn't existing
+      #not sure if i like the "2 swings minimum" rule
+      - if <[new_health]> > 50 && !<player.has_flag[fort.weak_point.hitbox]>:
+        - run fort_pic_handler.weak_point def:<map[center=<[center]>]>
+
+      - stop
+
+    #-TILE BREAKS HERE
+
+    - flag player fort.build_health:!
+
+    #reset blockcrack in case a player places a wall in the same spot again
+    - foreach <[blocks].filter[has_flag[build.existed].not]> as:b:
+      - blockcrack <[b]> progress:0 players:<server.online_players>
+      - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
+
+    - if <[center].has_flag[build.natural]>:
+      #sometimes the center isn't included
+      - define blocks <[blocks].include[<[center]>]>
+      - inject fort_pic_handler.break_natural_structure
+      - stop
+
+    #otherwise, break the tile and anything else connected to it
+    - inject build_system_handler.break
   weak_point:
   - define center <[data].get[center]>
   - if <[data].contains[tree_blocks]>:
