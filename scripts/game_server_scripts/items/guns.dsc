@@ -83,6 +83,7 @@ fort_gun_handler:
     - wait 1t
 
     - define gun      <context.item>
+    - adjust <[gun]> color:<color[#000000]>
 
     - if <player.inventory.find_item[<[gun]>]> == -1:
       - stop
@@ -754,8 +755,8 @@ fort_gun_handler:
 
     - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>]>
 
-    - team name:ammo add:<[drop]> color:GRAY
-    - adjust <[drop]> glowing:true
+    #- team name:ammo add:<[drop]> color:GRAY
+    #- adjust <[drop]> glowing:true
 
   drop_gun:
     - define gun  <[data].get[gun]>
@@ -774,10 +775,10 @@ fort_gun_handler:
 
     - define text <&l><[name].to_uppercase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]>
 
-    - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>]>
+    - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>;rarity=<[rarity]>]>
 
-    - team name:<[rarity]> add:<[drop]> color:<map[Common=GRAY;Uncommon=GREEN;Rare=AQUA;Epic=LIGHT_PURPLE;Legendary=GOLD].get[<[rarity]>]>
-    - adjust <[drop]> glowing:true
+    #- team name:<[rarity]> add:<[drop]> color:<map[Common=GRAY;Uncommon=GREEN;Rare=AQUA;Epic=LIGHT_PURPLE;Legendary=GOLD].get[<[rarity]>]>
+    #- adjust <[drop]> glowing:true
 
   reload:
     #TODO: divide the bullets so you can load a certain amount of bullets, then stop (it doesn't have to be fully reloaded before you can shoot again)
@@ -974,7 +975,7 @@ gun_particle_origin:
 #-check how much ammo each ammo type drops from chests?
 ammo_light:
   type: item
-  material: gold_nugget
+  material: leather_helmet
   display name: LIGHT
   mechanisms:
     custom_model_data: 1
@@ -986,7 +987,7 @@ ammo_light:
 
 ammo_medium:
   type: item
-  material: gold_nugget
+  material: leather_helmet
   display name: MEDIUM
   mechanisms:
     custom_model_data: 2
@@ -998,7 +999,7 @@ ammo_medium:
 
 ammo_heavy:
   type: item
-  material: gold_nugget
+  material: leather_helmet
   display name: HEAVY
   mechanisms:
     custom_model_data: 3
@@ -1011,7 +1012,7 @@ ammo_heavy:
 
 ammo_shells:
   type: item
-  material: gold_nugget
+  material: leather_helmet
   display name: SHELLS
   mechanisms:
     custom_model_data: 4
@@ -1023,7 +1024,7 @@ ammo_shells:
 
 ammo_rockets:
   type: item
-  material: gold_nugget
+  material: leather_helmet
   display name: ROCKETS
   mechanisms:
     custom_model_data: 5
@@ -1036,7 +1037,7 @@ ammo_rockets:
 
 gun_pump_shotgun:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[PUMP SHOTGUN].font[item_name]>
   mechanisms:
     custom_model_data: 1
@@ -1115,7 +1116,7 @@ gun_pump_shotgun:
 
 gun_tactical_shotgun:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[TACTICAL SHOTGUN].font[item_name]>
   mechanisms:
     custom_model_data: 23
@@ -1199,7 +1200,7 @@ gun_tactical_shotgun:
 
 gun_assault_rifle:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[ASSAULT RIFLE].font[item_name]>
   mechanisms:
     custom_model_data: 3
@@ -1269,7 +1270,7 @@ gun_assault_rifle:
 
 gun_burst_assault_rifle:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[BURST ASSAULT RIFLE].font[item_name]>
   mechanisms:
     custom_model_data: 26
@@ -1341,7 +1342,7 @@ gun_burst_assault_rifle:
 
 gun_tactical_smg:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[TACTICAL SMG].font[item_name]>
   mechanisms:
     custom_model_data: 7
@@ -1407,7 +1408,7 @@ gun_tactical_smg:
 
 gun_smg:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[SMG].font[item_name]>
   mechanisms:
     custom_model_data: 9
@@ -1478,7 +1479,7 @@ gun_smg:
 
 gun_bolt_action_sniper_rifle:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[BOLT-ACTION SNIPER RIFLE].font[item_name]>
   mechanisms:
     custom_model_data: 11
@@ -1546,7 +1547,7 @@ gun_bolt_action_sniper_rifle:
 
 gun_revolver:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[REVOLVER].font[item_name]>
   mechanisms:
     custom_model_data: 12
@@ -1612,7 +1613,7 @@ gun_revolver:
 
 gun_pistol:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[PISTOL].font[item_name]>
   mechanisms:
     custom_model_data: 16
@@ -1676,7 +1677,7 @@ gun_pistol:
 
 gun_grenade_launcher:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[GRENADE LAUNCHER].font[item_name]>
   mechanisms:
     custom_model_data: 18
@@ -1734,7 +1735,7 @@ gun_grenade_launcher:
 
 gun_rocket_launcher:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[ROCKET LAUNCHER].font[item_name]>
   mechanisms:
     custom_model_data: 20

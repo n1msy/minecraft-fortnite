@@ -5,6 +5,7 @@ fort_explosive_handler:
   events:
     #guide lines
     on player right clicks block with:fort_item_grenade|fort_item_impulse_grenade:
+    - determine passively cancelled
     - repeat 4:
       - define eye_loc <player.eye_location>
       - define origin <[eye_loc].relative[-0.25,0,0.35]>
@@ -187,10 +188,10 @@ fort_explosive_handler:
 
 fort_item_grenade:
   type: item
-  material: gold_nugget
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[GRENADE].font[item_name]>
   mechanisms:
-    custom_model_data: 6
+    custom_model_data: 30
     hides: ALL
   flags:
     rarity: common
@@ -204,10 +205,10 @@ fort_item_grenade:
 
 fort_item_impulse_grenade:
   type: item
-  material: gold_nugget
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[IMPULSE GRENADE].font[item_name]>
   mechanisms:
-    custom_model_data: 7
+    custom_model_data: 31
     hides: ALL
   flags:
     rarity: rare

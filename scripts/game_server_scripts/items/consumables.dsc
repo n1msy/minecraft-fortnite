@@ -169,7 +169,7 @@ fort_item_bush:
   material: gold_nugget
   display name: <&chr[1].font[item_name]><&f><&l><element[BUSH].font[item_name]>
   mechanisms:
-    custom_model_data: 19
+    custom_model_data: 15
     hides: ALL
   flags:
     rarity: legendary

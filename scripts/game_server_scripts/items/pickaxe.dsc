@@ -322,6 +322,7 @@ fort_pic_handler:
     - adjust <[drop]> custom_name:<[text]>
     - adjust <[drop]> custom_name_visible:true
 
+    #make mats glow?
     - team name:ammo add:<[drop]> color:GRAY
     - adjust <[drop]> glowing:true
 

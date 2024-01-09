@@ -107,6 +107,7 @@ dmodels_spawn_model:
         - define translation <[new_pos].proc[dmodels_mul_vecs].context[<[global_scale]>].div[16].mul[0.25]>
         - if !<[player].exists>:
             #- define to_spawn_ent dmodel_part_display[item=<[part_item]>;display=HEAD;translation=<[translation]>;left_rotation=<[orientation].mul[<[pose]>]>;scale=<[scale]>]
+            - narrate <[part.item]>
             - define to_spawn_ent dmodel_part_display[item=<[part.item]>;display=HEAD;translation=<[translation]>;left_rotation=<[orientation_parent].mul[<[pose]>]>;scale=<[global_scale]>]
         - else:
             #tracking_range 256 fixes issue of going too far from player model textures
