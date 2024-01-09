@@ -492,7 +492,7 @@ fort_pic_handler:
     - define tile_center <[data].get[tile_center]>
     - define hp          <[data].get[health]>
     - define max_hp      <[data].get[max_health]>
-    - define is_prop     <[data].get[is_prop]>
+    - define is_prop     <[data].get[is_prop]||false>
 
     #-find health bar loc
     - define loc <[tile_center]>
