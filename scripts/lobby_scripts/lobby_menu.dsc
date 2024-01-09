@@ -46,6 +46,8 @@ fort_lobby_handler:
     - remove <world[fort_lobby].entities[item_display|text_display|npc]>
     - run fort_lobby_setup
 
+    #-to prevent collision
+    - team name:lobby_player option:collision_rule status:never
 
     - define game_servers <bungee.list_servers.exclude[<bungee.server>]>
     #-in case some game servers shut down while the lobby was down
@@ -144,6 +146,8 @@ fort_lobby_handler:
       - flag <player> fort.ammo.<[ammo_type]>:999
 
     - adjust <player> item_slot:1
+    #used to prevent collision
+    - team name:lobby_player add:<player>
 
     - define pad_loc <server.flag[fort.menu.pads].first.location>
     - define npc_loc <[pad_loc].face[<player.eye_location>].with_pitch[0]>
