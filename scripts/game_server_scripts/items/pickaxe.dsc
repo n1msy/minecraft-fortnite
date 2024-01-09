@@ -33,6 +33,10 @@ fort_pic_handler:
     #two methods for weak point: method 1 make it directly *on* the block,
     #OR make it its own entity
     - define hitbox <context.entity>
+    #in case the player some how hits the crit within 1 tick of it going away after the waituntil checks if the tile is broken or not
+    - if <[hitbox].flag[fort.weak_point].center.has_flag[build]>:
+      - stop
+
     - define damage 100
 
     - flag player fort.weak_point.hits:++ duration:2s
@@ -269,7 +273,8 @@ fort_pic_handler:
   #- run fort_pic_handler.weak_point_rotate def:<map[entity=<[e]>]>
 
   #i think optimally we should wait 2/3 ticks before the waituntil, in case the player somehow gets the weak point in less than 2 ticks but nah
-  - waituntil !<[hb].has_flag[fort.weak_point]> max:2s
+  #second check is so crit disappears if a player breaks a tile
+  - waituntil !<[hb].has_flag[fort.weak_point]> || !<[hb].flag[fort.weak_point].center.has_flag[build]> max:2s
 
   #-play weak point EXIT animation
   #"break/pop" from hit
