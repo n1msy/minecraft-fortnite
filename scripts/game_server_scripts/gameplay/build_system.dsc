@@ -1048,6 +1048,8 @@ build_toggle:
     - define confirm_txt "<[drop_button]> <element[<&l>CONFIRM].color[<[tc]>]>"
     - define reset_txt   "<[r_button]> <element[<&l>RESET].color[<[tc]>]>"
 
+    - define pencil <item[gold_nugget].with[display=<&sp>;custom_model_data=1]>
+
     - while <player.is_online> && <player.has_flag[build]> && <player.is_spawned>:
       - define eye_loc <player.eye_location>
       - define loc <player.location>
@@ -1062,7 +1064,7 @@ build_toggle:
         - inventory clear
         - equip offhand:<item[paper].with[custom_model_data=<[slot].add[3]>]>
         #slot hand changes, so give it to the next slot
-        - give <item[gold_nugget].with[display=<&sp>;custom_model_data=10]> slot:<[slot]>
+        - give <[pencil]> slot:<[slot]>
 
       - if <player.has_flag[build.edit_mode]>:
         - define tile             <player.flag[build.edit_mode.tile]>

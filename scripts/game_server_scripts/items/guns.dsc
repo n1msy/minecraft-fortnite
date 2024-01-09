@@ -538,7 +538,7 @@ fort_gun_handler:
       - define ignored_entities <server.online_players.filter[gamemode.equals[SPECTATOR]].include[<player>].include[<player.world.entities[armor_stand]>]>
       - define target_loc       <[origin].ray_trace[range=200;entities=*;ignore=<[ignored_entities]>;default=air]>
 
-      - define e          <entity[snowball].with[item=<item[gold_nugget].with[custom_model_data=13]>]>
+      - define e          <entity[snowball].with[item=<item[gold_nugget].with[custom_model_data=2]>]>
       - shoot <[e]> origin:<[origin]> height:0.2 save:grenade
 
       - define grenade <entry[grenade].shot_entity>
@@ -580,8 +580,8 @@ fort_gun_handler:
       #-use item displays and display entities?
       #or rather, use item displays and interactions?
 
-      #- spawn <entity[item_display].with[item=<item[gold_nugget].with[custom_model_data=14]>;scale=1,1,1]> <[origin]> save:e
-      - spawn <entity[armor_stand].with[equipment=<map.with[helmet].as[<item[gold_nugget].with[custom_model_data=14]>]>;gravity=false;collidable=false;invulnerable=true;visible=false]> <[origin].below[1.685]> save:e
+      #- spawn <entity[item_display].with[item=<item[leather_helmet].with[custom_model_data=14]>;scale=1,1,1]> <[origin]> save:e
+      - spawn <entity[armor_stand].with[equipment=<map.with[helmet].as[<item[gold_nugget].with[custom_model_data=3]>]>;gravity=false;collidable=false;invulnerable=true;visible=false]> <[origin].below[1.685]> save:e
       - define rocket <entry[e].spawned_entity>
       - define rocket_loc <[rocket].location.above[1.685]>
       #default = 0.65
@@ -1273,7 +1273,7 @@ gun_burst_assault_rifle:
   material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[BURST ASSAULT RIFLE].font[item_name]>
   mechanisms:
-    custom_model_data: 26
+    custom_model_data: 25
     hides: ALL
   flags:
     type: Rifle
@@ -1301,33 +1301,33 @@ gun_burst_assault_rifle:
         floor_weight: 3.07
         damage: 27
         reload_time: 2.9
-        custom_model_data: 26
+        custom_model_data: 25
       uncommon:
         chance: 39
         floor_weight: 1.23
         damage: 29
         reload_time: 2.7
-        custom_model_data: 26
+        custom_model_data: 25
       rare:
         chance: 39
         floor_weight: 0.46
         damage: 30
         reload_time: 2.6
-        custom_model_data: 26
+        custom_model_data: 25
       epic:
         chance: 2
         floor_weight: 0.185
         damage: 32
         reload_time: 2.5
         icon_chr: 4
-        custom_model_data: 28
+        custom_model_data: 27
       legendary:
         chance: 0.5
         floor_weight: 0.06
         damage: 33
         reload_time: 2.3
         icon_chr: 4
-        custom_model_data: 28
+        custom_model_data: 27
     #(in meters)
     #value is in percentage of damage
     damage_falloff:

@@ -90,7 +90,7 @@ fort_consumable_handler:
     - choose <[name]>:
 
       - case bush:
-        - spawn <entity[item_display].with[item=<item[leather_helmet].with[custom_model_data=15]>;scale=1.2,1.2,1.2;translation=0,-0.75,0]> <player.location.with_pose[0,0].above> save:bush
+        - spawn <entity[item_display].with[item=<item[leather_helmet].with[custom_model_data=10]>;scale=1.2,1.2,1.2;translation=0,-0.75,0]> <player.location.with_pose[0,0].above> save:bush
         - define bush <entry[bush].spawned_entity>
         - mount <[bush]>|<player>
         - run fort_consumable_handler.use_bush def:<[bush]>
@@ -164,30 +164,13 @@ fort_consumable_handler:
     - flag player fort.bush:!
     - remove <[bush]> if:<[bush].is_spawned>
 
-fort_item_bush:
-  type: item
-  material: leather_helmet
-  display name: <&chr[1].font[item_name]><&f><&l><element[BUSH].font[item_name]>
-  mechanisms:
-    custom_model_data: 15
-    hides: ALL
-  flags:
-    rarity: legendary
-    #i can't find the actual drop chance?
-    #replaces other consumables from chests
-    chance: 5
-    icon_chr: 7
-    drop_quantity: 2
-    stack_size: 2
-    use_time: 3
-
 ## Heals
 fort_item_bandages:
   type: item
   material: leather_helmet
   display name: <&chr[1].font[item_name]><&f><&l><element[BANDAGES].font[item_name]>
   mechanisms:
-    custom_model_data: 8
+    custom_model_data: 6
     hides: ALL
   flags:
     rarity: uncommon
@@ -206,7 +189,7 @@ fort_item_medkit:
   material: leather_helmet
   display name: <&chr[1].font[item_name]><&f><&l><element[MED KIT].font[item_name]>
   mechanisms:
-    custom_model_data: 9
+    custom_model_data: 7
     hides: ALL
   flags:
     rarity: uncommon
@@ -223,7 +206,7 @@ fort_item_small_shield_potion:
   material: leather_helmet
   display name: <&chr[1].font[item_name]><&f><&l><element[SMALL SHIELD POTION].font[item_name]>
   mechanisms:
-    custom_model_data: 11
+    custom_model_data: 8
     hides: ALL
   flags:
     rarity: uncommon
@@ -241,7 +224,7 @@ fort_item_shield_potion:
   material: leather_helmet
   display name: <&chr[1].font[item_name]><&f><&l><element[SHIELD POTION].font[item_name]>
   mechanisms:
-    custom_model_data: 12
+    custom_model_data: 9
     hides: ALL
   flags:
     rarity: rare
@@ -252,3 +235,20 @@ fort_item_shield_potion:
     shield: 50
     stack_size: 3
     use_time: 5
+
+fort_item_bush:
+  type: item
+  material: leather_helmet
+  display name: <&chr[1].font[item_name]><&f><&l><element[BUSH].font[item_name]>
+  mechanisms:
+    custom_model_data: 10
+    hides: ALL
+  flags:
+    rarity: legendary
+    #i can't find the actual drop chance?
+    #replaces other consumables from chests
+    chance: 5
+    icon_chr: 7
+    drop_quantity: 2
+    stack_size: 2
+    use_time: 3

@@ -19,8 +19,10 @@ fort_explosive_handler:
           - foreach stop
       - wait 1t
 
+    on player drops fort_item_grenade|fort_item_impulse_grenade:
+    - flag player fort.grenade_dropped duration:1t
 
-    on player left clicks block with:fort_item_impulse_grenade:
+    on player left clicks block with:fort_item_impulse_grenade flagged:!fort.grenade_dropped:
     - define i       <context.item>
     - define eye_loc <player.eye_location>
     - define origin <[eye_loc].relative[-0.25,0,0.35]>
@@ -50,7 +52,7 @@ fort_explosive_handler:
     - define grenade_loc <[grenade].location>
     - remove <[grenade]>
 
-    - spawn <entity[item_display].with[item=<item[gold_nugget].with[custom_model_data=7]>;scale=2,2,2]> <[grenade_loc].above[0.25]> save:e
+    - spawn <entity[item_display].with[item=<item[leather_horse_armor].with[custom_model_data=30]>;scale=2,2,2]> <[grenade_loc].above[0.25]> save:e
     - define e <entry[e].spawned_entity>
 
 
@@ -67,7 +69,7 @@ fort_explosive_handler:
     - foreach <[entities]> as:e:
       - adjust <[e]> velocity:<[e].location.above[1].sub[<[grenade_loc]>]>
 
-    on player left clicks block with:fort_item_grenade:
+    on player left clicks block with:fort_item_grenade flagged:!fort.grenade_dropped:
     - define i       <context.item>
     - define eye_loc <player.eye_location>
     - define origin <[eye_loc].relative[-0.25,0,0.35]>
@@ -191,7 +193,7 @@ fort_item_grenade:
   material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[GRENADE].font[item_name]>
   mechanisms:
-    custom_model_data: 30
+    custom_model_data: 29
     hides: ALL
   flags:
     rarity: common
@@ -208,7 +210,7 @@ fort_item_impulse_grenade:
   material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[IMPULSE GRENADE].font[item_name]>
   mechanisms:
-    custom_model_data: 31
+    custom_model_data: 30
     hides: ALL
   flags:
     rarity: rare
