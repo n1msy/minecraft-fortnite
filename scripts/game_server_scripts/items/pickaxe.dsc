@@ -26,6 +26,34 @@ fort_pic_handler:
     on player fort_pickaxe* takes damage:
     - determine cancelled
 
+    # - [ Weak point / Crit ] - #
+    on INTERACTION damaged flagged:fort.weak_point:
+
+    #-weak point check
+    #two methods for weak point: method 1 make it directly *on* the block,
+    #OR make it its own entity
+    - define hitbox <context.entity>
+    - define damage 100
+
+    - flag player fort.weak_point.hits:++ duration:2s
+
+    #when this flag is cleared, the hitbox & display are removed and the player's fort.weak_point.hitbox flag is cleared too
+    #(handled in fort_pic_handler.weak_point)
+    - flag <[hitbox]> fort.weak_point:!
+
+    #-sfx
+    #                         G   A    B    C    D   E    F#   G
+    #what i found out by ear: 0.53|0.6|0.685|0.72|0.8|0.9|1.0|1.07
+    #from the actual table:   0.529732|0.594604|0.667420|0.707107|0.793701|0.890899|1.0|1.059463
+    - define # <player.flag[fort.weak_point.hits].mod[8]>
+    - define # 8 if:<[#].equals[0]>
+    - define pitch <list[0.529732|0.594604|0.667420|0.707107|0.793701|0.890899|1.0|1.059463].get[<[#]>]>
+    #make amethyst sfx non randomized by going through the rp?
+    # playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:0 volume:0.25
+    - playsound <player> sound:BLOCK_NOTE_BLOCK_PLING pitch:<[pitch]> volume:0.4
+
+    ##do the damage here
+
     #each swing is 50 hp, each crit is 100
     #on player breaks block with:fort_pickaxe*:
     #this way it also cancels any block breaking that isn't breakable
@@ -67,24 +95,6 @@ fort_pic_handler:
 
     - define damage 50
 
-    #-weak point check
-    - if <[block].has_flag[build.weak_point]>:
-      - flag player fort.weak_point:++ duration:2s
-      - define damage <[damage].mul[2]>
-      - flag <[block].flag[build.weak_point]> broken if:<[block].flag[build.weak_point].is_spawned>
-      - flag <[block]> build.weak_point:!
-
-      #-weak point sfx
-    #                         G   A    B    C    D   E    F#   G
-    #what i found out by ear: 0.53|0.6|0.685|0.72|0.8|0.9|1.0|1.07
-    #from the actual table:   0.529732|0.594604|0.667420|0.707107|0.793701|0.890899|1.0|1.059463
-      - define # <player.flag[fort.weak_point].mod[8]>
-      - define # 8 if:<[#].equals[0]>
-      - define pitch <list[0.529732|0.594604|0.667420|0.707107|0.793701|0.890899|1.0|1.059463].get[<[#]>]>
-      #make amethyst sfx non randomized by going through the rp?
-      # playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:0 volume:0.25
-      - playsound <player> sound:BLOCK_NOTE_BLOCK_PLING pitch:<[pitch]> volume:0.4
-
     #-harvest material
     #side note: thank fucking god i was smart enough to add a "placed by world" flag for man-made structures
     - if <[center].has_flag[build.natural]> || <[center].flag[build.placed_by]||null> == WORLD:
@@ -112,7 +122,7 @@ fort_pic_handler:
 
       #weak points only appear if it takes more than two swings to break the structure
       #only show up if a previous one isn't existing
-      - if <[blocks].filter[has_flag[build.weak_point]].is_empty>:
+      - if <[new_health]> > 50 && !<player.has_flag[fort.weak_point.hitbox]>:
         - run fort_pic_handler.weak_point def:<map[center=<[center]>]>
 
       - stop
@@ -209,10 +219,10 @@ fort_pic_handler:
     - adjust <[target]> custom_name:<[text]>
 
   weak_point:
+  - define center <[data].get[center]>
   - if <[data].contains[tree_blocks]>:
     - define blocks <[data].get[tree_blocks]>
   - else:
-    - define center <[data].get[center]>
     - define blocks <[center].flag[build.structure].blocks.filter[flag[build.center].equals[<[center]>]].filter[material.name.equals[air].not]>
 
   - define p_loc <player.location>
@@ -221,9 +231,8 @@ fort_pic_handler:
   - define available_weak_points <[blocks].filter[center.with_yaw[<[yaw]>].forward[1].line_of_sight[<[p_loc]>]].filter[distance[<[p_loc]>].is[OR_LESS].than[5]]>
   - if <[available_weak_points].is_empty>:
     - stop
-  - define weak_point <[available_weak_points].random>
-
-  - define loc   <[weak_point].center.with_yaw[<[yaw]>].forward_flat[0.9].above[0.27]>
+  - define weak_point_loc <[available_weak_points].random>
+  - define loc             <[weak_point_loc].center.with_yaw[<[yaw]>].forward_flat[0.9].above[0.27]>
 
   #-play weak point ENTER animation
   #the spiny animation was simplified. in the original, the inner ring goes clock wise and outer goes counter
@@ -234,8 +243,14 @@ fort_pic_handler:
   - define translation   <location[0,-0.25,0]>
   - define text_shadowed true
   - define opacity       255
-  - spawn <entity[text_display].with[text=<[text]>;background_color=transparent;pivot=<[pivot]>;scale=<[scale]>;text_shadowed=<[text_shadowed]>;opacity=<[opacity]>;translation=<[translation]>;opacity=<[opacity]>]> <[loc]> save:e
-  - define e <entry[e].spawned_entity>
+  - spawn <entity[text_display].with[text=<[text]>;background_color=transparent;pivot=<[pivot]>;scale=<[scale]>;text_shadowed=<[text_shadowed]>;opacity=<[opacity]>;translation=<[translation]>;opacity=<[opacity]>;hide_from_players=true]> <[loc]> save:e
+  - spawn <entity[INTERACTION].with[hide_from_players=true;width=0.6;height=0.6]> <[loc].below[0.55]> save:hb
+  - define e  <entry[e].spawned_entity>
+  - define hb <entry[hb].spawned_entity>
+  - adjust <player> show_entity:<[e]>
+  - adjust <player> show_entity:<[hb]>
+  - flag <[hb]> fort.weak_point.center:<[center]>
+  - flag player fort.weak_point.hitbox:<[hb]>
 
   - wait 2t
 
@@ -245,18 +260,15 @@ fort_pic_handler:
   - adjust <[e]> opacity:255
 
   #eh, i dont think so actually
-  #- run fort_pic_handler.weak_spot_rotate def:<map[entity=<[e]>]>
-
-  - flag <[weak_point]> build.weak_point:<[e]>
+  #- run fort_pic_handler.weak_point_rotate def:<map[entity=<[e]>]>
 
   #i think optimally we should wait 2/3 ticks before the waituntil, in case the player somehow gets the weak point in less than 2 ticks but nah
-  - waituntil !<[weak_point].has_flag[build.weak_point]> max:2s
-
-  - flag <[weak_point]> build.weak_point:!
+  - waituntil !<[hb].has_flag[fort.weak_point]> max:2s
 
   #-play weak point EXIT animation
   #"break/pop" from hit
-  - if <[e].has_flag[broken]>:
+  #if it no longer has the flag, it means it was broken
+  - if !<[hb].has_flag[fort.weak_point]>:
     - adjust <[e]> interpolation_start:0
     - adjust <[e]> scale:<location[5,5,5]>
     - adjust <[e]> interpolation_duration:3t
@@ -269,10 +281,12 @@ fort_pic_handler:
     - adjust <[e]> interpolation_duration:3t
     - adjust <[e]> opacity:255
 
+  - flag player fort.weak_point.hitbox:!
+  - remove <[hb]>
   - wait 3t
   - remove <[e]> if:<[e].is_spawned>
 
-  weak_spot_rotate:
+  weak_point_rotate:
   - define e <[data].get[entity]>
   - wait 3t
   - if <[e].is_spawned>:
@@ -485,7 +499,7 @@ fort_pic_handler:
         - define loc <[tile_center].with_y[<[tile_center].flag[build.structure].min.y.sub[1.5]>]>
 
     #-only show 1 health bar at a time?
-    - if <player.has_flag[fort.build_health]> && <player.flag[fort.build_health].location> == <[loc]>:
+    - if <player.has_flag[fort.build_health]> && <player.flag[fort.build_health].is_spawned> && <player.flag[fort.build_health].location> == <[loc]>:
       - define health_display <player.flag[fort.build_health]>
     - else:
       - spawn <entity[text_display].with[pivot=center;background_color=transparent;see_through=true;scale=0.7,0.7,0.7;translation=0,-0.35,0]> <[loc]> save:health_display
