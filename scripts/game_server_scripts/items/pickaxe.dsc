@@ -28,7 +28,7 @@ fort_pic_handler:
 
     # - [ Weak point / Crit ] - #
     on INTERACTION damaged:
-    - stop if:<context.entity.has_flag[fort.weak_point].not>
+    - stop if:<context.entity.has_flag[fort.weak_point.center].not>
     #-weak point check
     #two methods for weak point: method 1 make it directly *on* the block,
     #OR make it its own entity
@@ -218,7 +218,7 @@ fort_pic_handler:
       - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
 
     - if <player.has_flag[fort.weak_point.hitbox]>:
-      - flag <player.flag[fort.weak_point.hitbox]> fort:!
+      - flag <player.flag[fort.weak_point.hitbox]> fort.weak_point.center:!
       - flag player fort.weak_point:!
 
     - if <[center].has_flag[build.natural]>:

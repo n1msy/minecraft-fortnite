@@ -254,6 +254,7 @@ fort_bus_handler:
       - flag <[right_seat_<[value]>]> vector_loc:<[right_seat_<[value]>_loc].sub[<[seat_origin]>]>
       - define total_seats:->:<[right_seat_<[value]>]>
 
+  #for testing/debug purposes
   view_bus:
     - flag player test
     - run dmodels_spawn_model def.model_name:battle_bus def.location:<player.location> save:bus
@@ -276,7 +277,8 @@ fort_bus_handler:
       # define bus_look   <[bus_center].below[3.5]>
       #with armor stands
       - define bus_center <[bus].location.above[1.5].forward_flat[2.85]>
-      - define bus_look   <[bus_center].below[2.9]>
+      #previously: 2.9
+      - define bus_look   <[bus_center].below[2.5]>
       - define circle_points <[bus_center].points_around_y[points=360;radius=8.25]>
       - teleport <[cam]> <[circle_points].get[<[loop_index].mod[360].add[1]>].face[<[bus_look]>]> offthread_repeat:3
       - wait 1t

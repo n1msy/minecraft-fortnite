@@ -1,12 +1,14 @@
 nimnite_config:
   type: data
   #default: 60
-  minimum_players: 4
+  minimum_players: 2
   maximum_players: 100
 
   #how much mats players get
   harvesting_multiplier: 1
 
+  #available versions: 1, 2
+  bus_view_mode: 2
 
   materials:
     wood:
