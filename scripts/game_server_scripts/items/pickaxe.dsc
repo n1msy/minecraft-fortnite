@@ -218,8 +218,8 @@ fort_pic_handler:
       - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
 
     - if <player.has_flag[fort.weak_point.hitbox]>:
-      - flag player fort.weak_point:!
       - flag <player.flag[fort.weak_point.hitbox]> fort:!
+      - flag player fort.weak_point:!
 
     - if <[center].has_flag[build.natural]>:
       #sometimes the center isn't included
