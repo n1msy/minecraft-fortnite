@@ -30,7 +30,7 @@ fort_global_handler:
     - determine cancelled
 
     #-how to prevent doors from breaking in the first place?
-    on *door* spawns:
+    on *door*|*sapling spawns:
     - determine cancelled
 
     on entity damaged:
@@ -255,7 +255,7 @@ fort_global_handler:
       - stop
     - flag player fort.drop_menu:!
 
-    on *grass*|dead_bush|fern physics:
+    on *grass*|dead_bush|fern|wheat physics:
     - determine cancelled
 
     #on blocks physics adjacent:down:

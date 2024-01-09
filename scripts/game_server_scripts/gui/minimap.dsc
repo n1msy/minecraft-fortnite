@@ -130,7 +130,7 @@ minimap:
       - define circle_display <&chr[E001].font[map].color[<[circle_color]>]>
 
       ## - [ PURPLE CIRCLE ] - ##
-    - if <server.has_flag[fort.temp.storm.center]>:
+    - if <server.has_flag[fort.temp.storm.center]> && <[circle_offset].exists>:
       #only show purple circle when white circle shows
       #CURRENT storm center & diameter
       - define storm_center   <server.flag[fort.temp.storm.center]>

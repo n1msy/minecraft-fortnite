@@ -22,6 +22,9 @@ fort_bus_handler:
     - flag player fort.on_bus:!
     - flag server fort.temp.bus.passengers:<-:<player>
 
+    #this way, the sneak event doesn't fire twice and the glider doesn't immediately deply
+    - flag player fort.bus_jumped duration:1s
+
     - teleport <player> <player.location.below[1.5]>
     - invisible reset
 
@@ -213,7 +216,7 @@ fort_bus_handler:
     - define seat_origin <[bus_start].below[1]>
     #<[bus_start].below[1]> (pre armor stand mounts)
 
-    - define drivers_seat_loc <[seat_origin].above.left[0.71].below[1.2].backward[0.1]>
+    - define drivers_seat_loc <[seat_origin].above[1.65].left[0.71].below[1.2].backward[0.1]>
     - spawn <entity[item_display].with[scale=0.1,0.1,0.1]> <[drivers_seat_loc]> save:drivers_seat
     - define drivers_seat <entry[drivers_seat].spawned_entity>
     - flag server fort.temp.bus.drivers_seat:<[drivers_seat]>

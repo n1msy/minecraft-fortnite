@@ -25,10 +25,15 @@ fort_death_handler:
     - determine passively cancelled
     - define player_spectating <player.flag[fort.spectating]>
     #(second check in case the other player died and is spectating someone else now)
+    #this event fires multiple times for some reason, so third check is to make sure this event already fired
+    #and don't do it again
     - if !<[player_spectating].is_online> || <[player_spectating].has_flag[fort.spectating]>:
+      - stop
+    - if <player.has_flag[fort.left_match]>:
       - stop
     - narrate "<element[<&l><player.name>].color[<color[#ffb62e]>]> <&7>has stopped spectating you" targets:<[player_spectating]>
     - adjust <player> send_to:fort_lobby
+    - flag player fort.left_match
 
     on player damaged by VOID flagged:fort:
     - determine passively cancelled
@@ -53,6 +58,7 @@ fort_death_handler:
 
     - run fort_death_handler.death def:<map[killer=<[killer]>]>
 
+    ##does kill count update in hud?
     #-Update kill count
     - if <[killer]> != null:
       #track *who* they kill?
@@ -212,7 +218,6 @@ fort_death_handler:
     - announce <[death_message]>
 
   fx:
-  #-create the "on your knees" animation or no? because the player fades away anyways
     anim:
       - define loc <player.location>
       - run dmodels_spawn_model def.model_name:emotes def.location:<[loc].above[2.1]> def.yaw:<[loc].yaw.add[180]> save:result
@@ -265,7 +270,7 @@ fort_death_handler:
     squares:
       - define loc <[data].get[loc].above[0.3]>
       - define drone_Loc <[loc].above[2.3]>
-        #shadowed or no?
+      #shadowed or no?
 
       #the effect also looks really cool in first person (when doing it in the player's position)
       - repeat 30:

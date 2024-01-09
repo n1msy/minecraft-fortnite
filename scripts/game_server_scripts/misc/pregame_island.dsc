@@ -1,6 +1,31 @@
 
 ##make sure to flag the server for different modes with "fort.mode"
 
+test_fill_containers:
+  type: task
+  debug: true
+  script:
+    - foreach <list[chests|ammo_boxes]> as:container_type:
+      - define containers <world[nimnite_map].flag[fort.<[container_type]>]||<list[]>>
+      - announce "<&b>[Nimnite]<&r> Filling all <&e><[container_type].replace[_].with[ ]><&r>..." to_console
+
+      - define containers_filled 0
+      #not really a need to fill the ammo boxes in advance, but eh? (it's not really being filled either, since it randomizes upon opening)
+      - foreach <[containers]> as:loc:
+          #there's a bunch of stuff we can leave out in these task scripts, since a new map is being added anyways. but eh
+        - if !<[loc].chunk.is_loaded>:
+          - define chunk <[loc].chunk>
+          - chunkload <[chunk]>
+          #saving to unload the chunks after setup is complete
+          ##unload all the chunks?
+          - define loaded_chunks:->:<[chunk]>
+        - inject fort_fill_container.<map[chests=chest;ammo_boxes=ammo_box].get[<[container_type]>]>
+        - define containers_filled:++
+        #- announce "<&b>[Nimnite]<&r> [DEBUG] <&e><[containers_filled]><&f>/<&a><[containers].size> <&f><[container_type]> filled." to_console
+
+      - announce "<&b>[Nimnite]<&r> Done (<&a><[containers].size><&r> filled)" to_console
+
+
 pregame_island_handler:
   type: world
   debug: false
@@ -30,22 +55,41 @@ pregame_island_handler:
 
     - ~filecopy origin:../../../../nimnite_map_template destination:../../nimnite_map overwrite
     - ~createworld nimnite_map
+    - gamerule <world[nimnite_map]> randomTickSpeed 0
 
     - announce "<&b>[Nimnite]<&r> Created world <&dq><&a>nimnite_map<&r><&dq> from <&dq><&e>nimnite_map_template<&r><&dq>" to_console
 
+    # - [ filling chests / ammo boxes ] - #
+    #-get a check of all the
+    #-mention the time elapsed for when filling all the chests?
     - foreach <list[chests|ammo_boxes]> as:container_type:
-      - define containers <server.flag[fort.<[container_type]>]||<list[]>>
+      - define containers <world[nimnite_map].flag[fort.<[container_type]>]||<list[]>>
       - announce "<&b>[Nimnite]<&r> Filling all <&e><[container_type].replace[_].with[ ]><&r>..." to_console
 
+      #- define containers_filled 0
+      #not really a need to fill the ammo boxes in advance, but eh? (it's not really being filled either, since it randomizes upon opening)
       - foreach <[containers]> as:loc:
-        - inject fort_chest_handler.fill_<map[chests=chest;ammo_boxes=ammo_box].get[<[container_type]>]>
+          #there's a bunch of stuff we can leave out in these task scripts, since a new map is being added anyways. but eh
+        - if !<[loc].chunk.is_loaded>:
+          - define chunk <[loc].chunk>
+          - chunkload <[chunk]>
+          #saving to unload the chunks after setup is complete
+          ##unload all the chunks?
+          - define loaded_chunks:->:<[chunk]>
+        - inject fort_fill_container.<map[chests=chest;ammo_boxes=ammo_box].get[<[container_type]>]>
+        #- define containers_filled:++
+        #- announce "<&b>[Nimnite]<&r> [DEBUG] <&e><[containers_filled]><&f>/<&a><[containers].size> <&f><[container_type]> filled." to_console
 
       - announce "<&b>[Nimnite]<&r> Done (<&a><[containers].size><&r> filled)" to_console
 
-    ##################SET FLOOR LOOT TOO
-    - announce "<&b>[Nimnite]<&r> Setting all <&e>floor loot<&r>... <&c>Coming Soon." to_console
-    #- announce "<&b>[Nimnite]<&r> Setting all <&e>floor loot<&r>..." to_console
-    #- announce "<&b>[Nimnite]<&r> Done (<&a>0<&r>)" to_console
+    - flag server fort.unopened_chests:<world[nimnite_map].flag[fort.chests]||<list[]>>
+    - run fort_chest_handler.all_chest_effects
+
+   # - waituntil <[containers_to_fill].is_empty> rate:1s
+   # - chunkload remove <[loaded_chunks]>
+
+    - announce "<&b>[Nimnite]<&r> Setting all <&e>floor loot<&r>..." to_console
+    - inject pregame_island_handler.set_floor_loot
 
     #reset the notable (since its also being used after victory)
     - define ellipsoid <server.flag[fort.pregame.lobby_circle.loc].to_ellipsoid[1.3,3,1.3]>
@@ -70,7 +114,7 @@ pregame_island_handler:
     - flag server fort.temp.startup:!
 
     #just for safety, wait a few seconds
-    - wait 2s
+    - wait 5s
     #players *should* always be 0, but in case someone somehow (like an op) joins this server manually
     - if <bungee.list_servers.contains[fort_lobby]>:
       - definemap data:
@@ -243,8 +287,117 @@ pregame_island_handler:
       #so you can't see anyone that's invisible
       - team name:<[name]> option:SEE_INVISIBLE status:NEVER
 
-
+    #stop everyone from emoting
+    - flag <[players]> fort.emote:!
+    - flag <[players]> fort.disable_emotes duration:1s
+    #prevent players from switching to build / cancel their build mode
+    - flag <[players]> fort.disable_build duration:1s
+    #do this, or just add a simple flag for builds?
+    - foreach <[players].filter[has_flag[build]]> as:p:
+      - run build_toggle player:<[p]>
+    #wait for emotes to stop, then send
+    - wait 5t
     - run fort_core_handler
+
+  set_floor_loot:
+  - define floor_loot_spots <world[nimnite_map].flag[fort.floor_loot_locations]||<list[]>>
+
+  - define loot_pool  <list[]>
+
+  #divide percentages by 100 to get between 0 and 1
+  #-
+  - define total_guns <util.scripts.filter[name.starts_with[gun_]].exclude[<script[gun_particle_origin]>].parse[name.as[item]]>
+  - foreach <[total_guns]> as:gun:
+    #doing this in case some guns don't have certain rarities
+    - define rarities <[gun].flag[rarities].keys>
+    - foreach <[rarities]> as:rarity:
+      - if <[gun].has_flag[rarities.<[rarity]>.floor_weight]>:
+        - define weight    <[gun].flag[rarities.<[rarity]>.floor_weight].div[100]>
+        - define data      <map[item=<[gun]>;weight=<[weight]>]>
+        - define loot_pool <[loot_pool].include[<[data]>]>
+
+  #maybe to make it more readable, just turn it into foreaches?
+  #-
+  - define items     <util.scripts.filter[name.starts_with[fort_item_]].exclude[<script[fort_item_handler]>].parse[name.as[item]]>
+  - foreach <[items]> as:i:
+    - if <[i].has_flag[floor_weight]>:
+      - define weight    <[i].flag[floor_weight].div[100]>
+      - define data      <map[item=<[i]>;weight=<[weight]>]>
+      - define loot_pool <[loot_pool].include[<[data]>]>
+  #-
+  - define ammo      <util.scripts.filter[name.starts_with[ammo_]].parse[name.as[item]]>
+  - foreach <[ammo]> as:am:
+    - define weight    <[am].flag[floor_weight].div[100]>
+    - define data      <map[item=<[am]>;weight=<[weight]>]>
+    - define loot_pool <[loot_pool].include[<[data]>]>
+  #-
+  - foreach <list[wood/2.8|brick/2.1|metal/0.98]> as:mat_data:
+    #input isn't as <item[]> for mats
+    - define item      <[mat_data].before[/]>
+    - define weight    <[mat_data].after[/].div[100]>
+    - define data      <map[item=<[item]>;weight=<[weight]>]>
+    - define loot_pool <[loot_pool].include[<[data]>]>
+  #-
+  - define total_weight 0
+  - foreach <[loot_pool].parse[get[weight]]> as:w:
+    - define total_weight:+:<[w]>
+
+  - define none_weight <element[1].sub[<[total_weight]>]>
+  - define none        <map[item=none;weight=<[none_weight]>]>
+
+  #this list has to be *sorted*
+  - define loot_pool <[loot_pool].include[<[none]>].sort_by_number[get[weight]].reverse>
+
+  - foreach <[floor_loot_spots]> as:loc:
+
+    - define weight           0
+    - define total_weight     0
+    - define rand             <util.random.decimal[0].to[1]>
+
+    #-find the item to choose for floor loot
+    - foreach <[loot_pool]> as:item_data:
+      - define item_weight  <[item_data].get[weight]>
+      - define total_weight <[total_weight].add[<[item_weight]>]>
+
+      #if it passes the probability, drop the item
+      - if <[rand]> <= <[total_weight]>:
+        - define drop_item <[item_data].get[item]>
+        # - if [ none ]
+        - if <[drop_item]> == none:
+          - foreach stop
+        #
+        - define drop_loc  <[loc].above[0.5]>
+        - if !<[drop_loc].chunk.is_loaded>:
+          - define chunk <[loc].chunk>
+          - chunkload <[chunk]>
+
+        #i forgot we can't just use the drop command...
+        - define script_name <[drop_item].script.name||mat>
+        # - if : [ gun ]
+        - if <[script_name].starts_with[gun_]>:
+          - run fort_gun_handler.drop_gun def:<map[gun=<[drop_item]>;loc=<[drop_loc]>]>
+          #maybe there should be a more consistent way of specifying the item to be dropped?
+          - define ammo_type <[drop_item].flag[ammo_type]>
+          - define ammo_qty  <item[ammo_<[ammo_type]>].flag[drop_quantity]>
+          #should it be offset a little bit, or right on top of each other?
+          - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[ammo_qty]>;loc=<[drop_loc]>]>
+        # - if : [ ammo ]
+        - else if <[script_name].starts_with[ammo_]>:
+          #ugh feels unecessarily messy
+          - define ammo_type <[script_name].after[ammo_]>
+          - define ammo_qty  <[drop_item].flag[drop_quantity]>
+          - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[ammo_qty]>;loc=<[drop_loc]>]>
+        # - if [ item ]
+        - else if <[script_name].starts_with[fort_item_]>:
+          - define item_qty <[drop_item].flag[drop_quantity]||1>
+          - run fort_item_handler.drop_item def:<map[item=<[drop_item]>;qty=<[item_qty]>;loc=<[drop_loc]>]>
+        # - if [ mat ]
+        - else:
+          - run fort_pic_handler.drop_mat def:<map[mat=<[drop_item]>;qty=20;loc=<[drop_loc]>]>
+        - foreach stop
+
+
+  - announce "<&b>[Nimnite]<&r> Done (<&a><[floor_loot_spots].size><&r> locations)" to_console
 
   bus_removal:
     - if <server.has_flag[fort.temp.bus.model]>:

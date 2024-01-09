@@ -37,6 +37,9 @@ fort_glider_handler:
     - if <player.has_flag[fort.using_glider.locked]>:
       - stop
 
+    - if <player.has_flag[fort.bus_jumped]>:
+      - stop
+
     - run fort_glider_handler.toggle_glider
 
     #only for deployment, since custom gliding logic prevents sprinting already
@@ -113,7 +116,7 @@ fort_glider_handler:
 
         #- teleport <[gliding_model]> <[loc].above[2]>
 
-        - define velocity <[eye_loc].forward[1].sub[<[eye_loc]>].div[2].with_y[-0.25]>
+        - define velocity <[eye_loc].forward[1].sub[<[eye_loc]>].div[3].with_y[-0.25]>
         - adjust <player> velocity:<[velocity]>
 
         #how long they've been using the glider for (only used for sound effect currently)
@@ -178,7 +181,7 @@ fort_glider_handler:
     - run build_toggle if:<[build_mode].exists>
 
     #waiting in case the fall event fires and players take damage
-    - wait 1t
+    - wait 10t
     - flag player fort.using_glider:!
 
   toggle_glider:

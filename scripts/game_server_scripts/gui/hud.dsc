@@ -168,6 +168,9 @@ hud_handler:
     - if <player.has_flag[fort.using_glider]>:
       - stop
 
+    - if <player.has_flag[fort.disable_build]>:
+      - stop
+
     - if <player.has_flag[fort.on_bus]>:
       - if !<player.has_flag[fort.thanked_bus_driver]>:
         #teammates are orange? idc

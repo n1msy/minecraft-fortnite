@@ -126,7 +126,7 @@ fort_consumable_handler:
         - playeffect at:<[particle_loc]> offset:0.3,0.5,0.3 quantity:25 effect:REDSTONE special_data:1.5|AQUA
         - playsound <player> sound:BLOCK_NOTE_BLOCK_CHIME pitch:1.5
 
-    - take item:<[i]>
+    - take slot:<player.held_item_slot>
 
     - inject update_hud
     - flag player fort.consuming:!
@@ -169,7 +169,7 @@ fort_item_bush:
   material: gold_nugget
   display name: <&chr[1].font[item_name]><&f><&l><element[BUSH].font[item_name]>
   mechanisms:
-    custom_model_data: 19
+    custom_model_data: 15
     hides: ALL
   flags:
     rarity: legendary
@@ -192,6 +192,8 @@ fort_item_bandages:
   flags:
     rarity: uncommon
     chance: 17.6
+    floor_weight: 3.25
+    floor_qty: 10
     icon_chr: 1
     drop_quantity: 5
     health: 15
@@ -209,6 +211,7 @@ fort_item_medkit:
   flags:
     rarity: uncommon
     chance: 16
+    floor_weight: 0.92
     icon_chr: 2
     drop_quantity: 1
     health: 100
@@ -225,6 +228,8 @@ fort_item_small_shield_potion:
   flags:
     rarity: uncommon
     chance: 17.6
+    floor_weight: 1.86
+    floor_qty: 3
     icon_chr: 3
     drop_quantity: 3
     shield: 25
@@ -241,6 +246,7 @@ fort_item_shield_potion:
   flags:
     rarity: rare
     chance: 17.6
+    floor_weight: 2.32
     icon_chr: 4
     drop_quantity: 1
     shield: 50

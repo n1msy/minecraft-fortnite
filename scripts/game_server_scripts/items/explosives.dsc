@@ -5,6 +5,7 @@ fort_explosive_handler:
   events:
     #guide lines
     on player right clicks block with:fort_item_grenade|fort_item_impulse_grenade:
+    - determine passively cancelled
     - repeat 4:
       - define eye_loc <player.eye_location>
       - define origin <[eye_loc].relative[-0.25,0,0.35]>
@@ -126,12 +127,8 @@ fort_explosive_handler:
     - define structure_damage <[data].get[structure_damage]>
     - define grenade_loc      <[data].get[grenade_loc]>
 
-    - define nearby_tiles <[grenade_loc].find_blocks_flagged[build.center].within[<[radius]>].parse[flag[build.center].flag[build.structure]].deduplicate>
-    - foreach <[nearby_tiles]> as:tile:
-      #in case it was removed earlier
-      - if !<[tile].center.has_flag[build.center]>:
-        - foreach next
-      - define center <[tile].center.flag[build.center]>
+    - define nearby_centers <[grenade_loc].find_blocks_flagged[build.center].within[<[radius]>].parse[flag[build.center]].deduplicate>
+    - foreach <[nearby_centers]> as:center:
       - run build_system_handler.structure_damage def:<map[center=<[center]>;damage=<[structure_damage]>]>
 
     - define nearby_entities <[grenade_loc].find_entities.within[<[radius]>]>
@@ -191,14 +188,15 @@ fort_explosive_handler:
 
 fort_item_grenade:
   type: item
-  material: gold_nugget
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[GRENADE].font[item_name]>
   mechanisms:
-    custom_model_data: 6
+    custom_model_data: 30
     hides: ALL
   flags:
     rarity: common
     chance: 14.4
+    floor_weight: 1.86
     icon_chr: 5
     drop_quantity: 3
     stack_size: 6
@@ -207,15 +205,16 @@ fort_item_grenade:
 
 fort_item_impulse_grenade:
   type: item
-  material: gold_nugget
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[IMPULSE GRENADE].font[item_name]>
   mechanisms:
-    custom_model_data: 7
+    custom_model_data: 31
     hides: ALL
   flags:
     rarity: rare
     #actual chance unknown
     chance: 10
+    floor_weight: 1.4
     icon_chr: 6
     drop_quantity: 3
     stack_size: 9

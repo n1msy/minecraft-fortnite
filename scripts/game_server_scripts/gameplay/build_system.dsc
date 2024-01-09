@@ -1,13 +1,9 @@
 #TODO: clean up this entire thing; it's pretty unorganized and ugly
+#things to clean:
+#make a proc for determining the "stairs" variant of the block
+#editing/resetting the edit for pyramids is buggy
 
-##HOLD OFF ON PRE-BAKING UNTIL FURNTIRUE IS ADDED
-
-##future for baking system: make sure you can place builds on it (and that they break)
-#this is an attempt to significantly reduce lag by storing the data of the entire structure and its root data
-#instead of looking for it in a while loop
-
-#-is there a better way to bake these structures?
-
+#testing
 bake_structures:
   type: task
   debug: false
@@ -457,10 +453,19 @@ build_system_handler:
     - define mat_type <[center].flag[build.material]>
     #filtering so connected blocks aren't affected
     - define blocks   <[center].flag[build.structure].blocks.filter[flag[build.center].equals[<[center]>]]>
-    - define max_health <script[nimnite_config].data_key[materials.<[mat_type]>.hp]>
+    - if !<[center].has_flag[build.natural]>:
+      - define max_health <script[nimnite_config].data_key[materials.<[mat_type]>.hp]>
+    #for natural structures
+    - else:
+      - define struct_name <[center].flag[build.natural.name]>
+      - define max_health   <script[nimnite_config].data_key[structures.<[struct_name]>.health]>
+
     - define new_health <[hp].sub[<[structure_damage]>]>
     - if <[new_health]> > 0:
       - flag <[center]> build.health:<[new_health]>
+
+      - run fort_pic_handler.display_build_health def:<map[tile_center=<[center]>;health=<[new_health]>;max_health=<[max_health]>]>
+
       - define progress <element[10].sub[<[new_health].div[<[max_health]>].mul[10]>]>
       - foreach <[blocks]> as:b:
         - blockcrack <[b]> progress:<[progress]> players:<server.online_players>
@@ -470,6 +475,13 @@ build_system_handler:
     - foreach <[blocks]> as:b:
       - blockcrack <[b]> progress:0 players:<server.online_players>
       - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
+
+    #-natural structures break a bit differently
+    - if <[center].has_flag[build.natural]>:
+      - define struct_type <[center].flag[build.type]>
+      - inject fort_pic_handler.break_natural_structure
+      - stop
+
     - inject build_system_handler.break
 
   break:
@@ -487,7 +499,8 @@ build_system_handler:
     #so it only includes the parts of the tile that are its own (since each cuboid intersects by one)
     - define blocks <[tile].blocks.filter[flag[build.center].equals[<[center]>]]>
 
-    - define remove_blocks <[tile].blocks.filter[has_flag[build_existed].not]>
+    #so you don't break barrier blocks either (for chests and ammo boxes)
+    - define remove_blocks <[tile].blocks.filter[has_flag[build_existed].not].filter[material.name.equals[barrier].not]>
 
     - if <[center].flag[build.placed_by]> == WORLD && <[type]> != FLOOR:
       #this way, there's no little holes on the ground after breaking walls that are on the floor
@@ -511,9 +524,13 @@ build_system_handler:
         - foreach <[props].filter[is_spawned]> as:prop_hb:
           - run fort_prop_handler.break def:<map[prop_hb=<[prop_hb]>]>
 
-    - flag <[blocks]> build:!
-    #not doing build DOT existed, since it'll mess up other checks
-    - flag <[blocks].filter[has_flag[build_existed]]> build_existed:!
+      - flag <[blocks]> build:!
+      #not doing build DOT existed, since it'll mess up other checks
+      - flag <[blocks].filter[has_flag[build_existed]]> build_existed:!
+
+    ######## [ DISABLED CHAIN SYSTEM FOR BUILDINGS ] ############
+      - stop
+    ########
 
     #order: first placed -> last placed
     - define priority_order <list[wall|floor|stair|pyramid]>
@@ -526,37 +543,6 @@ build_system_handler:
 
     - define broken_tile        <[data].get[tile]>
     - define broken_tile_center <[data].get[center]>
-
-    # - [ *Baked* Tile Removal ] - #
-    ##- if <[broken_tile_center].has_flag[build.baked]>:
-    ##  - narrate yes
-      #should we bake the centers too?
-    ##  - define structure <[broken_tile_center].flag[build.baked.structure]>
-      #structure is a list of TILES
-    ##  - define roots     <[broken_tile_center].flag[build.baked.roots]>
-      #roots are TILES
-
-    ##  - if <[roots].contains[<[broken_tile]>]>:
-    ##    - define roots:<-:<[broken_tile]>
-
-    ##  - if <[roots].any>:
-    ##    - foreach <[structure].parse[center.flag[build.center]]> as:center:
-    ##      - flag <[center]> build.baked.roots:<[roots]>
-    ##    - stop
-
-    ##  ##check if there are any roots nearby (placed by players)
-    ##  - narrate BREAKING_WHOLE_STRUCTURE
-    ##  - foreach <[structure]> as:tile:
-    ##    - wait 3t
-    ##    - define blocks <[tile].blocks.filter[flag[build.center].equals[<[tile].center.flag[build.center]||null>]]>
-    ##    - define sound <[tile].center.material.block_sound_data.get[break_sound]>
-    ##    - foreach <[tile].blocks> as:b:
-    ##      - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
-    ##    - ~modifyblock <[tile].blocks> air
-    ##    - playsound <[tile].center> sound:<[sound]> pitch:0.8
-    ##    - flag <[blocks]> build:!
-
-    ##  - stop
 
     #get_surrounding_tiles gets all the tiles connected to the inputted tile
     - define branches           <proc[get_surrounding_tiles].context[<[broken_tile]>|<[broken_tile_center]>].exclude[<[broken_tile]>]>
@@ -590,12 +576,14 @@ build_system_handler:
             #if it doesn't, it's already removed
             - foreach next if:!<[tile].center.has_flag[build.center]>
 
-
             #returns null i think whenever players die and they place the build
             - define center <[tile].center.flag[build.center]||null>
             - if <[center]> == null:
               - stop
 
+            ######## [ DISABLED CHAIN SYSTEM FOR BUILDINGS ] ############
+            - foreach next if:<[tile].flag[build.placed_by].equals[WORLD]||false>
+            ########
             - foreach next if:<[center].chunk.is_loaded.not>
 
             - define type   <[center].flag[build.type]>
@@ -741,13 +729,13 @@ build_system_handler:
       - flag <[connecting_blocks]> build.center:<[c_tile_center]>
 
   place:
-    - define tile <[data].get[tile]>
-    - define center <[data].get[center]>
+    - define tile       <[data].get[tile]>
+    - define center     <[data].get[center]>
     - define build_type <[data].get[build_type]>
 
     - define is_editing <[data].get[is_editing]||false>
 
-    - define base_material <map[wood=oak;brick=brick;metal=cobblestone].get[<[data].get[material]>]>
+    - define base_material <map[wood=oak;brick=brick;metal=weathered_copper].get[<[data].get[material]>]>
 
     - choose <[build_type]>:
 
@@ -782,7 +770,9 @@ build_system_handler:
         - define set_blocks      <[set_blocks].exclude[<[existing_blocks]>]>
 
         - define direction <[center].yaw.simple>
-        - define material <[base_material]>_stairs[direction=<[direction]>]
+        - define material <[base_material]>_stairs
+        - define material weathered_cut_copper_stairs if:<[base_material].equals[weathered_copper]>
+        - define material <[material]>[direction=<[direction]>]
         - modifyblock <[set_blocks]> <[material]>
 
         #if they're stairs and they are going in the same direction, to keep the stairs "smooth", forget about adding connectors to them
@@ -794,7 +784,7 @@ build_system_handler:
 
         - define set_blocks      <[set_blocks].exclude[<[existing_blocks]>]>
 
-        - modifyblock <[set_blocks]> <map[oak=oak_planks;brick=bricks;cobblestone=cobblestone].get[<[base_material]>]>
+        - modifyblock <[set_blocks]> <map[oak=oak_planks;brick=bricks;weathered_copper=weathered_copper].get[<[base_material]>]>
 
       - case pyramid:
         - run place_pyramid def:<[center]>|<[base_material]>|<[is_editing]>
@@ -828,7 +818,7 @@ build_system_handler:
 
         - define set_blocks      <[set_blocks].exclude[<[existing_blocks]>]>
 
-        - modifyblock <[set_blocks]> <map[oak=oak_planks;brick=bricks;cobblestone=cobblestone].get[<[base_material]>]>
+        - modifyblock <[set_blocks]> <map[oak=oak_planks;brick=bricks;weathered_copper=weathered_copper].get[<[base_material]>]>
 
 get_existing_blocks:
   type: procedure
@@ -921,7 +911,8 @@ place_pyramid:
     - define center <[center].with_yaw[0].with_pitch[0]>
 
     - define stairs <[base_material]>_stairs
-    - define block <map[oak=oak_planks;brick=bricks;cobblestone=cobblestone].get[<[base_material]>]>
+    - define stairs weathered_cut_copper_stairs if:<[base_material].equals[weathered_copper]>
+    - define block <map[oak=oak_planks;brick=bricks;weathered_copper=weathered_copper].get[<[base_material]>]>
 
     - repeat 2:
       - define layer_center <[center].below[<[value]>]>
@@ -970,7 +961,9 @@ place_pyramid:
       - if <[center].material.name> != air && <[center].flag[build.placed_by]||null> == WORLD:
         - flag <[center]> build_existed
       - else:
-        - modifyblock <[center]> <[base_material]>_slab
+        - define slab_mat <[base_material]>_slab
+        - define slab_mat weathered_cut_copper_slab if:<[base_material].equals[weathered_copper]>
+        - modifyblock <[center]> <[slab_mat]>
 
 stair_blocks_gen:
   type: procedure
@@ -1085,7 +1078,8 @@ build_toggle:
 
       - else if <[type]> != null:
 
-        - if <player.eye_location.ray_trace[return=block;range=4.5;default=air].has_flag[build.center]>:
+        - define block_looking_at <player.eye_location.ray_trace[return=block;range=4.5;default=air]>
+        - if <[block_looking_at].has_flag[build.center]> && <[block_looking_at].flag[build.center].flag[build.placed_by]> == <player>:
           - define text "<[edit_txt]> <[mat_txt]>"
         - else:
           - define text "<[build_txt]> <[mat_txt]>"

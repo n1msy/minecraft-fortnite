@@ -49,7 +49,7 @@ fort_prop_handler:
 
       - remove <[prop_model]>|<[prop_hb]>
       - flag <player.world> fort.props:<-:<[loc]>
-      - narrate "<&c>Removed <[name]> at <&f><[loc].simple>"
+      - narrate "<&c>Removed <[name].replace[_].with[<&sp>]> at <&f><[loc].simple>"
       - stop
 
     ##this is added for safety purposes
@@ -85,14 +85,16 @@ fort_prop_handler:
 
     #- define yaw <player.eye_location.yaw>
     #angle snapping
-    - define yaw <map[North=180;South=0;East=-90;West=90].get[<player.eye_location.yaw.simple>]>
+    - define yaw <map[North=180;Northeast=-135;East=-90;West=90;Northwest=135;South=0;Southeast=-45;Southwest=45].get[<player.eye_location.direction>]>
     - define angle <[yaw].to_radians>
     - define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
 
-    - define cmd           <[i].custom_model_data>
-    - define scale         <[i].flag[scale]||1,1,1>
+    #so itll always use the data from the actual SCRIPT and not the i
+    - define default_i     <[i].script.name.as[item]>
+    - define cmd           <[default_i].custom_model_data>
+    - define scale         <[default_i].flag[scale]||1,1,1>
     #- define scale         1,1,1
-    - define translation   <[i].flag[translation]||0,0,0>
+    - define translation   <[default_i].flag[translation]||0,0,0>
     #- define translation   0,0,0
 
     - define model_loc <[loc]>
@@ -103,7 +105,7 @@ fort_prop_handler:
     - define prop_model <entry[prop].spawned_entity>
 
     #- spawn INTERACTION[height=1.31;width=1.15] <[model_loc].below[0.5]> save:prop_hitbox
-    - spawn INTERACTION[height=<[i].flag[hitbox.height]>;width=<[i].flag[hitbox.width]>] <[model_loc].below[0.5]> save:prop_hitbox
+    - spawn INTERACTION[height=<[default_i].flag[hitbox.height]>;width=<[default_i].flag[hitbox.width]>] <[model_loc].below[0.5]> save:prop_hitbox
     - define prop_hb <entry[prop_hitbox].spawned_entity>
 
     - define placed_on <context.location>
@@ -118,13 +120,20 @@ fort_prop_handler:
         - modifyblock <[barrier_loc]> barrier
         - flag <[barrier_loc]> fort.prop.hitbox:<[prop_hb]>
         - flag <[prop_hb]> fort.prop.barriers:->:<[barrier_loc]>
-
+      #-barriers around the bed
+      - if <[i].script.name.after_last[_]> == bed:
+        - define hb_loc <[prop_hb].location>
+        - define around <list[<[hb_loc].left>|<[hb_loc].right>|<[hb_loc].forward_flat>|<[hb_loc].backward_flat>|<[hb_loc].forward_flat.left>|<[hb_loc].forward_flat.right>|<[hb_loc].backward_flat.left>|<[hb_loc].backward_flat.right>]>
+        - foreach <[around]> as:barrier_loc:
+          - modifyblock <[barrier_loc]> barrier
+          - flag <[barrier_loc]> fort.prop.hitbox:<[prop_hb]>
+          - flag <[prop_hb]> fort.prop.barriers:->:<[barrier_loc]>
     - flag <[model_loc]> fort.prop.hitbox:<[prop_hb]>
 
     - flag <[prop_hb]> fort.prop.loc:<[model_loc]>
     - flag <[prop_hb]> fort.prop.model:<[prop_model]>
-    - flag <[prop_hb]> fort.prop.material:<[i].flag[material]>
-    - flag <[prop_hb]> fort.prop.health:<[i].flag[health]>
+    - flag <[prop_hb]> fort.prop.material:<[default_i].flag[material]>
+    - flag <[prop_hb]> fort.prop.health:<[default_i].flag[health]>
     - flag <[prop_hb]> fort.prop.name:<[i].script.name.after[fort_prop_]>
     - flag <[prop_hb]> fort.prop.attached_center:<[center_attached_to]> if:<[center_attached_to].exists>
 
@@ -173,7 +182,7 @@ fort_prop_handler:
 
    # - define yaw <map[North=0;South=180;West=-90;East=90].get[<player.location.yaw.simple>]>
     - define health_display_loc <[prop_hb].flag[fort.prop.loc].below[0.85]>
-    - run fort_pic_handler.display_build_health def:<map[loc=<[health_display_loc]>;health=<[new_health]>;max_health=<item[fort_prop_<[prop_hb].flag[fort.prop.name]>].flag[health]>]>
+    - run fort_pic_handler.display_build_health def:<map[tile_center=<[health_display_loc]>;health=<[new_health]>;max_health=<item[fort_prop_<[prop_hb].flag[fort.prop.name]>].flag[health]>]>
 
     - playeffect effect:BLOCK_CRACK at:<[fx_loc]> offset:0.1 special_data:<[mat_data].get[special_data]> quantity:10 visibility:30
     - playsound <[fx_loc]> sound:<[mat_data].get[sound]> pitch:<[mat_data].get[pitch]>
@@ -287,6 +296,11 @@ fort_prop_closet:
   flags:
     material: wood
     health: 50
+    translation: 0,0.797,0
+    barrier: true
+    hitbox:
+      height: 2.4
+      width: 1.5
 
 fort_prop_red_chair:
   type: item
@@ -298,10 +312,11 @@ fort_prop_red_chair:
   flags:
     material: wood
     health: 50
-    translation: 0,0,0
+    translation: 0,-0.09,0
+    scale: 0.8,0.8,0.8
     hitbox:
-      height: 1.6
-      width: 1.35
+      height: 1.3
+      width: 1.05
 
 fort_prop_television:
   type: item
@@ -313,11 +328,12 @@ fort_prop_television:
   flags:
     material: wood
     health: 50
-    scale: 0.9,0.9,0.9
+    scale: 0.8,0.8,0.8
     barrier: true
+    translation: 0,-0.1,0
     hitbox:
-      height: 1.31
-      width: 1.15
+      height: 1.3
+      width: 1.1
 
 fort_prop_refrigerator:
   type: item
@@ -329,12 +345,12 @@ fort_prop_refrigerator:
   flags:
     material: brick
     health: 120
-    scale: 1.2,1.2,1.2
-    translation: 0,0.548,0
+    scale: 1.1,1.1,1.1
+    translation: 0,0.46,0
     barrier: true
     hitbox:
-      height: 2.1
-      width: 1.2
+      height: 1.95
+      width: 1.1
 
 fort_prop_toilet:
   type: item
@@ -361,9 +377,10 @@ fort_prop_bathtub:
   flags:
     material: brick
     health: 75
+    scale: 0.85,0.85,0.85
     hitbox:
-      height: 1
-      width: 2.2
+      height: 0.9
+      width: 2
 
 fort_prop_couch:
   type: item
@@ -375,9 +392,11 @@ fort_prop_couch:
   flags:
     material: wood
     health: 50
+    translation: 0,-0.09,0
+    scale: 0.8,0.8,0.8
     hitbox:
-      height: 1.6
-      width: 2.6
+      height: 1.3
+      width: 2.1
 
 fort_prop_bed:
   type: item
@@ -389,6 +408,11 @@ fort_prop_bed:
   flags:
     material: wood
     health: 120
+    barrier: true
+    hitbox:
+      #added .01 because barriers get in the way
+      height: 1.01
+      width: 3.01
 
 fort_prop_tires:
   type: item
@@ -405,3 +429,38 @@ fort_prop_tires:
     hitbox:
       height: 1
       width: 1.5
+
+#-custom barrier block system for open/closed shipments
+fort_prop_shipment_open:
+  type: item
+  material: gold_nugget
+  display name: Shipment
+  mechanisms:
+    custom_model_data: 36
+    hides: ALL
+  flags:
+    material: metal
+    health: 600
+    scale: 1.25,1.25,1.25
+    hitbox:
+      height: 1
+      width: 1.5
+
+fort_prop_shipment_closed:
+  type: item
+  material: gold_nugget
+  display name: Shipment
+  mechanisms:
+    custom_model_data: 36
+    hides: ALL
+  flags:
+    material: metal
+    health: 600
+    scale: 1.25,1.25,1.25
+    hitbox:
+      height: 1
+      width: 1.5
+
+##temp models to add:
+#-bed
+#-crates (an open, and unopened one) (not yet)

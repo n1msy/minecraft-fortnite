@@ -9,11 +9,12 @@ fort_item_handler:
   debug: false
   definitions: data
   events:
+
     on entity removed from world:
     - if <context.entity.has_flag[text_display]> && <context.entity.flag[text_display].is_spawned>:
       - remove <context.entity.flag[text_display]>
 
-    on gun_*|ammo_*|fort_item_* despawns:
+    on gun_*|ammo_*|fort_item_*|oak_log|bricks|iron_block despawns:
     - determine cancelled
 
     after player drops fort_item_*:
@@ -26,10 +27,10 @@ fort_item_handler:
 
     - define text <&l><[name].to_uppercase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]><&f><&l>x<[qty]>
 
-    - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>]>
+    - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>;rarity=<[rarity]>]>
 
-    - team name:<[rarity]> add:<[drop]> color:<map[Common=GRAY;Uncommon=GREEN;Rare=AQUA;Epic=LIGHT_PURPLE;Legendary=GOLD].get[<[rarity]>]>
-    - adjust <[drop]> glowing:true
+    #- team name:<[rarity]> add:<[drop]> color:<map[Common=GRAY;Uncommon=GREEN;Rare=AQUA;Epic=LIGHT_PURPLE;Legendary=GOLD].get[<[rarity]>]>
+    #- adjust <[drop]> glowing:true
 
     - inject update_hud
 
@@ -101,13 +102,14 @@ fort_item_handler:
     - define rarity_line <[rarity].to_titlecase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]>
     - define lore <list[<[rarity_line]>]>
 
-    - give <[i].with[quantity=<[add_qty]>;lore=<[lore]>]> slot:<[slot]>
+    - give <[i].with[quantity=<[add_qty]>;lore=<[lore]>;color=<color[#000000]>]> slot:<[slot]>
 
   item_text:
-    - define text <[data].get[text]>
+    - define text   <[data].get[text]>
     #remove the control pixel
-    - define text <[text].replace_text[<[text].strip_color.to_list.first>].with[<empty>]>
-    - define drop <[data].get[drop]>
+    - define text   <[text].replace_text[<[text].strip_color.to_list.first>].with[<empty>]>
+    - define rarity <[data].get[rarity]||Common>
+    - define drop   <[data].get[drop]>
 
     - choose <[drop].item.script.name.after[fort_item_]>:
       - case bush:
@@ -115,11 +117,14 @@ fort_item_handler:
       - default:
         - define translation 0,0.75,0
 
-    - spawn <entity[text_display].with[text=<[text]>;pivot=center;scale=1,1,1;translation=<[translation]>]> <[drop].location> save:txt
+    - spawn <entity[text_display].with[text=<[text]>;pivot=center;scale=1,1,1;translation=<[translation]>;view_range=0.06]> <[drop].location> save:txt
     - define txt <entry[txt].spawned_entity>
     - mount <[txt]>|<[drop]>
 
     - flag <[drop]> text_display:<[txt]>
+    #set rarity color
+    - define rarity_color <color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]>
+    - adjust <[drop].item> color:<[rarity_color]>
 
   drop_item:
 
@@ -138,8 +143,8 @@ fort_item_handler:
 
     - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>]>
 
-    - team name:<[rarity]> add:<[drop]> color:<map[Common=GRAY;Uncommon=GREEN;Rare=AQUA;Epic=LIGHT_PURPLE;Legendary=GOLD].get[<[rarity]>]>
-    - adjust <[drop]> glowing:true
+    #- team name:<[rarity]> add:<[drop]> color:<map[Common=GRAY;Uncommon=GREEN;Rare=AQUA;Epic=LIGHT_PURPLE;Legendary=GOLD].get[<[rarity]>]>
+    #- adjust <[drop]> glowing:true
 
 
   # - [ DROP ALL ITEMS ] - #

@@ -83,6 +83,7 @@ fort_gun_handler:
     - wait 1t
 
     - define gun      <context.item>
+    - adjust <[gun]> color:<color[#000000]>
 
     - if <player.inventory.find_item[<[gun]>]> == -1:
       - stop
@@ -195,7 +196,7 @@ fort_gun_handler:
     - if <[gun].has_flag[sniper]>:
       - inject fort_gun_handler.reset_sniper_scope
     - else:
-      #####issue: when player dies
+      #-issue: when player dies?
       #no need to check if they dropped, since they can't drop when scoped
       - inventory adjust slot:<[slot]> custom_model_data:<[cmd]>
     - cast SPEED remove
@@ -212,6 +213,7 @@ fort_gun_handler:
     - inject fort_gun_handler.use_gun
 
     on player right clicks block with:gun_*:
+    - stop if:<context.location.material.name.contains_text[door]||false>
     - determine passively cancelled
     - inject fort_gun_handler.use_gun
     #-cancel shooting while trying to reload
@@ -255,6 +257,7 @@ fort_gun_handler:
     - equip head:air
     - adjust <player> fov_multiplier
     - cast SLOW_DIGGING remove
+    - flag player fort.gun_scoped:!
 
   ## - [ Shoot Stuff ] - ##
   shoot:
@@ -271,9 +274,10 @@ fort_gun_handler:
     - define rarity              <[gun].flag[rarity]>
     #divide by 5, since the damage is based on the 100 scale
     - define base_damage         <[gun].flag[rarities.<[rarity]>.damage].div[5]>
+    - define pellets             <[gun].flag[pellets]>
     #mul base_damage by 5, since tiles use 100 hp scale and not 20
     - define structure_damage    <[gun].flag[rarities.<[rarity]>.structure_damage]||<[base_damage].mul[5]>>
-    - define pellets             <[gun].flag[pellets]>
+    - define structure_damage    <[structure_damage].div[<[pellets]>]>
     - define base_bloom          <[gun].flag[base_bloom]>
     - define bloom_multiplier    <[gun].flag[bloom_multiplier]>
     - define headshot_multiplier <[gun].flag[headshot_multiplier]>
@@ -396,7 +400,8 @@ fort_gun_handler:
       #structure damage (damagefalloff doesn't apply)
       #fallback, in case chunk isn't loaded
       - if <[target_block].has_flag[build.center]||false>:
-        - run build_system_handler.structure_damage def:<map[center=<[target_block].flag[build.center]>;damage=<[structure_damage].div[<[pellets]>]>]>
+        #doing this for support for multiple tiles being hit at once
+        - define damaged_structures.<[target_block].flag[build.center].simple>.damage:+:<[structure_damage]>
 
       - if <[target]> != null && <[target].is_spawned>:
         # - [ Damage Falloff ] - #
@@ -471,7 +476,7 @@ fort_gun_handler:
             - if <[body_part]> == Head:
               - define color <&e>
               - playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:1.5
-            - if <[target].armor_bonus||0> > 0:
+            - if <[target].armor_bonus||0> >= 0:
               - define color <&b>
             - adjust <[target]> no_damage_duration:0
             #multiple pellets uses slightly different logic for the damage_indicator, so you findout when you check if <[hit_targets]> exists
@@ -489,6 +494,17 @@ fort_gun_handler:
           - if <[target].flag[fort.supply_drop.hitbox.health]> <= 0:
             - flag <[target]> fort.supply_drop.hitbox.health:!
 
+          - define health_display <[target].flag[fort.supply_drop.health_bar]>
+          - if <[health_display].is_spawned>:
+            - define hp     <[target].flag[fort.supply_drop.hitbox.health]||0>
+            - define max_hp 150
+            - adjust <[health_display]> show_to_players
+            - define health_r <[hp].div[<[max_hp]>].mul[255].round_down>
+            - define bar_icon    <&chr[C005].font[icons].color[<[health_r]>,2,50]>
+            - define health_text "<[hp].format_number> <element[｜ <[max_hp].format_number>].color[209,255,196]>"
+            - define health_text <[bar_icon]><proc[spacing].context[-163]><[health_text]><proc[spacing].context[126]>
+            - adjust <[health_display]> text:<[health_text]>
+
           #-show damage indicator even if it's 0?
           - run fort_global_handler.damage_indicator def:<map[damage=<[damage].mul[5].round_down>;entity=<[target]>;color=<[color]>]>
           - adjust <player> reset_attack_cooldown
@@ -499,6 +515,12 @@ fort_gun_handler:
           #rest of the hurt stuff is handled within the prop file itself
           - run fort_prop_handler.damage_prop def:<map[prop_hb=<[target]>;damage=<[damage].mul[5]>]>
 
+    #outside of the repeat, handling damage *after* all pellets are shot to prevent lag
+    - if <[damaged_structures].exists>:
+      #this way, the damage structure command only fires ONCE per tile
+      - foreach <[damaged_structures].keys.parse[as_location]> as:center:
+        - define struct_dmg <[damaged_structures.<[center].simple>.damage]>
+        - run build_system_handler.structure_damage def:<map[center=<[center]>;damage=<[struct_dmg]>]>
 
   custom_shoot:
     grenade_launcher:
@@ -554,6 +576,9 @@ fort_gun_handler:
       - define eye_loc    <player.eye_location>
       - define origin     <[eye_loc].forward[1.5]>
       #- define origin     <[origin].below[0.2]> if:<player.has_flag[fort.gun_scoped]>
+
+      #-use item displays and display entities?
+      #or rather, use item displays and interactions?
 
       #- spawn <entity[item_display].with[item=<item[gold_nugget].with[custom_model_data=14]>;scale=1,1,1]> <[origin]> save:e
       - spawn <entity[armor_stand].with[equipment=<map.with[helmet].as[<item[gold_nugget].with[custom_model_data=14]>]>;gravity=false;collidable=false;invulnerable=true;visible=false]> <[origin].below[1.685]> save:e
@@ -730,8 +755,8 @@ fort_gun_handler:
 
     - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>]>
 
-    - team name:ammo add:<[drop]> color:GRAY
-    - adjust <[drop]> glowing:true
+    #- team name:ammo add:<[drop]> color:GRAY
+    #- adjust <[drop]> glowing:true
 
   drop_gun:
     - define gun  <[data].get[gun]>
@@ -750,10 +775,10 @@ fort_gun_handler:
 
     - define text <&l><[name].to_uppercase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]>
 
-    - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>]>
+    - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>;rarity=<[rarity]>]>
 
-    - team name:<[rarity]> add:<[drop]> color:<map[Common=GRAY;Uncommon=GREEN;Rare=AQUA;Epic=LIGHT_PURPLE;Legendary=GOLD].get[<[rarity]>]>
-    - adjust <[drop]> glowing:true
+    #- team name:<[rarity]> add:<[drop]> color:<map[Common=GRAY;Uncommon=GREEN;Rare=AQUA;Epic=LIGHT_PURPLE;Legendary=GOLD].get[<[rarity]>]>
+    #- adjust <[drop]> glowing:true
 
   reload:
     #TODO: divide the bullets so you can load a certain amount of bullets, then stop (it doesn't have to be fully reloaded before you can shoot again)
@@ -950,27 +975,31 @@ gun_particle_origin:
 #-check how much ammo each ammo type drops from chests?
 ammo_light:
   type: item
-  material: gold_nugget
+  material: leather_helmet
   display name: LIGHT
   mechanisms:
     custom_model_data: 1
     hides: ALL
   flags:
     qty: 1
+    drop_quantity: 18
+    floor_weight: 4.32
 
 ammo_medium:
   type: item
-  material: gold_nugget
+  material: leather_helmet
   display name: MEDIUM
   mechanisms:
     custom_model_data: 2
     hides: ALL
   flags:
     qty: 1
+    drop_quantity: 10
+    floor_weight: 4.32
 
 ammo_heavy:
   type: item
-  material: gold_nugget
+  material: leather_helmet
   display name: HEAVY
   mechanisms:
     custom_model_data: 3
@@ -979,33 +1008,36 @@ ammo_heavy:
     qty: 1
     #how much it should drop by chests
     drop_quantity: 6
+    floor_weight: 2.16
 
 ammo_shells:
   type: item
-  material: gold_nugget
+  material: leather_helmet
   display name: SHELLS
   mechanisms:
     custom_model_data: 4
     hides: ALL
   flags:
     qty: 1
-    drop_quantity: 6
+    drop_quantity: 4
+    floor_weight: 3.45
 
 ammo_rockets:
   type: item
-  material: gold_nugget
+  material: leather_helmet
   display name: ROCKETS
   mechanisms:
     custom_model_data: 5
     hides: ALL
   flags:
     qty: 1
-    drop_quantity: 3
+    drop_quantity: 2
+    floor_weight: 0.43
 
 
 gun_pump_shotgun:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[PUMP SHOTGUN].font[item_name]>
   mechanisms:
     custom_model_data: 1
@@ -1041,6 +1073,7 @@ gun_pump_shotgun:
         custom_model_data: 1
       uncommon:
         chance: 34
+        floor_weight: 5.5
         damage: 101
         structure_damage: 49
         reload_time: 4.8
@@ -1048,6 +1081,7 @@ gun_pump_shotgun:
       rare:
         chance: 8
         damage: 110
+        floor_weight: 1.83
         structure_damage: 50
         reload_time: 4.4
         custom_model_data: 1
@@ -1082,7 +1116,7 @@ gun_pump_shotgun:
 
 gun_tactical_shotgun:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[TACTICAL SHOTGUN].font[item_name]>
   mechanisms:
     custom_model_data: 23
@@ -1111,6 +1145,7 @@ gun_tactical_shotgun:
     rarities:
       common:
         chance: 22
+        floor_weight: 5.25
         damage: 77
         structure_damage: 50
         reload_time: 6.27
@@ -1118,11 +1153,13 @@ gun_tactical_shotgun:
       uncommon:
         chance: 34
         damage: 81
+        floor_weight: 1.44
         structure_damage: 52
         reload_time: 5.99
         custom_model_data: 23
       rare:
         chance: 8
+        floor_weight: 0.53
         damage: 85
         structure_damage: 55
         reload_time: 5.7
@@ -1163,7 +1200,7 @@ gun_tactical_shotgun:
 
 gun_assault_rifle:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[ASSAULT RIFLE].font[item_name]>
   mechanisms:
     custom_model_data: 3
@@ -1189,27 +1226,32 @@ gun_assault_rifle:
     rarities:
       common:
         chance: 43
+        floor_weight: 3.24
         damage: 30
         reload_time: 2.7
         custom_model_data: 3
       uncommon:
         chance: 39
+        floor_weight: 1.62
         damage: 31
         reload_time: 2.6
         custom_model_data: 3
       rare:
         chance: 39
+        floor_weight: 0.65
         damage: 33
         reload_time: 2.5
         custom_model_data: 3
       epic:
         chance: 2
+        floor_weight: 0.24
         damage: 35
         reload_time: 2.4
         icon_chr: 2
         custom_model_data: 5
       legendary:
         chance: 0.5
+        floor_weight: 0.06
         damage: 36
         reload_time: 2.2
         icon_chr: 2
@@ -1228,7 +1270,7 @@ gun_assault_rifle:
 
 gun_burst_assault_rifle:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[BURST ASSAULT RIFLE].font[item_name]>
   mechanisms:
     custom_model_data: 26
@@ -1256,27 +1298,32 @@ gun_burst_assault_rifle:
     rarities:
       common:
         chance: 43
+        floor_weight: 3.07
         damage: 27
         reload_time: 2.9
         custom_model_data: 26
       uncommon:
         chance: 39
+        floor_weight: 1.23
         damage: 29
         reload_time: 2.7
         custom_model_data: 26
       rare:
         chance: 39
+        floor_weight: 0.46
         damage: 30
         reload_time: 2.6
         custom_model_data: 26
       epic:
         chance: 2
+        floor_weight: 0.185
         damage: 32
         reload_time: 2.5
         icon_chr: 4
         custom_model_data: 28
       legendary:
         chance: 0.5
+        floor_weight: 0.06
         damage: 33
         reload_time: 2.3
         icon_chr: 4
@@ -1295,7 +1342,7 @@ gun_burst_assault_rifle:
 
 gun_tactical_smg:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[TACTICAL SMG].font[item_name]>
   mechanisms:
     custom_model_data: 7
@@ -1322,16 +1369,19 @@ gun_tactical_smg:
       #no common tac smgs
       uncommon:
         chance: 22
+        floor_weight: 3.8
         damage: 18
         reload_time: 2.2
         custom_model_data: 7
       rare:
         chance: 34
+        floor_weight: 1.5
         damage: 19
         reload_time: 2.1
         custom_model_data: 7
       epic:
         chance: 1.36
+        floor_weight: 0.35
         damage: 20
         reload_time: 2.0
         custom_model_data: 7
@@ -1358,7 +1408,7 @@ gun_tactical_smg:
 
 gun_smg:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[SMG].font[item_name]>
   mechanisms:
     custom_model_data: 9
@@ -1384,26 +1434,31 @@ gun_smg:
     rarities:
       common:
         chance: 14
+        floor_weight: 3.455
         damage: 16
         reload_time: 2.31
         custom_model_data: 9
       uncommon:
         chance: 39.7
+        floor_weight: 1.15
         damage: 17
         reload_time: 2.2
         custom_model_data: 9
       rare:
         chance: 9.33
+        floor_weight: 0.39
         damage: 18
         reload_time: 2.1
         custom_model_data: 9
       epic:
         chance: 1.59
+        floor_weight: 0.2279
         damage: 19
         reload_time: 2.0
         custom_model_data: 9
       legendary:
         chance: 0.4
+        floor_weight: 0.0848
         damage: 20
         reload_time: 1.89
         custom_model_data: 9
@@ -1424,7 +1479,7 @@ gun_smg:
 
 gun_bolt_action_sniper_rifle:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[BOLT-ACTION SNIPER RIFLE].font[item_name]>
   mechanisms:
     custom_model_data: 11
@@ -1465,16 +1520,19 @@ gun_bolt_action_sniper_rifle:
         custom_model_data: 11
       rare:
         chance: 25.86
+        floor_weight: 0.35
         damage: 110
         reload_time: 3
         custom_model_data: 11
       epic:
         chance: 2.76
+        floor_weight: 0.1
         damage: 116
         reload_time: 2.5
         custom_model_data: 11
       legendary:
         chance: 0.69
+        floor_weight: 0.03
         damage: 121
         reload_time: 2.35
         custom_model_data: 11
@@ -1489,7 +1547,7 @@ gun_bolt_action_sniper_rifle:
 
 gun_revolver:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[REVOLVER].font[item_name]>
   mechanisms:
     custom_model_data: 12
@@ -1515,16 +1573,19 @@ gun_revolver:
     rarities:
       common:
         chance: 11
+        floor_weight: 4
         damage: 54
         reload_time: 2.2
         custom_model_data: 12
       uncommon:
         chance: 61.3
+        floor_weight: 0.9
         damage: 57
         reload_time: 2.1
         custom_model_data: 12
       rare:
         chance: 24.5
+        floor_weight: 0.3
         damage: 60
         reload_time: 2
         custom_model_data: 12
@@ -1552,7 +1613,7 @@ gun_revolver:
 
 gun_pistol:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[PISTOL].font[item_name]>
   mechanisms:
     custom_model_data: 16
@@ -1579,11 +1640,13 @@ gun_pistol:
     rarities:
       common:
         chance: 11
+        floor_weight: 4
         damage: 24
         reload_time: 1.54
         custom_model_data: 16
       uncommon:
         chance: 61.3
+        floor_weight: 1.2
         damage: 25
         reload_time: 1.47
         custom_model_data: 16
@@ -1614,7 +1677,7 @@ gun_pistol:
 
 gun_grenade_launcher:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[GRENADE LAUNCHER].font[item_name]>
   mechanisms:
     custom_model_data: 18
@@ -1672,7 +1735,7 @@ gun_grenade_launcher:
 
 gun_rocket_launcher:
   type: item
-  material: wooden_hoe
+  material: leather_horse_armor
   display name: <&chr[1].font[item_name]><&f><&l><element[ROCKET LAUNCHER].font[item_name]>
   mechanisms:
     custom_model_data: 20

@@ -1,7 +1,7 @@
 nimnite_config:
   type: data
   #default: 60
-  minimum_players: 2
+  minimum_players: 3
   maximum_players: 100
 
   #how much mats players get
@@ -136,6 +136,62 @@ nimnite_config:
       type: TREE
       material: wood
       health: 200
+
+    #-Moisty Trees
+    moisty_1:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_2:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_3:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_4:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_5:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_6:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_7:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_8:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_9:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_tree:
+      type: TREE
+      material: wood
+      health: 600
+
+    moisty_skinny_tree:
+      type: TREE
+      material: wood
+      health: 300
 
     #-Short Rocks
     short_rock_1:
