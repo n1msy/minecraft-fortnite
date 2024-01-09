@@ -159,7 +159,7 @@ fort_prop_handler:
 
    # - define yaw <map[North=0;South=180;West=-90;East=90].get[<player.location.yaw.simple>]>
     - define health_display_loc <[prop_hb].flag[fort.prop.loc].below[0.85]>
-    - run fort_pic_handler.display_build_health def:<map[tile_center=<[health_display_loc]>;health=<[new_health]>;max_health=<item[fort_prop_<[prop_hb].flag[fort.prop.name]>].flag[health]>]>
+    - run fort_pic_handler.display_build_health def:<map[is_prop=true;tile_center=<[health_display_loc]>;health=<[new_health]>;max_health=<item[fort_prop_<[prop_hb].flag[fort.prop.name]>].flag[health]>]>
 
     - playeffect effect:BLOCK_CRACK at:<[fx_loc]> offset:0.1 special_data:<[mat_data].get[special_data]> quantity:10 visibility:30
     - playsound <[fx_loc]> sound:<[mat_data].get[sound]> pitch:<[mat_data].get[pitch]>

@@ -491,13 +491,12 @@ fort_pic_handler:
 
     - define tile_center <[data].get[tile_center]>
     - define hp          <[data].get[health]>
-    - define max_hp     <[data].get[max_health]>
+    - define max_hp      <[data].get[max_health]>
+    - define is_prop     <[data].get[is_prop]>
 
     #-find health bar loc
-    #i feel like there's a cleaner way for this in the config
-    #making this check in case it's a non-PROP
     - define loc <[tile_center]>
-    - if <[tile_center].has_flag[build]>:
+    - if !<[is_prop]>:
       - if !<[tile_center].has_flag[build.natural]>:
         #show the health at the center of the tile
         - define loc <[tile_center].flag[build.center].center.above[0.3]>
