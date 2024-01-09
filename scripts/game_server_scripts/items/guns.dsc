@@ -273,9 +273,10 @@ fort_gun_handler:
     - define rarity              <[gun].flag[rarity]>
     #divide by 5, since the damage is based on the 100 scale
     - define base_damage         <[gun].flag[rarities.<[rarity]>.damage].div[5]>
+    - define pellets             <[gun].flag[pellets]>
     #mul base_damage by 5, since tiles use 100 hp scale and not 20
     - define structure_damage    <[gun].flag[rarities.<[rarity]>.structure_damage]||<[base_damage].mul[5]>>
-    - define pellets             <[gun].flag[pellets]>
+    - define structure_damage    <[structure_damage].div[<[pellets]>]>
     - define base_bloom          <[gun].flag[base_bloom]>
     - define bloom_multiplier    <[gun].flag[bloom_multiplier]>
     - define headshot_multiplier <[gun].flag[headshot_multiplier]>
@@ -398,7 +399,8 @@ fort_gun_handler:
       #structure damage (damagefalloff doesn't apply)
       #fallback, in case chunk isn't loaded
       - if <[target_block].has_flag[build.center]||false>:
-        - run build_system_handler.structure_damage def:<map[center=<[target_block].flag[build.center]>;damage=<[structure_damage].div[<[pellets]>]>]>
+        #doing this for support for multiple tiles being hit at once
+        - define damaged_structures.<[target_block].flag[build.center].simple>.damage:+:<[structure_damage]>
 
       - if <[target]> != null && <[target].is_spawned>:
         # - [ Damage Falloff ] - #
@@ -512,6 +514,12 @@ fort_gun_handler:
           #rest of the hurt stuff is handled within the prop file itself
           - run fort_prop_handler.damage_prop def:<map[prop_hb=<[target]>;damage=<[damage].mul[5]>]>
 
+    #outside of the repeat, handling damage *after* all pellets are shot to prevent lag
+    - if <[damaged_structures].exists>:
+      #this way, the damage structure command only fires ONCE per tile
+      - foreach <[damaged_structures].keys.parse[as_location]> as:center:
+        - define struct_dmg <[damaged_structures.<[center].simple>.damage]>
+        - run build_system_handler.structure_damage def:<map[center=<[center]>;damage=<[struct_dmg]>]>
 
   custom_shoot:
     grenade_launcher:
