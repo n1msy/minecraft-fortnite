@@ -59,9 +59,13 @@ fort_chest_handler:
     - flag <[loc]> fort.<[container_type]>.yaw:<[yaw].add[180]>
     - flag <[loc]> fort.<[container_type]>.material:<context.item.flag[material]>
     - flag <[loc]> fort.<[container_type]>.attached_center:<[center_attached_to]> if:<[center_attached_to].exists>
-
     #so it's not using the fx constantly when not in use
     - flag <[loc]> fort.<[container_type]>.opened
+
+    #gold shine
+    - define p_loc      <[loc].with_yaw[<[yaw].add[180]>].forward[0.4]>
+    - define gold_shine <[p_loc].left[0.5].points_between[<[p_loc].right[0.55]>].distance[0.1]>
+    - flag <[loc]> fort.chest.gold_shine:<[gold_shine]>
 
     - if <[container_type]> == ammo_box:
       - flag <[loc].world> fort.ammo_boxes:->:<[loc]>
@@ -151,6 +155,8 @@ fort_chest_handler:
       - run fort_gun_handler.drop_gun def:<map[gun=<[gun]>;loc=<[drop_loc]>]>
       - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[ammo_qty]>;loc=<[drop_loc]>]>
 
+      - flag server fort.unopened_chests:<-:<[loc]>
+
     - case ammo_box:
       - playsound <[container].location> sound:BLOCK_CHEST_OPEN volume:0.1 pitch:1.3
       - playsound <[container].location> sound:ITEM_ARMOR_EQUIP_CHAIN volume:1.6 pitch:0.8
@@ -161,6 +167,8 @@ fort_chest_handler:
       #i can kind of just take this ammo dropping line outside of the switch, but maybe not in case i wanted to add new containers that dont drop it
       - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[ammo_qty]>;loc=<[drop_loc]>]>
 
+  ##unused path now.
+  #instead of individually running chest effects, the chest effect is now being running in 1 loop
   chest_fx:
     - define loc        <[data].get[loc]>
     - define p_loc      <[loc].with_yaw[<[loc].flag[fort.chest.yaw]>].forward[0.4]>
@@ -170,8 +178,21 @@ fort_chest_handler:
         - playsound <[loc]> sound:BLOCK_AMETHYST_BLOCK_CHIME pitch:1.5 volume:0.56
       - playeffect at:<[gold_shine].random[15]> effect:DUST_COLOR_TRANSITION offset:0 quantity:1 special_data:1|<color[#ffc02e]>|<color[#fff703]>
       - wait 4t
-    - if <server.has_flag[fort.temp.startup]>:
-      - announce "<&b>[Nimnite] <&f>DEBUG: Chest effects stopped @ <[loc]>" to_console
+    #- if <server.has_flag[fort.temp.startup]>:
+      #- announce "<&b>[Nimnite] <&f>DEBUG: Chest effects stopped @ <[loc]>" to_console
+
+  #new chest effect system
+  all_chest_effects:
+    - while <server.flag[fort.unopened_chests].any||false>:
+      - define unopened_chests <server.flag[fort.unopened_chests]>
+      - if <[loop_index].mod[5]> == 0:
+        - playsound <[unopened_chests]> sound:BLOCK_AMETHYST_BLOCK_CHIME pitch:1.5 volume:0.56
+      ##maybe just make the gold shine a custom animated item for a glow effect?
+      #maybe that'll optimize chest glows a bit
+      - foreach <[unopened_chests]> as:chest_loc:
+        - define gold_shine <[chest_loc].flag[fort.chest.gold_shine]>
+        - playeffect at:<[gold_shine].random[15]> effect:DUST_COLOR_TRANSITION offset:0 quantity:1 special_data:1|<color[#ffc02e]>|<color[#fff703]>
+      - wait 4t
 
   random_supply_drop:
     - define current_diameter <server.flag[fort.temp.storm.diameter]>
@@ -550,6 +571,17 @@ fort_fill_container:
   debug: false
   script:
     - narrate yes
+  #task script made to cache gold_shine data calculations in flags, instead of calculating over and over again
+  cache_chest_data:
+    - narrate "<&b>[Nimnite Debug] <&f>Caching chest data..."
+    - define chests <world[nimnite_map].flag[fort.chests]>
+    - foreach <[chests]> as:chest_loc:
+      - if !<[chest_loc].chunk.is_loaded>:
+        - chunkload <[chest_loc].chunk>
+      - define p_loc      <[chest_loc].with_yaw[<[chest_loc].flag[fort.chest.yaw]>].forward[0.4]>
+      - define gold_shine <[p_loc].left[0.5].points_between[<[p_loc].right[0.55]>].distance[0.1]>
+      - flag <[chest_loc]> fort.chest.gold_shine:<[gold_shine]>
+    - narrate "<&b>[Nimnite Debug] <&f>Cached data for <&a><[chests].size><&f> chests."
   chest:
     #- handled in "commands.dsc"
 
@@ -619,7 +651,7 @@ fort_fill_container:
         - spawn TEXT_DISPLAY[text=<[text]>;pivot=center;scale=1,1,1;view_range=0.035;see_through=true] <[loc].above[0.75]> save:chest_text
         - flag <[loc]> fort.chest.text:<entry[chest_text].spawned_entity>
       - flag <[loc]> fort.chest.opened:!
-      - run fort_chest_handler.chest_fx def:<map[loc=<[loc]>]>
+      ##- run fort_chest_handler.chest_fx def:<map[loc=<[loc]>]>
 
   ammo_box:
     #- handled in "commands.dsc"
