@@ -253,3 +253,37 @@ fort_bus_handler:
       - flag server fort.temp.bus.seats:->:<[right_seat_<[value]>]>
       - flag <[right_seat_<[value]>]> vector_loc:<[right_seat_<[value]>_loc].sub[<[seat_origin]>]>
       - define total_seats:->:<[right_seat_<[value]>]>
+
+  view_bus:
+    - flag player test
+    - run dmodels_spawn_model def.model_name:battle_bus def.location:<player.location> save:bus
+    - define bus <entry[bus].created_queue.determination.first||null>
+    - run dmodels_set_scale def.root_entity:<[bus]> def.scale:1.3,1.3,1.3
+    - spawn <entity[armor_stand].with[invulnerable=true]> <player.location> save:camera
+    - define cam <entry[camera].spawned_entity>
+    - adjust <player> spectate:<[cam]>
+    - invisible <[cam]> true
+    - cast SLOW_DIGGING amplifier:255 duration:infinite no_icon no_ambient hide_particles
+    #blank item
+    - define thank "<&chr[1].font[item_name]><&7><element[Press].font[item_name]>
+                    <&c><&l><&keybind[key.swapOffhand].font[item_name]> 
+                    <&7><element[to thank the bus driver.].font[item_name]>"
+    - give <item[paper].with[display=<[thank]>;custom_model_data=17]> slot:9
+    - adjust <player> item_slot:9
+    - while <player.has_flag[test]>:
+      #with item displays
+      # define bus_center <[bus].location.above[3.75].forward_flat[3]>
+      # define bus_look   <[bus_center].below[3.5]>
+      #with armor stands
+      - define bus_center <[bus].location.above[1.5].forward_flat[2.85]>
+      - define bus_look   <[bus_center].below[2.9]>
+      - define circle_points <[bus_center].points_around_y[points=360;radius=8.25]>
+      - teleport <[cam]> <[circle_points].get[<[loop_index].mod[360].add[1]>].face[<[bus_look]>]> offthread_repeat:3
+      - wait 1t
+
+    - take slot:9
+    - adjust <player> item_slot:1
+    - cast SLOW_DIGGING remove
+    - adjust <player> spectate:<player>
+    - run dmodels_delete def.root_entity:<[bus]> if:<[bus].is_spawned>
+    - remove <[cam]>
