@@ -81,15 +81,17 @@ fort_gun_handler:
 
     #safety
     - wait 1t
-
     - define gun      <context.item>
-    - adjust <[gun]> color:<color[#000000]>
+    - define gun_slot <player.inventory.find_item[<[gun]>]>
 
-    - if <player.inventory.find_item[<[gun]>]> == -1:
+    - if <[gun_slot]> == -1:
       - stop
 
     - define gun_uuid <[gun].flag[uuid]>
     - define mag_size <[gun].flag[mag_size]>
+
+    #remove rarity color
+    - inventory adjust slot:<[gun_slot]> color:<color[#000000]>
 
     #when initialize the gun
     - if !<server.has_flag[fort.temp.<[gun_uuid]>.loaded_ammo]>:
@@ -114,7 +116,7 @@ fort_gun_handler:
 
       - define reload_line    "<&7>Reload Time <&f><[gun].flag[rarities.<[rarity]>.reload_time]>"
       - define lore <list[<[rarity_line]>|<[stars_line]>|<[dps_line]>|<[fire_rate_line]>|<[mag_line]>|<[reload_line]>]>
-      - inventory adjust slot:<player.inventory.find_item[<[gun]>]> lore:<[lore]>
+      - inventory adjust slot:<[gun_slot]> lore:<[lore]>
 
     - inject update_hud
 
