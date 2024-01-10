@@ -43,6 +43,7 @@ fort_bus_handler:
     - run fort_glider_handler.fall
 
   drop_player:
+  ###check if the p npcs are actually being removed when jumping off
     - adjust <[player]> spectate:<[player]>
     #safety
     - wait 3t
@@ -154,6 +155,7 @@ fort_bus_handler:
     - flag server fort.temp.bus.drivers_seat:<[drivers_seat]>
     - flag server fort.temp.bus.seats:->:<[drivers_seat]>
     - flag <[drivers_seat]> vector_loc:<[drivers_seat_loc].sub[<[seat_origin]>]>
+    - define total_seats:->:<[drivers_seat]>
 
     #dead center (of seat) = 1.256
     - define left_seat_1_loc <[drivers_seat_loc].left[0.075].backward[1.2].below[0.05]>
@@ -332,6 +334,7 @@ fort_bus_handler:
     # <[distance]>
     # <[bus]>
     # <[bus_start]>
+    # <[drivers_seat]>
     mode_2:
 
       # - [ Spawn Camera ] - #
@@ -376,6 +379,8 @@ fort_bus_handler:
         - define p_npc <entry[p_npc_<[loop_index]>].created_npc>
         - mount  <[p_npc]>|<[seat]>
         - adjust <[p_npc]> name_visible:false
+        #name doesn't change the npc skins for some reason, so just to be safe
+        - adjust <[p_npc]> skin_blob:<[p].skin_blob>
         - flag   <[p_npc]> fort.passenger_uuid:<[p].uuid>
         - define passenger_npcs:->:<[p_npc]>
         #i could just do it in the repeat, but i want it to be instant
@@ -460,6 +465,8 @@ fort_bus_handler:
 
       #in case this is even possible (maybe if bus was cancelled before forcing everyone out)
       - remove <[passenger_npcs].filter[is_spawned]>
+
+      - remove <[bus_driver]> if:<[bus_driver].is_spawned>
 
       - remove <[cam]> if:<[cam].is_spawned>
 
