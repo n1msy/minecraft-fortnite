@@ -3,8 +3,6 @@
 #todo:
 ##SET THE VICTORY FLAGS
 
-#####################BUS DRIVER STILL NOT FIXED
-
 fort_core_handler:
   type: task
   debug: false

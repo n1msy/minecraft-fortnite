@@ -62,7 +62,7 @@ pregame_island_handler:
     # - [ filling chests / ammo boxes ] - #
     #-get a check of all the
     #-mention the time elapsed for when filling all the chests?
-    - foreach <list[]> as:container_type:
+    - foreach <list[chests|ammo_boxes]> as:container_type:
       - define containers <world[nimnite_map].flag[fort.<[container_type]>]||<list[]>>
       - announce "<&b>[Nimnite]<&r> Filling all <&e><[container_type].replace[_].with[ ]><&r>..." to_console
 
@@ -82,8 +82,8 @@ pregame_island_handler:
 
       - announce "<&b>[Nimnite]<&r> Done (<&a><[containers].size><&r> filled)" to_console
 
-   # - flag server fort.unopened_chests:<world[nimnite_map].flag[fort.chests]||<list[]>>
-   # - run fort_chest_handler.all_chest_effects
+    - flag server fort.unopened_chests:<world[nimnite_map].flag[fort.chests]||<list[]>>
+    - run fort_chest_handler.all_chest_effects
 
    # - waituntil <[containers_to_fill].is_empty> rate:1s
    # - chunkload remove <[loaded_chunks]>
