@@ -70,26 +70,37 @@ build_system_handler:
       - define override_blocks <[total_blocks].filter[has_flag[build.center]].filter_tag[<list[pyramid|stair].contains[<[filter_value].flag[build.center].flag[build.type]>]>]>
 
       #checking if it doesn't have build.CENTER isntead of just "build" because for some reason some blocks have the "build" flag, even though they're info is removed?
-      - define blocks <[total_blocks].filter[has_flag[build.center].not].include[<[override_blocks]>]>
+      - define terrain_blocks <[tile].blocks.filter[has_flag[build].not].filter[material.name.equals[air].not]>
+      - define blocks <[total_blocks].filter[has_flag[build.center].not].exclude[<[terrain_blocks]>].include[<[override_blocks]>]>
 
+      #defining nodes so i dont have to check twice
+      - define connected_nodes <proc[find_nodes].context[<[center]>|<[build_type]>]>
       - definemap data:
-          tile: <[tile]>
-          center: <[center]>
-          build_type: <[build_type]>
-          material: <[material]>
+          tile:            <[tile]>
+          center:          <[center]>
+          build_type:      <[build_type]>
+          material:        <[material]>
+          connected_nodes: <[connected_nodes]>
 
       # - [ ! ] Places the tile [ ! ] - #
       - run build_system_handler.place def:<[data]>
 
       - define health <script[nimnite_config].data_key[materials.<[material]>.hp]>
 
+      #do this before flagging the blocks, that way the nodes correctly find its connected tiles
+      - flag <[center]> build.nodes:|:<[connected_nodes]>
+
       - flag <[center]> build.structure:<[tile]>
       - flag <[center]> build.type:<[build_type]>
       - flag <[center]> build.health:<[health]>
       - flag <[center]> build.material:<[material]>
       - flag <[center]> build.placed_by:<player>
+      - flag <[center]> build.is_root if:<proc[is_root].context[<[center]>|<[build_type]>]>
 
       - flag <[blocks]> build.center:<[center]>
+
+      #doing it after intializing the tile, just because it makes more sense
+      - flag <[connected_nodes]> build.nodes:->:<[center]>
 
       - define yaw <map[North=0;South=180;West=-90;East=90].get[<player.location.yaw.simple>]>
 
@@ -165,55 +176,103 @@ build_system_handler:
   # - <[center]>
   #
 
-    - define tile <[center].flag[build.structure]>
-    - define center <[center].flag[build.center]>
-    - define type <[center].flag[build.type]>
+    - define tile      <[center].flag[build.structure]>
+    - define center    <[center].flag[build.center]>
+    - define type      <[center].flag[build.type]>
+    - define nodes     <[center].flag[build.nodes]||<list[]>>
+    - define placed_by <[center].flag[build.placed_by]>
 
-    - inject build_system_handler.replace_tiles
+    #get the real blocks *before* resetting tile data, so it can be removed correctly
+    #(whatever is removed gets added back at the end)
+    - define real_blocks <[tile].blocks.filter[flag[build.center].equals[<[center]>]]>
 
-    #-actually removing the original tile
+
+    - define remove_blocks  <[real_blocks].filter[material.name.equals[barrier].not]>
+
+    #place the connected tiles again to update flag data of the intersecting tiles
+    #applies to WORLD tiles too, except ONLY the flag DATA
+    - inject build_system_handler.update_connected_tiles
+
+    #NOW get the "real blocks" of the tile, after connected tile data has been restored
     #so it only includes the parts of the tile that are its own (since each cuboid intersects by one)
-    - define blocks <[tile].blocks.filter[flag[build.center].equals[<[center]>]]>
 
-    #so you don't break barrier blocks either (for chests and ammo boxes)
-    - define remove_blocks <[tile].blocks.filter[has_flag[build_existed].not].filter[material.name.equals[barrier].not]>
+    - define real_blocks <[real_blocks].exclude[<[exclude_block_from_reset]||<list[]>>]>
 
-    - if <[center].flag[build.placed_by]> == WORLD && <[type]> != FLOOR:
+    #
+    - if <[placed_by]> == WORLD:
       #this way, there's no little holes on the ground after breaking walls that are on the floor
-      #- if <[type]> == floor:
-      #  - define keep_blocks <[remove_blocks].filter[below.material.name.equals[air].not].filter[flag[build.center].equals[<[center]>].not.if_null[true]]>
-      #- else:
-      - define keep_blocks <[remove_blocks].filter[below.material.name.equals[air].not].filter[below.has_flag[build].not]>
+      - if <[type]> != FLOOR:
+        - define keep_blocks <[remove_blocks].filter[below.material.name.equals[air].not].filter[below.has_flag[build].not]>
+        - define remove_blocks <[remove_blocks].exclude[<[keep_blocks]>]>
+      #remove world-placed tiles
+      - modifyblock <[remove_blocks]> air
+      - inject build_system_handler.break_props
+      - flag <[blocks]> build:!
+      # - ~ Chain effect disabled for world structures. ~ - #
+      - stop
+     #
 
-      - define remove_blocks <[remove_blocks].exclude[<[keep_blocks]>]>
-
+    #remove player-placed tiles
     - modifyblock <[remove_blocks]> air
 
-    - if <[center].flag[build.placed_by]> == WORLD:
-      #not breaking containers, because they dont break in fort either
-      #- define containers <[center].flag[build.attached_containers]||list<[]>>
-      #- foreach <[containers]> as:c_loc:
-        #- run fort_chest_handler.break_container def:<map[loc=<[c_loc]>]>
-      - define props <[center].flag[build.attached_props]||null>
-      - if <[props]> != null:
-        #should i check is_spawned, or just remove the attached prop flag from the tile?
-        - foreach <[props].filter[is_spawned]> as:prop_hb:
-          - run fort_prop_handler.break def:<map[prop_hb=<[prop_hb]>]>
+    - flag <[nodes]> build.nodes:<-:<[center]>
+    #excluding connecting interesection blocks
+    - flag <[real_blocks]> build:!
 
-      - flag <[blocks]> build:!
-      #not doing build DOT existed, since it'll mess up other checks
-      - flag <[blocks].filter[has_flag[build_existed]]> build_existed:!
-
-    ######## [ DISABLED CHAIN SYSTEM FOR BUILDINGS ] ############
-      - stop
-    ########
-
-    #order: first placed -> last placed
+    #- maybe a better, more optimized way to do this?
+    #reset any connected tiles
     - define priority_order <list[wall|floor|stair|pyramid]>
     - foreach <[replace_tiles_data].parse_tag[<[parse_value]>/<[priority_order].find[<[parse_value].get[build_type]>]>].sort_by_number[after[/]].parse[before[/]]> as:tile_data:
       - run build_system_handler.place def:<[tile_data]>
 
-    - run build_system_handler.remove_tiles def:<map[tile=<[tile]>;center=<[center]>]>
+  #-this *safely* prepares the tile for removal (by replacing the original tile data with the intersecting tile data)
+  update_connected_tiles:
+    #required definitions:
+    # - <[tile]>
+    # - <[center]>
+
+    - define replace_tiles_data <list[]>
+
+    - foreach <[nodes]> as:c_tile_center:
+
+      - define c_tile            <[c_tile_center].flag[build.structure]>
+      - define c_tile_type       <[c_tile_center].flag[build.type]>
+      - define c_connected_nodes <[c_tile_center].flag[build.nodes]>
+      #flag the "connected blocks" to the other tile data values that were connected to the tile being removed
+      - define connecting_blocks <[c_tile].intersection[<[tile]>].blocks>
+
+      - definemap tile_data:
+          tile:           <[c_tile]>
+          center:         <[c_tile_center]>
+          build_type:     <[c_tile_type]>
+          #doing this instead of center, since pyramid center is a slab
+          material:       <[c_tile_center].flag[build.material]>
+          connected_nodes: <[c_connected_nodes].exclude[<[center]>]>
+
+      #if_null is for natural structures (they don't have PLACED_BY flag) -> probably shouldve done something like, "PLACED_BY: NATURAL", but it's identified with build.natural
+      #world fallback is for NATURAL structures
+      - if <[c_tile_center].flag[build.placed_by]||WORLD> != WORLD:
+        - define replace_tiles_data:<[replace_tiles_data].include[<[tile_data]>]>
+
+      - define exclude_block_from_reset:|:<[connecting_blocks]>
+      #make the connectors a part of the other tile
+      - flag <[connecting_blocks]> build.center:<[c_tile_center]>
+
+      #if there's a center among the stairs (left or right side) that was removed
+      #checking for both pyramids AND stairs, since they both take up an entire cube, and not flat
+      - if <[type]> == WALL:
+        - if <[c_tile_type]> == STAIR || <[c_tile_type]> == PYRAMID:
+          - define removed_center <[connecting_blocks].filter[has_flag[build.placed_by]].first||null>
+          #not just removing the build flag, in case it's being used somewhere else
+          #(probably will never happen, but better to be safe than sorry)
+          - if <[removed_center]> != null:
+            - flag <[removed_center]> build.nodes:!
+            - flag <[removed_center]> build.structure:!
+            - flag <[removed_center]> build.type:!
+            - flag <[removed_center]> build.health:!
+            - flag <[removed_center]> build.material:!
+            - flag <[removed_center]> build.placed_by:!
+            - flag <[removed_center]> build.is_root:!
 
   remove_tiles:
 
@@ -369,135 +428,39 @@ build_system_handler:
 
           - flag <[blocks]> build:!
 
-    # narrate "removed <[structure].size||0> tiles"
-
-  #-this *safely* prepares the tile for removal (by replacing the original tile data with the intersecting tile data)
-  replace_tiles:
-    #required definitions:
-    # - <[tile]>
-    # - <[center]>
-
-    - define replace_tiles_data <list[]>
-    #-connecting blocks system
-    - define nearby_tiles <[center].find_blocks_flagged[build.center].within[5].parse[flag[build.center]].filter[has_flag[build.natural].not].parse[flag[build.structure]].deduplicate.exclude[<[tile]>]>
-
-    #excluding tile in attempts to prevent tile center error?
-    - define connected_tiles <[nearby_tiles].filter[intersects[<[tile]>]]>
-    - foreach <[connected_tiles]> as:c_tile:
-
-      #flag the "connected blocks" to the other tile data values that were connected to the tile being removed
-      - define connecting_blocks <[c_tile].intersection[<[tile]>].blocks>
-      - define c_tile_center <[c_tile].center.flag[build.center]>
-      - define c_tile_type <[c_tile_center].flag[build.type]>
-
-      #walls and floors dont *need* it if, but it's much easier/simpler this way
-      - definemap tile_data:
-          tile: <[c_tile]>
-          center: <[c_tile_center]>
-          build_type: <[c_tile_type]>
-          #doing this instead of center, since pyramid center is a slab
-          material: <[c_tile_center].flag[build.material]>
-
-      ##only adding player-placed tiles to replace tile data (since world-placed shouldn't be replaced with player builds, but flag replace is ok)
-      #doing this so AFTER the original tile is completely removed
-      #if_null is for natural structures (they don't have PLACED_BY flag) -> probably shouldve done something like, "PLACED_BY: NATURAL", but it's identified with build.natural
-      - define replace_tiles_data:<[replace_tiles_data].include[<[tile_data]>]> if:<[c_tile_center].flag[build.placed_by].equals[WORLD].not.if_null[false]>
-
-      #make the connectors a part of the other tile
-      - flag <[connecting_blocks]> build.center:<[c_tile_center]>
-
   place:
-    - define tile       <[data].get[tile]>
-    - define center     <[data].get[center]>
-    - define build_type <[data].get[build_type]>
+    #im not sure if this path is even necessary atp lol
+
+    - define tile            <[data].get[tile]>
+    - define center          <[data].get[center]>
+    - define build_type      <[data].get[build_type]>
+    - define connected_nodes <[data].get[connected_nodes]>
 
     - define is_editing <[data].get[is_editing]||false>
 
     - define base_material <map[wood=oak;brick=brick;metal=weathered_copper].get[<[data].get[material]>]>
 
-    - choose <[build_type]>:
+    #exclude any terrain terrain
+    - define exclude_blocks <[tile].blocks.filter[has_flag[build].not].filter[material.name.equals[air].not]>
 
-      - case stair:
-        - define total_set_blocks <proc[stair_blocks_gen].context[<[center]>]>
+    #so player builds don't override WORLD builds
+    - foreach <[connected_nodes]> as:n:
+      - if <[n].flag[build.placed_by]> == WORLD:
+        - define exclude_blocks:|:<[n].flag[build.structure].blocks.filter[flag[build.center].equals[<[n]>]].filter[material.name.equals[air].not]>
 
-        #in case this stair is just being "re-applied" (so the has_flag[build.not] doesn't exclude its own stairs)
-        - define own_stair_blocks <[total_set_blocks].filter[has_flag[build.center]].filter[flag[build.center].equals[<[center]>]]>
+    #build_place_tile task script found in: b_tiles.dsc
+    - inject build_place_tile.<[build_type]>
 
-        #"extra" stair blocks from other stairs/pyramids (turn them into planks like pyramids do)
-        - define set_connector_blocks <[total_set_blocks].filter[has_flag[build.center]].filter[material.name.after_last[_].equals[stairs]].exclude[<[own_stair_blocks]>]>
 
-        #this way, the top of walls and bottom of walls turn into stairs (but not the sides)
-        - define top_middle <[center].forward_flat[2].above[2]>
-        - define top_points <list[<[top_middle].left>|<[top_middle]>|<[top_middle].right>]>
-        - define bot_middle <[center].backward_flat[2].below[2]>
-        - define bot_points <list[<[bot_middle].left>|<[bot_middle]>|<[bot_middle].right>]>
-        #this way, pyramid stairs still can't be overriden
-        - define override_blocks <[top_points].include[<[bot_points]>].filter[flag[build.center].flag[build.type].equals[pyramid].not]>
-
-        #so it doesn't completely override any previously placed tiles
-        - define set_blocks      <[total_set_blocks].filter[has_flag[build.center].not].include[<[own_stair_blocks]>].include[<[override_blocks]>]>
-
-        #-don't include edited blocks
-        - define set_blocks      <[set_blocks].filter[has_flag[build.edited].not]> if:!<[is_editing]>
-
-        #-don't include blocks that existed there before hand
-        #existing blocks are either world-placed blocks, or just terrain blocks
-        - define existing_blocks <proc[get_existing_blocks].context[<list_single[<[set_blocks]>]>]>
-        - flag <[existing_blocks]> build_existed
-
-        - define set_blocks      <[set_blocks].exclude[<[existing_blocks]>]>
-
-        - define direction <[center].yaw.simple>
-        - define material <[base_material]>_stairs
-        - define material weathered_cut_copper_stairs if:<[base_material].equals[weathered_copper]>
-        - define material <[material]>[direction=<[direction]>]
-        - modifyblock <[set_blocks]> <[material]>
-
-        #if they're stairs and they are going in the same direction, to keep the stairs "smooth", forget about adding connectors to them
-        - define consecutive_stair_blocks <[set_connector_blocks].filter[flag[build.center].flag[build.type].equals[stair]].filter[material.direction.equals[<[direction]>]]>
-        - define set_blocks               <[set_connector_blocks].exclude[<[consecutive_stair_blocks]>].exclude[<[override_blocks]>].filter[has_flag[build.edited].not]>
-        - define set_blocks               <[set_blocks].filter[has_flag[build.edited].not]> if:!<[is_editing]>
-        - define existing_blocks <proc[get_existing_blocks].context[<list_single[<[set_blocks]>]>]>
-        - flag <[existing_blocks]> build_existed
-
-        - define set_blocks      <[set_blocks].exclude[<[existing_blocks]>]>
-
-        - modifyblock <[set_blocks]> <map[oak=oak_planks;brick=bricks;weathered_copper=weathered_copper].get[<[base_material]>]>
-
-      - case pyramid:
-        - run place_pyramid def:<[center]>|<[base_material]>|<[is_editing]>
-
-      #floors/walls
-      - default:
-        #mostly for the stair overriding stuff with walls and floors
-        - define total_blocks <[tile].blocks>
-
-        - define exclude_blocks <list[]>
-
-        - define nearby_tiles <[center].find_blocks_flagged[build.center].within[5].parse[flag[build.center].flag[build.structure]].deduplicate.exclude[<[tile]>]>
-        - define connected_tiles <[nearby_tiles].filter[intersects[<[tile]>]]>
-        - define stair_tiles <[connected_tiles].filter[center.flag[build.center].flag[build.type].equals[stair]]>
-
-        - if <[stair_tiles].any>:
-          - define stair_tile_center <[stair_tiles].first.center.flag[build.center]>
-
-          - define top_middle <[stair_tile_center].forward_flat[2].above[2]>
-          - define top_points <list[<[top_middle].left>|<[top_middle]>|<[top_middle].right>]>
-          - define bot_middle <[stair_tile_center].backward_flat[2].below[2]>
-          - define bot_points <list[<[bot_middle].left>|<[bot_middle]>|<[bot_middle].right>]>
-
-          #with_pose part removes yaw/pitch data so we can exclude it from total blocks
-          - define exclude_blocks <[top_points].include[<[bot_points]>].parse[with_pose[0,0]]>
-
-        - define set_blocks <[total_blocks].exclude[<[exclude_blocks]>].deduplicate>
-        - define set_blocks <[set_blocks].filter[has_flag[build.edited].not]> if:!<[is_editing]>
-        - define existing_blocks <proc[get_existing_blocks].context[<list_single[<[set_blocks]>]>]>
-        - flag <[existing_blocks]> build_existed
-
-        - define set_blocks      <[set_blocks].exclude[<[existing_blocks]>]>
-
-        - modifyblock <[set_blocks]> <map[oak=oak_planks;brick=bricks;weathered_copper=weathered_copper].get[<[base_material]>]>
-
+  break_props:
+    #not breaking containers, because they dont break in fort either
+    #- define containers <[center].flag[build.attached_containers]||list<[]>>
+    #- foreach <[containers]> as:c_loc:
+      #- run fort_chest_handler.break_container def:<map[loc=<[c_loc]>]>
+    - define props <[center].flag[build.attached_props]||null>
+    - if <[props]> != null:
+      - foreach <[props].filter[is_spawned]> as:prop_hb:
+        - run fort_prop_handler.break def:<map[prop_hb=<[prop_hb]>]>
 
 #Q to enter/exit edit mode, Left-Click to edit, click again to remove edit, right-click to reset
 build_edit:

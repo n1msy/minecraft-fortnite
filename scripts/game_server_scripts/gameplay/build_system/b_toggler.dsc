@@ -116,7 +116,6 @@ build_toggle:
         - debugblock <[nonedited_blocks]> d:2t color:45,167,237,150
 
       - else if <[type]> != null:
-
         - define block_looking_at <player.eye_location.ray_trace[return=block;range=4.5;default=air]>
         #world fall back since world structures dont have PLACED_BY
         - if <[block_looking_at].has_flag[build.center]> && <[block_looking_at].flag[build.center].flag[build.placed_by]||WORLD> == <player>:

@@ -296,7 +296,7 @@ fort_pic_handler:
     - adjust <[e]> opacity:255
 
   #so it doesn't remove another weak point hitbox that was generated
-  - flag player fort.weak_point.hitbox:! if:<player.flag[fort.weak_point.hitbox].equals[<[hb]>]>
+  - flag player fort.weak_point.hitbox:! if:<player.flag[fort.weak_point.hitbox].equals[<[hb]>]||false>
   - remove <[hb]>
   - wait 3t
   - remove <[e]> if:<[e].is_spawned>
