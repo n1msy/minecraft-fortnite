@@ -444,6 +444,10 @@ fort_bus_handler:
           - actionbar <[jump_text]> targets:<[players]>
 
         # - ( Rotating camera ) - #
+        #i think this means that all the players got off the bus, so might as well just remove the bus
+        - if !<[bc_entity].is_spawned>:
+          - foreach stop
+
         - define bus_center <[bc_entity].location>
         - define bus_look   <[bus_center].below[2.5]>
         #default radius = 8.25
