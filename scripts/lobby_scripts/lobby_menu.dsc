@@ -6,6 +6,10 @@ fort_lobby_handler:
   definitions: player|button|option|title|size_data
   events:
 
+    ## - [ MOTD ] - ##
+    on proxy server list ping:
+    - determine passively "MOTD:                 <&b><&k><&l>k<&r> <&f><&l>» <element[<&l>NIMBUS].color_gradient[from=#ffc800;to=#ffea9c]> <&f><&l>« <&b><&k><&l>k<&r><&r><&nl>             <&b><&l>NIM<&7><&l>____ <&7>test run soon!"
+    - determine passively max_players:420
     #on player damaged:
     #- determine cancelled
 
