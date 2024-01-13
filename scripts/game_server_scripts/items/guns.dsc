@@ -76,6 +76,11 @@ fort_gun_handler:
 
     on player picks up gun_*:
 
+    #so players dont go over 6 slots
+    - if <player.inventory.slot[2|3|4|5|6].filter[material.name.equals[air]].is_empty>:
+      - determine passively cancelled
+      - stop
+
     - if <context.entity.has_flag[text_display]>:
       - remove <context.entity.flag[text_display]>
 
