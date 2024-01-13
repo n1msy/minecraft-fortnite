@@ -54,7 +54,7 @@ fort_pic_handler:
     #(handled in fort_pic_handler.weak_point)
     #clearing it before running damage_tile so another crit can spawn
     - flag <[hitbox]> fort.weak_point:!
-    - flag player     fort.weak_point.hitbox:!
+    - flag player fort.weak_point.hitbox:!
     - run fort_pic_handler.damage_tile def:<map[center=<[center]>;damage=100]>
 
 
@@ -106,9 +106,11 @@ fort_pic_handler:
 
     on player right clicks !air with:fort_pickaxe*:
     #so they can't strip logs
-    - stop if:<context.location.material.name.contains_any_text[wood|trap].not||false>
-    - stop if:<context.location.material.name.contains_text[door]||false>
-    - determine cancelled
+    #added this check because for some reason denizen thinks this even is "on player right clicks entity"
+    - if <context.location||null> != null:
+      - stop if:<context.location.material.name.contains_any_text[wood|trap].not||false>
+      - stop if:<context.location.material.name.contains_text[door]||false>
+    - determine passively cancelled
     - ratelimit <player> 1t
 
     #infinite durability
@@ -293,7 +295,8 @@ fort_pic_handler:
     - adjust <[e]> interpolation_duration:3t
     - adjust <[e]> opacity:255
 
-  - flag player fort.weak_point.hitbox:!
+  #so it doesn't remove another weak point hitbox that was generated
+  - flag player fort.weak_point.hitbox:! if:<player.flag[fort.weak_point.hitbox].equals[<[hb]>]>
   - remove <[hb]>
   - wait 3t
   - remove <[e]> if:<[e].is_spawned>
