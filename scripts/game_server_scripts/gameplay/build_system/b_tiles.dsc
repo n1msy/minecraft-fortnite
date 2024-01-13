@@ -210,12 +210,12 @@ build_place_tile:
       - define layer_center <[center].below[<[value]>]>
       - define length <[value].mul[2]>
       - define start_corner <[layer_center].left[<[value]>].backward_flat[<[value]>]>
-      - define corners <list[<[start_corner]>|<[start_corner].forward[<[length]>]>|<[start_corner].forward[<[length]>].right[<[length]>]>|<[start_corner].right[<[length]>]>].parse[round]>
+      - define corners <list[<[start_corner]>|<[start_corner].forward[<[length]>]>|<[start_corner].forward[<[length]>].right[<[length]>]>|<[start_corner].right[<[length]>]>]>
 
       - foreach <[corners]> as:corner:
 
         - define next_corner <[corners].get[<[loop_index].add[1]>].if_null[<[corners].first>]>
-        - define side <[corner].points_between[<[next_corner]>]>
+        - define side <[corner].round.points_between[<[next_corner].round>]>
 
         - define direction <map[1=west;2=north;3=east;4=south].get[<[loop_index]>]>
 
