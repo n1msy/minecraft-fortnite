@@ -553,10 +553,10 @@ build_system_handler:
 
     - define replace_tiles_data <list[]>
     #-connecting blocks system
-    - define nearby_tiles <[center].find_blocks_flagged[build.center].within[5].parse[flag[build.center].flag[build.structure]].deduplicate.exclude[<[tile]>]>
+    - define nearby_tiles <[center].find_blocks_flagged[build.center].within[5].parse[flag[build.center]].filter[has_flag[build.natural].not].parse[flag[build.structure]].deduplicate.exclude[<[tile]>]>
 
     #excluding tile in attempts to prevent tile center error?
-    - define connected_tiles <[nearby_tiles].filter[intersects[<[tile]>]].exclude[<[tile]>]>
+    - define connected_tiles <[nearby_tiles].filter[intersects[<[tile]>]]>
     - foreach <[connected_tiles]> as:c_tile:
 
       #flag the "connected blocks" to the other tile data values that were connected to the tile being removed
