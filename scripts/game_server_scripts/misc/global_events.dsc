@@ -1,5 +1,3 @@
-#test 2
-
 fort_global_handler:
   type: world
   debug: false
