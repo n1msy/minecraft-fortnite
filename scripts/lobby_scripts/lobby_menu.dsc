@@ -135,7 +135,7 @@ fort_lobby_handler:
 
     # - (temp whitelist) - #
     on player logs in:
-    - if <list[Nimsy|DessieWessie|Mwthorn].contains[<player.name>]>:
+    - if <server.flag[whitelist].contains[<player.name>]>:
       - stop
     - define msg "<n><n><n><&f>Sup gamer.<n><n>A <element[test run].color_gradient[from=#FF5000;to=#0000FF;style=hsb]><&r> for my
                   <&o>new project<&r> will be announced <&e>really soon<&r>,<n>so I'm getting the server ready for it.
