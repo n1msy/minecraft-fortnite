@@ -64,6 +64,7 @@ fort_pic_handler:
     on player breaks block:
     - determine passively cancelled
     - stop if:<player.item_in_hand.script.name.starts_with[fort_pickaxe].not||true>
+    - stop if:<player.world.name.equals[pregame_island]>
 
     - define block <context.location>
 
