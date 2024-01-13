@@ -169,35 +169,6 @@ hud_handler:
     - if <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]> == 0:
       - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
 
-    on player swaps items:
-    #- stop if:<player.world.name.equals[nimnite_map].not>
-    - determine passively cancelled
-    - if <player.has_flag[fort.using_glider]>:
-      - stop
-
-    - if <player.has_flag[fort.disable_build]>:
-      - stop
-
-    - if <player.has_flag[fort.on_bus]>:
-      - stop
-
-    - if <player.has_flag[fort.on_bus]>:
-      - stop if:<player.has_flag[fort.on_bus.loading]>
-      - if !<player.has_flag[fort.thanked_bus_driver]>:
-        #teammates are orange? idc
-        - announce "<&c><&l><player.name> <&7>thanked the bus driver"
-        - flag player fort.thanked_bus_driver
-      - stop
-
-    - define new_type <map[inv=build;build=inv].get[<player.flag[fort.inv_type]||inv>]>
-    - flag player fort.inv_type:<[new_type]>
-
-    #stop the emote
-    - flag player fort.emote:! if:<[new_type].equals[build]>
-    - run build_toggle
-
-    - inject update_hud
-
   update_inventory:
 
   - define drop_text "<&r><n><&9><&l>Left-Click <&f>to drop one.<n><&c><&l>Right-Click <&f>to drop multiple."
@@ -319,6 +290,8 @@ hud_handler:
 
 
   fill_slots:
+    #still do the fill_slots when in build mode? (it shows the rarities in the inv, but not the items)
+
     - define slots <[unselected_slot].repeat_as_list[6]>
     - define rarity_list <list[common|uncommon|rare|epic|legendary]>
     - define tooltip_remover <list[<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|                                                                                                                                                                                                                                                                                                                                                                                                                           ]>
