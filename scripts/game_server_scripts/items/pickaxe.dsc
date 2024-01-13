@@ -1,3 +1,5 @@
+#TODO: make the break speed consistent across the three mats?
+
 fort_pickaxe_default:
   type: item
   material: netherite_pickaxe
