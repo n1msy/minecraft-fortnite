@@ -6,7 +6,7 @@
 build_system_handler:
   type: world
   debug: false
-  definitions: data
+  definitions: data|nodes
   events:
     # - [ Enable / Disable Editing ] - #
     on player drops item flagged:build:
@@ -225,6 +225,8 @@ build_system_handler:
     - foreach <[replace_tiles_data].parse_tag[<[parse_value]>/<[priority_order].find[<[parse_value].get[build_type]>]>].sort_by_number[after[/]].parse[before[/]]> as:tile_data:
       - run build_system_handler.place def:<[tile_data]>
 
+    - run build_system_handler.chain_effect def.nodes:<[nodes]>
+
   #-this *safely* prepares the tile for removal (by replacing the original tile data with the intersecting tile data)
   update_connected_tiles:
     #required definitions:
@@ -274,20 +276,11 @@ build_system_handler:
             - flag <[removed_center]> build.placed_by:!
             - flag <[removed_center]> build.is_root:!
 
-  remove_tiles:
+  chain_effect:
 
-    - define broken_tile        <[data].get[tile]>
-    - define broken_tile_center <[data].get[center]>
+    - define branches <[nodes].parse[flag[build.structure]]>
 
-    #get_surrounding_tiles gets all the tiles connected to the inputted tile
-    - define branches           <proc[get_surrounding_tiles].context[<[broken_tile]>|<[broken_tile_center]>].exclude[<[broken_tile]>]>
-
-    #There's only six four (or less) for each cardinal
-    #direction, so we use a foreach, and go through each one.
     - foreach <[branches]> as:starting_tile:
-
-        - if <[tile_check_timeout].exists>:
-          - foreach stop
 
         #The tiles to check are a list of tiles that we need to get siblings of.
         #Each tile in this list gets checked once, and removed.
@@ -299,10 +292,9 @@ build_system_handler:
         #The two above lists are emptied at the start of each while loop,
         #so that way previous tiles from other branches don't bleed into this one.
         - while <[tiles_to_check].any>:
-            #Just grab the tile on top of the pile. It doesn't matter the order
-            #in which we check, we'll get to them all eventually, unless the
-            #strucure is touching the ground, in which case it doesn't really
-            #matter.
+
+            #alternating between the top to bottom to find the root tiles the fastest
+            #(only problem is if the structure is massive and the root is in the middle)
             - if <[loop_index].mod[2]> == 0:
               - define tile <[tiles_to_check].first>
             - else:
@@ -316,51 +308,20 @@ build_system_handler:
             - if <[center]> == null:
               - stop
 
-            ######## [ DISABLED CHAIN SYSTEM FOR BUILDINGS ] ############
+            # - [ DISABLED CHAIN SYSTEM FOR BUILDINGS ] - #
             - foreach next if:<[tile].flag[build.placed_by].equals[WORLD]||false>
-            ########
             - foreach next if:<[center].chunk.is_loaded.not>
 
             - define type   <[center].flag[build.type]>
 
-            - define is_root <proc[is_root].context[<[center]>|<[type]>]>
-
-            #- [For Debug Purposes]
-            #- debugblock <[tile].blocks> d:3m color:0,0,0,150 if:<[is_root]>
-
-            #-FAKE ROOT CHECK
-            #ONLY doing this for WORLD tiles, because it works fine with regular builds
-            - define fake_root:!
-            - define is_arch:!
-            #fake root means that it's not *actually* connected to the tile
-            #getting the *previous* tile, to check if this root tile was really connected to it
-            - if <[center].flag[build.placed_by]||null> == WORLD && <[is_root]> && <[previous_tile].exists>:
-              #- debugblock <[tile].blocks> d:3m color:155,0,0,150
-              - if !<[previous_tile].intersects[<[tile]>]> || <[previous_tile].intersection[<[tile]>].blocks.filter[material.name.equals[air].not].is_empty>:
-                #- debugblock <[tile].blocks> d:3m color:155,0,0,150
-                - define fake_root True
-              #-ARCH check (in buildings, only applies to walls)
-              - if <[type]> == WALL:
-                - define t_blocks <[tile].blocks.filter[flag[build.center].equals[<[center]>]]>
-                #check for arches
-                - define strip_1 <[t_blocks].filter[y.equals[<[center].y.sub[1]>]]>
-                #check for stuff like *fences*
-                - define strip_2 <[t_blocks].filter[y.equals[<[center].y>]]>
-                #if the second to last bottom strip of the wall is air, it means it's not connectewd to the ground
-                #this means that the first check failed, meaning that it's connected to the ground; so it's rooted, but it's not a real root
-                - if <[strip_1].filter[material.name.equals[air].not].is_empty>:
-                  - define fake_root True
-                  - define is_arch   True
-
-                - else if <[strip_2].filter[material.name.equals[air].not].is_empty>:
-                  - define fake_root True
+            - define is_root <[center].has_flag[build.is_root]>
 
             #If the tile is touching the ground, then skip this branch. The
             #tiles_to_check and structure lists get flushed out and we start
             #on the next branch. When we next the foreach, we are
             #also breaking out of the while, so we don't need to worry about
             #keeping track (like you had with has_root)
-            - foreach next if:<[is_root].and[<[fake_root].exists.not>]>
+            - foreach next if:<[is_root]>
 
             #If the tile ISN'T touching the ground, then first, we remove it
             #from the tiles to check list, because obvi we've already checked
@@ -368,54 +329,29 @@ build_system_handler:
 
             - define tiles_to_check:<-:<[tile]>
 
-            - if <[fake_root].exists>:
-              #it's called a "fake root", because it's not actually connected to the tile, but it's still a root, so it shouldn't break
-              #because arches should break
-              - define structure <[structure].exclude[<[tile]>]> if:!<[is_arch].exists>
-            - else:
 
-              - define previous_tile <[tile]>
+            - define previous_tile <[tile]>
 
-              #Next, we get every surrounding tile, but only if they're not already
-              #in the structure list. That means that we don't keep rechecking tiles
-              #we've already checked.
-              - define surrounding_tiles <proc[get_surrounding_tiles].context[<[tile]>|<[center]>].exclude[<[structure]>]>
-              #only get the surrounding tiles if they're actually connected (not by air blocks), if it's a world block
-
-              #We add all these new tiles to the structure, and since we already excluded
-              #the previous list of tiles in the structure, we don't need to deduplicate.
-              - define structure:|:<[surrounding_tiles]>
-              #Since these are all new tiles, we need to check them as well.
-              - define tiles_to_check:|:<[surrounding_tiles]>
-
-              #calculating total loop index, since there are whiles inside of foreaches
-              - define total_loop_index:++
-              ##this is added as an attempt to fix lag, untested
-              #- actionbar <[total_loop_index]>
-            #so if it's too many tiles, it wont even load them
-              #- if <[broken_tile_center].flag[build.placed_by]||null> == WORLD && <[total_loop_index]> >= 30:
-              #  - define tile_check_timeout True
-              #  - narrate :LSDKJF:SLDKFJ
-              #  - while stop
+            #Next, we get every surrounding tile, but only if they're not already
+            #in the structure list. That means that we don't keep rechecking tiles
+            #we've already checked.
+            - define surrounding_tiles <[center].flag[build.nodes].parse[flag[build.structure]].exclude[<[structure]>]>
+  
+            #We add all these new tiles to the structure, and since we already excluded
+            #the previous list of tiles in the structure, we don't need to deduplicate.
+            - define structure:|:<[surrounding_tiles]>
+            #Since these are all new tiles, we need to check them as well.
+            - define tiles_to_check:|:<[surrounding_tiles]>
 
             - wait 1t
         #If we get to this point, then that means we didn't skip out early with foreach.
         #That means we know it's not touching ground anywhere, so now we want to break
         #each tile. So we go through the structure list, and break each one (however you handle that.)
+
         #-break the tiles
         - foreach <[structure]> as:tile:
-
-          #attempts to fix the "too many sounds compare to tiles" issue
-          - if !<[tile].center.has_flag[build.center]>:
-            - foreach next
-
-          #- announce <[tile].center.flag[build.center]> to_console
-          #do you get mats from world structures that are broken by chain? (i dont think so)
-
           - wait 3t
-
           - define blocks <[tile].blocks.filter[flag[build.center].equals[<[tile].center.flag[build.center]||null>]]>
-
           #defining sound before turning material to air
           - define sound <[tile].center.material.block_sound_data.get[break_sound]>
 
@@ -423,7 +359,6 @@ build_system_handler:
             - playeffect effect:BLOCK_CRACK at:<[b].center> offset:0 special_data:<[b].material> quantity:10 visibility:100
           #everything is being re-applied anyways, so it's ok
           - ~modifyblock <[tile].blocks> air
-          #-often too many sounds compared to blocks breaking? (i just made modifyblock waitable)
           - playsound <[tile].center> sound:<[sound]> pitch:0.8
 
           - flag <[blocks]> build:!
@@ -450,7 +385,6 @@ build_system_handler:
 
     #build_place_tile task script found in: b_tiles.dsc
     - inject build_place_tile.<[build_type]>
-
 
   break_props:
     #not breaking containers, because they dont break in fort either
