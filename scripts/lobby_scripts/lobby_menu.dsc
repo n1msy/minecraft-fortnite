@@ -134,14 +134,15 @@ fort_lobby_handler:
 
 
     # - (temp whitelist) - #
-    on player logs in:
-    - if <server.flag[whitelist].contains[<player.name>]>:
+    on player prelogin:
+    - define name <context.name>
+    - if <server.flag[whitelist].contains[<[name]>]>:
       - stop
     - define msg "<n><n><n><&f>Sup gamer.<n><n>A <element[test run].color_gradient[from=#FF5000;to=#0000FF;style=hsb]><&r> for my
                   <&o>new project<&r> will be announced <&e>really soon<&r>,<n>so I'm getting the server ready for it.
                   <n><n><n><n>Stay updated on my <&9><&l><&n>Discord<&r> server!<n><n><&b><&n>https://discord.gg/RB5a7WvHeP<&r><n><n>(idk how to make the link clickable rip)"
     - determine passively KICKED:<[msg]>
-    - announce "<&e>Kicked <&r><player.name><&e>." to_console
+    - announce "<&e>Kicked <&r><[name]><&e>." to_console
 
     #### - [ OPTIMIZE / PRETTIFY THIS CODE ] ###
     on player join:
