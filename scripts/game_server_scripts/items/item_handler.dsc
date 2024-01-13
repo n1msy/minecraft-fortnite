@@ -107,6 +107,7 @@ fort_item_handler:
     - define lore <list[<[rarity_line]>]>
 
     - give <[i].with[quantity=<[add_qty]>;lore=<[lore]>;color=<color[#000000]>]> slot:<[slot]>
+    - run update_hud
 
   item_text:
     - define text   <[data].get[text]>
