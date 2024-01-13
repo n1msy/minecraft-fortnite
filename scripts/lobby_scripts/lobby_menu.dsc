@@ -6,6 +6,10 @@ fort_lobby_handler:
   definitions: player|button|option|title|size_data
   events:
 
+    ## - [ MOTD ] - ##
+    on proxy server list ping:
+    - determine passively "MOTD:                 <&b><&k><&l>k<&r> <&f><&l>» <element[<&l>NIMBUS].color_gradient[from=#ffc800;to=#ffea9c]> <&f><&l>« <&b><&k><&l>k<&r><&r><&nl>             <&b><&l>NIM<&7><&l>____ <&7>test run soon!"
+    - determine passively max_players:420
     #on player damaged:
     #- determine cancelled
 
@@ -127,6 +131,18 @@ fort_lobby_handler:
     on player left clicks block flagged:fort.menu.selected_button priority:-10:
     #the attack cooldown is removed via rp
     - inject fort_lobby_handler.button_press
+
+
+    # - (temp whitelist) - #
+    on player prelogin:
+    - define name <context.name>
+    - if <server.flag[whitelist].contains[<[name]>]>:
+      - stop
+    - define msg "<n><n><n><&f>Sup gamer.<n><n>A <element[test run].color_gradient[from=#FF5000;to=#0000FF;style=hsb]><&r> for my
+                  <&o>new project<&r> will be announced <&e>really soon<&r>,<n>so I'm getting the server ready for it.
+                  <n><n><n><n>Stay updated on my <&9><&l><&n>Discord<&r> server!<n><n><&b><&n>https://discord.gg/RB5a7WvHeP<&r><n><n>(idk how to make the link clickable rip)"
+    - determine passively KICKED:<[msg]>
+    - announce "<&e>Kicked <&r><[name]><&e>." to_console
 
     #### - [ OPTIMIZE / PRETTIFY THIS CODE ] ###
     on player join:
