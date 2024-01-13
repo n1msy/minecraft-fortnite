@@ -17,8 +17,12 @@ fort_item_handler:
     on gun_*|ammo_*|fort_item_*|oak_log|bricks|iron_block despawns:
     - determine cancelled
 
-    after player drops fort_item_*:
+    on player drops fort_item_*:
     - define item  <context.item>
+    - flag player fort.item_dropped:<[item]> duration:1t
+    #safety
+    - wait 1t
+
     - define drop  <context.entity>
 
     - define name   <[item].display.strip_color>
@@ -106,9 +110,9 @@ fort_item_handler:
 
   item_text:
     - define text   <[data].get[text]>
+    - define rarity <[data].get[rarity]||Common>
     #remove the control pixel
     - define text   <[text].replace_text[<[text].strip_color.to_list.first>].with[<empty>]>
-    - define rarity <[data].get[rarity]||Common>
     - define drop   <[data].get[drop]>
 
     - choose <[drop].item.script.name.after[fort_item_]>:
@@ -122,9 +126,9 @@ fort_item_handler:
     - mount <[txt]>|<[drop]>
 
     - flag <[drop]> text_display:<[txt]>
-    #set rarity color
+
     - define rarity_color <color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]>
-    - adjust <[drop].item> color:<[rarity_color]>
+    - adjust <[drop]> item:<[drop].item.with[color=<[rarity_color]>]>
 
   drop_item:
 

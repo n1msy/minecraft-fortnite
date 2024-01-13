@@ -19,10 +19,7 @@ fort_explosive_handler:
           - foreach stop
       - wait 1t
 
-    on player drops fort_item_grenade|fort_item_impulse_grenade:
-    - flag player fort.grenade_dropped duration:1t
-
-    on player left clicks block with:fort_item_impulse_grenade flagged:!fort.grenade_dropped:
+    on player left clicks block with:fort_item_impulse_grenade flagged:!fort.item_dropped:
     - define i       <context.item>
     - define eye_loc <player.eye_location>
     - define origin <[eye_loc].relative[-0.25,0,0.35]>
@@ -69,7 +66,7 @@ fort_explosive_handler:
     - foreach <[entities]> as:e:
       - adjust <[e]> velocity:<[e].location.above[1].sub[<[grenade_loc]>]>
 
-    on player left clicks block with:fort_item_grenade flagged:!fort.grenade_dropped:
+    on player left clicks block with:fort_item_grenade flagged:!fort.item_dropped:
     - define i       <context.item>
     - define eye_loc <player.eye_location>
     - define origin <[eye_loc].relative[-0.25,0,0.35]>

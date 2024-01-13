@@ -322,6 +322,8 @@ fort_pic_handler:
 
     - define icon <&chr[A<map[wood=111;brick=222;metal=333].get[<[mat]>]>].font[icons]>
 
+    #use text displays or custom name?
+
     - define text <[icon]><&f><&l>x<[qty]>
     - define loc <[drop].location>
 
@@ -329,8 +331,8 @@ fort_pic_handler:
     - adjust <[drop]> custom_name_visible:true
 
     #make mats glow?
-    - team name:ammo add:<[drop]> color:GRAY
-    - adjust <[drop]> glowing:true
+    #- team name:ammo add:<[drop]> color:GRAY
+    #- adjust <[drop]> glowing:true
 
   #-increase/decrease materials after mining/placing
   mat_count:
