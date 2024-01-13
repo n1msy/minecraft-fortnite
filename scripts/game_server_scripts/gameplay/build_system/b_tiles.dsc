@@ -114,13 +114,12 @@ build_tiles:
 build_place_tile:
   type: task
   debug: false
-  definitions: center|tile|base_material|is_editing|connected_nodes|build_type
+  definitions: center|tile|base_material|is_editing|connected_nodes|build_type|exclude_blocks
   script:
     - narrate "all the placing calculations for each tile type goes here"
   wall:
     #mostly for the stair overriding stuff with walls and floors
     - define total_blocks     <[tile].blocks>
-    - define exclude_blocks:|:<[total_blocks].filter[has_flag[build.edited]]>
 
     #not checking for connected tiles, because bottom layer of wall has to overide stairs
     - define top_center <[center].above[2]>
@@ -142,8 +141,6 @@ build_place_tile:
     #eh, worst case scenario ill do it if it does lag
 
     - define total_blocks     <[tile].blocks>
-    - define exclude_blocks:|:<[total_blocks].filter[has_flag[build.edited]]>
-
     #im scared of doing "parse" a lot here, maybe if the build system is laggy, we can optimize this part
     #but for now, it's short and sweet
     - if <[connected_nodes].any>:
@@ -161,7 +158,6 @@ build_place_tile:
   stair:
     - define total_blocks     <proc[stair_blocks_gen].context[<[center]>]>
     - define pose             <[center].pitch>,<[center].yaw>
-    - define exclude_blocks:|:<[total_blocks].filter[has_flag[build.edited]]>
 
     #exclude any walls that are to the sides (left or right) of the stair
     #checking .placed_by, meaning if it has that flag, it's the center
@@ -183,7 +179,7 @@ build_place_tile:
         - case WALL:
           - define exclude_blocks:|:<list[<[bottom_center].left[2]>|<[bottom_center].right[2]>]>
         - case FLOOR:
-          - define exclude_blocks:|:<list[<[bottom_center].left[2]>|<[bottom_center].left[1]>|<[bottom_center]>|<[bottom_center].right[1]>|<[bottom_center].right[2]>]>
+          - define exclude_blocks:|:<list[<[bottom_center].left[2].round>|<[bottom_center].left[1].round>|<[bottom_center].round>|<[bottom_center].right[1].round>|<[bottom_center].right[2].round>]>
         - case STAIR PYRAMID:
           - if <[bottom_center].flag[build.center].y> == <[center].y>:
             - define connector_blocks:|:<list[<[bottom_center].left[2]>|<[bottom_center].left[1]>|<[bottom_center]>|<[bottom_center].right[1]>|<[bottom_center].right[2]>]>
@@ -214,7 +210,7 @@ build_place_tile:
       - define layer_center <[center].below[<[value]>]>
       - define length <[value].mul[2]>
       - define start_corner <[layer_center].left[<[value]>].backward_flat[<[value]>]>
-      - define corners <list[<[start_corner]>|<[start_corner].forward[<[length]>]>|<[start_corner].forward[<[length]>].right[<[length]>]>|<[start_corner].right[<[length]>]>]>
+      - define corners <list[<[start_corner]>|<[start_corner].forward[<[length]>]>|<[start_corner].forward[<[length]>].right[<[length]>]>|<[start_corner].right[<[length]>]>].parse[round]>
 
       - foreach <[corners]> as:corner:
 
@@ -247,7 +243,6 @@ build_place_tile:
             - define block_data <[block_data].include[<map[loc=<[s]>;mat=<[side_mat]>]>]>
 
     - define total_blocks    <[block_data].parse[get[loc]]>
-    - define exclude_blocks  <[total_blocks].filter[has_flag[build.edited]]>
 
     - define set_blocks      <[total_blocks].exclude[<[exclude_blocks]>]>
 

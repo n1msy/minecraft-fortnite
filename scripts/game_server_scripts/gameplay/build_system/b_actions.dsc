@@ -371,12 +371,13 @@ build_system_handler:
     - define build_type      <[data].get[build_type]>
     - define connected_nodes <[data].get[connected_nodes]>
 
-    - define is_editing <[data].get[is_editing]||false>
+    - define is_editing     <[data].get[is_editing]||false>
 
     - define base_material <map[wood=oak;brick=brick;metal=weathered_copper].get[<[data].get[material]>]>
 
     #exclude any terrain terrain
     - define exclude_blocks <[tile].blocks.filter[has_flag[build].not].filter[material.name.equals[air].not]>
+    - define exclude_blocks:|:<[tile].blocks.filter[has_flag[build.edited]]> if:!<[is_editing]>
 
     #so player builds don't override WORLD builds
     - foreach <[connected_nodes]> as:n:
@@ -464,10 +465,11 @@ build_edit:
 
     - playsound <player> sound:BLOCK_GRAVEL_BREAK pitch:1.75
 
-    - define tile_center <[target_block].flag[build.center]>
-    - define tile        <[tile_center].flag[build.structure]>
-    - define build_type  <[tile_center].flag[build.type]>
-    - define material    <[tile_center].flag[build.material]>
+    - define tile_center     <[target_block].flag[build.center]>
+    - define tile            <[tile_center].flag[build.structure]>
+    - define build_type      <[tile_center].flag[build.type]>
+    - define material        <[tile_center].flag[build.material]>
+    - define connected_nodes <[tile_center].flag[build.nodes]>
 
     - definemap tile_data:
         tile: <[tile]>
@@ -475,6 +477,8 @@ build_edit:
         build_type: <[build_type]>
         material: <[material]>
         is_editing: True
+        connected_nodes: <[connected_nodes]>
+
     #"reset" the tile while in edit mode to let players be able to click the blocks the wanna edit
     - run build_system_handler.place def:<[tile_data]>
     - flag player build.edit_mode.tile:<[tile]>
