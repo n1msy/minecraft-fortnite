@@ -411,7 +411,6 @@ fort_pic_handler:
 
     #-tree animation
     - else:
-
       #in fort there's no "animation" like this, but i like it
       - define wood_blocks <[blocks].filter[material.block_sound_data.get[break_sound].contains_text[wood]]>
       - define leaves      <[blocks].exclude[<[wood_blocks]>]>

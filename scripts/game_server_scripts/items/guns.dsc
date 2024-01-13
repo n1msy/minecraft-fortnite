@@ -407,8 +407,12 @@ fort_gun_handler:
       #structure damage (damagefalloff doesn't apply)
       #fallback, in case chunk isn't loaded
       - if <[target_block].has_flag[build.center]||false>:
+        - define center     <[target_block].flag[build.center]>
+        - define center_key <[center].simple>
         #doing this for support for multiple tiles being hit at once
-        - define damaged_structures.<[target_block].flag[build.center].simple>.damage:+:<[structure_damage]>
+        - define damaged_structures.<[center_key]>.damage:+:<[structure_damage]>
+        #defining center correctly too (i dont have to keep on redefining, but it's an extra if check sooo)
+        - define damaged_structures.<[center_key]>.center:<[center]>
 
       - if <[target]> != null && <[target].is_spawned>:
         # - [ Damage Falloff ] - #
@@ -525,8 +529,9 @@ fort_gun_handler:
     #outside of the repeat, handling damage *after* all pellets are shot to prevent lag
     - if <[damaged_structures].exists>:
       #this way, the damage structure command only fires ONCE per tile
-      - foreach <[damaged_structures].keys.parse[as_location]> as:center:
-        - define struct_dmg <[damaged_structures.<[center].simple>.damage]>
+      - foreach <[damaged_structures].keys> as:center_key:
+        - define center     <[damaged_structures.<[center_key]>.center]>
+        - define struct_dmg <[damaged_structures.<[center_key]>.damage]>
         - run build_system_handler.structure_damage def:<map[center=<[center]>;damage=<[struct_dmg]>]>
 
   custom_shoot:
