@@ -55,9 +55,12 @@ fort_lobby_handler:
     on server start:
     #NO need to give some time to let the server know which game servers and open and not before a player joins and queues,
     #since it already takes a minimum of 5 seconds to actually look for a server
+    #web server for getting hash data
+    - webserver start port:4274
 
     - waituntil <world[fort_lobby].if_null[false]> max:10s
     #-in case the server crashed/it was incorrectly shut down
+
     - remove <world[fort_lobby].entities[item_display|text_display|npc]>
     - run fort_lobby_setup
 
@@ -145,9 +148,21 @@ fort_lobby_handler:
     #used to prevent collision
     - team name:lobby_player add:<player>
 
-    - fileread path:../../../../../globaldata/packs/latest.zip save:rp
-    - define hash <entry[rp].data.hash[SHA-1].to_hex>
+    #this is too slow/performant, so we're caching the hash
+    #-this will only ever fire once lol
+    #but ill have it anyways because it's cool
+    - if !<server.has_flag[fort.resourcepack.hash]>:
+      - fileread path:../../../../../globaldata/packs/latest.zip save:rp
+      - define hash <entry[rp].data.hash[SHA-1].to_hex>
+      - flag server fort.resourcepack.hash:<[hash]>
+
+    - define hash <server.flag[fort.resourcepack.hash]>
     - resourcepack url:http://mc.nimsy.live:4000/latest.zip hash:<[hash]> forced prompt:testabcdefg
+
+    on webserver web request port:4274 method:post:
+    - define hash <context.body>
+    - announce <context.body>
+    #- flag server fort.resourcepack.hash:<[hash]>
 
     on resource pack status:
     #SUCCESSFULLY_LOADED, DECLINED, FAILED_DOWNLOAD, ACCEPTED
