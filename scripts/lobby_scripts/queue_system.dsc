@@ -85,8 +85,8 @@ fort_queue_handler:
             #one way to counter this if i wanted to use bungeerun is to add a delay before checking for available players?
             - flag server fort.available_servers.<[mode]>.<[server_to_join]>.players:->:<[player]>
 
-        #background triangles
-        - run fort_lobby_setup.bg_cube_anim if:<context.second.mod[5].equals[0]>
+        #background triangles (every 5 seconds, aka 5*20 = 100)
+        - run fort_lobby_setup.bg_cube_anim if:<[tick].mod[100].equals[0]>
 
 
         #-title animation (disabled)
