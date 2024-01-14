@@ -105,13 +105,3 @@ fort_queue_handler:
           #- if <[title].is_spawned> && !<[title].has_flag[spawn_anim]> && !<[title].has_flag[animating]> && <context.second.mod[2]> == 0:
             #- run fort_lobby_handler.title_anim def.title:<[title]>
 
-      # - [ Update RP Hash ] - #
-      #every 6 seconds
-      - if <[tick].mod[120]> == 0:
-        - define current_hash <server.flag[fort.resourcepack.hash]>
-        - ~webget http://localhost:4000/metadata.yml save:metadata
-        - define new_hash <entry[metadata].result.parse_yaml.get[hash]>
-        - if <[current_hash]> != <[new_hash]>:
-          - flag server fort.resourcepack.hash:<[new_hash]>
-          - announce "<&b>[<bungee.server>]<&r> Cached new resourcepack hash <&8>(<&7><[new_hash]><&8>)<&r>." to_console
-
