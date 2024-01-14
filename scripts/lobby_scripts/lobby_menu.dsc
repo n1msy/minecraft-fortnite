@@ -158,65 +158,27 @@ fort_lobby_handler:
     #default mode
     - flag player fort.menu.mode:solo
 
-    - foreach <list[light|medium|heavy|shells|rockets]> as:ammo_type:
-      - flag <player> fort.ammo.<[ammo_type]>:999
-
     - adjust <player> item_slot:1
     #used to prevent collision
     - team name:lobby_player add:<player>
 
-    - define pad_loc <server.flag[fort.menu.pads].first.location>
-    - define npc_loc <[pad_loc].face[<player.eye_location>].with_pitch[0]>
-    - create PLAYER <[name]> <[npc_loc]> save:player_npc
-    - define player_npc <entry[player_npc].created_npc>
-    - adjust <[player_npc]> hide_from_players
-    - adjust <[player_npc]> name_visible:false
-    - adjust <player> show_entity:<[player_npc]>
+    - fileread path:../../../../../globaldata/packs/latest.zip save:rp
+    - define hash <entry[read].data.hash[SHA-1]>
+    - resourcepack url:http://mc.nimsy.live:4000/latest.zip hash:<[hash]> forced
 
-    - flag player fort.menu.player_npc:<[player_npc]>
+    on resource pack status:
+    #SUCCESSFULLY_LOADED, DECLINED, FAILED_DOWNLOAD, ACCEPTED
+    - choose <context.status>:
+      - case SUCCESSFULLY_LOADED:
+        - run fort_lobby_setup.player_setup def.name:<player.name>
 
-    - spawn <entity[text_display].with[text=<[name]><n><&c>Not Ready;background_color=transparent;pivot=CENTER;scale=1,1,1;hide_from_players=true]> <[npc_loc].above[1.5]> save:name_text
-    - flag player fort.menu.name:<entry[name_text].spawned_entity>
-    - adjust <player> show_entity:<entry[name_text].spawned_entity>
-
-
-    #get the middle location
-    - define button_loc <server.flag[fort.menu.play_button_hitboxes].get[2].location>
-    - foreach play|mode as:button_type:
-      - if <[button_type]> == mode:
-        - define button_loc <[button_loc].above[0.8]>
-      - define l <[button_loc].above[0.5]>
-      - define l <[l].with_yaw[<[l].yaw.add[20]>]>
-      - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=<map[play=1;mode=14].get[<[button_type]>]>]>;scale=3,3,3;hide_from_players=true]> <[l]> save:<[button_type]>_button
-      - define <[button_type]>_button <entry[<[button_type]>_button].spawned_entity>
-      - adjust <player> show_entity:<[<[button_type]>_button]>
-
-      - flag player fort.menu.<[button_type]>_button:<[<[button_type]>_button]>
-      - flag <[<[button_type]>_button]> type:<[button_type]>
-
-    #vid button
-    ##moving it forward a little bit, because it for some reason rotates a little bit
-   #- define vid_button_loc <server.flag[fort.menu.vid_button_bg].location.backward_flat[0.001]>
-    - define vid_button_loc <server.flag[fort.menu.vid_button_bg].location.backward_flat[0.05]>
-    - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=20]>;scale=3,3,3;hide_from_players=true]> <[vid_button_loc]> save:vid_button
-    - define vid_button <entry[vid_button].spawned_entity>
-    - adjust <player> show_entity:<[vid_button]>
-
-    - flag player fort.menu.vid_button:<[vid_button]>
-    - flag <[vid_button]> type:vid_button
-
-    - foreach <server.flag[fort.menu.invite_button_hitboxes]> as:hb:
-      - define hb_loc <[hb].location>
-      - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=12]>;scale=0.75,0.75,0.75;hide_from_players=true]> <[hb_loc].above[0.5]> save:inv_<[loop_index]>
-      - define button <entry[inv_<[loop_index]>].spawned_entity>
-      - adjust <player> show_entity:<[button]>
-      - flag player fort.menu.invite_button.<[loop_index]>:->:<[button]>
-      - flag <[button]> type:invite
-
-    #-nimnite title
-    - wait 1s
-    - if !<player.has_flag[fort.menu.match_info]>:
-      - run fort_lobby_handler.match_info def.option:add
+      - case DECLINED FAILED_DOWNLOAD:
+        - define msg "<n><n><n><&c><&l>[!] Resourcepack download failed.
+                      <n><n><&f>Sup nerd, the Nimnite resourcepack is <&n>required<&r> to play.
+                      <n><n><n><n>If you think this is a <&c>bug<&r>, please report it in our <&9><&l><&n>Discord<&r> server!
+                      <n><n><&b><&n>https://discord.gg/RB5a7WvHeP<&r>
+                      <n><n>(idk how to make the link clickable rip)"
+        - kick <player> reason:<[msg]>
 
     ## - [ MAKE THIS CLEANER ] - ##
     on player quit priority:-10:
@@ -547,12 +509,10 @@ fort_lobby_handler:
     - adjust <[button]> scale:<[back_size]>
     - adjust <[button]> interpolation_duration:<[speed]>t
 
-
-
 fort_lobby_setup:
   type: task
   debug: false
-  definitions: cube|loops|type
+  definitions: cube|loops|type|name
   script:
 
     #-reset previous entities
@@ -788,3 +748,57 @@ fort_lobby_setup:
       - adjust <[cube]> brightness:<map[block=<[value].add[5]>;sky=0]>
       - wait 1t
 
+  setup_player:
+    # - [ Lobby Setup (only after rp loads)] - #
+    - define pad_loc <server.flag[fort.menu.pads].first.location>
+    - define npc_loc <[pad_loc].face[<player.eye_location>].with_pitch[0]>
+    - create PLAYER <[name]> <[npc_loc]> save:player_npc
+    - define player_npc <entry[player_npc].created_npc>
+    - adjust <[player_npc]> hide_from_players
+    - adjust <[player_npc]> name_visible:false
+    - adjust <player> show_entity:<[player_npc]>
+
+    - flag player fort.menu.player_npc:<[player_npc]>
+
+    - spawn <entity[text_display].with[text=<[name]><n><&c>Not Ready;background_color=transparent;pivot=CENTER;scale=1,1,1;hide_from_players=true]> <[npc_loc].above[1.5]> save:name_text
+    - flag player fort.menu.name:<entry[name_text].spawned_entity>
+    - adjust <player> show_entity:<entry[name_text].spawned_entity>
+
+
+    #get the middle location
+    - define button_loc <server.flag[fort.menu.play_button_hitboxes].get[2].location>
+    - foreach play|mode as:button_type:
+      - if <[button_type]> == mode:
+        - define button_loc <[button_loc].above[0.8]>
+      - define l <[button_loc].above[0.5]>
+      - define l <[l].with_yaw[<[l].yaw.add[20]>]>
+      - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=<map[play=1;mode=14].get[<[button_type]>]>]>;scale=3,3,3;hide_from_players=true]> <[l]> save:<[button_type]>_button
+      - define <[button_type]>_button <entry[<[button_type]>_button].spawned_entity>
+      - adjust <player> show_entity:<[<[button_type]>_button]>
+
+      - flag player fort.menu.<[button_type]>_button:<[<[button_type]>_button]>
+      - flag <[<[button_type]>_button]> type:<[button_type]>
+
+    #vid button
+    ##moving it forward a little bit, because it for some reason rotates a little bit
+   #- define vid_button_loc <server.flag[fort.menu.vid_button_bg].location.backward_flat[0.001]>
+    - define vid_button_loc <server.flag[fort.menu.vid_button_bg].location.backward_flat[0.05]>
+    - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=20]>;scale=3,3,3;hide_from_players=true]> <[vid_button_loc]> save:vid_button
+    - define vid_button <entry[vid_button].spawned_entity>
+    - adjust <player> show_entity:<[vid_button]>
+
+    - flag player fort.menu.vid_button:<[vid_button]>
+    - flag <[vid_button]> type:vid_button
+
+    - foreach <server.flag[fort.menu.invite_button_hitboxes]> as:hb:
+      - define hb_loc <[hb].location>
+      - spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=12]>;scale=0.75,0.75,0.75;hide_from_players=true]> <[hb_loc].above[0.5]> save:inv_<[loop_index]>
+      - define button <entry[inv_<[loop_index]>].spawned_entity>
+      - adjust <player> show_entity:<[button]>
+      - flag player fort.menu.invite_button.<[loop_index]>:->:<[button]>
+      - flag <[button]> type:invite
+
+    #-nimnite title
+    - wait 1s
+    - if !<player.has_flag[fort.menu.match_info]>:
+      - run fort_lobby_handler.match_info def.option:add
