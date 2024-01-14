@@ -174,7 +174,7 @@ fort_death_handler:
       #-kill type is either SELF (if there's no killer) or ENEMY (if there is a killer)
       - define kill_type <[killer].equals[null].if_true[self].if_false[enemy]>
       - choose <[cause]>:
-        - case BLOCK_EXPLOSION:
+        - case BLOCK_EXPLOSION ENTITY_EXPLOSION:
           - define msg_template <script[nimnite_config].data_key[killfeed.<[kill_type]>_explosion].random.parse_minimessage>
 
         - case FALL:
