@@ -57,12 +57,14 @@ fort_lobby_handler:
     #since it already takes a minimum of 5 seconds to actually look for a server
     #web server for getting hash data
     - webserver start port:4274
+    - narrate "<&b>[Nimnite]<&r> Started web server on port: <&e>4274"
 
     - waituntil <world[fort_lobby].if_null[false]> max:10s
     #-in case the server crashed/it was incorrectly shut down
 
     - remove <world[fort_lobby].entities[item_display|text_display|npc]>
     - run fort_lobby_setup
+    - narrate "<&b>[Nimnite]<&r> The lobby is now set up."
 
     #-to prevent collision
     - team name:lobby_player option:collision_rule status:never
@@ -162,8 +164,6 @@ fort_lobby_handler:
     # - [ Cache Hash ] - #
     on webserver web request port:4274 method:post:
     - define hash <context.query.get[hash]>
-    - announce <context.body> to_console
-    - announce <context.headers> to_console
     - flag server fort.resourcepack.hash:<[hash]>
     - announce "<&b>[<bungee.server>]<&r> Cached new resourcepack hash <&8>(<&7><[hash]><&8>)<&r>." to_console
 
