@@ -196,7 +196,7 @@ build_system_handler:
     #NOW get the "real blocks" of the tile, after connected tile data has been restored
     #so it only includes the parts of the tile that are its own (since each cuboid intersects by one)
 
-    - define real_blocks <[real_blocks].exclude[<[exclude_block_from_reset]||<list[]>>]>
+    - define real_blocks <[real_blocks].exclude[<[exclude_block_from_reset].if_null[<list[]>]>]>
 
     #
     - if <[placed_by]> == WORLD:
@@ -207,7 +207,7 @@ build_system_handler:
       #remove world-placed tiles
       - modifyblock <[remove_blocks]> air
       - inject build_system_handler.break_props
-      - flag <[blocks]> build:!
+      - flag <[real_blocks]> build:!
       # - ~ Chain effect disabled for world structures. ~ - #
       - stop
      #
