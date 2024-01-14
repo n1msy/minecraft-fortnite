@@ -92,34 +92,10 @@ fort_lobby_handler:
 
     - adjust <player> fly_speed:0.02
 
-    #hide instead of invis, so players can click through other players
-    #- adjust <player> hide_from_players
-    #do invis or no? (only doing it to hide the player's hand)
     - invisible state:true
 
     - inventory clear
     - sidebar remove
-    - if <player.has_flag[minimap]>:
-      - run minimap
-
-    - define youtube_icon <&chr[13].font[icons]>
-    - define twitch_icon  <&chr[14].font[icons]>
-    - define twitter_icon <&chr[15].font[icons]>
-
-    - define actionbar_text "<[youtube_icon]> Nimsy <[twitch_icon]> FlimsyNimsy <[twitter_icon]> N1msy"
-
-    #wait, so the player's play button flag will work (when they join the server)
-    - wait 1t
-
-    - while <player.is_online> && <player.has_flag[fort.in_menu]>:
-      #socials
-      - inject fort_lobby_handler.menu
-      #only update every 2 seconds
-      - actionbar <[actionbar_text]> if:<[loop_index].mod[40].equals[0]>
-      - wait 1t
-    #wait for fade effect to go away
-    - wait 6t
-    - flag player fort.in_menu:!
 
     on player exits fort_menu:
 
@@ -181,7 +157,7 @@ fort_lobby_handler:
     #SUCCESSFULLY_LOADED, DECLINED, FAILED_DOWNLOAD, ACCEPTED
     - choose <context.status>:
       - case SUCCESSFULLY_LOADED:
-        - run fort_lobby_setup.player_setup def.name:<player.name>
+        - inject fort_lobby_setup.player_setup
 
       - case DECLINED FAILED_DOWNLOAD:
         - define msg "<n><n><n><&c><&l>[!] Resourcepack download failed.
@@ -759,8 +735,9 @@ fort_lobby_setup:
       - adjust <[cube]> brightness:<map[block=<[value].add[5]>;sky=0]>
       - wait 1t
 
-  setup_player:
+  player_setup:
     # - [ Lobby Setup (only after rp loads)] - #
+    - define name <player.name>
     - define pad_loc <server.flag[fort.menu.pads].first.location>
     - define npc_loc <[pad_loc].face[<player.eye_location>].with_pitch[0]>
     - create PLAYER <[name]> <[npc_loc]> save:player_npc
