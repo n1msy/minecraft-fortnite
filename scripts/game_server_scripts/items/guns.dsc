@@ -82,7 +82,7 @@ fort_gun_handler:
       - stop
 
     - if <context.entity.has_flag[text_display]>:
-      - remove <context.entity.flag[text_display]>
+      - remove <context.entity.flag[text_display]> if:<context.entity.flag[text_display].is_spawned>
 
     #safety
     - wait 1t
