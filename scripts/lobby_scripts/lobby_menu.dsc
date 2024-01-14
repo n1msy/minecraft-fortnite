@@ -150,14 +150,7 @@ fort_lobby_handler:
     #used to prevent collision
     - team name:lobby_player add:<player>
 
-    #this is too slow/performant, so we're caching the hash
-    #-this will only ever fire once lol
-    #but ill have it anyways because it's cool
-    - if !<server.has_flag[fort.resourcepack.hash]>:
-      - fileread path:../../../../../globaldata/packs/latest.zip save:rp
-      - define hash <entry[rp].data.hash[SHA-1].to_hex>
-      - flag server fort.resourcepack.hash:<[hash]>
-
+    #- [ ! ] Warning: RP is being downloaded every time players join lobby server (even when returning from game)
     - define hash <server.flag[fort.resourcepack.hash]>
     #add a rp prompt?
     - resourcepack url:http://mc.nimsy.live:4000/latest.zip hash:<[hash]> forced
