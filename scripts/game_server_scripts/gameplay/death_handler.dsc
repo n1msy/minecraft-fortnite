@@ -56,7 +56,7 @@ fort_death_handler:
     #updating kill feed before death effect, for gun distance to be calculated
     - inject fort_death_handler.killfeed
 
-    - run fort_death_handler.death def:<map[killer=<[killer]>]>
+    - run fort_death_handler.death def:<map[killer=<[killer]>;loc=<player.location>]>
 
     ##does kill count update in hud?
     #-Update kill count
@@ -71,12 +71,13 @@ fort_death_handler:
   death:
     #using queued player
 
-    - define killer <[data].get[killer]||null>
-    - define quit   <[data].get[quit]||false>
+    - define killer   <[data].get[killer]||null>
+    - define quit     <[data].get[quit]||false>
+    - define dead_loc <[data].get[loc]>
 
     #don't drop items on pregame island
     - run fort_item_handler.drop_everything if:<player.world.name.equals[nimnite_map]>
-    - run fort_death_handler.fx.anim
+    - run fort_death_handler.fx.anim def:<map[loc=<[dead_loc]>]>
 
     #in case they were in the storm
     - flag player fort.in_storm:!
@@ -220,7 +221,7 @@ fort_death_handler:
 
   fx:
     anim:
-      - define loc <player.location>
+      - define loc <[data].get[loc].if_null[<player.location>]>
       - run dmodels_spawn_model def.model_name:emotes def.location:<[loc].above[2.1]> def.yaw:<[loc].yaw.add[180]> save:result
       - define spawned <entry[result].created_queue.determination.first||null>
       - run dmodels_set_scale def.root_entity:<[spawned]> def.scale:1.87,1.87,1.87
