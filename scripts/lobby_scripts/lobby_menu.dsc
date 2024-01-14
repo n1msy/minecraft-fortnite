@@ -159,7 +159,15 @@ fort_lobby_handler:
       - flag server fort.resourcepack.hash:<[hash]>
 
     - define hash <server.flag[fort.resourcepack.hash]>
-    - resourcepack url:http://mc.nimsy.live:4000/latest.zip hash:<[hash]> forced prompt:testabcdefg
+    #add a rp prompt?
+    - resourcepack url:http://mc.nimsy.live:4000/latest.zip hash:<[hash]> forced
+
+    #put this inside the tick loop too, or nah
+    - cast BLINDNESS duration:infinite hide_particles no_icon no_ambient
+    - while <player.is_online> && !<player.has_flag[fort.menu]>:
+      - title "title:<&e>Downloading Resourcepack..." "subtitle:<&7>bare with me" fade_in:1 stay:1 fade_out:1
+      - wait 1s
+
 
     # - [ Cache Hash ] - #
     on webserver web request port:4274 method:post:
@@ -171,9 +179,25 @@ fort_lobby_handler:
     #SUCCESSFULLY_LOADED, DECLINED, FAILED_DOWNLOAD, ACCEPTED
     - choose <context.status>:
       - case SUCCESSFULLY_LOADED:
+        #reset loading text
+        - title title:<&sp> subtitle:<&sp> fade_in:1 stay:1 fade_out:1
+        - cast blindness remove
         #in case they moved during rp load
         - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
         - inject fort_lobby_setup.player_setup
+        - wait 1s
+        #-non-vanilla client risk message
+        - define client           <player.client_brand>
+        - define client_blacklist <list[Lunar|Feather|Badlion|fabric|unknown]>
+        - if <player.is_online> && <[client].contains_any_text[<[client_blacklist]>]>:
+          - playsound <player> sound:BLOCK_NOTE_BLOCK_PLING pitch:1.5
+          - define line <&8><element[<&sp>].repeat[80].strikethrough>
+          - narrate <[line]>
+          - narrate <element[<&m><&8><&l>-].repeat[10]>
+          - narrate "<&c><&l>[!] Warning [!] <&c>You're running on a client that probably f**ks with your UI in-game."
+          - narrate "<n><&7>Your client: <&c><player.client_brand>"
+          - narrate "<&8>Known clients that cause issues: <&7><[client_blacklist].separated_by[<&8>, <&7>]>"
+          - narrate <[line]>
 
       - case DECLINED FAILED_DOWNLOAD:
         - define msg "<n><n><n><&c><&l>[!] Resourcepack download failed.
