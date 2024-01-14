@@ -166,6 +166,12 @@ fort_glider_handler:
     #-added a safety to remove the glider, not sure if it works or not though -> just tested, still not working, changed to 2t to see if it'll work
     #- wait 2t
 
+    #-do this? (it might break if i ever try to add a /rejoin thing though)
+    #in case they quit mid-glider
+    #- if !<player.is_online>:
+      #- remove <[glider]> if:<[glider].is_spawned>
+      #- stop
+
     - flag player fort.using_glider.remove_on_land
     - run fort_glider_handler.toggle_glider
 

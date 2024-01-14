@@ -282,6 +282,8 @@ pregame_island_handler:
     - foreach <[players]> as:p:
       - adjust <[p]> item_slot:1
       - run update_hud player:<[p]>
+    #in case they were invisible for some reason (case: mergu, even though emotes were disabled)
+    - invisible <[players]> reset
     #wait for emotes to stop, then send
     - wait 3t
     - run fort_core_handler
