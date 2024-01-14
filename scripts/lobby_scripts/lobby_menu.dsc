@@ -82,7 +82,6 @@ fort_lobby_handler:
     - if <player.has_flag[fort.in_menu]>:
       - stop
 
-    - flag player fort.in_menu
     - if <context.cause> != JOIN:
       - run fort_lobby_handler.lobby_tp
 
@@ -786,6 +785,8 @@ fort_lobby_setup:
       - flag player fort.menu.invite_button.<[loop_index]>:->:<[button]>
       - flag <[button]> type:invite
 
+    #now the player is officially in the menu and selector can work
+    - flag player fort.in_menu
     #-nimnite title
     - wait 1s
     - if !<player.has_flag[fort.menu.match_info]>:
