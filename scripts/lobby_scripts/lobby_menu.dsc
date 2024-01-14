@@ -146,8 +146,7 @@ fort_lobby_handler:
     - team name:lobby_player add:<player>
 
     - fileread path:../../../../../globaldata/packs/latest.zip save:rp
-    - define hash <entry[rp].data.hash[SHA-1]>
-    - announce <[hash]> to_console
+    - define hash <entry[rp].data.hash[SHA-1].to_hex>
     - resourcepack url:http://mc.nimsy.live:4000/latest.zip hash:<[hash]> forced
 
     on resource pack status:
