@@ -25,6 +25,15 @@ fort_queue_handler:
       - foreach <[lobby_players]> as:p:
 
         - run fort_lobby_handler.menu player:<[p]>
+
+        #play button animation every 8 seconds
+        - define play_button <[p].flag[fort.menu.play_button]>
+        - if <[loop_index].div[20].mod[8]> == 0:
+          #not doing second check in same line, so it doesn't have to define every tick
+          - define play_button <[p].flag[fort.menu.play_button]>
+          - if !<[play_button].has_flag[selected]> && !<[p].has_flag[fort.in_queue]>:
+            - run fort_lobby_handler.play_button_anim def.button:<[play_button]>
+
       #only update every 2 seconds
       - actionbar <[actionbar_text]> if:<[tick].mod[40].equals[0]> targets:<[lobby_players]>
 

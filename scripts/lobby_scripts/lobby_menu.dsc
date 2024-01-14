@@ -232,13 +232,6 @@ fort_lobby_handler:
 
     - define play_button <player.flag[fort.menu.play_button]>
 
-    #every 10 seconds
-    #loop index, since it's being injected from minimap.dsc
-    #first check is because glint cant play when animating
-    - if !<[play_button].has_flag[selected]>:
-      - if !<player.has_flag[fort.in_queue]> && <[loop_index].div[20].mod[8]> == 0:
-        - run fort_lobby_handler.play_button_anim def.button:<[play_button]>
-
       #- if <[loop_index].mod[2]> == 0:
         #- define angle <[button].location.face[<player.eye_location>].yaw.to_radians>
         #- define left_rotation <quaternion[0,1,0,0].mul[<location[0,-1,0].to_axis_angle_quaternion[<[angle]>]>]>
