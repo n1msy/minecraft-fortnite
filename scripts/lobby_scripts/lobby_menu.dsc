@@ -164,9 +164,12 @@ fort_lobby_handler:
 
     #put this inside the tick loop too, or nah
     - cast BLINDNESS duration:infinite hide_particles no_icon no_ambient
+    - define subtitle "bare with me"
     - while <player.is_online> && !<player.has_flag[fort.menu]>:
-      - title "title:<&e>Downloading Resourcepack..." "subtitle:<&7>bare with me" fade_in:1 stay:1 fade_out:1
-      - wait 1s
+      - title "title:<&e>Downloading Resourcepack..." subtitle:<&7><[subtitle]> fade_in:1 stay:1 fade_out:1
+      - define subtitle <list[here's a shameless promo -<&gt> twitch.tv/flimsynimsy|you ever just realize how handsome nimsy is?|fun fact: 1 year of a degen<&sq>s life was spent on this|y are u still here|please donate me money PLEASE|isn<&sq>t nimsy like- the best?].random>
+      #wait 1s for a "flashing" effect
+      - wait 3s
 
 
     # - [ Cache Hash ] - #
