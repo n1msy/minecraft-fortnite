@@ -31,7 +31,14 @@ fort_bungee_handler:
           #send all the player data, or just remove the current one?
           - run fort_bungee_tasks.set_data def:<[data]>
 
+    ###change this later down the road
+    on bungee player joins network:
+    - bungeerun backup discord_join def:<map[name=<context.name>;status=join]>
+
     on bungee player leaves network:
+    - bungeerun backup discord_join def:<map[name=<context.name>;status=leave]>
+    ###dont keep it here
+
     - if <bungee.server> != fort_lobby:
       - stop
     #-only announce this in the fort lobby, not in-game
