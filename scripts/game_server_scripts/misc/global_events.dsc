@@ -4,6 +4,7 @@ fort_global_handler:
   definitions: data
   events:
 
+    #isn't there like a spigot.yml file i can change that stops this too?
     on player kicked for flying:
     - determine cancelled
 
