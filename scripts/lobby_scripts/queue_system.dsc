@@ -26,7 +26,7 @@ fort_queue_handler:
 
         - run fort_lobby_handler.menu player:<[p]>
       #only update every 2 seconds
-      - actionbar <[actionbar_text]> if:<[tick].mod[40].equals[0]>
+      - actionbar <[actionbar_text]> if:<[tick].mod[40].equals[0]> targets:<[lobby_players]>
 
     ## - [ QUEUE SYSTEM ] - ##
       #every second
