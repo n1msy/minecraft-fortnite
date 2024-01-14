@@ -71,7 +71,7 @@ fort_glider_handler:
     - define deploy_text   "<[sneak_button]> <element[<&l>DEPLOY GLIDER].color[<color[71,0,0]>]>"
     - define undeploy_text "<[sneak_button]> <element[<&l>UNDEPLOY GLIDER].color[<color[71,0,0]>]>"
 
-    - while !<player.is_on_ground> && <player.is_online> && !<player.has_flag[fort.spectating]>:
+    - while <player.is_online> && !<player.is_on_ground> && !<player.has_flag[fort.spectating]>:
 
       - define loc        <player.location>
       - define eye_loc  <player.eye_location>
