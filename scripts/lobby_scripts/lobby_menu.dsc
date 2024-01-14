@@ -56,8 +56,8 @@ fort_lobby_handler:
     #NO need to give some time to let the server know which game servers and open and not before a player joins and queues,
     #since it already takes a minimum of 5 seconds to actually look for a server
     #web server for getting hash data
-    - webserver start port:4274
-    - narrate "<&b>[Nimnite]<&r> Started web server on port: <&e>4274"
+    #- webserver start port:4274
+    #- narrate "<&b>[Nimnite]<&r> Started web server on port: <&e>4274"
 
     - waituntil <world[fort_lobby].if_null[false]> max:10s
     #-in case the server crashed/it was incorrectly shut down
@@ -163,13 +163,6 @@ fort_lobby_handler:
       - define subtitle <list[here's a shameless promo -<&gt> twitch.tv/flimsynimsy|you ever just realize how handsome nimsy is?|fun fact: 1 year of a degen<&sq>s life was spent on this|y are u still here|please donate me money PLEASE|isn<&sq>t nimsy like- the best?].random>
       #wait 1s for a "flashing" effect
       - wait 3s
-
-
-    # - [ Cache Hash ] - #
-    on webserver web request port:4274 method:post:
-    - define hash <context.query.get[hash]>
-    - flag server fort.resourcepack.hash:<[hash]>
-    - announce "<&b>[<bungee.server>]<&r> Cached new resourcepack hash <&8>(<&7><[hash]><&8>)<&r>." to_console
 
     on resource pack status:
     #SUCCESSFULLY_LOADED, DECLINED, FAILED_DOWNLOAD, ACCEPTED
