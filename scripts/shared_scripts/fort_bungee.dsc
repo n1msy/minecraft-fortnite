@@ -33,10 +33,11 @@ fort_bungee_handler:
 
     ###change this later down the road
     on bungee player joins network:
-    - bungeerun backup discord_join def:<map[name=<context.name>;status=join]>
+    #only run it on one server, so it doesn't repeat
+    - bungeerun backup discord_join def:<map[name=<context.name>;status=join]> if:<bungee.server.equals[fort_lobby]>
 
     on bungee player leaves network:
-    - bungeerun backup discord_join def:<map[name=<context.name>;status=leave]>
+    - bungeerun backup discord_join def:<map[name=<context.name>;status=leave]> if:<bungee.server.equals[fort_lobby]>
     ###dont keep it here
 
     - if <bungee.server> != fort_lobby:
