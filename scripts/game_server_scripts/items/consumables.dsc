@@ -14,7 +14,7 @@ fort_consumable_handler:
 
     #-Bush handler (any damage they take is negated once)
     on player damaged flagged:fort.bush priority:-10:
-    - narrate "<&c>Player damage was negated. This is a debug message. If you see this still, please remind Nimsy to change it."
+    #- narrate "<&c>Player damage was negated. This is a debug message. If you see this still, please remind Nimsy to change it."
     - define bush <player.flag[fort.bush]>
     - define loc <[bush].location>
 
