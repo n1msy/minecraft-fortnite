@@ -1,30 +1,4 @@
-
 ##make sure to flag the server for different modes with "fort.mode"
-
-test_fill_containers:
-  type: task
-  debug: true
-  script:
-    - foreach <list[chests|ammo_boxes]> as:container_type:
-      - define containers <world[nimnite_map].flag[fort.<[container_type]>]||<list[]>>
-      - announce "<&b>[Nimnite]<&r> Filling all <&e><[container_type].replace[_].with[ ]><&r>..." to_console
-
-      - define containers_filled 0
-      #not really a need to fill the ammo boxes in advance, but eh? (it's not really being filled either, since it randomizes upon opening)
-      - foreach <[containers]> as:loc:
-          #there's a bunch of stuff we can leave out in these task scripts, since a new map is being added anyways. but eh
-        - if !<[loc].chunk.is_loaded>:
-          - define chunk <[loc].chunk>
-          - chunkload <[chunk]>
-          #saving to unload the chunks after setup is complete
-          ##unload all the chunks?
-          - define loaded_chunks:->:<[chunk]>
-        - inject fort_fill_container.<map[chests=chest;ammo_boxes=ammo_box].get[<[container_type]>]>
-        - define containers_filled:++
-        #- announce "<&b>[Nimnite]<&r> [DEBUG] <&e><[containers_filled]><&f>/<&a><[containers].size> <&f><[container_type]> filled." to_console
-
-      - announce "<&b>[Nimnite]<&r> Done (<&a><[containers].size><&r> filled)" to_console
-
 
 pregame_island_handler:
   type: world
@@ -42,17 +16,15 @@ pregame_island_handler:
     - wait 3s
     - announce "-------------------- [ <&b>NIMNITE GAME SERVER STARTUP <&r>] --------------------" to_console
 
-    #two ways of doing the "copying" system:
-    #1) copy the file, then create the world
-    #2) have the template world on each server and use "copy_from" arg in createworld command
 
-    #either createworld here, *or* just remove the world on shut down
     - if <util.has_file[../../nimnite_map]>:
       - ~createworld nimnite_map
       #-in case server was shut down during bus phase
       - run pregame_island_handler.bus_removal
       - adjust <world[nimnite_map]> destroy
 
+
+    #do lobby setup here since the pregame island is being made too
     - ~filecopy origin:../../../../nimnite_map_template destination:../../nimnite_map overwrite
     - ~createworld nimnite_map
     - gamerule <world[nimnite_map]> randomTickSpeed 0
