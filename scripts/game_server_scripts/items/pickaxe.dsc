@@ -452,11 +452,10 @@ fort_pic_handler:
   #-waiting for text displays to unbork with fonts...
   - define icon <&chr[A<map[wood=111;brick=222;metal=333].get[<[type]>]>].font[icons]>
 
-  - if <player.has_flag[fort.harvest_display]>:
+  - if <player.has_flag[fort.harvest_display]> && <player.flag[fort.harvest_display].flag[mat]> == <[type]>:
     - define total_qty <[total_qty].add[<player.flag[fort.harvest_display].flag[qty]>]>
     - if <player.flag[fort.harvest_display].is_spawned> && <player.flag[fort.harvest_display].location> == <[loc]>:
       - define harvest_display <player.flag[fort.harvest_display]>
-
 
   - define text <[icon]><&f><&l>+<[total_qty]>
 
@@ -467,6 +466,7 @@ fort_pic_handler:
     - adjust <player> show_entity:<[harvest_display]>
 
   - flag <[harvest_display]> qty:<[total_qty]>
+  - flag <[harvest_display]> mat:<[type]>
   - flag player fort.harvest_display:<[harvest_display]> duration:2s
   - adjust <[harvest_display]> text:<[text]>
   - run fort_pic_handler.bounce_anim def:<map[e=<[harvest_display]>]>
