@@ -105,12 +105,13 @@ fort_pic_handler:
     - if <[i].material.name> != <[tool]>:
       - inventory adjust slot:<player.held_item_slot> material:<[tool]>
 
-    on player right clicks !air with:fort_pickaxe*:
+    on player right clicks block with:fort_pickaxe*:
     #so they can't strip logs
     #added this check because for some reason denizen thinks this even is "on player right clicks entity"
-    - if <context.location||null> != null:
-      - stop if:<context.location.material.name.contains_any_text[wood|trap].not||false>
-      - stop if:<context.location.material.name.contains_text[door]||false>
+    - define mat <context.location.material.name>
+    - stop if:<[mat].equals[air]||false>
+    - stop if:<[mat].contains_any_text[wood|trap].not||false>
+    - stop if:<[mat].contains_text[door]||false>
     - determine passively cancelled
     - ratelimit <player> 1t
 
@@ -227,7 +228,7 @@ fort_pic_handler:
     - if <[center].has_flag[build.natural]>:
       #sometimes the center isn't included
       - define blocks <[blocks].include[<[center]>]>
-      - inject fort_pic_handler.break_natural_structure
+      - run fort_pic_handler.break_natural_structure def:<map[blocks=<[blocks]>]>
       - stop
 
     #otherwise, break the tile and anything else connected to it
@@ -401,6 +402,9 @@ fort_pic_handler:
   break_natural_structure:
     ##minor problem: sometimes parts of the leaves/tree stay because there was a mistake
     #-in the "tree removing" system, where the center loc's flags weren't reset.
+
+    - define blocks      <[data].get[blocks]>
+    - define struct_type <[data].get[struct_type]>
 
     #sorting by y for trees so it goes
     - define blocks <[blocks].sort_by_number[y]>
