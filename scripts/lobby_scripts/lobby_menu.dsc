@@ -159,10 +159,9 @@ fort_lobby_handler:
     - define hash <server.flag[fort.resourcepack.hash]>
     - resourcepack url:http://mc.nimsy.live:4000/latest.zip hash:<[hash]> forced prompt:testabcdefg
 
+    # - [ Cache Hash ] - #
     on webserver web request port:4274 method:post:
-    - define hash <context.body>
-    - announce <context.body>
-    #- flag server fort.resourcepack.hash:<[hash]>
+    - flag server fort.resourcepack.hash:<context.query.get[hash]>
 
     on resource pack status:
     #SUCCESSFULLY_LOADED, DECLINED, FAILED_DOWNLOAD, ACCEPTED
