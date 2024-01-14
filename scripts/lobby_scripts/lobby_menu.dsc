@@ -141,21 +141,21 @@ fort_lobby_handler:
 
     - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
 
-    #default mode
-    - flag player fort.menu.mode:solo
-
     - adjust <player> item_slot:1
     #used to prevent collision
     - team name:lobby_player add:<player>
 
     - fileread path:../../../../../globaldata/packs/latest.zip save:rp
     - define hash <entry[rp].data.hash[SHA-1]>
+    - narrate <[hash]>
     - resourcepack url:http://mc.nimsy.live:4000/latest.zip hash:<[hash]> forced
 
     on resource pack status:
     #SUCCESSFULLY_LOADED, DECLINED, FAILED_DOWNLOAD, ACCEPTED
     - choose <context.status>:
       - case SUCCESSFULLY_LOADED:
+        #in case they moved during rp load
+        - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
         - inject fort_lobby_setup.player_setup
 
       - case DECLINED FAILED_DOWNLOAD:
@@ -785,6 +785,8 @@ fort_lobby_setup:
       - flag player fort.menu.invite_button.<[loop_index]>:->:<[button]>
       - flag <[button]> type:invite
 
+    #default mode
+    - flag player fort.menu.mode:solo
     #now the player is officially in the menu and selector can work
     - flag player fort.in_menu
     #-nimnite title
