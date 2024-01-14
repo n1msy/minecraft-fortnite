@@ -36,7 +36,7 @@ fort_bungee_handler:
     #only run it on one server, so it doesn't repeat
     #waiting one second to prevent spam joining/rejoining so it makes sure players are on the server
     - if <bungee.server> == fort_lobby:
-      - wait 1s
+      - wait 2s
       - bungeerun backup discord_join def:<map[name=<context.name>;uuid=<context.uuid>;status=join]> if:<player.is_online>
 
     on bungee player leaves network:
