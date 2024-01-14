@@ -185,7 +185,7 @@ fort_lobby_handler:
         #in case they moved during rp load
         - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
         - inject fort_lobby_setup.player_setup
-        - wait 1s
+        - wait 2.5s
         #-non-vanilla client risk message
         - define client           <player.client_brand>
         - define client_blacklist <list[Lunar|Feather|Badlion|unknown]>
@@ -193,7 +193,6 @@ fort_lobby_handler:
           - playsound <player> sound:BLOCK_NOTE_BLOCK_PLING pitch:1.5
           - define line <&8><element[<&sp>].repeat[80].strikethrough>
           - narrate <[line]>
-          - narrate <element[<&m><&8><&l>-].repeat[10]>
           - narrate "<&c><&l>[!] Warning [!] <&c>You're running on a client that probably f**ks with your UI in-game."
           - narrate "<n><&7>Your client: <&c><player.client_brand>"
           - narrate "<&8>Known clients that cause issues: <&7><[client_blacklist].separated_by[<&8>, <&7>]>"
@@ -824,6 +823,6 @@ fort_lobby_setup:
     #now the player is officially in the menu and selector can work
     - flag player fort.in_menu
     #-nimnite title
-    - wait 1s
-    - if !<player.has_flag[fort.menu.match_info]>:
+    - wait 2.5s
+    - if !<player.has_flag[fort.menu.match_info]> && <player.is_online>:
       - run fort_lobby_handler.match_info def.option:add
