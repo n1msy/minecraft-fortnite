@@ -4,7 +4,7 @@ test:
   type: task
   debug: false
   script:
-    - define msg "<n><n><n><&c><&l>[!] Resourcepack download failed.
+    - define msg "<n><&c><&l>[!] Resourcepack download failed.
                   <n><n><&f>Sup nerd, the Nimnite resourcepack is <&n>required<&r> to play.
                   <n><n><n><n>If you think this is a <&c>bug<&r>, please report it in our <&9><&l><&n>Discord<&r> server!
                   <n><n><&b><&n>https://discord.gg/RB5a7WvHeP<&r>
