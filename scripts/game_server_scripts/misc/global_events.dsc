@@ -4,6 +4,9 @@ fort_global_handler:
   definitions: data
   events:
 
+    on player kicked for flying:
+    - determine cancelled
+
     #-unload the nimnite map so it doesn't have to save
     on shutdown:
     - announce to_console "<&b>[Nimnite]<&r> Removing world <&dq><&e>nimnite_map<&r><&dq>..."
