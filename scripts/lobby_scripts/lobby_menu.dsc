@@ -185,7 +185,7 @@ fort_lobby_handler:
         #in case they moved during rp load
         - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
         - inject fort_lobby_setup.player_setup
-        - wait 2.5s
+        - wait 2s
         #-non-vanilla client risk message
         - define client           <player.client_brand>
         - define client_blacklist <list[Lunar|Feather|Badlion|unknown]>
