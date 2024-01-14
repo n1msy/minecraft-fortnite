@@ -162,7 +162,8 @@ fort_lobby_handler:
     # - [ Cache Hash ] - #
     on webserver web request port:4274 method:post:
     - define hash <context.query.get[hash]>
-    - flag server fort.resourcepack.hash:<context.query.get[hash]>
+    - announce <context.body> to_console
+    - flag server fort.resourcepack.hash:<[hash]>
     - announce "<&b>[<bungee.server>]<&r> Cached new resourcepack hash <&8>(<&7><[hash]><&8>)<&r>." to_console
 
     on resource pack status:
