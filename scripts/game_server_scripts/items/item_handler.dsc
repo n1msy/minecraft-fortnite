@@ -68,33 +68,38 @@ fort_item_handler:
 
     on player picks up fort_item_*:
     - determine passively cancelled
-    - define i                  <context.item>
-    - define item_to_stack_with <player.inventory.list_contents.filter[script.name.equals[<[i].script.name>]].sort_by_number[quantity].first||null>
-    - define stack_size         <[i].flag[stack_size]>
+    #add a wait 1t so you can't pick up items at the same time as guns
+    - define item               <context.item.with[color=black]>
+    #find lowest quantity of items to be stacked with
+    - define item_to_stack_with <player.inventory.list_contents.filter[script.name.equals[<[item].script.name>]].sort_by_number[quantity].first||null>
+    - define stack_size         <[item].flag[stack_size]>
     - define current_qty        <[item_to_stack_with].quantity||0>
 
     - if <[current_qty]> == <[stack_size]>:
+      #meaning there's no new items to stack with
       - define item_to_stack_with null
       - define current_qty        0
 
     #cancel pickup
-    - if <[item_to_stack_with]> == null && <player.inventory.slot[2|3|4|5|6].filter[material.name.equals[air]].is_empty>:
+
+    - define hotbar_slots <list[2|3|4|5|6]>
+    - if <[item_to_stack_with]> == null && <player.inventory.slot[<[hotbar_slots]>].filter[material.name.equals[air]].is_empty>:
       - stop
 
     - if <[item_to_stack_with]> == null:
       #-excluding slot 1 because of pickaxe?
       #next empty slot
-      - define slot <list[2|3|4|5|6].filter_tag[<player.inventory.slot[<[filter_value]>].material.name.equals[air]>].first>
+      - define slot <[hotbar_slots].filter_tag[<player.inventory.slot[<[filter_value]>].material.name.equals[air]>].first>
     - else:
-      - define slot <list[2|3|4|5|6].parse_tag[<player.inventory.slot[<[parse_value]>]>/<[parse_value]>].filter[before[/].equals[<[item_to_stack_with]>]].sort_by_number[before[/].quantity].parse[after[/]].first>
+      - define slot <[hotbar_slots].parse_tag[<player.inventory.slot[<[parse_value]>]>/<[parse_value]>].filter[before[/].equals[<[item_to_stack_with]>]].sort_by_number[before[/].quantity].parse[after[/]].first>
 
-    - define add_qty <[i].quantity>
+    - define add_qty <[item].quantity>
     - define new_qty <[current_qty].add[<[add_qty]>]>
 
     - if <[new_qty]> > <[stack_size]>:
       - define left_over <[new_qty].sub[<[stack_size]>]>
       - define add_qty   <[add_qty].sub[<[left_over]>]>
-      - run fort_item_handler.drop_item def:<map[item=<[i].script.name>;qty=<[left_over]>]>
+      - run fort_item_handler.drop_item def:<map[item=<[item].script.name>;qty=<[left_over]>]>
 
     - define e <context.entity>
     - adjust <player> fake_pickup:<[e]>
@@ -102,11 +107,12 @@ fort_item_handler:
       - remove <[e].flag[text_display]>
     - remove <[e]>
 
-    - define rarity <[i].flag[rarity]>
+    - define rarity <[item].flag[rarity]>
     - define rarity_line <[rarity].to_titlecase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]>
     - define lore <list[<[rarity_line]>]>
 
-    - give <[i].with[quantity=<[add_qty]>;lore=<[lore]>;color=<color[#000000]>]> slot:<[slot]>
+    - define item_to_give <[item].with[quantity=<[add_qty]>;lore=<[lore]>]>
+    - give <[item_to_give]> slot:<[slot]>
     - run update_hud
 
   item_text:
