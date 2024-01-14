@@ -166,7 +166,7 @@ build_system_handler:
     - if <[center].has_flag[build.natural]>:
       - define struct_type <[center].flag[build.type]>
       - define blocks <[blocks].include[<[center]>]>
-      - run fort_pic_handler.break_natural_structure def:<map[blocks=<[blocks]>;struct_type=<[struct_type]>]>
+      - run fort_pic_handler.break_natural_structure def:<map[center=<[center]>;blocks=<[blocks]>;struct_type=<[struct_type]>]>
       - stop
 
     - inject build_system_handler.break

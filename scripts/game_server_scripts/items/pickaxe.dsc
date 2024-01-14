@@ -228,7 +228,7 @@ fort_pic_handler:
     - if <[center].has_flag[build.natural]>:
       #sometimes the center isn't included
       - define blocks <[blocks].include[<[center]>]>
-      - run fort_pic_handler.break_natural_structure def:<map[blocks=<[blocks]>]>
+      - run fort_pic_handler.break_natural_structure def:<map[center=<[center]>;blocks=<[blocks]>;struct_type=<[struct_type]>]>
       - stop
 
     #otherwise, break the tile and anything else connected to it
@@ -405,6 +405,7 @@ fort_pic_handler:
 
     - define blocks      <[data].get[blocks]>
     - define struct_type <[data].get[struct_type]>
+    - define center      <[data].get[center]>
 
     #sorting by y for trees so it goes
     - define blocks <[blocks].sort_by_number[y]>
