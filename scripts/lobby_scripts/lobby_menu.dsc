@@ -147,7 +147,7 @@ fort_lobby_handler:
 
     - fileread path:../../../../../globaldata/packs/latest.zip save:rp
     - define hash <entry[rp].data.hash[SHA-1].to_hex>
-    - resourcepack url:http://mc.nimsy.live:4000/latest.zip hash:<[hash]> forced
+    - resourcepack url:http://mc.nimsy.live:4000/latest.zip hash:<[hash]> forced prompt:testabcdefg
 
     on resource pack status:
     #SUCCESSFULLY_LOADED, DECLINED, FAILED_DOWNLOAD, ACCEPTED
