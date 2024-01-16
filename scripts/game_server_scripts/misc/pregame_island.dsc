@@ -1,5 +1,4 @@
 ##make sure to flag the server for different modes with "fort.mode"
-
 pregame_island_handler:
   type: world
   debug: false
@@ -34,9 +33,9 @@ pregame_island_handler:
     # - [ filling chests / ammo boxes ] - #
     #-get a check of all the
     #-mention the time elapsed for when filling all the chests?
-    - foreach <list[chests|ammo_boxes]> as:container_type:
-      - define containers <world[nimnite_map].flag[fort.<[container_type]>]||<list[]>>
-      - announce "<&b>[Nimnite]<&r> Filling all <&e><[container_type].replace[_].with[ ]><&r>..." to_console
+    - foreach <list[chest|ammo_box]> as:container_type:
+      - define containers <world[nimnite_map].flag[fort.<[container_type]>.locations]||<list[]>>
+      - announce "<&b>[Nimnite]<&r> Filling <&e><[container_type]><&r> containers..." to_console
 
       #- define containers_filled 0
       #not really a need to fill the ammo boxes in advance, but eh? (it's not really being filled either, since it randomizes upon opening)
@@ -48,13 +47,13 @@ pregame_island_handler:
           #saving to unload the chunks after setup is complete
           ##unload all the chunks?
           - define loaded_chunks:->:<[chunk]>
-        - inject fort_fill_container.<map[chests=chest;ammo_boxes=ammo_box].get[<[container_type]>]>
+        - inject fort_fill_container.<[container_type]>
         #- define containers_filled:++
         #- announce "<&b>[Nimnite]<&r> [DEBUG] <&e><[containers_filled]><&f>/<&a><[containers].size> <&f><[container_type]> filled." to_console
 
       - announce "<&b>[Nimnite]<&r> Done (<&a><[containers].size><&r> filled)" to_console
 
-    - flag server fort.unopened_chests:<world[nimnite_map].flag[fort.chests]||<list[]>>
+    - flag server fort.unopened_chests:<world[nimnite_map].flag[fort.chest.locations]||<list[]>>
     - run fort_chest_handler.all_chest_effects
 
    # - waituntil <[containers_to_fill].is_empty> rate:1s
