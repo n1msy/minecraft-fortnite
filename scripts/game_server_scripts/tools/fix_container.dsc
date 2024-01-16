@@ -1,4 +1,3 @@
-##
 fix_world_flags:
   type: task
   debug: false
