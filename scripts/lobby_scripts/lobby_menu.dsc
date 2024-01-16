@@ -159,6 +159,13 @@ fort_lobby_handler:
       - announce "<&b>[<bungee.server>]<&r> Cached new resourcepack hash <&8>(<&7><[new_hash]><&8>)<&r>." to_console
 
     #- [ ! ] Warning: RP is being downloaded every time players join lobby server (even when returning from game)
+
+    #-for test server
+    - if <player.has_flag[on_test_server]>:
+      - run fort_lobby_setup.player_setup
+      - stop
+    #
+
     - define hash <server.flag[fort.resourcepack.hash]>
     #add a rp prompt?
     - resourcepack url:http://mc.nimsy.live:4000/latest.zip hash:<[hash]> forced
@@ -166,7 +173,7 @@ fort_lobby_handler:
     #put this inside the tick loop too, or nah
     - cast BLINDNESS duration:infinite hide_particles no_icon no_ambient
     - define subtitle "bare with me"
-    - while <player.is_online> && !<player.has_flag[fort.menu]>:
+    - while <player.is_online> && !<player.has_flag[fort.menu]> || <player.has_flag[]>:
       - title "title:<&e>Downloading Resourcepack..." subtitle:<&7><[subtitle]> fade_in:1 stay:1 fade_out:1
       - define subtitle <list[here's a shameless promo -<&gt> twitch.tv/flimsynimsy|you ever just realize how handsome nimsy is?|fun fact: 1 year of a degen<&sq>s life was spent on this|y are u still here|please donate me money PLEASE|isn<&sq>t nimsy like- the best?].random>
       #wait 1s for a "flashing" effect
@@ -174,6 +181,10 @@ fort_lobby_handler:
 
     on resource pack status:
     #SUCCESSFULLY_LOADED, DECLINED, FAILED_DOWNLOAD, ACCEPTED
+    - define status <context.status>
+    #-for test server
+    - define status SUCCESSFULLY_LOADED if:<player.has_flag[on_test_server]>
+    #
     - choose <context.status>:
       - case SUCCESSFULLY_LOADED:
         #reset loading text
