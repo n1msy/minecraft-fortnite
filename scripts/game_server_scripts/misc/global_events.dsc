@@ -125,19 +125,42 @@ fort_global_handler:
 
     #since you only have access to 1-6 slots, and the other slots are category names
     #WAY better way of doing this but my brain is too tired to think rn
-    on player clicks in inventory slot:2|3|4|5|7|8|9|10|11|12|13|14|15|16|17|18|28|29|30|31|32|33|34|35|36|19|20|21|22|23|24|25|26|27:
+    on player clicks in inventory slot:2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|28|29|30|31|32|33|34|35|36|19|20|21|22|23|24|25|26|27:
     #19-27 are the resources/ammo slots
     #in case it's part of the drop menu
     #this stop is for emotes
+    #-clean up these stop checks and the determine at the end
+    - if <context.action> in CLONE_STACK|COLLECT_TO_CURSOR:
+      - determine passively cancelled
+      - stop
     - stop if:<context.clicked_inventory.inventory_type.equals[CRAFTING]>
     - stop if:<context.item.has_flag[action]||false>
     - if <util.list_numbers[from=19;to=27].contains[<context.slot>]> && <context.item.material.name> != air:
       - stop
     - if <list[2|3|4|5|6].contains[<context.slot>]> && <context.clicked_inventory.inventory_type> == PLAYER:
-      #remove/re-add rarity bg
+
+      - define cursor_item     <context.cursor_item>
+      - define item_clicked_on <context.item>
+
+      #-remove/re-add rarity bg
       #if they're clicking WITH a fort item or ON one, update the rarity
-      - if <context.item.has_flag[rarity]> || <context.cursor_item.has_flag[rarity]>:
-        - wait 0.5t
+      - if <[item_clicked_on].has_flag[rarity]> || <[cursor_item].has_flag[rarity]>:
+        - wait 1t
+
+        #-checking item stack sizes
+        #update item data from a tick after
+        - define slot            <context.slot>
+        - define item_clicked_on <player.inventory.slot[<context.slot>]>
+        - define cursor_item     <context.cursor_item>
+        #check if it's stackable
+        - if <[item_clicked_on].has_flag[stack_size]> && <[item_clicked_on].script.name> == <[cursor_item].script.name>:
+          - define stack_size <[item_clicked_on].flag[stack_size]>
+          - define new_qty    <[item_clicked_on].quantity>
+          - if <[new_qty]> > <[stack_size]>:
+            - define cursor_qty <[new_qty].sub[<[stack_size]>]>
+            - inventory set o:<[item_clicked_on].with[quantity=<[stack_size]>]> slot:<[slot]>
+            - adjust <player> item_on_cursor:<[item_clicked_on].with[quantity=<[cursor_qty]>]>
+
         - inject update_hud
       - stop
 
@@ -149,7 +172,8 @@ fort_global_handler:
       - stop
     - if <context.slots.contains_any[7|8|9|10|11|12|13|14|15|16|17|18|28|29|30|31|32|33|34|35|36|19|20|21|22|23|24|25|26|27]>:
       - determine passively cancelled
-    - if <list[2|3|4|5].contains_any[<context.slots>]> && <context.clicked_inventory.inventory_type> == CRAFTING:
+    #-if i really really really wanted to, i could add the stack_size check for drags too
+    - if <list[2|3|4|5|6].contains_any[<context.slots>]>:
       - determine passively cancelled
     #remove/re-add rarity bg
     #if they're clicking WITH a fort item or ON one, update the rarity

@@ -63,14 +63,13 @@ fort_chest_handler:
     - flag <[loc]> fort.<[container_type]>.opened
 
     #gold shine
-    - define p_loc      <[loc].with_yaw[<[yaw].add[180]>].forward[0.4]>
-    - define gold_shine <[p_loc].left[0.5].points_between[<[p_loc].right[0.55]>].distance[0.1]>
-    - flag <[loc]> fort.chest.gold_shine:<[gold_shine]>
+    - if <[container_type]> == chest:
+      - define p_loc      <[loc].with_yaw[<[yaw].add[180]>].forward[0.4]>
+      - define gold_shine <[p_loc].left[0.5].points_between[<[p_loc].right[0.55]>].distance[0.1]>
+      - flag <[loc]> fort.chest.gold_shine:<[gold_shine]>
 
-    - if <[container_type]> == ammo_box:
-      - flag <[loc].world> fort.ammo_boxes:->:<[loc]>
-    - else:
-      - flag <[loc].world> fort.chests:->:<[loc]>
+    - flag <[loc].world> fort.<[container_type]>.locations:->:<[loc]>
+    - adjust server save
 
     - narrate "<&a>Set <[container_type].replace[_].with[ ]> at <&f><[loc].simple>"
 
@@ -543,7 +542,7 @@ fort_fill_container:
   #task script made to cache gold_shine data calculations in flags, instead of calculating over and over again
   cache_chest_data:
     - narrate "<&b>[Nimnite Debug] <&f>Caching chest data..."
-    - define chests <world[nimnite_map].flag[fort.chests]>
+    - define chests <world[nimnite_map].flag[fort.chest.locations]>
     - foreach <[chests]> as:chest_loc:
       - if !<[chest_loc].chunk.is_loaded>:
         - chunkload <[chest_loc].chunk>
