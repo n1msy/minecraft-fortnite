@@ -80,7 +80,6 @@ fix_world_flags:
           - adjust <[text]> scale:0.75,0.75,0.75
 
           ##flag
-          #- announce <[container_type]>/<[loc]> to_console
           - flag <world[nimnite_map]> fort.<[container_type]>.locations:->:<[loc]>
           #- announce "<&b>[Nimnite] <&f>Fixed <[container_type]> at <[loc].simple>" to_console
     ##very important save mech
