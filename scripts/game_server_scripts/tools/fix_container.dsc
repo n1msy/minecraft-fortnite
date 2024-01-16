@@ -63,21 +63,6 @@ fix_world_flags:
 
           - define model           <[loc].flag[fort.<[container_type]>.model]>
           - define text            <[loc].flag[fort.<[container_type]>.text]>
-          #- define yaw             <[loc].flag[fort.chest.yaw].add[1]>
-          #- define mat             <[loc].flag[fort.chest.material]>
-          #- define attached_center <[loc].flag[fort.chest.attached_center]||null>
-
-          #switching over to entity flags instead?
-          #- flag <[int]> fort.chest.model:<[model]>
-          #- flag <[int]> fort.chest.text:<[text]>
-          #- flag <[int]> fort.chest.yaw:<[yaw]>
-          #- flag <[int]> fort.chest.material:<[mat]>
-
-          #- if <[attached_center]> != null:
-            #- flag <[int]> fort.chest.attached_center:<[attached_center]>
-
-          #remove this flag?
-          #- flag <[int]> fort.chest.opened
 
           #recalculating, since not all chests have this flag
           - if <[container_type]> == chest:
@@ -95,14 +80,10 @@ fix_world_flags:
           - adjust <[text]> scale:0.75,0.75,0.75
 
           ##flag
-          #- flag server fort.<[container_type]>.locations:->:<[loc]>
           #- announce <[container_type]>/<[loc]> to_console
           - flag <world[nimnite_map]> fort.<[container_type]>.locations:->:<[loc]>
           #- announce "<&b>[Nimnite] <&f>Fixed <[container_type]> at <[loc].simple>" to_console
     ##very important save mech
     #this is what caused the shit to be bugged
-    #- flag <world[nimnite_map]> fort.floor_loot_locations:<server.flag[fort.floor_loot_locations]>
-    #- flag <world[nimnite_map]> fort.chest.locations:<server.flag[fort.ammo_box.locations]>
-    #- flag <world[nimnite_map]> fort.chest.locations:<server.flag[fort.chest.locations]>
     - adjust server save
     - announce "<&b>[Nimnite] <&f>World flag restoration <&a>complete<&f>!" to_console
