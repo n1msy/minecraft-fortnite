@@ -33,8 +33,8 @@ fort_item_handler:
 
     - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>;rarity=<[rarity]>]>
 
-    #- team name:<[rarity]> add:<[drop]> color:<map[Common=GRAY;Uncommon=GREEN;Rare=AQUA;Epic=LIGHT_PURPLE;Legendary=GOLD].get[<[rarity]>]>
-    #- adjust <[drop]> glowing:true
+    #so all items match to merge
+    - adjust <[drop].item> lore:<list[]>
 
     - inject update_hud
 
@@ -61,58 +61,99 @@ fort_item_handler:
     - if <context.entity.has_flag[text_display]>:
       - remove <context.entity.flag[text_display]>
 
+    #-either re-calculate the name, or use the name of the item that was already on the ground?
     - define rarity <[item].flag[rarity]>
-    - define text <&l><[item].display.strip_color.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]><&f><&l>x<[qty]>
+    #remove the control pixel
+    - define text   <[item].script.name.as[item].display.strip_color>
+    - define text   <[text].replace_text[<[text].to_list.first>].with[<empty>]>
+    - define text   <&l><[text].color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]><&f><&l>x<[qty]>
     - if <[target].has_flag[text_display]>:
       - adjust <[target].flag[text_display]> text:<[text]>
 
     on player picks up fort_item_*:
     - determine passively cancelled
-    #add a wait 1t so you can't pick up items at the same time as guns
-    - define item               <context.item.with[color=black]>
-    #find lowest quantity of items to be stacked with
-    - define item_to_stack_with <player.inventory.list_contents.filter[script.name.equals[<[item].script.name>]].sort_by_number[quantity].first||null>
-    - define stack_size         <[item].flag[stack_size]>
-    - define current_qty        <[item_to_stack_with].quantity||0>
 
-    - if <[current_qty]> == <[stack_size]>:
-      #meaning there's no new items to stack with
-      - define item_to_stack_with null
-      - define current_qty        0
+    #-save hotbar
+    #save ordered hotbar items with slot data
+    - foreach <list[2|3|4|5|6]> as:slot:
+      - define i      <player.inventory.slot[<[slot]>]>
+      - define is_air <[i].material.name.equals[air]>
+      #storing slot data in case
+      - define hotbar_items:->:<map[item=<[i]>;slot=<[slot]>;is_air=<[is_air]>]>
 
-    #cancel pickup
+    #item being picked up
+    - define item   <context.item>
+    - define current_qty <[item].quantity>
 
-    - define hotbar_slots <list[2|3|4|5|6]>
-    - if <[item_to_stack_with]> == null && <player.inventory.slot[<[hotbar_slots]>].filter[material.name.equals[air]].is_empty>:
+    #define here, but stack items take priority over air slots
+    - define air_slots <[hotbar_items].filter[get[item].material.name.equals[air]]||null>
+
+    - define stack_size <[item].flag[stack_size]>
+    - define same_items <[hotbar_items].filter[get[item].script.name.equals[<[item].script.name>]]>
+    #look for the same item that's not completely full
+    - define same_incomplete_stack_items <[same_items].filter[get[item].quantity.is[LESS].than[<[stack_size]>]]>
+
+    #stacked slots take priority
+    - define available_slots_data <[same_incomplete_stack_items].include[<[air_slots]>]>
+
+    #you can't pick up anything
+    - if <[available_slots_data].is_empty>:
       - stop
 
-    - if <[item_to_stack_with]> == null:
-      #-excluding slot 1 because of pickaxe?
-      #next empty slot
-      - define slot <[hotbar_slots].filter_tag[<player.inventory.slot[<[filter_value]>].material.name.equals[air]>].first>
-    - else:
-      - define slot <[hotbar_slots].parse_tag[<player.inventory.slot[<[parse_value]>]>/<[parse_value]>].filter[before[/].equals[<[item_to_stack_with]>]].sort_by_number[before[/].quantity].parse[after[/]].first>
+    #no need to do left_over math if we're doing this
+    # repeat <[current_qty]>:
+    - define rarity       <[item].flag[rarity]>
+    - define rarity_color #<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>
+    - define rarity_line  <[rarity].to_titlecase.color[<[rarity_color]>]>
+    - define lore         <list[<[rarity_line]>]>
+    #reconstruct the name
+    - define item_name <[item].script.name.as[item].display>
 
-    - define add_qty <[item].quantity>
-    - define new_qty <[current_qty].add[<[add_qty]>]>
+    - define item <[item].with[display=<[item_name]>;lore=<[lore]>;color=black]>
 
-    - if <[new_qty]> > <[stack_size]>:
-      - define left_over <[new_qty].sub[<[stack_size]>]>
-      - define add_qty   <[add_qty].sub[<[left_over]>]>
+
+    #doing a foreach in case there are multiples of that in complete stack throughout the hotbar
+    - foreach <[available_slots_data]> as:slot_data:
+      #both have to be true if we want to continue
+      - if <[current_qty]> == 0:
+        - foreach stop
+
+
+      - define item_to_stack_with <[slot_data].get[item]>
+
+      #no need for defining slot, but just doing it anyways because it's being defined by air slot
+      - define slot               <[slot_data].get[slot]>
+
+      - define other_qty          <[item_to_stack_with].quantity>
+      #total of that item that's being picked up (pre stack size check)
+      - define give_qty           <[current_qty]>
+      - define total_qty          <[give_qty].add[<[other_qty]>]>
+
+      #drop the quantity of items that's exceeding the stack size
+      - if <[total_qty]> > <[stack_size]>:
+        #the drop quantity would be what's left over
+        - define left_over <[total_qty].sub[<[stack_size]>]>
+        - define give_qty  <[give_qty].sub[<[left_over]>]>
+      #defining this, so the next iteration knowns how much is left
+      - define current_qty    <[current_qty].sub[<[give_qty]>]>
+      - if <[left_over].exists>:
+        - define left_over:-:<[current_qty]>
+
+      - define item_to_give      <[item].with[quantity=<[give_qty].add[<[other_qty]>]>]>
+      - define item_give_data:->:<map[item=<[item_to_give]>;slot=<[slot]>]>
+
+    - if <[left_over].exists> && <[left_over]> > 0:
       - run fort_item_handler.drop_item def:<map[item=<[item].script.name>;qty=<[left_over]>]>
 
-    - define e <context.entity>
-    - adjust <player> fake_pickup:<[e]>
-    - if <[e].has_flag[text_display]>:
-      - remove <[e].flag[text_display]>
-    - remove <[e]>
+    - define drop <context.entity>
+    - adjust <player> fake_pickup:<[drop]>
+    - if <[drop].has_flag[text_display]>:
+      - remove <[drop].flag[text_display]>
+    - remove <[drop]>
 
-    - define rarity <[item].flag[rarity]>
-    - define rarity_line <[rarity].to_titlecase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]>
-    - define lore <list[<[rarity_line]>]>
+    - foreach <[item_give_data]> as:data:
+      - inventory set o:<[data].get[item]> slot:<[data].get[slot]>
 
-    - define item_to_give <[item].with[quantity=<[add_qty]>;lore=<[lore]>]>
-    - give <[item_to_give]> slot:<[slot]>
     - run update_hud
 
   item_text:
@@ -147,7 +188,8 @@ fort_item_handler:
     - define rarity <[item].flag[rarity]>
     - define item   <[item].with[quantity=<[qty]>]>
 
-    - drop <[item]> <[loc]> delay:1s save:drop
+    #reset the lore so items that were intialized in hotbar can stack with non-intialized ones
+    - drop <[item].with[lore=<list[]>]> <[loc]> delay:1s save:drop
     - define drop <entry[drop].dropped_entity>
 
     - define text <&l><[item].display.strip_color.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]><&f><&l>x<[qty]>
