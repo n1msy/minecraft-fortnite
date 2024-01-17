@@ -160,7 +160,9 @@ fort_glider_handler:
       - wait 1t
 
       - if <[loc].y> < -42:
-        - run fort_death_handler.death
+        #doing this causes the death effect to fire
+        - hurt <player.health> cause:VOID
+        - remove <[glider]> if:<[glider].is_spawned>
         - stop
 
     #-added a safety to remove the glider, not sure if it works or not though -> just tested, still not working, changed to 2t to see if it'll work
