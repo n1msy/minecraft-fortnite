@@ -361,7 +361,6 @@ fort_gun_handler:
   fire:
   #required definitions:
   # - <[pellets]>
-
     - repeat <[pellets]>:
 
       #eye loc is used for the particle effects
@@ -531,7 +530,11 @@ fort_gun_handler:
       #this way, the damage structure command only fires ONCE per tile
       - foreach <[damaged_structures].keys> as:center_key:
         - define center     <[damaged_structures.<[center_key]>.center]>
+        #in case it's already broken
+        - if !<[center].has_flag[build]>:
+          - foreach next
         - define struct_dmg <[damaged_structures.<[center_key]>.damage]>
+        #in case it's already broken
         - run build_system_handler.structure_damage def:<map[center=<[center]>;damage=<[struct_dmg]>]>
 
   custom_shoot:
