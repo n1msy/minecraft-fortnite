@@ -4,14 +4,6 @@ fort_consumable_handler:
   definitions: data
   events:
 
-    #make the item unequipable
-    #in the future, add the guidelines to make it throwable here?
-    on player right clicks block with:fort_item_*:
-    - determine passively cancelled
-    - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
-    #giving dropped flag so the consume event doesn't fire
-    - flag player fort.item_dropped duration:1t
-
     #-Bush handler (any damage they take is negated once)
     on player damaged flagged:fort.bush priority:-10:
     #- narrate "<&c>Player damage was negated. This is a debug message. If you see this still, please remind Nimsy to change it."

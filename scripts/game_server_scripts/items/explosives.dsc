@@ -5,6 +5,7 @@ fort_explosive_handler:
   events:
     #guide lines
     on player right clicks block with:fort_item_grenade|fort_item_impulse_grenade:
+    - stop if:<context.location.material.name.contains_text[door]||false>
     - determine passively cancelled
     - repeat 4:
       - define eye_loc <player.eye_location>

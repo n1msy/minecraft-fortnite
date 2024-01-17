@@ -10,6 +10,16 @@ fort_item_handler:
   definitions: data
   events:
 
+    #make the item unequipable
+    #in the future, add the guidelines to make it throwable here?
+    on player right clicks block with:fort_item_*:
+    #if check so you can open doors
+    - determine passively cancelled if:!<context.location.material.name.contains_text[door]||false>
+
+    - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
+    #giving dropped flag so the consume event doesn't fire
+    - flag player fort.item_dropped duration:1t
+
     on entity removed from world:
     - if <context.entity.has_flag[text_display]> && <context.entity.flag[text_display].is_spawned>:
       - remove <context.entity.flag[text_display]>

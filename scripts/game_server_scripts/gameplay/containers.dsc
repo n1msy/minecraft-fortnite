@@ -318,7 +318,7 @@ fort_chest_handler:
 
       #-if someone placed a build underneath it before the drop loc
       #doing .above/.below just to visualise better
-      - if <[hb].location.below[0.15].material.name> != air:
+      - if <[hb].location.below[0.1].material.name> != air:
         - define drop_loc <[hb].location.above[3]>
         - foreach stop
 
@@ -355,7 +355,7 @@ fort_chest_handler:
 
     - while <[hb].is_spawned> && <[sp].is_spawned>:
       #if the build broke underneath it, start moving the supply drop down again
-      - if <[hb].location.below[0.15].material.name> == air:
+      - if <[hb].location.below[0.1].material.name> == air:
         - run fort_chest_handler.supply_drop_fall def:<map[hb=<[hb]>]>
         - stop
       - wait 10t
@@ -404,7 +404,7 @@ fort_chest_handler:
 
     #-if someone placed a build underneath it before the drop loc
     #doing .above/.below just to visualise better
-    - if <[hb].location.below[0.15].material.name> != air:
+    - if <[hb].location.below[0.1].material.name> != air:
       - define drop_loc <[hb].location.above[3]>
       - foreach stop
 
@@ -429,7 +429,7 @@ fort_chest_handler:
 
   - while <[hb].is_spawned> && <[sp].is_spawned>:
     #if the build broke underneath it, start moving the supply drop down again
-    - if <[hb].location.below[0.15].material.name> == air:
+    - if <[hb].location.below[0.1].material.name> == air:
       - run fort_chest_handler.supply_drop_fall def:<map[hb=<[hb]>]>
       - stop
     - wait 10t
