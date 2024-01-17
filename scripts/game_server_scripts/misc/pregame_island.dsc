@@ -65,7 +65,7 @@ pregame_island_handler:
     - adjust <material[leather_helmet]> max_stack_size:64
     #it's fine to change max stack size for gun materials, since they won't stack
     #because each gun has a unique uuid
-    - adjust <material[leather_horse_armor]> max_stack_size:64
+    #- adjust <material[leather_horse_armor]> max_stack_size:64
 
     #reset the notable (since its also being used after victory)
     - define ellipsoid <server.flag[fort.pregame.lobby_circle.loc].to_ellipsoid[1.3,3,1.3]>
