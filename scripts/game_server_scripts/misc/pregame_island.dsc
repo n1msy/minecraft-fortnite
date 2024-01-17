@@ -43,12 +43,16 @@ pregame_island_handler:
           #there's a bunch of stuff we can leave out in these task scripts, since a new map is being added anyways. but eh
         - if !<[loc].chunk.is_loaded>:
           - define chunk <[loc].chunk>
-          - chunkload <[chunk]>
-          #duration:8s
+          - chunkload <[chunk]> durations:8s
+
           #saving to unload the chunks after setup is complete
           ##unload all the chunks?
           - define loaded_chunks:->:<[chunk]>
         - inject fort_fill_container.<[container_type]>
+
+        #- if <[container_type]> == CHEST:
+          #- announce "<&b>[Nimnite]<&r> Filling chests... <&e><[loop_index].div[<[containers].size>].round><&f>%" to_console if:<[loop_index].mod[50].equals[0]>
+
         #- define containers_filled:++
         #- announce "<&b>[Nimnite]<&r> [DEBUG] <&e><[containers_filled]><&f>/<&a><[containers].size> <&f><[container_type]> filled." to_console
 

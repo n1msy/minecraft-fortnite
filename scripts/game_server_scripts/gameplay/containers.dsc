@@ -594,7 +594,7 @@ fort_fill_container:
         - if <util.random_chance[<[i].flag[chance]>]>:
           - define item_to_drop <[i]>
           - foreach stop
-      - wait 1t
+      ##- wait 1t
 
     # - [ Guns ] - #
     #im not so sure about the chance for the common guns?
@@ -605,7 +605,7 @@ fort_fill_container:
       - if <util.random_chance[<[gun_categories].get[<[type]>]>]>:
         - define gun_type <[type]>
         - while stop
-      - wait 1t
+      ##- wait 1t
 
     - define guns <util.scripts.filter[name.starts_with[gun_]].exclude[<script[gun_particle_origin]>].parse[name.as[item]].parse_tag[<[parse_value]>/<[rarity_priority].get[<[parse_value].flag[rarity]>]>].sort_by_number[after[/]].parse[before[/]].filter[flag[type].equals[<[gun_type]>]]>
     - foreach <[guns]> as:g:
