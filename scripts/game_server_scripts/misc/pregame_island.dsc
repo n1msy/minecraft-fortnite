@@ -43,7 +43,7 @@ pregame_island_handler:
           #there's a bunch of stuff we can leave out in these task scripts, since a new map is being added anyways. but eh
         - if !<[loc].chunk.is_loaded>:
           - define chunk <[loc].chunk>
-          - chunkload <[chunk]>
+          - chunkload <[chunk]> duration:8s
           #saving to unload the chunks after setup is complete
           ##unload all the chunks?
           - define loaded_chunks:->:<[chunk]>
@@ -362,7 +362,7 @@ pregame_island_handler:
         - define drop_loc  <[loc].above[0.5]>
         - if !<[drop_loc].chunk.is_loaded>:
           - define chunk <[loc].chunk>
-          - chunkload <[chunk]>
+          - chunkload <[chunk]> duration:8s
 
         #i forgot we can't just use the drop command...
         - define script_name <[drop_item].script.name||mat>
