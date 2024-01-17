@@ -279,10 +279,9 @@ pregame_island_handler:
     #prevent players from switching to build / cancel their build mode
     #- flag <[players]> fort.disable_build duration:5s
     #do this, or just add a simple flag for builds?
-    - foreach <[players].filter[has_flag[build]]> as:p:
-      - run build_toggle player:<[p]>
-      #wait for build to fully disable before updating hud
-    - wait 2t
+    - flag <[players]> build:!
+    #wait for build to fully disable before updating hud
+    - wait 3t
     - foreach <[players]> as:p:
       - adjust <[p]> item_slot:1
       - run update_hud player:<[p]>

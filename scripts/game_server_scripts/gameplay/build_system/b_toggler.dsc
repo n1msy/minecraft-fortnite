@@ -17,11 +17,10 @@ build_toggle_handler:
     - if <player.has_flag[fort.disable_build]>:
       - stop
 
-    - if <player.has_flag[fort.on_bus]>:
+    - if <player.has_flag[fort.on_bus.loading]>:
       - stop
 
     - if <player.has_flag[fort.on_bus]>:
-      - stop if:<player.has_flag[fort.on_bus.loading]>
       - if !<player.has_flag[fort.thanked_bus_driver]>:
         #teammates are orange? idc
         - announce "<&c><&l><player.name> <&7>thanked the bus driver"
