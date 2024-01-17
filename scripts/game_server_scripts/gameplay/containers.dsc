@@ -1,3 +1,14 @@
+test:
+  type: task
+  debug: false
+  script:
+    - define chest_loc <player.cursor_on.center>
+
+    - define p_loc      <[chest_loc].with_yaw[<[chest_loc].flag[fort.chest.yaw]>].forward[0.4]>
+    - define gold_shine <[p_loc].left[0.5].points_between[<[p_loc].right[0.55]>].distance[0.1]>
+
+    - playeffect at:<[gold_shine].random[15]> effect:DUST_COLOR_TRANSITION offset:0 quantity:1 special_data:1|<color[#ffc02e]>|<color[#fff703]>
+
 fort_chest:
   type: item
   material: gold_nugget
@@ -77,16 +88,20 @@ fort_chest_handler:
   #-handled in "guns.dsc" event "after player starts sneaking"
   #required definitions: look_loc, container_type
 
-  - define loc <[look_loc]>
+  #loc is where the chest the player *was* looking at
+  - define loc <player.cursor_on>
 
   - if <[loc].has_flag[fort.<[container_type]>.opened]>:
     - stop
+
+  #look loc is where the player is looking at
+  - define look_loc <player.eye_location.ray_trace[return=block;range=2.7;default=air]> if:!<[look_loc].exists>
 
   - define text_display <[loc].flag[fort.<[container_type]>.text]>
   - define text         <[text_display].text>
   - define container    <[loc].flag[fort.<[container_type]>.model]>
   - adjust <[text_display]> see_through:false
-  - while <player.is_online> && <player.is_sneaking> && <[loc].has_flag[fort.<[container_type]>]> && !<[loc].has_flag[fort.<[container_type]>.opened]> && <[text_display].is_spawned>:
+  - while <player.is_online> && <player.is_sneaking> && <[look_loc].has_flag[fort.<[container_type]>]> && !<[look_loc].has_flag[fort.<[container_type]>.opened]> && <[text_display].is_spawned>:
     - define look_loc <player.eye_location.ray_trace[return=block;range=2.7;default=air]>
     - define bar <&chr[8].font[icons].color[<color[<[loop_index]>,0,1]>]>
     - adjust <[text_display]> text:<[text]><&r><proc[spacing].context[-92]><[bar]><proc[spacing].context[-1]>
@@ -159,7 +174,7 @@ fort_chest_handler:
       #maybe that'll optimize chest glows a bit
       - foreach <[unopened_chests]> as:chest_loc:
         - if !<[chest_loc].chunk.is_loaded>:
-          - chunkload <[chest_loc]>
+          - chunkload <[chest_loc]> duration:3s
         - define gold_shine <[chest_loc].flag[fort.chest.gold_shine]>
         - playeffect at:<[gold_shine].random[15]> effect:DUST_COLOR_TRANSITION offset:0 quantity:1 special_data:1|<color[#ffc02e]>|<color[#fff703]>
       - wait 4t
@@ -187,8 +202,10 @@ fort_chest_handler:
     - wait 5s
 
     - if !<[new_spot].chunk.is_loaded>:
-      - chunkload <[new_spot].chunk> duration:3m
-      - waituntil <[new_spot].chunk.is_loaded> rate:1s max:15s
+      - chunkload <[new_spot].chunk> duration:1m
+      #duration:3m
+      #i wonder if i really need this...
+      ##- waituntil <[new_spot].chunk.is_loaded> rate:1s max:15s
     - run fort_chest_handler.send_supply_drop def:<map[loc=<[new_spot]>]>
 
   send_supply_drop:

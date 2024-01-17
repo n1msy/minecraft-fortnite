@@ -1,13 +1,3 @@
-test:
-  type: task
-  debug: false
-  script:
-  - define prop_hb    <player.target>
-  - define prop_model <[prop_hb].flag[fort.prop.model]>
-  #- define mat_type
-  - define particle_loc <[prop_model].location.add[<[prop_model].translation>]>
-  - playeffect effect:BLOCK_CRACK at:<[particle_loc]> offset:0.1 special_data:IRON_BARS quantity:10 visibility:30
-
 fort_prop_handler:
   type: world
   debug: false
