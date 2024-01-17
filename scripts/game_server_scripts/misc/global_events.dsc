@@ -25,7 +25,8 @@ fort_global_handler:
     - flag player fort.double_sneak_to_leave duration:4t
 
     on NPC despawns:
-    - determine cancelled
+    - if <npc.has_flag[fort]>:
+      - determine cancelled
 
     on player breaks block with:!fort_pickaxe_* flagged:fort:
     - determine cancelled

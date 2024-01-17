@@ -58,6 +58,8 @@ fort_bus_handler:
       #if it's empty, it means either everyone has left or there are less than 10 players on the bus
       - if <[not_chosen_players_on_bus].is_empty>:
         - flag server fort.temp.bus.passenger_npcs:<-:<[current_p_npc]>
+        #remove the flag so they can be despawned properly
+        - flag <[current_p_npc]> fort:!
         - remove <[current_p_npc]>
       - else:
         - define lucky_one <[not_chosen_players_on_bus].random>
@@ -367,6 +369,8 @@ fort_bus_handler:
 
       - mount <[bus_driver]>|<[drivers_seat]>
       - flag server fort.temp.bus.driver:<[bus_driver]>
+      #just adding this flag, for the despawns check
+      - flag <[bus_driver]> fort.bus_driver
 
       - adjust <[bus_driver]> skin_blob:<script[nimnite_config].data_key[Spitfire_Skin]>
       - adjust <[bus_driver]> name_visible:false
@@ -465,6 +469,8 @@ fort_bus_handler:
       - foreach <server.flag[fort.temp.bus.controllers]> as:c:
         - remove <[c]> if:<[c].is_spawned>
 
+      #for the npc to remove on despawns event
+      - flag <[bus_driver]> fort:!
       - remove <server.flag[fort.temp.bus.driver]>
 
       #in case this is even possible (maybe if bus was cancelled before forcing everyone out)
