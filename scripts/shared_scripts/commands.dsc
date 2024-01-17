@@ -28,7 +28,7 @@ fort_commands:
   aliases:
   - fort
   tab completions:
-    1: <list[models|lobby_setup|lobby_teleport|pregame_spawn|fill_chests|fill_ammo_boxes|supply_drop]>
+    1: <list[models|lobby_setup|lobby_teleport|pregame_spawn|fill_chests|fill_ammo_boxes|supply_drop|mode]>
   script:
     - choose <context.args.first||null>:
 
