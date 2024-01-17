@@ -174,7 +174,8 @@ fort_chest_handler:
       #maybe that'll optimize chest glows a bit
       - foreach <[unopened_chests]> as:chest_loc:
         - if !<[chest_loc].chunk.is_loaded>:
-          - chunkload <[chest_loc]> duration:3s
+          - chunkload <[chest_loc]>
+          #duration:3s
         - define gold_shine <[chest_loc].flag[fort.chest.gold_shine]>
         - playeffect at:<[gold_shine].random[15]> effect:DUST_COLOR_TRANSITION offset:0 quantity:1 special_data:1|<color[#ffc02e]>|<color[#fff703]>
       - wait 4t
@@ -202,7 +203,8 @@ fort_chest_handler:
     - wait 5s
 
     - if !<[new_spot].chunk.is_loaded>:
-      - chunkload <[new_spot].chunk> duration:1m
+      - chunkload <[new_spot].chunk>
+      #duration:1m
       #duration:3m
       #i wonder if i really need this...
       ##- waituntil <[new_spot].chunk.is_loaded> rate:1s max:15s

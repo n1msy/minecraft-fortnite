@@ -43,7 +43,8 @@ pregame_island_handler:
           #there's a bunch of stuff we can leave out in these task scripts, since a new map is being added anyways. but eh
         - if !<[loc].chunk.is_loaded>:
           - define chunk <[loc].chunk>
-          - chunkload <[chunk]> duration:8s
+          - chunkload <[chunk]>
+          #duration:8s
           #saving to unload the chunks after setup is complete
           ##unload all the chunks?
           - define loaded_chunks:->:<[chunk]>
