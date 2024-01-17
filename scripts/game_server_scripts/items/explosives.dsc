@@ -50,7 +50,7 @@ fort_explosive_handler:
     - define grenade_loc <[grenade].location>
     - remove <[grenade]>
 
-    - spawn <entity[item_display].with[item=<item[leather_horse_armor].with[custom_model_data=30]>;scale=2,2,2]> <[grenade_loc].above[0.25]> save:e
+    - spawn <entity[item_display].with[item=<item[leather_horse_armor].with[custom_model_data=30;color=black]>;scale=2,2,2]> <[grenade_loc].above[0.25]> save:e
     - define e <entry[e].spawned_entity>
 
 
