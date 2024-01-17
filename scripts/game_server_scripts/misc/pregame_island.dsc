@@ -361,8 +361,7 @@ pregame_island_handler:
         - define drop_loc  <[loc].above[0.5]>
         - if !<[drop_loc].chunk.is_loaded>:
           - define chunk <[loc].chunk>
-          - chunkload <[chunk]>
-          #duration:8s
+          - chunkload <[chunk]> duration:5s
 
         #i forgot we can't just use the drop command...
         - define script_name <[drop_item].script.name||mat>
