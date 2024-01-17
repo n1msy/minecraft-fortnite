@@ -167,15 +167,13 @@ fort_chest_handler:
   #new chest effect system
   all_chest_effects:
     - while <server.flag[fort.unopened_chests].any||false>:
-      - define unopened_chests <server.flag[fort.unopened_chests]>
+      #filter this way, so the only effects/sounds that are playing are from chunks that are loaded aka places the players are in
+      - define unopened_chests <server.flag[fort.unopened_chests].filter[chunk.is_loaded]>
       - if <[loop_index].mod[5]> == 0:
         - playsound <[unopened_chests]> sound:BLOCK_AMETHYST_BLOCK_CHIME pitch:1.5 volume:0.56
       ##maybe just make the gold shine a custom animated item for a glow effect?
       #maybe that'll optimize chest glows a bit
       - foreach <[unopened_chests]> as:chest_loc:
-        #this way, the only effects/sounds that are playing are from chunks that are loaded aka places the players are in
-        - if !<[chest_loc].chunk.is_loaded>:
-          - foreach next
         - define gold_shine <[chest_loc].flag[fort.chest.gold_shine]>
         - playeffect at:<[gold_shine].random[15]> effect:DUST_COLOR_TRANSITION offset:0 quantity:1 special_data:1|<color[#ffc02e]>|<color[#fff703]>
       - wait 4t

@@ -340,6 +340,7 @@ pregame_island_handler:
   #this list has to be *sorted*
   - define loot_pool <[loot_pool].include[<[none]>].sort_by_number[get[weight]].reverse>
 
+  #-fill all floor loot spots
   - foreach <[floor_loot_spots]> as:loc:
 
     - define weight           0
@@ -359,34 +360,36 @@ pregame_island_handler:
           - foreach stop
         #
         - define drop_loc  <[loc].above[0.5]>
-        - if !<[drop_loc].chunk.is_loaded>:
-          - define chunk <[loc].chunk>
-          - chunkload <[chunk]> duration:5s
+        #no need to load the chunk if im just flagging the location
+        ##- if !<[drop_loc].chunk.is_loaded>:
+        ##  #- define chunk <[loc].chunk>
+        ##  #- chunkload <[chunk]> duration:8s
 
+        - flag <[loc]> fort.floor.item:<[drop_item]>
         #i forgot we can't just use the drop command...
-        - define script_name <[drop_item].script.name||mat>
+        ##- define script_name <[drop_item].script.name||mat>
         # - if : [ gun ]
-        - if <[script_name].starts_with[gun_]>:
-          - run fort_gun_handler.drop_gun def:<map[gun=<[drop_item]>;loc=<[drop_loc]>]>
+        ##- if <[script_name].starts_with[gun_]>:
+        ##  - run fort_gun_handler.drop_gun def:<map[gun=<[drop_item]>;loc=<[drop_loc]>]>
           #maybe there should be a more consistent way of specifying the item to be dropped?
-          - define ammo_type <[drop_item].flag[ammo_type]>
-          - define ammo_qty  <item[ammo_<[ammo_type]>].flag[drop_quantity]>
+        ##  - define ammo_type <[drop_item].flag[ammo_type]>
+        ##  - define ammo_qty  <item[ammo_<[ammo_type]>].flag[drop_quantity]>
           #should it be offset a little bit, or right on top of each other?
-          - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[ammo_qty]>;loc=<[drop_loc]>]>
+        ##  - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[ammo_qty]>;loc=<[drop_loc]>]>
         # - if : [ ammo ]
-        - else if <[script_name].starts_with[ammo_]>:
+        ##- else if <[script_name].starts_with[ammo_]>:
           #ugh feels unecessarily messy
-          - define ammo_type <[script_name].after[ammo_]>
-          - define ammo_qty  <[drop_item].flag[drop_quantity]>
-          - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[ammo_qty]>;loc=<[drop_loc]>]>
+        ##  - define ammo_type <[script_name].after[ammo_]>
+        ##  - define ammo_qty  <[drop_item].flag[drop_quantity]>
+        ##  - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[ammo_qty]>;loc=<[drop_loc]>]>
         # - if [ item ]
-        - else if <[script_name].starts_with[fort_item_]>:
-          - define item_qty <[drop_item].flag[drop_quantity]||1>
-          - run fort_item_handler.drop_item def:<map[item=<[drop_item]>;qty=<[item_qty]>;loc=<[drop_loc]>]>
+        ##- else if <[script_name].starts_with[fort_item_]>:
+        ##  - define item_qty <[drop_item].flag[drop_quantity]||1>
+        ##  - run fort_item_handler.drop_item def:<map[item=<[drop_item]>;qty=<[item_qty]>;loc=<[drop_loc]>]>
         # - if [ mat ]
-        - else:
-          - run fort_pic_handler.drop_mat def:<map[mat=<[drop_item]>;qty=20;loc=<[drop_loc]>]>
-        - foreach stop
+        ##- else:
+        ##  - run fort_pic_handler.drop_mat def:<map[mat=<[drop_item]>;qty=20;loc=<[drop_loc]>]>
+        ##- foreach stop
 
 
   - announce "<&b>[Nimnite]<&r> Done (<&a><[floor_loot_spots].size><&r> locations)" to_console
