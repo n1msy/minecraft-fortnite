@@ -163,7 +163,7 @@ fort_gun_handler:
 
     - if <player.item_in_hand.script.name.starts_with[gun_].not||true>:
       - stop
-
+    #
     #in case the sneaks somehow overlap with each other
     #(so they're already scoped, odd bug that asd found)
     #(maybe lag was the cause)
