@@ -24,6 +24,52 @@ fort_lobby_handler:
     #on player damaged:
     #- determine cancelled
 
+    ## - [ Invite System (temporary) ] - ##
+    on player chats flagged:fort.invite_player priority:-1:
+    - determine passively cancelled
+    - define beta_tag <element[<&b><&lb>Pre-Alpha<&rb>].on_hover[<&e>Party system is in pre-alpha.<n><&7>I sorta rushed to add this, so this whole system is temp.]>
+
+    - flag player fort.invite_player:!
+    - define to <server.match_player[<context.message>]||null>
+    - if <[to]> == null:
+      - playsound <player> sound:ENTITY_VILLAGER_NO pitch:2
+      - title "subtitle:<&c>Invite Failed. " fade_in:0 stay:1 fade_out:0.25
+      - narrate "<[beta_tag]> <&c>Player not found."
+      - stop
+
+    - define from_uuid <player.uuid>
+    - if <[from_uuid]> == <[to].uuid>:
+      - playsound <player> sound:ENTITY_VILLAGER_NO pitch:2
+      - title "subtitle:<&c>quit playing brah " fade_in:0 stay:1 fade_out:0.25
+      - narrate "<[beta_tag]> <&c>Cannot invite yourself."
+      - stop
+
+   # - define from_uuid <player.uuid>
+   # - if <[to].has_flag[fort.invites.<[from_uuid]>]>:
+   #   - playsound <player> sound:ENTITY_VILLAGER_NO pitch:2
+   #   - title "subtitle:<&c>Chill brah. " fade_in:0 stay:1 fade_out:0.25
+   #   - narrate "<[beta_tag]> <&c>Invite already sent."
+   #   - stop
+
+    - playsound <player>|<[to]> sound:BLOCK_NOTE_BLOCK_BELL pitch:1
+
+    - define to_name <[to].name>
+
+    - define confirm <element[<&a><&l><&lb>CONFIRM<&rb>].on_hover[<&e>Click to <&n>confirm<&e>.].on_click[/fort_menu party confirm <[from_uuid]>]>
+    - define deny    <element[<&c><&l><&lb>DENY<&rb>].on_hover[<&e>Click to <&n>deny<&e>.].on_click[/fort_menu party deny <[from_uuid]>]>
+
+    - flag <[to]> fort.invites.<player.uuid> duration:1m
+
+    - define line <&8><element[<&sp>].repeat[70].strikethrough>
+    - narrate <[line]> targets:<[to]>
+    - narrate "<[beta_tag]> <&a><[to_name]><&7> invited you to their party." targets:<[to]>
+    - narrate "<n><&sp.repeat[<[to_name].length.add[18]>]><[confirm]> <[deny]>" targets:<[to]>
+    - narrate <[line]> targets:<[to]>
+
+    - narrate "<[beta_tag]> <&7>Invited <&a><[to_name]> <&7>to your party."
+
+    - title "title:<&a>Invite Sent." "subtitle:<&7>To <[to_name]>" fade_in:0 stay:1 fade_out:0.25
+
     on player changes food level:
     - determine cancelled
 
@@ -433,6 +479,15 @@ fort_lobby_handler:
       - case invite_button:
         - define button <player.flag[fort.menu.invite_button_entity]>
         - run fort_lobby_handler.press_anim def.button:<[button]> def.size_data:<map[to=<location[1.15,1.15,1.15]>;back=<location[0.75,0.75,0.75]>]>
+
+        - define beta_tag <element[<&b><&lb>Pre-Alpha<&rb>].on_hover[<&e>Party system is in pre-alpha.<n><&7>I sorta rushed to add this, so this whole thing is temp.]>
+        - narrate "<[beta_tag]> <&7>Enter player to invite:"
+
+        - title "title:<&e>Invite Player" "subtitle:<&7>Type username in chat." fade_in:0.25 stay:2 fade_out:0.25
+        - flag player fort.invite_player duration:30s
+        #- wait 10s
+        #- if !<player.has_flag[fort.invite_player]>:
+        #  - narrate "<[beta_tag]> <&7>Player invite submission expired."
 
       - case vid_button:
         - define button <player.flag[fort.menu.vid_button]>
