@@ -25,8 +25,14 @@ build_tiles:
         - if <[grounded_center].below.has_flag[build.center]>:
           - define grounded_center <[grounded_center].with_y[<[grounded_center].below.flag[build.center].flag[build.structure].min.y>]>
 
-        #halfway of y would be 4, not 5, since there's overlapping "connectors"
-        - define grounded_center <[grounded_center].above[2]>
+        ##-bypass slabs
+        #only slabs can have this material type
+        #<[grounded_center].material.type||null> == BOTTOM -> check for mat type instead?
+        - if <list[polished_blackstone_slab|blackstone_slab].contains[<[grounded_center].material.name>]>:
+          - define grounded_center <[grounded_center].above>
+        - else:
+          #halfway of y would be 4, not 5, since there's overlapping "connectors"
+          - define grounded_center <[grounded_center].above[2]>
 
         #-calculates Y from the ground up
         - define add_y <proc[round4].context[<[target_loc].forward[2].distance[<[grounded_center]>].vertical.sub[1]>]>
@@ -34,6 +40,7 @@ build_tiles:
 
         - define free_center <[grounded_center].above[<[add_y]>]>
 
+        ##maybe there's a better way to do this too?
         #if there's a nearby tile, automatically "snap" to it's y level instead of ground up
         - define nearest_tile <[target_loc].find_blocks_flagged[build.center].within[5].parse[flag[build.center].flag[build.structure]].deduplicate.first||null>
         - if <[nearest_tile]> != null:

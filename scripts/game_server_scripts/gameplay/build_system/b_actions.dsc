@@ -376,7 +376,8 @@ build_system_handler:
     - define base_material <map[wood=oak;brick=brick;metal=weathered_copper].get[<[data].get[material]>]>
 
     #exclude any terrain terrain
-    - define exclude_blocks <[tile].blocks.filter[has_flag[build].not].filter[material.name.equals[air].not]>
+    - define terrain_override_whitelist <list[polished_blackstone_slab|blackstone_slab]>
+    - define exclude_blocks <[tile].blocks.filter[has_flag[build].not].filter[material.name.equals[air].not].filter_tag[<[terrain_override_whitelist].contains[<[filter_value].material.name>].not>]>
     - define exclude_blocks:|:<[tile].blocks.filter[has_flag[build.edited]]> if:!<[is_editing]>
 
     #so player builds don't override WORLD builds

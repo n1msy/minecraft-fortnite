@@ -154,7 +154,8 @@ build_toggle:
           - define can_build False
 
         #-so you can't place a floor down on the ground if it's being fully covered
-        - if <[type]> == FLOOR && <[final_center].material.name> != AIR:
+        #third check allows the placing of floors on "street" slabs
+        - if <[type]> == FLOOR && <[final_center].material.name> != AIR && !<list[polished_blackstone_slab|blackstone_slab].contains[<[final_center].material.name>]>:
           - define can_build False
 
         #-you can't place builds on natural structures
