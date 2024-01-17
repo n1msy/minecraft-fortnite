@@ -27,7 +27,7 @@ fix_world_flags:
     - define chunk_size <[map_cuboid].chunks.size>
     - foreach <[map_cuboid].chunks> as:chunk:
       - announce "<&b>[Nimnite] <&f>Restoring... <&e><[loop_index].div[<[chunk_size]>].mul[100].round><&f>%" to_console if:<[loop_index].mod[50].equals[0]>
-      - chunkload <[chunk]> duration:5m
+      - chunkload <[chunk]> duration:1m
 
       #-restore floor loot
       - define floor_loot_locations <[chunk].blocks_flagged[fort.floor_loot_loc]>
@@ -68,7 +68,7 @@ fix_world_flags:
           - if <[container_type]> == chest:
             - define p_loc      <[loc].with_yaw[<[yaw]>].forward[0.4]>
             - define gold_shine <[p_loc].left[0.5].points_between[<[p_loc].right[0.55]>].distance[0.1]>
-            - flag <[int]> fort.chest.gold_shine:<[gold_shine]>
+            - flag <[loc]> fort.chest.gold_shine:<[gold_shine]>
 
           #fix the hitbox rotation while we're at it
           - adjust <[model]> left_rotation:<quaternion[identity]>
@@ -76,7 +76,8 @@ fix_world_flags:
 
           #text isn't spawned sometimes? restore it if isn't? nahhh im too lazy. when the problem appears ill do it
           - adjust <[text]> left_rotation:<quaternion[identity]>
-          - teleport <[text]> <[text].location.below[<map[chest=0.21;ammo_box=0.18].get[<[container_type]>]>].with_yaw[<[yaw]>]>
+          - define text_loc <map[chest=<[loc].above[0.44]>;ammo_box=<[loc].above[0.22]>].get[<[container_type]>]>
+          - teleport <[text]> <[text_loc].with_yaw[<[yaw]>]>
           - adjust <[text]> scale:0.75,0.75,0.75
 
           ##flag
@@ -86,3 +87,6 @@ fix_world_flags:
     #this is what caused the shit to be bugged
     - adjust server save
     - announce "<&b>[Nimnite] <&f>World flag restoration <&a>complete<&f>!" to_console
+    - announce "<&b>[Nimnite] <&f>Chests: <&e><world[nimnite_map].flag[fort.chest.locations].size><&f>!" to_console
+    - announce "<&b>[Nimnite] <&f>Chests: <&e><world[nimnite_map].flag[fort.ammo_box.locations].size><&f>!" to_console
+    - announce "<&b>[Nimnite] <&f>Chests: <&e><world[nimnite_map].flag[fort.floor_loot_locations].size><&f>!" to_console

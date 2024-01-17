@@ -18,7 +18,43 @@ fort_commands_handler:
     - narrate "<&c>Closed Nimnite models menu."
     - flag player fort.model_menu:!
 
-fort_commands:
+fort_admin_commands:
+  type: command
+  name: fortnite_menu
+  debug: false
+  description: Fortnite Menu Commands
+  usage: /fortnite_menu
+  #permission: fort.menu
+  aliases:
+  - fort_menu
+  script:
+    #have no narrate messages or anything, this command is internal and should be hidden
+    - choose <context.args.first||null>:
+      - case party:
+        - define option      <context.args.get[2]||null>
+        - define from_uuid   <context.args.get[3]||null>
+        - if <[from_uuid]> == null || <[from_uuid].as[player]||null> == null:
+          - stop
+
+        - choose <[option]>:
+          - case accept:
+            - narrate "<[beta_tag]> <&a>Accepted <&7>party invite from <[from_uuid].as[player].name>"
+            #- flag <[]>
+
+            - define party_members
+            - playsound <player> sound:BLOCK_NOTE_BLOCK_BASS pitch:1
+            - define line <&8><element[<&sp>].repeat[70].strikethrough>
+            - narrate <[line]> targets:<[to]>
+            - narrate "<[beta_tag]> <&a><[to_name]><&7> has joined the party." targets:<[to]>
+            - narrate <[line]> targets:<[to]>
+
+          - case deny:
+            - define beta_tag <element[<&b><&lb>Pre-Alpha<&rb>].on_hover[<&e>Party system is in pre-alpha.<n><&7>I sorta rushed to add this, so this whole thing is temp.]>
+            - narrate "<[beta_tag]> <&c>Denied <&7>party invite from <[from_uuid].as[player].name>"
+            - flag player fort.invites.<[from_uuid]>:!
+
+
+fort_admin_commands:
   type: command
   name: fortnite
   debug: false
@@ -70,7 +106,7 @@ fort_commands:
         - announce "<&b>[Nimnite]<&r> Mode set: <&e><[mode].to_titlecase>" to_console
 
       - case models:
-        - inject fort_commands.server_check
+        - inject fort_admin_commands.server_check
         - define containers <list[chest|ammo_box]>
         - define items      <[containers].parse_tag[<item[fort_<[parse_value]>]>]>
 
@@ -82,12 +118,12 @@ fort_commands:
         - narrate "<&a>Opened Nimnite models menu."
       - case skip:
       #skip the phase
-        - inject fort_commands.server_check
+        - inject fort_admin_commands.server_check
         - flag server fort.temp.phase_skipped
         - narrate "<&a>Skipping current phase."
 
       - case pause:
-        - inject fort_commands.server_check
+        - inject fort_admin_commands.server_check
         - if !<server.has_flag[fort.temp.pause_phase]>:
           - flag server fort.temp.pause_phase
           - narrate "<&a>Game paused."
@@ -97,13 +133,13 @@ fort_commands:
 
       # - [ SETUP COMMANDS ] - #
       - case lobby_setup:
-        - inject fort_commands.server_check
+        - inject fort_admin_commands.server_check
         - run fort_lobby_setup
         - narrate "<&a>Nimnite lobby menu set."
 
       - case lobby_teleport:
         #- define loc <player.location.round.above[0.5]>
-        - inject fort_commands.server_check
+        - inject fort_admin_commands.server_check
         - define loc <server.flag[fort.pregame.lobby_circle.loc]>
         - flag server fort.pregame.lobby_circle.loc:<[loc]>
 
@@ -163,7 +199,7 @@ fort_commands:
 
       - case chest:
         #-much better to use the item instead and place them down
-        - inject fort_commands.server_check
+        - inject fort_admin_commands.server_check
         - define loc <player.location.center.above[0.1]>
         - if <[loc].material.name> != air:
           - narrate "<&c>Invalid spot."
@@ -183,7 +219,7 @@ fort_commands:
         - flag server fort.chests:->:<[loc]>
         - narrate "<&a>Set chest at <&f><[loc].simple>"
       - case fill_chests fill_ammo_boxes:
-        - inject fort_commands.server_check
+        - inject fort_admin_commands.server_check
         - define container_type <map[fill_chests=chests;fill_ammo_boxes=ammo_boxes].get[<context.args.first>]>
         - define containers <player.world.flag[fort.<[container_type]>]||<list[]>>
         - narrate "<&7>Filling all <[container_type].replace[_].with[ ]>..."
@@ -194,7 +230,7 @@ fort_commands:
         - narrate "<&a>All <[container_type].replace[_].with[ ]> have been filled <&7>(<[containers].size>)<&a>."
 
       - case supply_drop:
-        - inject fort_commands.server_check
+        - inject fort_admin_commands.server_check
         - define loc <player.location.with_pitch[0]>
         - run fort_chest_handler.send_supply_drop def:<map[loc=<[loc]>]>
         - narrate "<&a>Supply drop sent at <&f><[loc].simple><&a>."

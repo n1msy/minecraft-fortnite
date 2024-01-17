@@ -158,6 +158,8 @@ fort_chest_handler:
       ##maybe just make the gold shine a custom animated item for a glow effect?
       #maybe that'll optimize chest glows a bit
       - foreach <[unopened_chests]> as:chest_loc:
+        - if !<[chest_loc].chunk.is_loaded>:
+          - chunkload <[chest_loc]>
         - define gold_shine <[chest_loc].flag[fort.chest.gold_shine]>
         - playeffect at:<[gold_shine].random[15]> effect:DUST_COLOR_TRANSITION offset:0 quantity:1 special_data:1|<color[#ffc02e]>|<color[#fff703]>
       - wait 4t
