@@ -161,7 +161,7 @@ fort_lobby_handler:
     #- [ ! ] Warning: RP is being downloaded every time players join lobby server (even when returning from game)
 
     #-for test server
-    - if <player.has_flag[on_test_server]>:
+    - if <server.has_flag[is_test_server]>:
       - run fort_lobby_setup.player_setup
       - stop
     #
@@ -183,7 +183,7 @@ fort_lobby_handler:
     #SUCCESSFULLY_LOADED, DECLINED, FAILED_DOWNLOAD, ACCEPTED
     - define status <context.status>
     #-for test server
-    - define status SUCCESSFULLY_LOADED if:<player.has_flag[on_test_server]>
+    - define status SUCCESSFULLY_LOADED if:<server.has_flag[is_test_server]>
     #
     - choose <context.status>:
       - case SUCCESSFULLY_LOADED:

@@ -32,6 +32,29 @@ fort_commands:
   script:
     - choose <context.args.first||null>:
 
+      - case mode:
+        - inject fort_commands.server_check
+        - if !<server.has_flag[fort.temp.available]>:
+          - narrate "<&c>Cannot update mode while in-game."
+          - stop
+
+        - define mode <context.args.get[2]||null>
+        - if <[mode]> not in SOLO|DUOS|SQUADS:
+          - narrate "<&c>Invalid mode."
+          - stop
+
+        - if <bungee.list_servers.contains[fort_lobby]>:
+          - definemap data:
+              game_server: <bungee.server>
+              status: SET_MODE
+              mode: <[mode]>
+              players: <server.online_players_flagged[fort]>
+          - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
+
+        - flag server fort.mode:<[mode]>
+        - announce "<&b>[Nimnite]<&r> Mode set: <&e><[mode].to_titlecase>" to_console
+
+
       - case models:
         - inject fort_commands.server_check
         - define containers <list[chest|ammo_box]>
