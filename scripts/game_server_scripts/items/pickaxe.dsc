@@ -127,19 +127,23 @@ fort_pic_handler:
     - if !<context.entity.has_flag[qty]>:
       - stop
     - determine passively cancelled
+    - define drop <context.entity>
 
-    - define qty         <context.entity.flag[qty]>
+    - define qty         <[drop].flag[qty]>
     - define mat         <map[oak_log=wood;bricks=brick;iron_block=metal].get[<context.item.material.name>]>
 
     - if <player.flag[fort.<[mat]>.qty]||0> >= 999:
       - stop
 
-    - adjust <player> fake_pickup:<context.entity>
-    - remove <context.entity>
+    - adjust <player> fake_pickup:<[drop]>
+    - if <[drop].has_flag[text_display]>:
+      - remove <[drop].flag[text_display]>
+    - remove <[drop]>
 
     - run fort_pic_handler.mat_count def:<map[qty=<[qty]>;mat=<[mat]>;action=add]>
 
     on oak_log|bricks|iron_block merges:
+    #maybe define entity and target as [before] and [after]?
     - define e <context.entity>
 
     #then it hasn't spawned correctly/it's a natural block
@@ -162,7 +166,12 @@ fort_pic_handler:
     - define text <[icon]><&f><&l>x<[new_qty]>
 
     - flag <[target]> qty:<[new_qty]>
-    - adjust <[target]> custom_name:<[text]>
+
+    - if <[e].has_flag[text_display]>:
+      - remove <[e].flag[text_display]>
+
+    - if <[target].has_flag[text_display]>:
+      - adjust <[target].flag[text_display]> text:<[text]>
 
   damage_tile:
     - define center      <[data].get[center]>
@@ -332,8 +341,14 @@ fort_pic_handler:
     - define text <[icon]><&f><&l>x<[qty]>
     - define loc <[drop].location>
 
-    - adjust <[drop]> custom_name:<[text]>
-    - adjust <[drop]> custom_name_visible:true
+    - define translation 0,0.45,0
+    - spawn <entity[text_display].with[text=<[text]>;pivot=center;scale=1,1,1;translation=<[translation]>;view_range=0.06]> <[drop].location> save:txt
+    - define txt <entry[txt].spawned_entity>
+    - mount <[txt]>|<[drop]>
+    - flag <[drop]> text_display:<[txt]>
+
+    #- adjust <[drop]> custom_name:<[text]>
+    #- adjust <[drop]> custom_name_visible:true
 
     #make mats glow?
     #- team name:ammo add:<[drop]> color:GRAY

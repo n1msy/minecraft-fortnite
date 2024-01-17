@@ -184,8 +184,8 @@ fort_item_handler:
     - define txt <entry[txt].spawned_entity>
     - mount <[txt]>|<[drop]>
 
-    - flag <[txt]>  linked_drop:<[drop]>
-    - flag <[drop]> text:<[txt]>
+    #- flag <[txt]>  linked_drop:<[drop]>
+    #- flag <[drop]> text:<[txt]>
     - flag <[drop]> text_display:<[txt]>
 
     - define rarity_color <color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]>
