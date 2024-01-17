@@ -387,6 +387,13 @@ build_system_handler:
     - foreach <[connected_nodes]> as:n:
       - if <[n].flag[build.placed_by]> == WORLD:
         - define exclude_blocks:|:<[n].flag[build.structure].blocks.filter[flag[build.center].equals[<[n]>]].filter[material.name.equals[air].not]>
+        #-temp (?)
+        #need to wait
+        - wait 1t
+        #dont include them as part of the node anymore, since i dont want them to activate the chain effect
+        - flag <[n]> build.nodes:!
+        #no need to remove the flag of any of the other world's nodes (since it doesn't have any)
+        - flag <[center]> build.nodes:<-:<[n]>
 
     #build_place_tile task script found in: b_tiles.dsc
     - inject build_place_tile.<[build_type]>
