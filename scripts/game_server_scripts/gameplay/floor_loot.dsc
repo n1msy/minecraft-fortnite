@@ -2,39 +2,85 @@ fort_floor_loot_handler:
   type: world
   debug: false
   events:
+
+    # - [ Remove Text Displays ] - #
+    #to prevent paper warning in console
+
+    #if i really really really wanted to, remove the dropped item and spawn it back when the dropped item is spawned again
+    #but that would mean every time i drop an item, i would have to place an interaction entity there too
+    #on player untracks DROPPED_ITEM:
+    #- define drop <context.entity>
+    #in case it was removed or picked up
+    #- if !<[drop].is_spawned>:
+    #  - stop
+    #- if !<[drop].has_flag[text_display]>:
+    #  - stop
+    #- define display <[drop].flag[text_display]>
+    #- flag <[drop]> text:<[display].text>
+    #- narrate removed:<[display].text>
+    #- remove <[display]>
+    #on player untracks TEXT_DISPLAY:
+    #- if <context.entity.has_flag[linked_drop]>:
+    #  - remove <context.entity>
+    #- narrate gone
+
+    #on player tracks DROPPED_ITEM:
+    #- define drop <context.entity>
+    #- if !<[drop].has_flag[text_display]>:
+    #  - stop
+    #- if <[drop].flag[text_display].is_spawned>:
+    #  - stop
+
+    #- define text        <[drop].flag[text]>
+    #- define translation 0,0.75,0
+
+    #- narrate added:<[text]>
+    #- spawn <entity[text_display].with[text=<[text]>;pivot=center;scale=1,1,1;translation=<[translation]>;view_range=0.06]> <[drop].location> save:txt
+    #- define txt <entry[txt].spawned_entity>
+    #- mount <[txt]>|<[drop]>
+    #- flag <[drop]> text_display:<[txt]>
+
+    #at this point, maybe just store the floor loot data in the entity?
+    #since what if the int is tracked before the chunk for the location is loaded?
     on player tracks INTERACTION:
     - define int <context.entity>
     - if !<[int].has_flag[fort.floor.loc]>:
       - stop
-    - define drop_item <[int].flag[fort.floor.loc].flag[fort.floor.item]||null>
+    - define fl_loc    <[int].flag[fort.floor.loc]>
+    - define drop_item <[fl_loc].flag[fort.floor.item]||null>
     #if it's null, it means the item has already been dropped
     - if <[drop_item]> == null:
       - stop
 
+    - define drop_loc    <[fl_loc].above[0.5]>
     - define script_name <[drop_item].script.name||mat>
+
+    - flag <[fl_loc]> fort.floor.item:!
+
+    # - [ Spawn Floor Loot ] - #
+    #in hindsight, i shouldve created a PROCEDURE instead of a run that gets the item based on the info
+
     # - if : [ gun ]
     - if <[script_name].starts_with[gun_]>:
-      - run fort_gun_handler.drop_gun def:<map[gun=<[drop_item]>;loc=<[drop_loc]>]>
+      - run fort_gun_handler.drop_gun def:<map[gun=<[drop_item]>;loc=<[drop_loc]>;floor_loot_hitbox=<[int]>]>
       #maybe there should be a more consistent way of specifying the item to be dropped?
       - define ammo_type <[drop_item].flag[ammo_type]>
       - define ammo_qty  <item[ammo_<[ammo_type]>].flag[drop_quantity]>
       #should it be offset a little bit, or right on top of each other?
-      - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[ammo_qty]>;loc=<[drop_loc]>]>
+      - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[ammo_qty]>;loc=<[drop_loc]>;floor_loot_hitbox=<[int]>]>
     # - if : [ ammo ]
     - else if <[script_name].starts_with[ammo_]>:
       #ugh feels unecessarily messy
       - define ammo_type <[script_name].after[ammo_]>
       - define ammo_qty  <[drop_item].flag[drop_quantity]>
-      - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[ammo_qty]>;loc=<[drop_loc]>]>
+      - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[ammo_type]>;qty=<[ammo_qty]>;loc=<[drop_loc]>;floor_loot_hitbox=<[int]>]>
     # - if [ item ]
     - else if <[script_name].starts_with[fort_item_]>:
       - define item_qty <[drop_item].flag[drop_quantity]||1>
-      - run fort_item_handler.drop_item def:<map[item=<[drop_item]>;qty=<[item_qty]>;loc=<[drop_loc]>]>
+      - run fort_item_handler.drop_item def:<map[item=<[drop_item]>;qty=<[item_qty]>;loc=<[drop_loc]>;floor_loot_hitbox=<[int]>]>
     # - if [ mat ]
     - else:
-      - run fort_pic_handler.drop_mat def:<map[mat=<[drop_item]>;qty=20;loc=<[drop_loc]>]>
-
-    # - [ Spawn Floor Loot ] - #
+      - run fort_pic_handler.drop_mat def:<map[mat=<[drop_item]>;qty=20;loc=<[drop_loc]>;floor_loot_hitbox=<[int]>]>
 
   set_loot:
     - define floor_loot_spots <world[nimnite_map].flag[fort.floor_loot_locations]||<list[]>>

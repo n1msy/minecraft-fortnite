@@ -173,16 +173,18 @@ fort_item_handler:
     - define text   <[text].replace_text[<[text].strip_color.to_list.first>].with[<empty>]>
     - define drop   <[data].get[drop]>
 
-    - choose <[drop].item.script.name.after[fort_item_]>:
-      - case bush:
-        - define translation 0,1,0
-      - default:
-        - define translation 0,0.75,0
+    #- choose <[drop].item.script.name.after[fort_item_]>:
+      #- case bush:
+      #  - define translation 0,1,0
+      #- default:
+    - define translation 0,0.75,0
 
     - spawn <entity[text_display].with[text=<[text]>;pivot=center;scale=1,1,1;translation=<[translation]>;view_range=0.06]> <[drop].location> save:txt
     - define txt <entry[txt].spawned_entity>
     - mount <[txt]>|<[drop]>
 
+    - flag <[txt]>  linked_drop:<[drop]>
+    - flag <[drop]> text:<[txt]>
     - flag <[drop]> text_display:<[txt]>
 
     - define rarity_color <color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]>

@@ -50,8 +50,10 @@ pregame_island_handler:
           - define loaded_chunks:->:<[chunk]>
         - inject fort_fill_container.<[container_type]>
 
-        #- if <[container_type]> == CHEST:
-          #- announce "<&b>[Nimnite]<&r> Filling chests... <&e><[loop_index].div[<[containers].size>].round><&f>%" to_console if:<[loop_index].mod[50].equals[0]>
+        #wait every 2t for safety and prevent the crash thing
+        - if <[container_type]> == CHEST && <[loop_index].mod[30].equals[0]>:
+          #- announce "<&b>[Nimnite]<&r> Filling chests... <&e><[loop_index].div[<[containers].size>].mul[100].round><&f>%" to_console
+          - wait 2t
 
         #- define containers_filled:++
         #- announce "<&b>[Nimnite]<&r> [DEBUG] <&e><[containers_filled]><&f>/<&a><[containers].size> <&f><[container_type]> filled." to_console
