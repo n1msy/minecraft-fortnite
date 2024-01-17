@@ -69,8 +69,9 @@ build_system_handler:
       - define total_blocks <[tile].blocks>
       - define override_blocks <[total_blocks].filter[has_flag[build.center]].filter_tag[<list[pyramid|stair].contains[<[filter_value].flag[build.center].flag[build.type]>]>]>
 
+      - define terrain_override_whitelist <list[polished_blackstone_slab|blackstone_slab]>
       #checking if it doesn't have build.CENTER isntead of just "build" because for some reason some blocks have the "build" flag, even though they're info is removed?
-      - define terrain_blocks <[tile].blocks.filter[has_flag[build].not].filter[material.name.equals[air].not]>
+      - define terrain_blocks <[tile].blocks.filter[has_flag[build].not].filter[material.name.equals[air].not].filter_tag[<[terrain_override_whitelist].contains[<[filter_value].material.name>].not>]>
       - define blocks <[total_blocks].filter[has_flag[build.center].not].exclude[<[terrain_blocks]>].include[<[override_blocks]>]>
 
       #defining nodes so i dont have to check twice
@@ -375,6 +376,8 @@ build_system_handler:
 
     - define base_material <map[wood=oak;brick=brick;metal=weathered_copper].get[<[data].get[material]>]>
 
+    ##optimization thing: we can do all the calculating for the place tile stuff, when the player places the tile down and just once that time
+    ##i feel like im repeating the same thing twice?
     #exclude any terrain terrain
     - define terrain_override_whitelist <list[polished_blackstone_slab|blackstone_slab]>
     - define exclude_blocks <[tile].blocks.filter[has_flag[build].not].filter[material.name.equals[air].not].filter_tag[<[terrain_override_whitelist].contains[<[filter_value].material.name>].not>]>
