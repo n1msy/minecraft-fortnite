@@ -91,7 +91,8 @@ build_toggle:
     - define tooltip_remover <list[<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|<empty>|                                                                                                                                                                                                                                                                                                                                                                                                                           ]>
     - define pencil    <item[gold_nugget].with[display=<&sp>;custom_model_data=1;lore=<[tooltip_remover]>]>
 
-    - while <player.is_online> && <player.has_flag[build]> && <player.is_spawned>:
+    - flag player build.enabled
+    - while <player.is_online> && <player.has_flag[build]> && !<player.has_flag[fort.disable_build]> && <player.is_spawned>:
       - define eye_loc <player.eye_location>
       - define loc <player.location>
       - define slot <player.held_item_slot>
@@ -185,6 +186,14 @@ build_toggle:
       - wait 1t
 
     - actionbar <&sp>
+    #if the player doesn't build.enabled, it means it was forcefully removed
+    - if <player.has_flag[fort.disable_build]> && <player.flag[build.last_inventory]>:
+      - inventory clear
+      - inventory set o:<player.flag[build.last_inventory]> d:<player.inventory>
+      #it means these "edits" weren't saved
+      - if <player.has_flag[build.edit_mode.blocks]>:
+        - flag <player.flag[build.edit_mode.blocks]> build.edited:!
+      - adjust <player> item_slot:<player.flag[build.last_slot]>
     - flag player build:!
 
   give_blueprint:

@@ -277,9 +277,8 @@ pregame_island_handler:
     - flag <[players]> fort.on_bus.loading
     #- flag <[players]> fort.disable_emotes duration:5s
     #prevent players from switching to build / cancel their build mode
-    #- flag <[players]> fort.disable_build duration:5s
-    #do this, or just add a simple flag for builds?
-    - flag <[players]> build:!
+    - flag <[players]> fort.disable_build duration:5s
+
     #wait for build to fully disable before updating hud
     - wait 3t
     - foreach <[players]> as:p:
