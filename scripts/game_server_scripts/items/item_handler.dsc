@@ -20,9 +20,10 @@ fort_item_handler:
     #giving dropped flag so the consume event doesn't fire
     - flag player fort.item_dropped duration:1t
 
-    on entity removed from world:
-    - if <context.entity.has_flag[text_display]> && <context.entity.flag[text_display].is_spawned>:
-      - remove <context.entity.flag[text_display]>
+    #removed in favor of "tracking" event for item displays
+    #on entity removed from world:
+    #- if <context.entity.has_flag[text_display]> && <context.entity.flag[text_display].is_spawned>:
+    #  - remove <context.entity.flag[text_display]>
 
     on gun_*|ammo_*|fort_item_*|oak_log|bricks|iron_block despawns:
     - determine cancelled

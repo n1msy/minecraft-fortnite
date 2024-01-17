@@ -1,3 +1,6 @@
+#TODO: if we ever feel like it, instead of storing item data in locations, store them in server flags with the
+#TODO: interaction entity's uuid
+
 fort_floor_loot_handler:
   type: world
   debug: false
@@ -13,16 +16,12 @@ fort_floor_loot_handler:
     #in case it was removed or picked up
     #- if !<[drop].is_spawned>:
     #  - stop
-    #- if !<[drop].has_flag[text_display]>:
+    #- if !<[drop].has_flag[text_display]> || !<[drop].flag[text_display].is_spawned>:
     #  - stop
     #- define display <[drop].flag[text_display]>
     #- flag <[drop]> text:<[display].text>
-    #- narrate removed:<[display].text>
+    #- announce removed:<[display].text> to_console
     #- remove <[display]>
-    #on player untracks TEXT_DISPLAY:
-    #- if <context.entity.has_flag[linked_drop]>:
-    #  - remove <context.entity>
-    #- narrate gone
 
     #on player tracks DROPPED_ITEM:
     #- define drop <context.entity>
@@ -34,7 +33,6 @@ fort_floor_loot_handler:
     #- define text        <[drop].flag[text]>
     #- define translation 0,0.75,0
 
-    #- narrate added:<[text]>
     #- spawn <entity[text_display].with[text=<[text]>;pivot=center;scale=1,1,1;translation=<[translation]>;view_range=0.06]> <[drop].location> save:txt
     #- define txt <entry[txt].spawned_entity>
     #- mount <[txt]>|<[drop]>
