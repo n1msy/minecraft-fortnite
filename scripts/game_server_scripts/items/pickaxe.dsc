@@ -108,7 +108,7 @@ fort_pic_handler:
     on player right clicks block with:fort_pickaxe*:
     #so they can't strip logs
     #added this check because for some reason denizen thinks this even is "on player right clicks entity"
-    - define mat <context.location.material.name>
+    - define mat <context.location.material.name||null>
     - stop if:<[mat].equals[air]||false>
     - stop if:<[mat].contains_any_text[wood|trap].not||false>
     - stop if:<[mat].contains_text[door]||false>
