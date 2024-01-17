@@ -32,15 +32,30 @@ fort_commands:
   script:
     - choose <context.args.first||null>:
 
+      # - [ Set Whole Lobby Mode / Set game server mode ] - #
       - case mode:
-        - inject fort_commands.server_check
-        - if !<server.has_flag[fort.temp.available]>:
-          - narrate "<&c>Cannot update mode while in-game."
-          - stop
 
         - define mode <context.args.get[2]||null>
         - if <[mode]> not in SOLO|DUOS|SQUADS:
           - narrate "<&c>Invalid mode."
+          - stop
+
+        # - [ Lobby ] - #
+        - if <bungee.server> == fort_lobby:
+          - define lobby_players <server.online_players_flagged[fort.menu.mode]>
+          - define i <item[oak_sign].with[custom_model_data=<map[solo=14;duos=15;squads=16].get[<[mode]>]>]>
+          - flag <[lobby_players]> fort.menu.mode:<[mode]>
+          - foreach <[lobby_players]> as:p:
+            - define button <[p].flag[fort.menu.mode_button]>
+            - run fort_lobby_handler.press_anim def.button:<[button]>
+            - adjust <[button]> item:<[i]>
+
+          - flag <[lobby_players]> fort.menu.mode:<[mode]>
+          - stop
+
+        # - [ Game Server ] - #
+        - if !<server.has_flag[fort.temp.available]>:
+          - narrate "<&c>Cannot update mode while in-game."
           - stop
 
         - if <bungee.list_servers.contains[fort_lobby]>:
@@ -53,7 +68,6 @@ fort_commands:
 
         - flag server fort.mode:<[mode]>
         - announce "<&b>[Nimnite]<&r> Mode set: <&e><[mode].to_titlecase>" to_console
-
 
       - case models:
         - inject fort_commands.server_check

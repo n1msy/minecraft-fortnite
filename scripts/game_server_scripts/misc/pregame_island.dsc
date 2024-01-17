@@ -86,6 +86,11 @@ pregame_island_handler:
     - define bossbar fort_info
     - bossbar create <[bossbar]> title:<proc[spacing].context[50]><&chr[A004].font[icons]><proc[spacing].context[-72]><&l><element[WAITING FOR PLAYERS].font[lobby_text]> color:YELLOW players:<server.online_players>
     - announce "<&b>[Nimnite]<&r> Created bossbar <&dq><&e><[bossbar]><&r><&dq>" to_console
+
+    - define mode <script[nimnite_config].data_key[game_servers.<bungee.server>.mode]||solo>
+    - flag server fort.mode:<[mode]>
+    - announce "<&b>[Nimnite]<&r> Mode set: <&e><[mode].to_titlecase>" to_console
+
     - announce ------------------------------------------------------------------------- to_console
     - flag server fort.temp.startup:!
 
@@ -96,7 +101,7 @@ pregame_island_handler:
       - definemap data:
           game_server: <bungee.server>
           status: AVAILABLE
-          mode: <server.flag[fort.mode]||solo>
+          mode: <server.flag[fort.mode]>
           players: <server.online_players_flagged[fort]>
       #- define data <map[game_server=<bungee.server>;status=AVAILABLE;mode=<server.flag[fort.mode]||solo>;players=<server.online_players_flagged[fort]>]>
       - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
