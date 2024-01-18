@@ -95,7 +95,7 @@ fort_bus_handler:
       #for some reason gotta offset the armor stand a little bit
       - define part_loc <[part].location.below[0.5].backward[2]>
       - if !<[part_loc].chunk.is_loaded>:
-        - chunkload <[part_loc]>
+        - chunkload <[part_loc]> duration:5m
       - spawn <entity[ARMOR_STAND].with[gravity=false;collidable=false;invulnerable=true;visible=false;force_no_persist=true]> <[part_loc].below[1.48]> save:c_<[part]>
       - define controller <entry[c_<[part]>].spawned_entity>
       - mount <[part]>|<[controller]>
@@ -136,7 +136,7 @@ fort_bus_handler:
   setup_bus:
 
     - if !<[bus_start].chunk.is_loaded>:
-      - chunkload <[bus_start].chunk>
+      - chunkload <[bus_start].chunk> duration:5m
 
     - run dmodels_spawn_model def.model_name:battle_bus def.location:<[bus_start]> save:bus
     - define bus <entry[bus].created_queue.determination.first||null>
@@ -151,7 +151,7 @@ fort_bus_handler:
     #checking chunks just in case
     - define drivers_seat_loc <[seat_origin].above[1.65].left[0.71].below[1.2].backward[0.1]>
     - if !<[drivers_seat_loc].chunk.is_loaded>:
-      - chunkload <[drivers_seat_loc].chunk>
+      - chunkload <[drivers_seat_loc].chunk> duration:5m
     - spawn <entity[item_display].with[scale=0.1,0.1,0.1;force_no_persist=true]> <[drivers_seat_loc]> save:drivers_seat
     - define drivers_seat <entry[drivers_seat].spawned_entity>
     - flag server fort.temp.bus.drivers_seat:<[drivers_seat]>
@@ -162,7 +162,7 @@ fort_bus_handler:
     #dead center (of seat) = 1.256
     - define left_seat_1_loc <[drivers_seat_loc].left[0.075].backward[1.2].below[0.05]>
     - if !<[left_seat_1_loc].chunk.is_loaded>:
-      - chunkload <[left_seat_1_loc].chunk>
+      - chunkload <[left_seat_1_loc].chunk> duration:5m
     - spawn <entity[item_display].with[scale=0.1,0.1,0.1;force_no_persist=true]> <[left_seat_1_loc]> save:left_seat_1
     - define left_seat_1 <entry[left_seat_1].spawned_entity>
     - flag server fort.temp.bus.seats:->:<[left_seat_1]>
@@ -171,7 +171,7 @@ fort_bus_handler:
 
     - define left_seat_2_loc <[left_seat_1_loc].backward[1.0716]>
     - if !<[left_seat_2_loc].chunk.is_loaded>:
-      - chunkload <[left_seat_2_loc].chunk>
+      - chunkload <[left_seat_2_loc].chunk> duration:5m
     - spawn <entity[item_display].with[scale=0.1,0.1,0.1;force_no_persist=true]> <[left_seat_2_loc]> save:left_seat_2
     - define left_seat_2 <entry[left_seat_2].spawned_entity>
     - flag server fort.temp.bus.seats:->:<[left_seat_2]>
@@ -181,7 +181,7 @@ fort_bus_handler:
     - repeat 3:
       - define side_seat_<[value]>_loc <[drivers_seat_loc].left[0.075].backward[<[value].sub[1].add[4]>].with_yaw[<[yaw].add[90]>].below[0.05]>
       - if !<[side_seat_<[value]>_loc].chunk.is_loaded>:
-        - chunkload <[left_seat_2_loc].chunk>
+        - chunkload <[left_seat_2_loc].chunk> duration:5m
       - spawn <entity[item_display].with[scale=0.1,0.1,0.1;force_no_persist=true]> <[side_seat_<[value]>_loc]> save:side_seat_<[value]>
       - define side_seat_<[value]> <entry[side_seat_<[value]>].spawned_entity>
       - flag server fort.temp.bus.seats:->:<[side_seat_<[value]>]>
@@ -191,7 +191,7 @@ fort_bus_handler:
     - repeat 5:
       - define right_seat_<[value]>_loc <[drivers_seat_loc].right[1.53].backward[1.2].backward[<[value].sub[1].mul[1.0716]>].below[0.05]>
       - if !<[right_seat_<[value]>_loc].chunk.is_loaded>:
-        - chunkload <[left_seat_2_loc].chunk>
+        - chunkload <[left_seat_2_loc].chunk> duration:5m
       - spawn <entity[item_display].with[scale=0.1,0.1,0.1;force_no_persist=true]> <[right_seat_<[value]>_loc]> save:right_seat_<[value]>
       - define right_seat_<[value]> <entry[right_seat_<[value]>].spawned_entity>
       - flag server fort.temp.bus.seats:->:<[right_seat_<[value]>]>
@@ -343,7 +343,7 @@ fort_bus_handler:
 
       - define cam_start_loc <[bus_start].backward_flat[8]>
       - if !<[cam_start_loc].chunk.is_loaded>:
-        - chunkload <[cam_start_loc].chunk>
+        - chunkload <[cam_start_loc].chunk> duration:5m
       - spawn <entity[armor_stand].with[invulnerable=true;force_no_persist=true]> <[cam_start_loc]> save:camera
       - define cam <entry[camera].spawned_entity>
       - flag server fort.temp.bus.camera:<[cam]>
@@ -353,7 +353,7 @@ fort_bus_handler:
       #default forward = 2.85
       - define bus_start_center <[bus].location.above[1.5].forward_flat[1.35]>
       - if !<[bus_start_center].chunk.is_loaded>:
-        - chunkload <[bus_start_center].chunk>
+        - chunkload <[bus_start_center].chunk> duration:5m
       - spawn <entity[item_display].with[scale=0.1,0.1,0.1;force_no_persist=true]> <[bus_start_center]> save:bus_center_entity
       - define bc_entity <entry[bus_center_entity].spawned_entity>
       - flag server fort.temp.bus.bus_center_entity:<[bc_entity]>
@@ -402,8 +402,9 @@ fort_bus_handler:
 
       - foreach <[players]> as:p:
         - mount <[p]>|<[bc_entity]>
+
       #safety
-      - wait 5t
+      - wait 8t
       - foreach <[players]> as:p:
         - adjust <[p]> spectate:<[cam]>
         - give <[blank_item]> slot:9 to:<[p].inventory>
