@@ -14,9 +14,6 @@ build_toggle_handler:
     - if <player.has_flag[fort.using_glider]>:
       - stop
 
-    - if <player.has_flag[fort.disable_build]>:
-      - stop
-
     - if <player.has_flag[fort.on_bus.loading]>:
       - stop
 
@@ -25,6 +22,9 @@ build_toggle_handler:
         #teammates are orange? idc
         - announce "<&c><&l><player.name> <&7>thanked the bus driver"
         - flag player fort.thanked_bus_driver
+      - stop
+
+    - if <player.has_flag[fort.disable_build]>:
       - stop
 
     - define new_type <map[inv=build;build=inv].get[<player.flag[fort.inv_type]||inv>]>
@@ -188,13 +188,14 @@ build_toggle:
 
     - actionbar <&sp>
     #if the player doesn't build.enabled, it means it was forcefully removed
-    - if <player.has_flag[fort.disable_build]> && <player.flag[build.last_inventory]>:
+    - if <player.has_flag[fort.disable_build]> && <player.has_flag[build.last_inventory]>:
       - inventory clear
       - inventory set o:<player.flag[build.last_inventory]> d:<player.inventory>
       #it means these "edits" weren't saved
       - if <player.has_flag[build.edit_mode.blocks]>:
         - flag <player.flag[build.edit_mode.blocks]> build.edited:!
       - adjust <player> item_slot:<player.flag[build.last_slot]>
+      - flag player fort.inv_type:inv
     - flag player build:!
 
   give_blueprint:

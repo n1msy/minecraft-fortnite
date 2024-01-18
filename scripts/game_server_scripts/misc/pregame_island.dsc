@@ -1,5 +1,7 @@
 ##make sure to flag the server for different modes with "fort.mode"
 
+
+##this command is broken for some reason (for vanilla too)?
 apply_team_options:
   type: task
   debug: false
@@ -175,7 +177,11 @@ pregame_island_handler:
     - run update_hud
     - run minimap
 
+    #attempt to "reset" team data for options to work properly
+    - team name:Pregame_Island add:<player.name>
+
     - wait 10t
+    #update this to empty?
     - bossbar update fort_info color:YELLOW players:<player>
 
     - define players <server.online_players_flagged[fort]>
@@ -195,7 +201,7 @@ pregame_island_handler:
       - run pregame_island_handler.countdown
 
     # - [ Return to Lobby Menu ] - #
-    on player enters fort_lobby_circle server_flagged:fort.lobby_circle_enabled:
+    on player enters fort_lobby_circle:
     - flag player fort.lobby_teleport
     - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
     - cast LEVITATION duration:8t amplifier:3 no_ambient no_clear no_icon hide_particles
@@ -293,12 +299,14 @@ pregame_island_handler:
     # - Player Setup - #
     #teams automatically are removed when server restart
 
-    ##this shit broke for some reason?
+    ##this shit is broken for some reason?
     #in parties, the team name would be the name of the party leader
-    - foreach <[players]> as:p:
-      - define name <[p].name>
-      - team name:<[name]> add:<[p]>
-      - run apply_team_options def:<[name]>
+    #- foreach <[players]> as:p:
+      #- define name <[p].name>
+      #- team name:<[name]> add:<[p]>
+      #- run apply_team_options def:<[name]>
+    - team name:Player add:<[players]>
+    - team name:Player option:NAME_TAG_VISIBILITY status:NEVER
 
     #stop everyone from emoting
     - flag <[players]> fort.emote:!
@@ -377,9 +385,10 @@ pregame_island_handler:
         - else:
           - wait 2t
 
-      #remove entities in case they weren't already (or if server shuts down)
-      - if <util.notes[ellipsoids].parse[note_name].contains[fort_lobby_circle]>:
-        - note remove as:fort_lobby_circle
+      #can't remove the notable, otherwise it causes errors with the event
+      #- if <util.notes[ellipsoids].parse[note_name].contains[fort_lobby_circle]>:
+        #- note remove as:fort_lobby_circle
 
+      #remove entities in case they weren't already (or if server shuts down)
       - remove <world[pregame_island].entities[text_display].filter[has_flag[lobby_circle_square]]>
       - flag server fort.lobby_circle_enabled:!

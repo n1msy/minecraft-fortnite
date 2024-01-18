@@ -88,12 +88,6 @@ fort_death_handler:
     - define killer_name <[killer].name.if_null[<player.name>]>
     - title title:<&e><&l><[killer_name].font[elim_player]><&r> subtitle:<&chr[1].font[elim_text]><&l><element[ELIMINATED BY].font[elim_text]>
 
-    #this is before adding the fort.spectating flag, so no need to remove the dead player from the list
-    - define placement <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].size>
-    - define placement_text "<&l>YOU PLACED <&r>#<&e><&l><[placement]>"
-    #- title <&chr[1].font[elim_text]><element[<&l>YOU PLACED <&r>#<&e><&l><[placement]>].font[elim_text]>
-    - bossbar update fort_info title:<[placement_text]> color:YELLOW players:<player>
-
     #this check means dont look for any spectators if players die and they're still on the pregame island
     - if <server.has_flag[fort.temp.available]>:
       - stop
@@ -103,6 +97,13 @@ fort_death_handler:
       - define msg_template <script[nimnite_config].data_key[killfeed.quit].random.parse_minimessage>
       - define death_message <[msg_template].replace_text[_player_].with[<player.name>]>
       - announce <[death_message]>
+    - else:
+      #-make sure this message doesn't stay after the next match?
+      #this is before adding the fort.spectating flag, so no need to remove the dead player from the list
+      - define placement <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].size>
+      - define placement_text "<&l>YOU PLACED <&r>#<&e><&l><[placement]>"
+      #- bossbar update fort_info title:<[placement_text]> color:YELLOW players:<player>
+      - title subtitle:<[placement_text]> fade_in:0t stay:10s fade_out:10t
 
     #-Update alive players (players left)
     #excluding killer, since their hud updates already in .death

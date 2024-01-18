@@ -246,6 +246,6 @@ minimap:
 
     #show storm timer info in tablist too?
     - if <[next_storm_center].exists>:
-      - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><proc[spacing].context[<[offset].mul[2].sub[2]>]><[full_purple_circle_display]><n><[map]><n>
+      - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><proc[spacing].context[<[offset].mul[2].sub[2]>]><[full_purple_circle_display]><n><[map]>
     - else:
       - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><[map]>
