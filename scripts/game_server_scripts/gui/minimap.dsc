@@ -34,8 +34,9 @@ minimap:
     - define marker       <&chr[E000].font[map].color[<[marker_color]>]>
 
     #-minimap
-    - define x <[loc].x>
-    - define z <[loc].z>
+    #sub offset
+    - define x <[loc].x.add[49]>
+    - define z <[loc].z.add[49]>
 
     - define top_left_x -1024
     - define top_left_z -1024
@@ -226,8 +227,8 @@ minimap:
     #- narrate <[rot_data]>
 
     # 0 - 511
-    - define x <[loc].x.sub[<[top_left_x]>].div[4].round_down>
-    - define y <[loc].z.sub[<[top_left_z]>].div[4].round_down>
+    - define x <[loc].x.add[49].sub[<[top_left_x]>].div[4].round_down>
+    - define y <[loc].z.add[49].sub[<[top_left_z]>].div[4].round_down>
     - define full_marker_red <[rot_data].add[<[x].div[256].round_down.mul[64]>].add[<[y].div[256].round_down.mul[128]>]>
     #- define full_marker_red <[rot_data].div[8].round>
     #- narrate <[]>
@@ -241,10 +242,10 @@ minimap:
     - define twitch_icon  <&chr[14].font[icons]>
     - define twitter_icon <&chr[15].font[icons]>
 
-    - define socials "<[youtube_icon]> Nimsy <[twitch_icon]> FlimsyNimsy <[twitter_icon]> N1msy"
+    #- define socials "<[youtube_icon]> Nimsy <[twitch_icon]> FlimsyNimsy <[twitter_icon]> N1msy"
 
     #show storm timer info in tablist too?
     - if <[next_storm_center].exists>:
-      - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><proc[spacing].context[<[offset].mul[2].sub[2]>]><[full_purple_circle_display]><n><[map]><n>|<n><[socials]><n>
+      - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><proc[spacing].context[<[offset].mul[2].sub[2]>]><[full_purple_circle_display]><n><[map]><n>
     - else:
-      - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><[map]>|<n><[socials]><n>
+      - adjust <player> tab_list_info:<[full_marker]><[full_circle_display]><[map]>
