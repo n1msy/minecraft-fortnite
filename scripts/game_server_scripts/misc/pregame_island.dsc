@@ -1,19 +1,16 @@
 ##make sure to flag the server for different modes with "fort.mode"
 
-team_test:
+apply_team_options:
   type: task
   debug: false
+  definitions: name
   script:
-    - define players <server.online_players_flagged[fort]>
-    - foreach <[players]> as:p:
-      - define name <[p].name>
-      - team name:<[name]> add:<[p]>
-      - team name:<[name]> option:FRIENDLY_FIRE status:NEVER
-      #so other teams can't see their names
-      - team name:<[name]> option:NAME_TAG_VISIBILITY status:FOR_OTHER_TEAMS
-      #so you can't see anyone that's invisible
-      - team name:<[name]> option:SEE_INVISIBLE status:NEVER
-
+    - wait 10t
+    - team name:<[name]> option:FRIENDLY_FIRE status:NEVER
+    #so other teams can't see their names
+    - team name:<[name]> option:NAME_TAG_VISIBILITY status:FOR_OTHER_TEAMS
+    #so you can't see anyone that's invisible
+    - team name:<[name]> option:SEE_INVISIBLE status:NEVER
 
 ##show names before the game starts?
 pregame_island_handler:
@@ -292,11 +289,7 @@ pregame_island_handler:
     - foreach <[players]> as:p:
       - define name <[p].name>
       - team name:<[name]> add:<[p]>
-      - team name:<[name]> option:FRIENDLY_FIRE status:NEVER
-      #so other teams can't see their names
-      - team name:<[name]> option:NAME_TAG_VISIBILITY status:FOR_OTHER_TEAMS
-      #so you can't see anyone that's invisible
-      - team name:<[name]> option:SEE_INVISIBLE status:NEVER
+      - run apply_team_options def:<[name]>
 
     #stop everyone from emoting
     - flag <[players]> fort.emote:!
