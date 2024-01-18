@@ -88,7 +88,9 @@ fort_death_handler:
 
     #this is before adding the fort.spectating flag, so no need to remove the dead player from the list
     - define placement <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].size>
-    - actionbar <&chr[1].font[elim_text]><element[<&l>YOU PLACED <&r>#<&e><&l><[placement]>].font[elim_text]>
+    - define placement_text "<&l>YOU PLACED <&r>#<&e><&l><[placement]>"
+    #- title <&chr[1].font[elim_text]><element[<&l>YOU PLACED <&r>#<&e><&l><[placement]>].font[elim_text]>
+    - bossbar update fort_info title:<[placement_text]> color:YELLOW players:<player>
 
     #this check means dont look for any spectators if players die and they're still on the pregame island
     - if <server.has_flag[fort.temp.available]>:
