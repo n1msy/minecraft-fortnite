@@ -177,7 +177,11 @@ pregame_island_handler:
     - run update_hud
     - run minimap
 
+    #attempt to "reset" team data for options to work properly
+    - team name:Pregame_Island add:<player.name>
+
     - wait 10t
+    #update this to empty?
     - bossbar update fort_info color:YELLOW players:<player>
 
     - define players <server.online_players_flagged[fort]>
