@@ -35,11 +35,11 @@ minimap:
 
     #-minimap
     #sub offset
-    - define x <[loc].x.add[49]>
-    - define z <[loc].z.add[49]>
+    - define x <[loc].x>
+    - define z <[loc].z>
 
-    - define top_left_x -1024
-    - define top_left_z -1024
+    - define top_left_x -1073
+    - define top_left_z -1073
 
     - define r <[x].sub[<[top_left_x]>].mod[256]>
     - define g <[z].sub[<[top_left_z]>].mod[256]>
@@ -227,8 +227,8 @@ minimap:
     #- narrate <[rot_data]>
 
     # 0 - 511
-    - define x <[loc].x.add[49].sub[<[top_left_x]>].div[4].round_down>
-    - define y <[loc].z.add[49].sub[<[top_left_z]>].div[4].round_down>
+    - define x <[loc].x.sub[<[top_left_x]>].div[4].round_down>
+    - define y <[loc].z.sub[<[top_left_z]>].div[4].round_down>
     - define full_marker_red <[rot_data].add[<[x].div[256].round_down.mul[64]>].add[<[y].div[256].round_down.mul[128]>]>
     #- define full_marker_red <[rot_data].div[8].round>
     #- narrate <[]>
