@@ -7,7 +7,7 @@ apply_team_options:
   debug: false
   definitions: name
   script:
-    - wait 10t
+    #- wait 10t
     - team name:<[name]> option:FRIENDLY_FIRE status:NEVER
     #so other teams can't see their names
     - team name:<[name]> option:NAME_TAG_VISIBILITY status:FOR_OTHER_TEAMS
@@ -297,16 +297,7 @@ pregame_island_handler:
 
 
     # - Player Setup - #
-    #teams automatically are removed when server restart
-
-    ##this shit is broken for some reason?
-    #in parties, the team name would be the name of the party leader
-    - foreach <[players]> as:p:
-      - define name <[p].name>
-      - team name:<[name]> add:<[p]> option:NAME_TAG_VISIBILITY status:NEVER
-      #- run apply_team_options def:<[name]>
-    #- team name:Player add:<[players]> option:NAME_TAG_VISIBILITY status:NEVER
-    #- team name:Player option:NAME_TAG_VISIBILITY status:NEVER
+    #teams automatically are removed when server restart (team command stuff moved to battle_bus.dsc because you switch worlds)
 
     #stop everyone from emoting
     - flag <[players]> fort.emote:!

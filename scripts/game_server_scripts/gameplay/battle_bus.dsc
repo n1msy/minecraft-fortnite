@@ -405,6 +405,15 @@ fort_bus_handler:
                       <&7><element[to thank the bus driver.].font[item_name]>"
       - define blank_item <item[paper].with[display=<[thank]>;custom_model_data=17]>
 
+      ##if this doesn't work, maybe just add the teams after theyve landed?
+
+      ##this shit is broken for some reason?
+      #in parties, the team name would be the name of the party leader
+      - foreach <[players]> as:p:
+        - define name <[p].name>
+        - team name:<[name]> add:<[p]>
+        - run apply_team_options def:<[name]>
+
       - foreach <[players]> as:p:
         - mount <[p]>|<[bc_entity]>
 
