@@ -188,7 +188,7 @@ build_toggle:
 
     - actionbar <&sp>
     #if the player doesn't build.enabled, it means it was forcefully removed
-    - if <player.has_flag[fort.disable_build]> && <player.flag[build.last_inventory]>:
+    - if <player.has_flag[fort.disable_build]> && <player.has_flag[build.last_inventory]>:
       - inventory clear
       - inventory set o:<player.flag[build.last_inventory]> d:<player.inventory>
       #it means these "edits" weren't saved
