@@ -195,7 +195,7 @@ pregame_island_handler:
       - run pregame_island_handler.countdown
 
     # - [ Return to Lobby Menu ] - #
-    on player enters fort_lobby_circle:
+    on player enters fort_lobby_circle server_flagged:fort.lobby_circle_enabled:
     - flag player fort.lobby_teleport
     - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
     - cast LEVITATION duration:8t amplifier:3 no_ambient no_clear no_icon hide_particles
