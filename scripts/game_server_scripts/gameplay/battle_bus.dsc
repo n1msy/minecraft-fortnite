@@ -4,6 +4,10 @@ fort_bus_handler:
   definitions: player
   events:
 
+    on armor_stand despawns:
+    - if <context.entity.has_flag[fort.bus.camera]>:
+      - determine cancelled
+
     #so they can't use the teleport feature vanilla mc has
     on player teleports cause:SPECTATE flagged:fort.on_bus:
     - determine passively cancelled
@@ -206,6 +210,7 @@ fort_bus_handler:
     - run dmodels_set_scale def.root_entity:<[bus]> def.scale:1.3,1.3,1.3
     - spawn <entity[armor_stand].with[invulnerable=true;force_no_persist=true]> <player.location> save:camera
     - define cam <entry[camera].spawned_entity>
+    - flag <[cam]> fort.bus.camera
     - adjust <player> spectate:<[cam]>
     - invisible <[cam]> true
     - cast SLOW_DIGGING amplifier:255 duration:infinite no_icon no_ambient hide_particles
