@@ -195,6 +195,7 @@ build_toggle:
       - if <player.has_flag[build.edit_mode.blocks]>:
         - flag <player.flag[build.edit_mode.blocks]> build.edited:!
       - adjust <player> item_slot:<player.flag[build.last_slot]>
+      - flag player fort.inv_type:inv
     - flag player build:!
 
   give_blueprint:
