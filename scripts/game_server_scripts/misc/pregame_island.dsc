@@ -1,4 +1,6 @@
 ##make sure to flag the server for different modes with "fort.mode"
+
+##show names before the game starts?
 pregame_island_handler:
   type: world
   debug: false
@@ -73,6 +75,10 @@ pregame_island_handler:
     #it's fine to change max stack size for gun materials, since they won't stack
     #because each gun has a unique uuid
     #- adjust <material[leather_horse_armor]> max_stack_size:64
+
+    #remove teams
+    - foreach <server.scoreboard.team_names||<list[]>> as:team:
+      - team name:<[team]> remove:<server.scoreboard.team[<[team]>].members>
 
     #reset the notable (since its also being used after victory)
     - define ellipsoid <server.flag[fort.pregame.lobby_circle.loc].to_ellipsoid[1.3,3,1.3]>

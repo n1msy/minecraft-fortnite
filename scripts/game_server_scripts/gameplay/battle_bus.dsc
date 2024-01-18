@@ -29,11 +29,11 @@ fort_bus_handler:
       - determine passively cancelled
       - stop
 
+    - playsound <player> sound:BLOCK_CONDUIT_DEACTIVATE pitch:1.2 volume:0.5
     - run fort_bus_handler.drop_player def.player:<player>
 
     #-mode 1:
     - stop
-    - playsound <player> sound:BLOCK_CONDUIT_DEACTIVATE pitch:1.2 volume:0.25
 
     - flag player fort.on_bus:!
     - flag server fort.temp.bus.passengers:<-:<player>
