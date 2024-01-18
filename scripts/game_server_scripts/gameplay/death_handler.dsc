@@ -102,7 +102,8 @@ fort_death_handler:
       #this is before adding the fort.spectating flag, so no need to remove the dead player from the list
       - define placement <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].size>
       - define placement_text "<&l>YOU PLACED <&r>#<&e><&l><[placement]>"
-      - bossbar update fort_info title:<[placement_text]> color:YELLOW players:<player>
+      #- bossbar update fort_info title:<[placement_text]> color:YELLOW players:<player>
+      - title subtitle:<[placement_text]> fade_in:0t stay:10s fade_out:10t
 
     #-Update alive players (players left)
     #excluding killer, since their hud updates already in .death
