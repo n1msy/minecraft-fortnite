@@ -1,5 +1,7 @@
 ##make sure to flag the server for different modes with "fort.mode"
 
+
+##this command is broken for some reason (for vanilla too)?
 apply_team_options:
   type: task
   debug: false
@@ -195,7 +197,7 @@ pregame_island_handler:
       - run pregame_island_handler.countdown
 
     # - [ Return to Lobby Menu ] - #
-    on player enters fort_lobby_circle server_flagged:fort.lobby_circle_enabled:
+    on player enters fort_lobby_circle:
     - flag player fort.lobby_teleport
     - title title:<&font[denizen:black]><&chr[0004]><&chr[F801]><&chr[0004]> fade_in:7t stay:0s fade_out:1s
     - cast LEVITATION duration:8t amplifier:3 no_ambient no_clear no_icon hide_particles
@@ -377,9 +379,10 @@ pregame_island_handler:
         - else:
           - wait 2t
 
-      #remove entities in case they weren't already (or if server shuts down)
-      - if <util.notes[ellipsoids].parse[note_name].contains[fort_lobby_circle]>:
-        - note remove as:fort_lobby_circle
+      #can't remove the notable, otherwise it causes errors with the event
+      #- if <util.notes[ellipsoids].parse[note_name].contains[fort_lobby_circle]>:
+        #- note remove as:fort_lobby_circle
 
+      #remove entities in case they weren't already (or if server shuts down)
       - remove <world[pregame_island].entities[text_display].filter[has_flag[lobby_circle_square]]>
       - flag server fort.lobby_circle_enabled:!
