@@ -94,6 +94,10 @@ pregame_island_handler:
 
     #reset the notable (since its also being used after victory)
     - define ellipsoid <server.flag[fort.pregame.lobby_circle.loc].to_ellipsoid[1.3,3,1.3]>
+
+    - if <util.notes[ellipsoids].parse[note_name].contains[fort_lobby_circle]>:
+      - note remove as:fort_lobby_circle
+
     - note <[ellipsoid]> as:fort_lobby_circle
 
     #create the storm circle off-rip (so the event doesn't break)
@@ -101,6 +105,8 @@ pregame_island_handler:
     - define storm_center <world[nimnite_map].spawn_location.with_y[20]>
     - define circle_radius <[diameter].div[2].round>
     - define storm_circle <[storm_center].to_ellipsoid[<[circle_radius]>,10000,<[circle_radius]>]>
+    - if <util.notes[ellipsoids].parse[note_name].contains[fort_storm_circle]>:
+      - note remove as:fort_storm_circle
     - note <[storm_circle]> as:fort_storm_circle
 
     - remove <world[pregame_island].entities[dropped_item]>
@@ -254,8 +260,13 @@ pregame_island_handler:
       - bossbar update fort_info title:<[+spacing]><[bus_icon]><[-spacing]><&l><element[BATTLE BUS LAUNCHING IN].font[lobby_text]><&sp><element[<&d><&l><[seconds]> Seconds].font[lobby_text]> color:YELLOW players:<[players]>
       - sidebar set_line scores:5 values:<element[<&chr[0025].font[icons]> <[timer]>].font[hud_text].color[<color[50,0,0]>]> players:<[players]>
 
-      #-bus engine revving
-      - playsound <[players]> sound:ENTITY_MINECART_RIDING pitch:1 volume:0.1 if:<[seconds].equals[1]>
+      #-bus engine revving + remove the return to lobby
+      - if <[seconds]> == 1:
+        - playsound <[players]> sound:ENTITY_MINECART_RIDING pitch:1 volume:0.1 if:<[seconds].equals[1]>
+
+        #disable/remove lobby circle a second before
+        - flag server fort.lobby_circle_enabled:!
+
       - wait 1s
       - define players <server.online_players_flagged[fort]>
       - if <[players].size> < <[min_players]>:
@@ -278,8 +289,6 @@ pregame_island_handler:
     #in case lobby restarts, let it know on startup that it's no longer available
     - flag server fort.temp.available:!
 
-    #stop lobby circle animation
-    - flag server fort.lobby_circle_enabled:!
 
     # - Player Setup - #
     #teams automatically are removed when server restart
@@ -369,5 +378,8 @@ pregame_island_handler:
           - wait 2t
 
       #remove entities in case they weren't already (or if server shuts down)
+      - if <util.notes[ellipsoids].parse[note_name].contains[fort_lobby_circle]>:
+        - note remove as:fort_lobby_circle
+
       - remove <world[pregame_island].entities[text_display].filter[has_flag[lobby_circle_square]]>
       - flag server fort.lobby_circle_enabled:!
