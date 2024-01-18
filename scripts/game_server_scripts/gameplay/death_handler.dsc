@@ -75,11 +75,13 @@ fort_death_handler:
     - define quit     <[data].get[quit]||false>
     - define dead_loc <[data].get[loc]>
 
-    #don't drop items on pregame island
-    - run fort_item_handler.drop_everything if:<player.world.name.equals[nimnite_map]>
-    - run fort_death_handler.fx.anim def:<map[loc=<[dead_loc]>]>
+    #dont play the death animation if players leave on the bus
+    - if !<player.has_flag[fort.on_bus]>:
+      #don't drop items on pregame island
+      - run fort_item_handler.drop_everything if:<player.world.name.equals[nimnite_map]>
+      - run fort_death_handler.fx.anim def:<map[loc=<[dead_loc]>]>
 
-    #in case they were in the storm
+      #in case they were in the storm
     - flag player fort.in_storm:!
 
 
