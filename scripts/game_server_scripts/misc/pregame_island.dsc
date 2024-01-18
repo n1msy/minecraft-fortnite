@@ -301,12 +301,12 @@ pregame_island_handler:
 
     ##this shit is broken for some reason?
     #in parties, the team name would be the name of the party leader
-    #- foreach <[players]> as:p:
-      #- define name <[p].name>
-      #- team name:<[name]> add:<[p]>
+    - foreach <[players]> as:p:
+      - define name <[p].name>
+      - team name:<[name]> add:<[p]> option:NAME_TAG_VISIBILITY status:NEVER
       #- run apply_team_options def:<[name]>
-    - team name:Player add:<[players]>
-    - team name:Player option:NAME_TAG_VISIBILITY status:NEVER
+    #- team name:Player add:<[players]> option:NAME_TAG_VISIBILITY status:NEVER
+    #- team name:Player option:NAME_TAG_VISIBILITY status:NEVER
 
     #stop everyone from emoting
     - flag <[players]> fort.emote:!
