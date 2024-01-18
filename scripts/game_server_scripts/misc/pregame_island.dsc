@@ -1,5 +1,20 @@
 ##make sure to flag the server for different modes with "fort.mode"
 
+team_test:
+  type: task
+  debug: false
+  script:
+    - define players <server.online_players_flagged[fort]>
+    - foreach <[players]> as:p:
+      - define name <[p].name>
+      - team name:<[name]> add:<[p]>
+      - team name:<[name]> option:FRIENDLY_FIRE status:NEVER
+      #so other teams can't see their names
+      - team name:<[name]> option:NAME_TAG_VISIBILITY status:FOR_OTHER_TEAMS
+      #so you can't see anyone that's invisible
+      - team name:<[name]> option:SEE_INVISIBLE status:NEVER
+
+
 ##show names before the game starts?
 pregame_island_handler:
   type: world
@@ -272,6 +287,7 @@ pregame_island_handler:
     # - Player Setup - #
     #teams automatically are removed when server restart
 
+    ##this shit broke for some reason?
     #in parties, the team name would be the name of the party leader
     - foreach <[players]> as:p:
       - define name <[p].name>
