@@ -831,10 +831,14 @@ fort_gun_handler:
     - define mag_size    <[gun].flag[mag_size]>
     - define total_ammo  <player.flag[fort.ammo.<[ammo_type]>]||0>
 
+    - define auto_reload <[data].get[auto_reload]||false>
+
     - if <[total_ammo]> == 0:
-      - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
-      - title "subtitle:<&c>No reload ammo." fade_in:0 stay:1 fade_out:15t
-      - playsound <player> sound:UI_BUTTON_CLICK pitch:1.8
+      #auto reload just makes it so the "no reload" text doesn't appear every time you hold the item
+      - if !<[auto_reload]>:
+        - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
+        - title "subtitle:<&c>No reload ammo." fade_in:0 stay:1 fade_out:15t
+        - playsound <player> sound:UI_BUTTON_CLICK pitch:1.8
 
       - stop
 
