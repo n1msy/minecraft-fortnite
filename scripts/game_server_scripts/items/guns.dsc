@@ -200,7 +200,7 @@ fort_gun_handler:
       - cast SPEED amplifier:-4 duration:9999s no_icon no_ambient hide_particles
 
     #wait until anything stops them from scoping
-    - waituntil !<player.has_flag[fort.gun_scoped]> || !<player.is_online> || !<player.is_sneaking> || <player.gamemode> == SPECTATOR || <player.item_in_hand.flag[uuid]||null> != <[gun_uuid]> rate:1t
+    - waituntil !<player.has_flag[fort.gun_scoped]> || <player.has_flag[fort.reset_sniper_scope]> || !<player.is_online> || !<player.is_sneaking> || <player.gamemode> == SPECTATOR || <player.item_in_hand.flag[uuid]||null> != <[gun_uuid]> rate:1t
 
     - if <[gun].has_flag[sniper]>:
       - inject fort_gun_handler.reset_sniper_scope
@@ -279,7 +279,9 @@ fort_gun_handler:
     - equip head:air
     - adjust <player> fov_multiplier
     - cast SLOW_DIGGING remove
-    - flag player fort.gun_scoped:!
+    #separate flag (this is checked "on player starts sneaking")
+    #so that the shoot event knows you're still scoped in
+    - flag player fort.reset_sniper_scope duration:1t
 
   ## - [ Shoot Stuff ] - ##
   shoot:
