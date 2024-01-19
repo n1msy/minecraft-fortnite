@@ -5,7 +5,6 @@
 #test
 #a
 #b
-#c
 fort_core_handler:
   type: task
   debug: false
