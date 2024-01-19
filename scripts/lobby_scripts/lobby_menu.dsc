@@ -196,6 +196,11 @@ fort_lobby_handler:
     #used to prevent collision
     - team name:lobby_player add:<player>
 
+    #-for test server
+    - if <server.has_flag[is_test_server]>:
+      - run fort_lobby_setup.player_setup
+      - stop
+
     # - [ Update RP Hash ] - #
     - define current_hash <server.flag[fort.resourcepack.hash]>
     - ~webget http://localhost:4000/metadata.yml save:metadata
@@ -205,11 +210,8 @@ fort_lobby_handler:
       - announce "<&b>[<bungee.server>]<&r> Cached new resourcepack hash <&8>(<&7><[new_hash]><&8>)<&r>." to_console
 
     #- [ ! ] Warning: RP is being downloaded every time players join lobby server (even when returning from game)
+    #can be fixed with new snapshot stuff from 1/18/23
 
-    #-for test server
-    - if <server.has_flag[is_test_server]>:
-      - run fort_lobby_setup.player_setup
-      - stop
     #
 
     - define hash <server.flag[fort.resourcepack.hash]>
