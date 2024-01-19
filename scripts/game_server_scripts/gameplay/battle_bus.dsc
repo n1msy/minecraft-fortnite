@@ -68,6 +68,8 @@ fort_bus_handler:
       - else:
         - define lucky_one <[not_chosen_players_on_bus].random>
         - adjust <[current_p_npc]> skin_blob:<[lucky_one].skin_blob>
+        #doing this mech in case name shows again
+        - adjust <[p_npc]> name_visible:false
         - flag <[current_p_npc]> fort.passenger_uuid:<[lucky_one].uuid>
     # -
     - take slot:9 from:<[player].inventory>
@@ -387,9 +389,9 @@ fort_bus_handler:
         - create PLAYER <[p].name> <[seat].location> save:p_npc_<[loop_index]>
         - define p_npc <entry[p_npc_<[loop_index]>].created_npc>
         - mount  <[p_npc]>|<[seat]>
-        - adjust <[p_npc]> name_visible:false
         #name doesn't change the npc skins for some reason, so just to be safe
         - adjust <[p_npc]> skin_blob:<[p].skin_blob>
+        - adjust <[p_npc]> name_visible:false
         - flag   <[p_npc]> fort.passenger_uuid:<[p].uuid>
         - define passenger_npcs:->:<[p_npc]>
         #i could just do it in the repeat, but i want it to be instant
