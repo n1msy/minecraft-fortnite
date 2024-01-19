@@ -97,7 +97,7 @@ fort_pic_handler:
     - define block <context.location>
     - define mat <[block].material.name>
 
-    - if <[mat].contains_any_text[oak|spruce|birch|jungle|acacia|dark_oak|mangrove|warped|barrel]>:
+    - if <[mat].contains_any_text[oak|spruce|birch|jungle|acacia|dark_oak|mangrove|warped|barrel|bamboo]>:
       - define tool netherite_axe
     - else:
       - define tool netherite_pickaxe
@@ -117,6 +117,7 @@ fort_pic_handler:
     - stop if:<[mat].contains_text[door]||false>
     - determine passively cancelled
     - ratelimit <player> 1t
+    #add a cast SPEED_DIGGING somewhere here?
 
     #infinite durability
     on fort_pickaxe* takes damage:

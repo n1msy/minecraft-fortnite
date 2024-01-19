@@ -116,6 +116,30 @@ fort_admin_commands:
         - flag player fort.model_menu
         - inventory open d:<inventory[generic[contents=<[items]>;size=18]]>
         - narrate "<&a>Opened Nimnite models menu."
+
+
+      # - [ In-Game Admin Commands ] - #
+      - case force_start:
+        - inject fort_admin_commands.server_check
+        - if !<server.has_flag[fort.temp.available]>:
+          - narrate "<&c>The game has already started."
+          - stop
+
+        - if <server.has_flag[fort.temp.game_starting]>:
+          - narrate "<&c>The game is already starting."
+          - stop
+
+        - if <server.online_players_flagged[fort].size> < 2:
+          - narrate "<&c>At least <&n>2<&c> players needed to start a game."
+          - stop
+
+
+        - flag server fort.temp.force_start
+        - run pregame_island_handler.countdown
+
+        - narrate "<&a>You forcefully started the game."
+        - announce "<&7><&o>Game has been started by an admin."
+
       - case skip:
       #skip the phase
         - inject fort_admin_commands.server_check

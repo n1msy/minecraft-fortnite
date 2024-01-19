@@ -136,6 +136,12 @@ build_system_handler:
       - narrate "<&c>An error occured during structure damage."
       - stop
 
+    #####im just stopping to prevent the error that happens sometimes
+    #re: https://discord.com/channels/747595318258040985/747632700239642645/1197825646068514847
+    #but idk what's actually causing it
+    - if !<[center].has_flag[build]>:
+      - stop
+
     - define hp       <[center].flag[build.health]>
     - define mat_type <[center].flag[build.material]>
     #filtering so connected blocks aren't affected

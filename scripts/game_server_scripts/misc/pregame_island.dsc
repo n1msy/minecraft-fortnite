@@ -91,7 +91,7 @@ pregame_island_handler:
     - adjust <material[leather_helmet]> max_stack_size:64
     #it's fine to change max stack size for gun materials, since they won't stack
     #because each gun has a unique uuid
-    #- adjust <material[leather_horse_armor]> max_stack_size:64
+    - adjust <material[leather_horse_armor]> max_stack_size:64
 
     #remove teams
     - foreach <server.scoreboard.team_names||<list[]>> as:team:
@@ -282,7 +282,18 @@ pregame_island_handler:
 
       - wait 1s
       - define players <server.online_players_flagged[fort]>
-      - if <[players].size> < <[min_players]>:
+
+      # - [ Force start mechanism ] - #
+      #it's a little copy pasta, but i dont really care rn
+      - if <server.has_flag[fort.temp.force_start]> && <[players].size> < 2:
+        - bossbar update fort_info title:<proc[spacing].context[50]><&chr[A004].font[icons]><proc[spacing].context[-72]><&l><element[WAITING FOR PLAYERS].font[lobby_text]> color:YELLOW players:<[players]>
+        - sidebar set_line scores:5 values:<element[<[clock_icon]> -].font[hud_text].color[<color[50,0,0]>]> players:<[players]>
+
+        - flag server fort.temp:!
+        #so this flag isn't removed (probably a better way to do this but eh)
+        - flag server fort.temp.available
+        - stop
+      - else if <[players].size> < <[min_players]>:
         - bossbar update fort_info title:<proc[spacing].context[50]><&chr[A004].font[icons]><proc[spacing].context[-72]><&l><element[WAITING FOR PLAYERS].font[lobby_text]> color:YELLOW players:<[players]>
         - sidebar set_line scores:5 values:<element[<[clock_icon]> -].font[hud_text].color[<color[50,0,0]>]> players:<[players]>
 

@@ -29,7 +29,7 @@ fort_global_handler:
     #do the same for pregame island
 
     - if <[unexpected].exists>:
-      - announce to_console "<&b>[Nimnite]<&r> Unexpected server shutdown. Restarting server..."
+      - announce to_console "<&b>[Nimnite]<&r> Unexpected server shutdown..."
       #- adjust server restart
 
     #-only show teammates in tablist?
@@ -76,6 +76,12 @@ fort_global_handler:
 
     - if <context.cause> == FLY_INTO_WALL || <[e].has_flag[fort.using_glider]>:
       - determine passively cancelled
+      - stop
+
+    #-negate bush damage
+    - if <player.has_flag[fort.bush]>:
+      - determine passively cancelled
+      - run fort_consumable_handler.remove_bush
       - stop
 
     #-fall damage ignores shield
@@ -149,7 +155,7 @@ fort_global_handler:
     #in case it's part of the drop menu
     #this stop is for emotes
     #-clean up these stop checks and the determine at the end
-    - if <context.action> in CLONE_STACK|COLLECT_TO_CURSOR|:
+    - if <context.action> in CLONE_STACK|COLLECT_TO_CURSOR:
       - determine passively cancelled
       - stop
     - if <context.is_shift_click>:

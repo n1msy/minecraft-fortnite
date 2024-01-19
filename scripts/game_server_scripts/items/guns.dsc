@@ -216,7 +216,7 @@ fort_gun_handler:
     on player left clicks block with:gun_*:
     - determine passively cancelled
     - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
-    - stop if:<player.has_flag[fort.dropped_gun]>
+    - stop if:<player.has_flag[fort.dropped_gun].or[<player.has_flag[fort.opened_door_with_gun]>]>
 
     - define gun <context.item>
     - define loaded_ammo <server.flag[fort.temp.<[gun].flag[uuid]>.loaded_ammo]>
@@ -235,7 +235,10 @@ fort_gun_handler:
     - inject fort_gun_handler.use_gun
 
     on player right clicks block with:gun_*:
-    - stop if:<context.location.material.name.contains_text[door]||false>
+    - if <context.location.material.name.contains_text[door]||false>:
+      - flag Flag fort.opened_door_with_gun duration:1t
+      - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
+      - stop
     - determine passively cancelled
     - inject fort_gun_handler.use_gun
     #-cancel shooting while trying to reload

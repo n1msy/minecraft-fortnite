@@ -52,7 +52,6 @@ fort_item_handler:
     on fort_item_* merges:
     - define item <context.item>
     - define other_item <context.target.item>
-
     - if <[item].has_flag[thrown_grenade]>:
       - determine passively cancelled
       - stop
