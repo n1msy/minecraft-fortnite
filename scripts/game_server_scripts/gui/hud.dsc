@@ -34,6 +34,11 @@ update_hud:
 
   # - [ Main Health/Shield Bars ] - #
   - define health      <player.health.mul[5].round>
+  - if <[health]> > 100:
+    #mention on discord too?
+    - announce to_console "<&b>[Nimnite <&f>-<&gt> <&c>Error <&f>]<&r> <player.name><&r>'s <&a>health<&r> exceeded 100 (<&c><[health]><&r>). Fixing..."
+    #- adjust <player> max_health:20
+    - define health 100
   - define health_r    <[health].div[100].mul[255].round_down>
   - define health_bar  <[empty_bar].color[<[health_r]>,0,2]>
   - define health_text "<element[<proc[spacing].context[-215]><[health]>].color[<color[10,0,0]>]> <element[｜ 100].color[<color[101,0,0]>]>"
@@ -41,6 +46,11 @@ update_hud:
   - define health_     <[health_icon]><[health_bar]><[health_text]>
 
   - define shield      <player.armor_bonus.mul[5].round>
+  - if <[shield]> > 100:
+    #mention on discord too?
+    - announce to_console "<&b>[Nimnite <&f>-<&gt> <&c>Error<&b>]<&r> <player.name><&r>'s <&b>shield<&r> exceeded 100 (<&c><[shield]><&r>). Fixing..."
+    #- adjust <player> armor_bonus:20
+    - define shield 100
   - define shield_r    <[shield].div[100].mul[255].round_down>
   - define shield_bar  <[empty_bar].color[<[shield_r]>,0,1]>
   - define shield_text "<element[<proc[spacing].context[-215]><[shield]>].color[<color[11,0,0]>]> <element[｜ 100].color[<color[111,0,0]>]>"
