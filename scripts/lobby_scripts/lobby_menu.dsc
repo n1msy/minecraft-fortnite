@@ -175,7 +175,7 @@ fort_lobby_handler:
     # - (temp whitelist) - #
     on player prelogin:
     - define name <context.name>
-    - if <server.flag[whitelist].contains[<[name]>]>:
+    - if !<server.has_flag[whitelist]> || <server.flag[whitelist].contains[<[name]>]>:
       - stop
     - define msg "<n><n><n><&f>Sup gamer.<n><n>A <element[test run].color_gradient[from=#FF5000;to=#0000FF;style=hsb]><&r> for my
                   <&o>new project<&r> will be announced <&e>really soon<&r>,<n>so I'm getting the server ready for it.
