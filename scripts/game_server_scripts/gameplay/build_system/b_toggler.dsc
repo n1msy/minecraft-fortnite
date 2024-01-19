@@ -49,6 +49,7 @@ build_toggle:
       - if <player.has_flag[build.edit_mode.blocks]>:
         - flag <player.flag[build.edit_mode.blocks]> build.edited:!
       - adjust <player> item_slot:<player.flag[build.last_slot]>
+      - flag player fort.previous_material_selected:<player.flag[build.material]>
       - flag player build:!
       - stop
 
@@ -56,7 +57,7 @@ build_toggle:
     - define world <player.world.name>
     - define origin <location[0,0,0,<[world]>]>
 
-    - flag player build.material:wood
+    - flag player build.material:<player.flag[fort.previous_material_selected]||wood>
     - flag player build.last_inventory:<player.inventory.list_contents>
     - flag player build.last_slot:<player.held_item_slot>
 
@@ -196,6 +197,7 @@ build_toggle:
         - flag <player.flag[build.edit_mode.blocks]> build.edited:!
       - adjust <player> item_slot:<player.flag[build.last_slot]>
       - flag player fort.inv_type:inv
+      - flag player fort.previous_material_selected:<player.flag[build.material]>
     - flag player build:!
 
   give_blueprint:
