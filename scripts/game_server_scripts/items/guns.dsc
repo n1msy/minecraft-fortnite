@@ -57,12 +57,16 @@ fort_gun_handler:
     - if <[old_drop].item.script.name> != <[new_drop].item.script.name>:
       - stop
 
+
+    - if <[new_drop].flag[quantity]> == 999:
+      - stop
+
     - define new_qty   <[new_drop].flag[quantity]>
     - define old_qty   <[old_drop].flag[quantity]>
     - define total_qty <[old_qty].add[<[new_qty]>]>
 
-    #- if <[old_drop].has_flag[text_display]>:
-      #- remove <[old_drop].flag[text_display]> if:<[old_drop].flag[text_display].is_spawned>
+    - if <[old_drop].has_flag[text_display]>:
+      - remove <[old_drop].flag[text_display]> if:<[old_drop].flag[text_display].is_spawned>
 
     - define ammo_type <[new_drop].item.script.name.after_last[_]>
     - define ammo_icon <&chr[E0<map[light=11;medium=22;heavy=33;shells=44;rockets=55].get[<[ammo_type]>]>].font[icons]>
