@@ -235,7 +235,9 @@ fort_gun_handler:
     - inject fort_gun_handler.use_gun
 
     on player right clicks block with:gun_*:
-    - stop if:<context.location.material.name.contains_text[door]||false>
+    - if <context.location.material.name.contains_text[door]||false>:
+      - cast SPEED amplifier:-4 duration:9999s no_icon no_ambient hide_particles
+      - stop
     - determine passively cancelled
     - inject fort_gun_handler.use_gun
     #-cancel shooting while trying to reload
