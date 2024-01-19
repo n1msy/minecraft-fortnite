@@ -20,7 +20,7 @@ fort_lobby_handler:
     ## - [ MOTD ] - ##
     on proxy server list ping:
 
-    - define motd "                  <&b><&k><&l>k<&r> <&f><&l>» <element[<&l>NIMBUS].color_gradient[from=#ffc800;to=#ffea9c]> <&f><&l>« <&b><&k><&l>k<&r><&r><&nl>         <&b><&l>NIMNITE <&7>test run in <&f><time[2024/01/19_18:00:00].duration_since[<util.time_now>].formatted><&7> PST!"
+    - define motd "                  <&b><&k><&l>k<&r> <&f><&l>» <element[<&l>NIMBUS].color_gradient[from=#ffc800;to=#ffea9c]> <&f><&l>« <&b><&k><&l>k<&r><&r><&nl>         <&b><&l>NIMNITE <&7>test run in <&f><time[2024/01/20_2:00:00].duration_since[<util.time_now>].formatted><&7> PST!"
     - determine passively MOTD:<[motd]>
     - determine passively max_players:420
     #on player damaged:
