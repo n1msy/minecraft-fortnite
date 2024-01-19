@@ -92,7 +92,7 @@ fort_consumable_handler:
     - choose <[name]>:
 
       - case bush:
-        - spawn <entity[item_display].with[item=<item[leather_helmet].with[custom_model_data=10]>;scale=1.2,1.2,1.2;translation=0,-0.75,0]> <player.location.with_pose[0,0].above> save:bush
+        - spawn <entity[item_display].with[item=<item[leather_helmet].with[custom_model_data=10]>;scale=1.2,1.2,1.2;translation=0,-0.75,0;color=black]> <player.location.with_pose[0,0].above> save:bush
         - define bush <entry[bush].spawned_entity>
         - mount <[bush]>|<player>
         - run fort_consumable_handler.use_bush def:<[bush]>
