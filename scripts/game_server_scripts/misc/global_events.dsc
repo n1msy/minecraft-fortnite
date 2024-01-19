@@ -4,15 +4,33 @@ fort_global_handler:
   definitions: data
   events:
 
-    #isn't there like a spigot.yml file i can change that stops this too?
+    #also set the server.properties option to false
     on player kicked for flying:
     - determine cancelled
 
-    #-unload the nimnite map so it doesn't have to save
     on shutdown:
+
+    # - [ In case server was shutdown improperly / not via restart ] - #
+    #-Note: this event isn't guaranteed to run if server crashes.
+    - if !<server.has_flag[fort.temp.restarting_server]>:
+      - define unexpected True
+      - flag server fort.temp.unexpected_shutdown
+      - define players <server.online_players>
+      - if <[players].any>:
+        - if <bungee.list_servers.contains[fort_lobby]>:
+          - foreach <[players]> as:p:
+            - adjust <[p]> send_to:fort_lobby
+        - else:
+          - kick <[players]> "reason:<&r>The <&b>Nimnite lobby menu<&r> is currently offline. Rejoin later!"
+
+    #-unload the nimnite map so it doesn't have to save
     - announce to_console "<&b>[Nimnite]<&r> Removing world <&dq><&e>nimnite_map<&r><&dq>..."
     - adjust <world[nimnite_map]> destroy
     #do the same for pregame island
+
+    - if <[unexpected].exists>:
+      - announce to_console "<&b>[Nimnite]<&r> Unexpected server shutdown. Restarting server..."
+      #- adjust server restart
 
     #-only show teammates in tablist?
     #on player receives tablist update:

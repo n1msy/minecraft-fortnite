@@ -1,7 +1,10 @@
 ##make sure to flag the server for different modes with "fort.mode"
 
+##should we hide usernames when the player first joins, or no?
+#if not, then when the player emotes, their name tag disappears, maybe add a name tag
+#for them? im too lazy for now
 
-##this command is broken for some reason (for vanilla too)?
+#this command breaks when switching worlds (name_tag_visibility)
 apply_team_options:
   type: task
   debug: false
@@ -177,8 +180,8 @@ pregame_island_handler:
     - run update_hud
     - run minimap
 
-    #attempt to "reset" team data for options to work properly
-    - team name:Pregame_Island add:<player.name>
+    #for future purpose maybe?
+    #- team name:Pregame_Island add:<player.name>
 
     - wait 10t
     #update this to empty?
@@ -212,6 +215,10 @@ pregame_island_handler:
     #remove quit message
     - if <server.online_players.exclude[<player>].size> == 0:
       - remove <world[pregame_island].entities[text_display].filter[has_flag[lobby_circle_square]]>
+
+    #when this flag happens, it means the player was sent to the lobby
+    - if <server.has_flag[fort.temp.unexpected_shutdown]>:
+      - stop
 
     #if it's still in the pregame lobbe island
     - if <server.has_flag[fort.temp.available]>:

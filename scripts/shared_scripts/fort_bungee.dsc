@@ -31,6 +31,15 @@ fort_bungee_handler:
           #send all the player data, or just remove the current one?
           - run fort_bungee_tasks.set_data def:<[data]>
 
+      ####this doesn't work btw
+      # - [ Notify people of unexpected shutdowns ] - #
+      #maybe start the server back up here? (if there's any way to do that)
+      #(maybe via webpost and python)
+      - if <bungee.list_servers.contains[fort_lobby]> && <bungee.server> == <[closed_server]> && <server.has_flag[fort.temp.unexpected_shutdown]>:
+        - define players <server.online_players>
+        - define data <map[players=<[players]>]>
+        - bungeerun fort_lobby fort_bungee_tasks.unexpected_shutdown def:<[data]>
+
     ###change this later down the road
     on bungee player joins network:
     #only run it on one server, so it doesn't repeat
@@ -83,3 +92,10 @@ fort_bungee_tasks:
         - announce "<&b>[Nimnite]<&r> Game server <&b><[game_server]><&r> is now <&c>CLOSED<&r>" to_console
       - default:
         - flag server fort.available_servers.<[mode]>.<[game_server]>:!
+
+  unexpected_shutdown:
+  #-mention on discord too?
+    - wait 3s
+    - define players <[data].get[players].filter[is_online]>
+    - playsound <[players]> sound:ENTITY_VILLAGER_NO pitch:0.5
+    - narrate "<&c><&l>[!] <&c>Well sh*t... it looks like your game server shut down somehow, please let <&n>Nimsy<&c> know asap." targets:<[players]>
