@@ -212,15 +212,17 @@ fort_gun_handler:
     #left clicking with gun = reload
     on player left clicks block with:gun_*:
     - determine passively cancelled
+    - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
+
     - define gun <context.item>
     - define loaded_ammo <server.flag[fort.temp.<[gun].flag[uuid]>.loaded_ammo]>
     - if <[loaded_ammo]> < <[gun].flag[mag_size]>:
+      - stop if:<player.has_flag[fort.reloading_gun]>
       - wait 1t
       - flag player fort.gun_scoped:!
       - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
       - stop
 
-    - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
     - title "subtitle:<&c>Already reloaded." fade_in:0 stay:1 fade_out:15t
     - playsound <player> sound:UI_BUTTON_CLICK pitch:1.8
 
