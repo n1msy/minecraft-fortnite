@@ -55,6 +55,10 @@ fort_floor_loot_handler:
 
     - flag <[fl_loc]> fort.floor.item:!
 
+    ##important safety
+    - wait 1t
+    #this might potentially fix the server crashing issue
+
     # - [ Spawn Floor Loot ] - #
     #in hindsight, i shouldve created a PROCEDURE instead of a run that gets the item based on the info
 
