@@ -135,18 +135,13 @@ fort_gun_handler:
       - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
 
     on player drops gun_*:
-    - define gun    <context.item>
-
+    #so players can't drop their gun while scoped
     - if <player.has_flag[fort.gun_scoped]>:
       - determine passively cancelled
-      - define loaded_ammo <server.flag[fort.temp.<[gun].flag[uuid]>.loaded_ammo]>
-      - if <[loaded_ammo]> < <[gun].flag[mag_size]>:
-        - wait 1t
-        - flag player fort.gun_scoped:!
-        - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
       - stop
 
     - wait 1t
+    - define gun    <context.item>
     - define drop   <context.entity>
 
     - run fort_gun_handler.drop_gun def:<map[gun=<[gun]>;drop=<[drop]>]>
@@ -214,10 +209,20 @@ fort_gun_handler:
 
     - flag player fort.gun_scoped:!
 
-    #"disable" left clicking with guns
+    #left clicking with gun = reload
     on player left clicks block with:gun_*:
     - determine passively cancelled
+    - define gun <context.item>
+    - define loaded_ammo <server.flag[fort.temp.<[gun].flag[uuid]>.loaded_ammo]>
+    - if <[loaded_ammo]> < <[gun].flag[mag_size]>:
+      - wait 1t
+      - flag player fort.gun_scoped:!
+      - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
+      - stop
+
     - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
+    - title "subtitle:<&c>Already reloaded." fade_in:0 stay:1 fade_out:15t
+    - playsound <player> sound:UI_BUTTON_CLICK pitch:1.8
 
     on player right clicks entity with:gun_*:
     - determine passively cancelled
@@ -812,6 +817,10 @@ fort_gun_handler:
     - define total_ammo  <player.flag[fort.ammo.<[ammo_type]>]||0>
 
     - if <[total_ammo]> == 0:
+      - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
+      - title "subtitle:<&c>No reload ammo." fade_in:0 stay:1 fade_out:15t
+      - playsound <player> sound:UI_BUTTON_CLICK pitch:1.8
+
       - stop
 
     - flag player fort.reloading_gun
