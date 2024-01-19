@@ -236,7 +236,7 @@ fort_gun_handler:
 
     on player right clicks block with:gun_*:
     - if <context.location.material.name.contains_text[door]||false>:
-      - flag plag fort.opened_door_with_gun duration:4t
+      - flag Flag fort.opened_door_with_gun duration:1t
       - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
       - stop
     - determine passively cancelled
