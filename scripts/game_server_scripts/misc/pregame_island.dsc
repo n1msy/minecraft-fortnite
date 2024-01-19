@@ -91,7 +91,7 @@ pregame_island_handler:
     - adjust <material[leather_helmet]> max_stack_size:64
     #it's fine to change max stack size for gun materials, since they won't stack
     #because each gun has a unique uuid
-    #- adjust <material[leather_horse_armor]> max_stack_size:64
+    - adjust <material[leather_horse_armor]> max_stack_size:64
 
     #remove teams
     - foreach <server.scoreboard.team_names||<list[]>> as:team:
