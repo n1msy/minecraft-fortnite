@@ -1,7 +1,7 @@
 nimnite_config:
   type: data
   #default: 60
-  minimum_players: 2
+  minimum_players: 4
   maximum_players: 100
 
   #how much mats players get

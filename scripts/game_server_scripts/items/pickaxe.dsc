@@ -105,6 +105,9 @@ fort_pic_handler:
     - if <[i].material.name> != <[tool]>:
       - inventory adjust slot:<player.held_item_slot> material:<[tool]>
 
+    #in case they switched from another item
+    - cast FAST_DIGGING remove
+
     on player right clicks block with:fort_pickaxe*:
     #so they can't strip logs
     #added this check because for some reason denizen thinks this even is "on player right clicks entity"
