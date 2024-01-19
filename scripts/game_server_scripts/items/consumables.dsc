@@ -174,7 +174,7 @@ fort_item_bandages:
     custom_model_data: 6
     hides: ALL
   flags:
-    rarity: uncommon
+    rarity: common
     chance: 17.6
     floor_weight: 3.25
     floor_qty: 10
