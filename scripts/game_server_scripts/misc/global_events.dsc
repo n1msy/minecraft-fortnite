@@ -78,6 +78,12 @@ fort_global_handler:
       - determine passively cancelled
       - stop
 
+    #-negate bush damage
+    - if <player.has_flag[fort.bush]>:
+      - determine passively cancelled
+      - run fort_consumable_handler.remove_bush
+      - stop
+
     #-fall damage ignores shield
     - if <context.cause> == FALL:
       - if <[e].has_flag[fort.using_glider]>:

@@ -4,17 +4,6 @@ fort_consumable_handler:
   definitions: data
   events:
 
-    #-Bush handler (any damage they take is negated once)
-    on player damaged flagged:fort.bush priority:-10:
-    #- narrate "<&c>Player damage was negated. This is a debug message. If you see this still, please remind Nimsy to change it."
-    - define bush <player.flag[fort.bush]>
-    - define loc <[bush].location>
-
-    - playsound <[loc]> sound:BLOCK_SWEET_BERRY_BUSH_BREAK pitch:0.9 volume:1.5
-    - playeffect effect:TOTEM at:<[loc]> offset:0.3 quantity:15 data:0.35 visibility:100
-    - remove <[bush]>
-    - flag player fort.bush:!
-
     on player left clicks block with:fort_item_bush|fort_item_bandages|fort_item_medkit|fort_item_small_shield_potion|fort_item_shield_potion flagged:!fort.consuming:
     - determine passively cancelled
     - if <player.has_flag[fort.item_dropped]>:
@@ -165,6 +154,16 @@ fort_consumable_handler:
 
     - flag player fort.bush:!
     - remove <[bush]> if:<[bush].is_spawned>
+
+  #-Handled in "on entity damaged" in global_events.dsc
+  remove_bush:
+    - define bush <player.flag[fort.bush]>
+    - define loc <[bush].location>
+
+    - playsound <[loc]> sound:BLOCK_SWEET_BERRY_BUSH_BREAK pitch:0.9 volume:1.5
+    - playeffect effect:TOTEM at:<[loc]> offset:0.3 quantity:15 data:0.35 visibility:100
+    - remove <[bush]>
+    - flag player fort.bush:!
 
 ## Heals
 fort_item_bandages:
