@@ -19,7 +19,9 @@ fort_lobby_handler:
 
     ## - [ MOTD ] - ##
     on proxy server list ping:
-    - determine passively "MOTD:                 <&b><&k><&l>k<&r> <&f><&l>» <element[<&l>NIMBUS].color_gradient[from=#ffc800;to=#ffea9c]> <&f><&l>« <&b><&k><&l>k<&r><&r><&nl>    <&b><&l>NIMNITE <&7>test run on Jan. <&f>19<&7>, <&f>6 PM<&7> PST!"
+
+    - define motd "                  <&b><&k><&l>k<&r> <&f><&l>» <element[<&l>NIMBUS].color_gradient[from=#ffc800;to=#ffea9c]> <&f><&l>« <&b><&k><&l>k<&r><&r><&nl>           <&b><&l>NIMNITE <&7>test run in <&f><time[2024/01/20_2:00:00].duration_since[<util.time_now>].formatted><&7>!"
+    - determine passively MOTD:<[motd]>
     - determine passively max_players:420
     #on player damaged:
     #- determine cancelled
@@ -173,7 +175,7 @@ fort_lobby_handler:
     # - (temp whitelist) - #
     on player prelogin:
     - define name <context.name>
-    - if <server.flag[whitelist].contains[<[name]>]>:
+    - if !<server.has_flag[whitelist]> || <server.flag[whitelist].contains[<[name]>]>:
       - stop
     - define msg "<n><n><n><&f>Sup gamer.<n><n>A <element[test run].color_gradient[from=#FF5000;to=#0000FF;style=hsb]><&r> for my
                   <&o>new project<&r> will be announced <&e>really soon<&r>,<n>so I'm getting the server ready for it.
