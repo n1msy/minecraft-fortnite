@@ -100,7 +100,7 @@ fort_global_handler:
         - if <[e].health.sub[<[damage]>]> <= 0:
           - adjust <[e]> health:0
         #-shield break sfx
-        - playsound <player> sound:BLOCK_GLASS_BREAK pitch:1.5
+        - playsound <player> sound:BLOCK_GLASS_BREAK pitch:1.5 volume:1.4
 
     - if <[e].is_player>:
       - playsound <[e]> sound:ITEM_ARMOR_EQUIP_LEATHER pitch:2

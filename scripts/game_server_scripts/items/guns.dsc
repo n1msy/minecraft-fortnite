@@ -331,6 +331,7 @@ fort_gun_handler:
         - else:
           - inject fort_gun_handler.fire
 
+        #for guns with multiple pellets at once (ie shot guns)
         - if <[hit_targets].exists>:
           - foreach <[hit_targets]> as:h_target:
             - define color <&f>
@@ -340,6 +341,9 @@ fort_gun_handler:
               - define color <&e>
               #crisp headshot sound effect
               - playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:1.5
+            - if <[h_target].armor_bonus||0> > 0:
+              - define color <&b>
+
               #multiply the damage to show visually that it's in the 100 scale
             - run fort_global_handler.damage_indicator def:<map[damage=<[hit_data.<[h_target]>.damage].mul[5].round>;entity=<[h_target]>;color=<[color]>]>
 
@@ -503,7 +507,7 @@ fort_gun_handler:
             - if <[body_part]> == Head:
               - define color <&e>
               - playsound <player> sound:BLOCK_AMETHYST_BLOCK_BREAK pitch:1.5
-            - if <[target].armor_bonus||0> >= 0:
+            - if <[target].armor_bonus||0> > 0:
               - define color <&b>
             - adjust <[target]> no_damage_duration:0
             #multiple pellets uses slightly different logic for the damage_indicator, so you findout when you check if <[hit_targets]> exists
