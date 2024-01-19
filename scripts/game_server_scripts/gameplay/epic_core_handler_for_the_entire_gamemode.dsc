@@ -2,7 +2,7 @@
 
 #todo:
 ##SET THE VICTORY FLAGS
-##
+
 fort_core_handler:
   type: task
   debug: false
