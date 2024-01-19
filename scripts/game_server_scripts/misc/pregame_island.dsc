@@ -282,7 +282,18 @@ pregame_island_handler:
 
       - wait 1s
       - define players <server.online_players_flagged[fort]>
-      - if <[players].size> < <[min_players]>:
+
+      # - [ Force start mechanism ] - #
+      #it's a little copy pasta, but i dont really care rn
+      - if <server.has_flag[fort.temp.force_start]> && <[players].size> < 2:
+        - bossbar update fort_info title:<proc[spacing].context[50]><&chr[A004].font[icons]><proc[spacing].context[-72]><&l><element[WAITING FOR PLAYERS].font[lobby_text]> color:YELLOW players:<[players]>
+        - sidebar set_line scores:5 values:<element[<[clock_icon]> -].font[hud_text].color[<color[50,0,0]>]> players:<[players]>
+
+        - flag server fort.temp:!
+        #so this flag isn't removed (probably a better way to do this but eh)
+        - flag server fort.temp.available
+        - stop
+      - else if <[players].size> < <[min_players]>:
         - bossbar update fort_info title:<proc[spacing].context[50]><&chr[A004].font[icons]><proc[spacing].context[-72]><&l><element[WAITING FOR PLAYERS].font[lobby_text]> color:YELLOW players:<[players]>
         - sidebar set_line scores:5 values:<element[<[clock_icon]> -].font[hud_text].color[<color[50,0,0]>]> players:<[players]>
 

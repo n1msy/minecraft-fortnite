@@ -117,6 +117,7 @@ fort_pic_handler:
     - stop if:<[mat].contains_text[door]||false>
     - determine passively cancelled
     - ratelimit <player> 1t
+    #add a cast SPEED_DIGGING somewhere here?
 
     #infinite durability
     on fort_pickaxe* takes damage:

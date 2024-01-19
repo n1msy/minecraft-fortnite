@@ -29,7 +29,7 @@ fort_global_handler:
     #do the same for pregame island
 
     - if <[unexpected].exists>:
-      - announce to_console "<&b>[Nimnite]<&r> Unexpected server shutdown. Restarting server..."
+      - announce to_console "<&b>[Nimnite]<&r> Unexpected server shutdown..."
       #- adjust server restart
 
     #-only show teammates in tablist?
