@@ -236,7 +236,7 @@ fort_gun_handler:
 
     on player right clicks block with:gun_*:
     - if <context.location.material.name.contains_text[door]||false>:
-      - cast SPEED amplifier:-4 duration:9999s no_icon no_ambient hide_particles
+      - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
       - stop
     - determine passively cancelled
     - inject fort_gun_handler.use_gun
