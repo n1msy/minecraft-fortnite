@@ -136,8 +136,11 @@ fort_gun_handler:
 
     on player drops gun_*:
     #so players can't drop their gun while scoped
+    #do this^ OR let them drop the gun and just change the gun model data back to what it was?
     - if <player.has_flag[fort.gun_scoped]>:
       - determine passively cancelled
+      #flag so reload event doesn't fire
+      - flag player fort.dropped_gun duration:1t
       - stop
 
     - wait 1t
@@ -213,6 +216,7 @@ fort_gun_handler:
     on player left clicks block with:gun_*:
     - determine passively cancelled
     - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
+    - stop if:<player.has_flag[fort.dropped_gun]>
 
     - define gun <context.item>
     - define loaded_ammo <server.flag[fort.temp.<[gun].flag[uuid]>.loaded_ammo]>
