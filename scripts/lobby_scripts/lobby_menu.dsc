@@ -483,12 +483,14 @@ fort_lobby_handler:
       - case invite_button:
         - define button <player.flag[fort.menu.invite_button_entity]>
         - run fort_lobby_handler.press_anim def.button:<[button]> def.size_data:<map[to=<location[1.15,1.15,1.15]>;back=<location[0.75,0.75,0.75]>]>
+        - if !<player.has_flag[fort.menu.party_invite_msg]>:
+          - narrate "<[beta_tag]> <&e>Party system coming soon."
+          - flag player fort.menu.party_invite_msg duration:3s
+        #- define beta_tag <element[<&b><&lb>Pre-Alpha<&rb>].on_hover[<&e>Party system is in pre-alpha.<n><&7>I sorta rushed to add this, so this whole thing is temp.]>
+        #- narrate "<[beta_tag]> <&7>Enter player to invite:"
 
-        - define beta_tag <element[<&b><&lb>Pre-Alpha<&rb>].on_hover[<&e>Party system is in pre-alpha.<n><&7>I sorta rushed to add this, so this whole thing is temp.]>
-        - narrate "<[beta_tag]> <&7>Enter player to invite:"
-
-        - title "title:<&e>Invite Player" "subtitle:<&7>Type username in chat." fade_in:0.25 stay:2 fade_out:0.25
-        - flag player fort.invite_player duration:30s
+        #- title "title:<&e>Invite Player" "subtitle:<&7>Type username in chat." fade_in:0.25 stay:2 fade_out:0.25
+        #- flag player fort.invite_player duration:30s
         #- wait 10s
         #- if !<player.has_flag[fort.invite_player]>:
         #  - narrate "<[beta_tag]> <&7>Player invite submission expired."
