@@ -2,7 +2,7 @@ nimnite_config:
   type: data
   #default: 60
   minimum_players: 25
-  maximum_players: 100
+  maximum_players: 25
 
   #how much mats players get
   harvesting_multiplier: 1
