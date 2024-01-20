@@ -36,7 +36,7 @@ fort_death_handler:
     - flag player fort.left_match
 
     on player damaged by VOID flagged:fort:
-    - determine passively cancelled
+    #- determine passively cancelled
     - hurt <player.health> cause:VOID
 
     #don't run it, instead kill them with VOID cause, so the death message is correct
