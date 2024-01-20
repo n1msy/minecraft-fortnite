@@ -10,6 +10,9 @@ nimnite_config:
   #available versions: 1, 2
   bus_view_mode: 2
 
+  priority_queue:
+    - Nimsy
+
   materials:
     wood:
       hp: 150

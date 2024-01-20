@@ -10,6 +10,9 @@ fort_queue_handler:
     ##create events on server shutdown to safely reset the lobby
 
     on tick:
+
+      - define priority_queue <script[nimnite_config].data_key[priority_queue]>
+
       - define tick <context.tick>
 
     ## - [ Lobby Button Selection ] - ##
@@ -77,8 +80,26 @@ fort_queue_handler:
           #timer resets hourly (meaning it can't go past an hour)
           - adjust <[match_info]> text:<[text]>
 
+          #priority queue joins after 1
+          - if <[priority_queue].contains[<[player].name>]> && <[secs_in_queue]> >= 2 && <[available_servers].any>:
+            ##this is an exact copy from the if check below (i had to add it in a rush, clean up later)
+            #get the server with the most players
+            #instead of finding the server for each player, update the count within the queue while still having this def so the definition doesnt have to constantly be redefined?
+            - define server_to_join <[<[mode]>_servers].parse_tag[<[parse_value]>/<server.flag[fort.available_servers.<[mode]>.<[parse_value]>.players].size||0>].sort_by_number[parse[after[/]]].reverse.first.before[/]>
+
+            #this flag is so the foreach doesn't include the "joining" players, in case it takes a minute
+            - flag <[player]> fort.joining_match
+            - adjust <[player]> send_to:<[server_to_join]>
+            #make a waituntil the player is no longer on this server?
+            #-should i do it this way, or is it just safer to check in the bungee event
+            #one perk of doing it directly on the server is that the flag is basically instant, unlike a bungeerun, making it safe to check
+            #if there are enough players waiting on the other server.
+            #one way to counter this if i wanted to use bungeerun is to add a delay before checking for available players?
+            - flag server fort.available_servers.<[mode]>.<[server_to_join]>.players:->:<[player]>
+
           #only send players after waiting at least 5 seconds
-          - if <[secs_in_queue]> >= 6 && <[available_servers].any>:
+          ##change from 6 to 10 temporarily
+          - else if <[secs_in_queue]> >= 10 && <[available_servers].any>:
 
             #get the server with the most players
             #instead of finding the server for each player, update the count within the queue while still having this def so the definition doesnt have to constantly be redefined?
