@@ -64,8 +64,6 @@ build_toggle:
     - adjust <player> item_slot:1
     - inventory clear
 
-
-
     #text color
     - define tc <color[71,0,0]>
     #bracket color
@@ -108,15 +106,19 @@ build_toggle:
 
       - if <player.has_flag[build.edit_mode]>:
         - define tile             <player.flag[build.edit_mode.tile]>
-        - define tile_center      <[tile].center.flag[build.center]>
-        - define tile_blocks      <[tile].blocks.filter[flag[build.center].equals[<[tile_center]>]].filter[material.name.equals[air].not]>
-        - define edited_blocks    <[tile_blocks].filter[has_flag[build.edited]]>
-        - define nonedited_blocks <[tile_blocks].exclude[<[edited_blocks]>]>
+        - define tile_center      <[tile].center.flag[build.center]||null>
+        #null fallback in case the tile their trying to edit broke
+        - if <[tile_center]> == null:
+          - run build_edit.toggle
+        - else:
+          - define tile_blocks      <[tile].blocks.filter[flag[build.center].equals[<[tile_center]>]].filter[material.name.equals[air].not]>
+          - define edited_blocks    <[tile_blocks].filter[has_flag[build.edited]]>
+          - define nonedited_blocks <[tile_blocks].exclude[<[edited_blocks]>]>
 
-        - define text "<[confirm_txt]> <[reset_txt]>"
+          - define text "<[confirm_txt]> <[reset_txt]>"
 
-        - debugblock <[edited_blocks]>    d:2t color:0,0,0,150
-        - debugblock <[nonedited_blocks]> d:2t color:45,167,237,150
+          - debugblock <[edited_blocks]>    d:2t color:0,0,0,150
+          - debugblock <[nonedited_blocks]> d:2t color:45,167,237,150
 
       - else if <[type]> != null:
         - define block_looking_at <player.eye_location.ray_trace[return=block;range=4.5;default=air]>
