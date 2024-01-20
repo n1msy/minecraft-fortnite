@@ -49,14 +49,6 @@ get_existing_blocks:
     #deduplicate in case the blocks met both criteria of definitions
     - determine <[non_air_blocks].include[<[world_build_blocks]>].deduplicate>
 
-find_nearby_tiles:
-  type: procedure
-  debug: false
-  definitions: center|tile
-  script:
-    - determine <[center].find_blocks_flagged[build.center].within[5].parse[flag[build.center]].filter[has_flag[build.natural].not].parse[flag[build.structure]].deduplicate.exclude[<[tile]>]>
-
-
 find_nodes:
   type: procedure
   definitions: center|type
@@ -87,15 +79,6 @@ find_nodes:
 
     #deduplcating, because for example a floor next to a stair will pass all 4 checks for a node
     - determine <[nodes].deduplicate>
-
-get_surrounding_tiles:
-  type: procedure
-  definitions: tile|center
-  debug: false
-  script:
-    - define nearby_tiles <[center].find_blocks_flagged[build.center].within[5].filter[flag[build.center].has_flag[build.natural].not].filter[flag[build.center].has_flag[build.structure]].parse[flag[build.center].flag[build.structure]].deduplicate.exclude[<[tile]>]>
-    - define connected_tiles <[nearby_tiles].filter[intersects[<[tile]>]]>
-    - determine <[connected_tiles].sort_by_value[y]>
 
 #-if it's connected to a piece of TERRAIN (non build structure), it's a root
 #-and DOESN'T rely on another tile to stay "intact"
