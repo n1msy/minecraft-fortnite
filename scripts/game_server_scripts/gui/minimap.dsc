@@ -25,14 +25,6 @@ minimap:
     - define loc <player.location.round>
     - define yaw <[loc].yaw>
 
-    # just so you know, adding characters before/and after the title does change the offset. who would've guessed /s
-    - bossbar update <[bb]> title:<[title]> color:YELLOW
-    - bossbar update <[bb]>_yaw title:<[yaw].color[65,0,0]><proc[spacing].context[-<[spacing]>]><[yaw_icon]><proc[spacing].context[<[spacing]>]> color:YELLOW
-
-    - if <[loop_index].mod[5]> != 0:
-      - wait 1t
-      - while next
-
     #-marker
     - define marker_red   <[yaw].is[LESS].than[0].if_true[<[yaw].add[360]>].if_false[<[yaw]>].div[360].mul[255]>
     #this is minimap marker
@@ -171,8 +163,12 @@ minimap:
     - define spacing <map[1=7;2=10;3=13].get[<[yaw].length>]>
     #or: <element[16].sub[<[yaw].length.mul[3]>]>
 
+    # just so you know, adding characters before/and after the title does change the offset. who would've guessed /s
+    - bossbar update <[bb]> title:<[title]> color:YELLOW
+    - bossbar update <[bb]>_yaw title:<[yaw].color[65,0,0]><proc[spacing].context[-<[spacing]>]><[yaw_icon]><proc[spacing].context[<[spacing]>]> color:YELLOW
+
     - inject minimap.tab
-    - wait 1t
+    - wait 5t
 
   - flag player fort.minimap:!
   - if <server.current_bossbars.contains[<[bb]>]>:
