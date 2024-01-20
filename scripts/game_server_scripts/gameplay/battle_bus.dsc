@@ -69,7 +69,7 @@ fort_bus_handler:
         - define lucky_one <[not_chosen_players_on_bus].random>
         - adjust <[current_p_npc]> skin_blob:<[lucky_one].skin_blob>
         #doing this mech in case name shows again
-        - adjust <[p_npc]> name_visible:false
+        - adjust <[current_p_npc]> name_visible:false
         - flag <[current_p_npc]> fort.passenger_uuid:<[lucky_one].uuid>
     # -
     - take slot:9 from:<[player].inventory>
