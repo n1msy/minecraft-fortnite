@@ -272,7 +272,7 @@ fort_core_handler:
     - define winners <server.online_players_flagged[fort].filter[scoreboard_team_name.equals[<[winning_team]>]]>
 
     #winning title
-    - title title:<&chr[10].font[icons].color[<color[77,0,0]>]> fade_in:0 fade_out:0 stay:10m targets:<[winners]>
+    - title title:<&chr[10].font[icons].color[<color[77,0,0]>]> fade_in:0 fade_out:0 stay:1m targets:<[winners]>
     - playsound <[winners]> sound:ENTITY_PLAYER_LEVELUP pitch:0
 
     - flag <[winners]> fort.winner
