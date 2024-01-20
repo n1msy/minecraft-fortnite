@@ -227,7 +227,7 @@ fort_item_handler:
       - flag player build:!
 
     #so clickable shit in the inventory doesn't drop
-    - define drops <[drops].filter[has_flag[action].not].filter[has_flag[type].not]>
+    - define drops <[drops].filter[has_flag[action].not].filter[has_flag[type]]>
 
     #turn any scoped guns back into unscoped
     - if <player.has_flag[fort.gun_scoped]>:

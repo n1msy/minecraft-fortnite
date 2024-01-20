@@ -36,7 +36,7 @@ fort_death_handler:
     - flag player fort.left_match
 
     on player damaged by VOID flagged:fort:
-    - determine passively cancelled
+    #- determine passively cancelled
     - hurt <player.health> cause:VOID
 
     #don't run it, instead kill them with VOID cause, so the death message is correct
@@ -103,7 +103,7 @@ fort_death_handler:
       - define placement <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].size>
       - define placement_text "<&l>YOU PLACED <&r>#<&e><&l><[placement]>"
       #- bossbar update fort_info title:<[placement_text]> color:YELLOW players:<player>
-      - title subtitle:<[placement_text]> fade_in:0t stay:10s fade_out:10t
+      - title subtitle:<[placement_text]> fade_in:0t stay:15s fade_out:10t
 
     #-Update alive players (players left)
     #excluding killer, since their hud updates already in .death

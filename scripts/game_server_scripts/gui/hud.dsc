@@ -177,7 +177,7 @@ hud_handler:
     - define gun      <player.item_in_hand>
     - define gun_uuid <[gun].flag[uuid]>
     - if <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]> == 0:
-      - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
+      - run fort_gun_handler.reload def:<map[gun=<[gun]>;auto_reload=true]>
 
   update_inventory:
 
