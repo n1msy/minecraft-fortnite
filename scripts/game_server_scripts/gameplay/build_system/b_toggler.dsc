@@ -148,6 +148,10 @@ build_toggle:
           #- if !<[final_center].has_flag[build.center]> || !<list[pyramid|stair].contains[<[final_center].flag[build.center].flag[build.type]>]> || <list[pyramid|stair].contains[<[type]>]>:
             #- define can_build False
 
+        ##optimization thing: maybe check if it's false, dont look for anything else?
+
+        - define too_far False
+
         #-so you can't place tiles over other tiles
         #checks are so:
           #you can place walls around stairs and pyramids (in that order)
@@ -163,13 +167,20 @@ build_toggle:
         - if <[type]> == FLOOR && <[final_center].material.name> != AIR && !<list[polished_blackstone_slab|blackstone_slab].contains[<[final_center].material.name>]>:
           - define can_build False
 
+        #-so you can't place builds mid-air (which happens sometimes?)
+        - if !<proc[is_root].context[<[final_center]>|<[type]>]> && <proc[find_nodes].context[<[final_center]>|<[type]>].is_empty>:
+          - define can_build False
+          #using too_far, so the tile visualiser doesn't show
+          - define too_far True
+
         #-you can't place builds on natural structures
         - if <[tile].blocks.filter[has_flag[build.center]].filter[flag[build.center].has_flag[build.natural]].any>:
           - define can_build False
 
+
         #-so you can't place builds too far away
-        - define too_far False
-        - if <[final_center].distance[<player.eye_location>]> > 5:
+        - define distance_check <map[floor=5.5;wall=6.5;stair=6;pyramid=5.5].get[<[type]>]>
+        - if <[final_center].distance[<player.eye_location>]> > <[distance_check]>:
           - define can_build False
           - define too_far True
 

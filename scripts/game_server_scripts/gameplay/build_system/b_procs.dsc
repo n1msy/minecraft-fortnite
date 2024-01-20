@@ -63,12 +63,12 @@ find_nodes:
         - define check_locs <list[<[center].left[2]>|<[center].right[2]>|<[center].above[2]>|<[center].below[2]>]>
       #center of a 2,2,2
       - case stair:
+        #check locs are based on yaw, so only checking for only yaw coords (forward and backwards)
         - define check_locs <list[<[center].backward_flat[2].below[2]>|<[center].left[2]>|<[center].right[2]>|<[center].forward_flat[2].above[2]>]>
       #center of a 2,2,2
       - case pyramid:
         - define bottom_center <[center].below[2]>
         - define check_locs <list[<[bottom_center].left[2]>|<[bottom_center].right[2]>|<[bottom_center].forward_flat[2]>|<[bottom_center].backward_flat[2]>]>
-
 
     - define nodes <list[]>
     - foreach <[check_locs]> as:loc:
@@ -79,6 +79,44 @@ find_nodes:
 
     #deduplcating, because for example a floor next to a stair will pass all 4 checks for a node
     - determine <[nodes].deduplicate>
+
+find_closest_center:
+  type: procedure
+  debug: false
+  definitions: closest_center|target_loc
+  script:
+    #"top" right (from top down view)
+    - define corners:->:<[closest_center].add[2,0,2]>
+    #top left
+    - define corners:->:<[closest_center].add[-2,0,2]>
+    #bottom right
+    - define corners:->:<[closest_center].add[2,0,-2]>
+    #bottom left
+    - define corners:->:<[closest_center].add[-2,0,-2]>
+
+    #here's where we look for the correct y height if any
+    #doing this instead of find_blocks.within[5] reduces the blocks checked from 125 to 24
+    - define total_corners:|:<[corners].parse[above[2]]>
+    - define total_corners:|:<[corners].parse[above[1]]>
+    - define total_corners:|:<[corners]>
+    - define total_corners:|:<[corners].parse[below[1]]>
+    - define total_corners:|:<[corners].parse[below[2]]>
+    - define total_corners:|:<[corners].parse[below[3]]>
+
+    - foreach <[total_corners]> as:c:
+      - if <[c].has_flag[build.center]> && <[c].material.name> != air && !<[c].flag[build.center].has_flag[build.natural]>:
+        - define center <[c].flag[build.center]>
+        - define type   <[center].flag[build.type]>
+
+        #- if <[type]> == wall:
+        #- define pitch <[eye_loc].forward[2.5].y.is[OR_MORE].than[<[target_bottom_center].y>].if_true[-90].if_false[90]>
+        #- define final_center <[target_bottom_center].with_pitch[<[pitch]>].forward[2]>
+
+        - define nearby_centers:->:<[center]>
+
+    - define nearest_center <[nearby_centers].sort_by_number[distance[<[target_loc]>]].first||null>
+    - determine <[nearest_center]>
+
 
 #-if it's connected to a piece of TERRAIN (non build structure), it's a root
 #-and DOESN'T rely on another tile to stay "intact"

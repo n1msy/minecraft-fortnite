@@ -10,57 +10,66 @@ build_tiles:
   #general stuff required for all builds
   #- calculates where to place the tile
 
-        - define can_build False
+        #basically same as as_root
+        - define is_grounded False
+        - define can_build   False
         - define yaw <map[North=180;South=0;West=90;East=-90].get[<[eye_loc].yaw.simple>]>
-        - define target_loc <[eye_loc].ray_trace[default=air;range=<[range]>]>
+        #.backwards so you can't place tiles if there's a block in front of you (it'll only return the closest tile before that)
+        - define target_loc <[eye_loc].ray_trace[default=air;range=<[range]>].with_yaw[<[yaw]>].backward[0.1]>
         - define x <proc[round4].context[<[target_loc].x>]>
         - define z <proc[round4].context[<[target_loc].z>]>
 
-        # [ ! ] the centers will ALWAYS be the center of a 2x2x2 cuboid and then be changed in their individual structures!
+        - define eye_y <[eye_loc].below[0.85].forward[2].y>
 
-        - define closest_center <[target_loc].with_x[<[x]>].with_z[<[z]>].with_y[<[eye_loc].y.sub[0.5]>]>
+        ## [ ! ] the centers will ALWAYS be the center of a 2x2x2 cuboid and then be changed in their individual structures! ##
 
-        - define grounded_center <[closest_center].with_pitch[90].ray_trace>
-        #in case it lands on something like a stair
-        - if <[grounded_center].below.has_flag[build.center]>:
-          - define grounded_center <[grounded_center].with_y[<[grounded_center].below.flag[build.center].flag[build.structure].min.y>]>
+        - define closest_center <[target_loc].with_x[<[x]>].with_z[<[z]>].with_y[<[target_loc].y>]>
 
-        ##-bypass slabs
-        #only slabs can have this material type
-        #<[grounded_center].material.type||null> == BOTTOM -> check for mat type instead?
-        - if <list[polished_blackstone_slab|blackstone_slab].contains[<[grounded_center].material.name>]>:
-          - define grounded_center <[grounded_center].above>
+        - define closest_tile_center <proc[find_closest_center].context[<[closest_center]>|<[target_loc]>]>
+
+          # - [ Nearest Tile Center ] - #
+        - if <[closest_tile_center]> != null:
+          #setting the y to the BOTTOM CENTER
+          #(for floors it wouldn't make a difference)
+          - if <[eye_y]> > <[closest_tile_center].y>:
+            - define y <[closest_tile_center].flag[build.structure].max.y>
+          - else:
+            - define y <[closest_tile_center].flag[build.structure].min.y>
+
+          #target bottom center = what would be the bottom center of any build that you'd place (not already placed)
+          - define target_bottom_center <[closest_center].with_y[<[y]>].round>
+
+          # - [ Grounded Center ] - #
+          #this only happens when there are no nearby tiles
         - else:
-          #halfway of y would be 4, not 5, since there's overlapping "connectors"
-          - define grounded_center <[grounded_center].above[2]>
+          #doing .backward so the tiles cant be placed *inside* the ground
+          - define grounded_center <[closest_center].with_pitch[90].ray_trace.backward.above>
 
-        #-calculates Y from the ground up
-        - define add_y <proc[round4].context[<[target_loc].forward[2].distance[<[grounded_center]>].vertical.sub[1]>]>
-        - define add_y <[add_y].is[LESS].than[0].if_true[0].if_false[<[add_y]>]>
+          #if it ever happens that grounded_center is on a build & the player has a high enough range for it
+          - define found_tile_center <[grounded_center].below.flag[build.center]||null>
+          - if <[found_tile_center]> != null:
+            - if <[eye_y]> > <[found_tile_center].y>:
+              - define y <[found_tile_center].flag[build.structure].max.y>
+            - else:
+              - define y <[found_tile_center].flag[build.structure].min.y>
+            - define grounded_center <[grounded_center].with_y[<[y]>]>
 
-        - define free_center <[grounded_center].above[<[add_y]>]>
+          #-bypass street slabs
+          - if <list[polished_blackstone_slab|blackstone_slab|bamboo_slab].contains[<[grounded_center].material.name>]>:
+            - define grounded_center <[grounded_center].below[0.5]>
 
-        ##maybe there's a better way to do this too?
-        #if there's a nearby tile, automatically "snap" to it's y level instead of ground up
-        - define nearest_tile <[target_loc].find_blocks_flagged[build.center].within[5].parse[flag[build.center].flag[build.structure]].deduplicate.first||null>
-        - if <[nearest_tile]> != null:
-          - define new_y <[nearest_tile].min.y>
+          - define target_bottom_center <[grounded_center]>
 
-          - define y_levels <list[<[free_center].with_y[<[new_y].add[2]>]>|<[free_center].with_y[<[new_y].add[6]>]>|<[free_center].with_y[<[new_y].sub[2]>]>|<[free_center].with_y[<[new_y].sub[6]>]>]>
 
-          #since all the centers are BOTTOM centers (the original)
-          - define free_center <[y_levels].sort_by_number[distance[<[target_loc]>]].first.round>
 
   wall:
 
-        - define range 1
+        # - these ranges are how FAR to look when placing a tile, it's not being used for the purpose of detecting if the tile is too far or not - #
+        - define range 0.8
         - inject build_tiles
 
-        - define free_center <[free_center].with_yaw[<[yaw]>].forward_flat[2]>
-        - define grounded_center <[grounded_center].with_yaw[<[yaw]>].forward_flat[2]>
-
-        - define connected_tiles <proc[find_nodes].context[<[free_center]>|<[type]>].parse[flag[build.structure]]>
-        - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>].round>
+        - define pitch <[eye_loc].forward[3].y.is[OR_MORE].than[<[target_bottom_center].y>].if_true[-90].if_false[90]>
+        - define final_center <[target_bottom_center].with_yaw[<[yaw]>].forward_flat[2].with_pitch[<[pitch]>].forward[2]>
 
         - choose <[eye_loc].yaw.simple>:
           - case east west:
@@ -73,15 +82,10 @@ build_tiles:
         - define display_blocks <[tile].blocks>
 
   floor:
-
-        - define range 2
+        - define range 3
         - inject build_tiles
 
-        - define free_center <[free_center].below[2]>
-        - define grounded_center <[grounded_center].below[2]>
-
-        - define connected_tiles <proc[find_nodes].context[<[free_center]>|<[type]>].parse[flag[build.structure]]>
-        - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>].round>
+        - define final_center <[target_bottom_center].round>
 
         - define tile <[final_center].to_cuboid[<[final_center]>].expand[2,0,2]>
 
@@ -89,15 +93,11 @@ build_tiles:
 
   stair:
 
-        - define range 3
+        - define range 4
         - inject build_tiles
 
-        #this center is the center that would be anywhere you point (isn't grounded)
-        - define free_center <[free_center].with_yaw[<[yaw]>]>
-        - define grounded_center <[grounded_center].with_yaw[<[yaw]>]>
-
-        - define connected_tiles <proc[find_nodes].context[<[free_center]>|<[type]>].parse[flag[build.structure]]>
-        - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>].round>
+        - define pitch <[eye_loc].forward[2.5].y.is[OR_MORE].than[<[target_bottom_center].y>].if_true[-90].if_false[90]>
+        - define final_center <[target_bottom_center].with_pitch[<[pitch]>].forward[2].with_yaw[<[yaw]>]>
 
         - define tile <[final_center].to_cuboid[<[final_center]>].expand[2]>
 
@@ -108,14 +108,13 @@ build_tiles:
         - define range 3
         - inject build_tiles
 
-        #no need to define free/ground center since no modification is required
-
-        - define connected_tiles <proc[find_nodes].context[<[free_center]>|<[type]>].parse[flag[build.structure]]>
-        - define final_center <[connected_tiles].any.if_true[<[free_center]>].if_false[<[grounded_center]>].round>
+        - define pitch <[eye_loc].forward.y.is[OR_MORE].than[<[target_bottom_center].y>].if_true[-90].if_false[90]>
+        - define final_center <[target_bottom_center].with_pitch[<[pitch]>].forward[2]>
 
         - define tile <[final_center].to_cuboid[<[final_center]>].expand[2]>
 
         - define display_blocks <proc[pyramid_blocks_gen].context[<[final_center]>]>
+
 
 #-injected by: b_actions.dsc
 build_place_tile:
