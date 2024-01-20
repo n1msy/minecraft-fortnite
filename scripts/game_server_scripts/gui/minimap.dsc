@@ -168,7 +168,7 @@ minimap:
     - bossbar update <[bb]>_yaw title:<[yaw].color[65,0,0]><proc[spacing].context[-<[spacing]>]><[yaw_icon]><proc[spacing].context[<[spacing]>]> color:YELLOW
 
     - inject minimap.tab
-    - wait 1t
+    - wait 2t
 
   - flag player fort.minimap:!
   - if <server.current_bossbars.contains[<[bb]>]>:
