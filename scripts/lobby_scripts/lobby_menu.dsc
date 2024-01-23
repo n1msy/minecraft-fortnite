@@ -177,9 +177,13 @@ fort_lobby_handler:
     - define name <context.name>
     - if !<server.has_flag[whitelist]> || <server.flag[whitelist].contains[<[name]>]>:
       - stop
-    - define msg "<n><n><n><&f>Sup gamer.<n><n>A <element[test run].color_gradient[from=#FF5000;to=#0000FF;style=hsb]><&r> for my
-                  <&o>new project<&r> will be announced <&e>really soon<&r>,<n>so I'm getting the server ready for it.
-                  <n><n><n><n>Stay updated on my <&9><&l><&n>Discord<&r> server!<n><n><&b><&n>https://discord.gg/RB5a7WvHeP<&r><n><n>(idk how to make the link clickable rip)"
+      #<time[2024/02/02_20:00:00].duration_since[<util.time_now>].formatted>
+    - define time_left <time[2024/02/02_20:00:00].duration_since[<util.time_now>].formatted_words.to_uppercase.bold>
+    - define msg "<n><n><n><&f>SUP HOMOSAPIEN.<n><n><n><&l>THIS SERVER IS PUBLIC IN <&a><&l><[time_left]><&r>!<n><n><n><n>Meanwhile,
+                  check out my <&e>latest video<&r> about the server on <&c><&l>YouTube<&r>.<n><n>
+                  Stay tuned for some <&e>test runs <&r>this week on my <&5><&l>Twitch<&r>.<n><n><n>
+                  <&c>YouTube.com/Nimsy
+                  <n><&5>Twitch.tv/FlimsyNimsy"
     - determine passively KICKED:<[msg]>
     - announce "<&e>Kicked <&r><[name]><&e>." to_console
 
