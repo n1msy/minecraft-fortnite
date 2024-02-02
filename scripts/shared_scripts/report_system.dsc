@@ -118,7 +118,7 @@ ReportSystem_Create_New_Report:
     - ~mongo id:ReportSystem_MongoDB insert:<[data]> save:mg
     - define mongo_id <entry[mg].inserted_id||null>
 
-    - define chatlogs <[target].chat_history_list.get[1].to[10].escaped||<list[]>>
+    - define chatlogs <[target].chat_history_list.get[1].to[5].escaped||<list[]>>
     - bungeerun backup discord_player_report def:<player.name>|<[target].name>|<[reason]>|<[mongo_id]>|<[chatlogs]>|<bungee.server>
 
     - if <[mongo_id]> == null:
