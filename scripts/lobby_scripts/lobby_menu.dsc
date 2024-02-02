@@ -503,6 +503,20 @@ fort_lobby_handler:
         - define button <player.flag[fort.menu.vid_button]>
         - run fort_lobby_handler.press_anim def.button:<[button]> def.size_data:<map[to=<location[3.5,3.5,3.5]>;back=<location[3,3,3]>]>
 
+        - if !<player.has_flag[fort.vid_button_clicked]>:
+          - flag player fort.vid_button_clicked duration:3s
+
+          - define yt_icon <&r><&chr[13].font[icons]>
+          - define line <&8><element[<&sp>].repeat[44].strikethrough>
+
+          - define text <element[Click here to watch my video!].color[<color[#FFE800]>].on_hover[<&7>Watch Nimsy<&sq>s <&7><&dq><&f>I Made Fortnite in Minecraft<&7><&dq>]>
+          - define text <&click[https://youtu.be/0XbpycV7qbQ?si=_r08btrGwQVgGSVF].type[OPEN_URL]><[text]><&end_click>
+
+
+          - narrate <[line]>
+          - narrate "<n><&a><[yt_icon]> <[text]><n>"
+          - narrate <[line]>
+
   match_info:
     - define info_display <player.flag[fort.menu.match_info]||null>
     - choose <[option]>:
