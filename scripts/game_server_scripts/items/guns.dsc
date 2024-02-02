@@ -867,11 +867,13 @@ fort_gun_handler:
 
     - if !<[cancelled].exists>:
 
+      - define current_loaded_ammo <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
+
       - if <[total_ammo]> < <[mag_size]>:
         - define new_loaded_ammo <[total_ammo]>
       - else:
         - define new_loaded_ammo <[mag_size]>
-      - define new_total_ammo <[total_ammo].sub[<[new_loaded_ammo]>]>
+      - define new_total_ammo <[total_ammo].sub[<[mag_size].sub[<[current_loaded_ammo]>]>]>
 
       - flag server fort.temp.<[gun_uuid]>.loaded_ammo:<[new_loaded_ammo]>
       - flag player fort.ammo.<[ammo_type]>:<[new_total_ammo]>
