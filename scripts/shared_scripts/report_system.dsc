@@ -108,7 +108,10 @@ ReportSystem_Create_New_Report:
     definitions: target|reason
     script:
 
-    - bungeerun backup discord_player_report def:<player.name>|<[target].name>|<[reason]>
+    - ~mongo id:ReportSystem_MongoDB insert:<[data]> save:mg
+    - define mongo_id <entry[mg].inserted_id||null>
+
+    - bungeerun backup discord_player_report def:<player.name>|<[target].name>|<[reason]>|<[mongo_id]>
 
     - if <[mongo_id]> == null:
         - debug error "<&c>ReportSystem: Error while reporting '<[target].name>' at timestamp '<[timestamp]>' by reporter '<player.name>' with reason: <[reason]||None>"
