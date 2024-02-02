@@ -386,9 +386,10 @@ fort_pic_handler:
       #(then "animate" the counter)
       - flag player fort.<[mat]>.qty:+:<[qty]>
 
-
       #the more mats, the faster the frequency
-      - define add_freq <[qty].div[15].round_down>
+      - define add_freq 1
+      - if <[qty]> > 22:
+        - define add_freq <[qty].div[15].round_down>
 
       - repeat <[qty].div[<[add_freq]>].round_down>:
 
@@ -405,6 +406,9 @@ fort_pic_handler:
 
       - define total_qty <player.flag[fort.<[mat]>.qty]>
       - define mat_text <&sp.repeat[<element[3].sub[<[total_qty].length>]>]><[total_qty].font[hud_text]>
+      - define mat_icon <[icon]>
+      - if <player.flag[build.material]||null> == <[mat]>:
+        - define mat_icon <[sel_icon]>
       - define mat_     <element[<[mat_icon]><proc[spacing].context[-32]><[mat_text]>].color[<color[4<[mat#]>,0,0]>]>
       - sidebar set_line scores:<[line]> values:<[mat_]>
 
