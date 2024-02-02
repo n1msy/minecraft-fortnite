@@ -35,8 +35,7 @@ ReportSystem_Connect:
     - inject ReportSystem_Disconnect
     # MongoDB
     - ~mongo id:ReportSystem_MongoDB connect:<secret[report_system_uri]> database:ReportSystem collection:Reports
-    # Discord
-    - ~discordconnect id:ReportSystem_Discord token:<secret[report_system_discord_bot_token]>
+
     # - discordmessage id:ReportSystem_Discord channel:557160153485410324 "Connected to Discord!"
 
 ReportSystem_Disconnect:
@@ -46,9 +45,7 @@ ReportSystem_Disconnect:
     # MongoDB
     - if <util.mongo_connections.contains[ReportSystem_MongoDB]>:
         - mongo id:ReportSystem_MongoDB disconnect
-    # Discord
-    - if <discord_bots.contains[ReportSystem_Discord]>:
-        - ~discord id:ReportSystem_Discord disconnect
+
 
 ReportSystem_Command:
     type: command
@@ -110,24 +107,9 @@ ReportSystem_Create_New_Report:
     debug: false
     definitions: target|reason
     script:
-    - define timestamp <util.current_time_millis>
-    - definemap data:
-        timestamp: <[timestamp]>
-        reporter: <player.name>
-        target: <[target].name>
-        reason: <[reason]||None>
-    - ~mongo id:ReportSystem_MongoDB insert:<[data]> save:mg
-    - define mongo_id <entry[mg].inserted_id||null>
-    - define my_button <discord_button.with_map[style=danger;id=my_button;label=Ban]>
-    - define my_button2 <discord_button.with_map[style=primary;id=my_button2;label=Kick]>
-    - define my_button3 <discord_button.with_map[style=secondary;id=my_button3;label=Mute]>
-    - define view_title "View Recording"
-    - define my_button4 <discord_button.with_map[style=success;id=my_button4;label=<[view_title]>]>
-    - define embed_line1 "**Reason:** <[reason]||None><&nl>**Reporter:** <player.name>"
-    - define embed_line2 "**Time Reported:** <util.time_now.format> (<[timestamp]>)<&nl>**Report ID:** <[mongo_id]>"
-    - define chatlogs <player.chat_history_list.get[1].to[10]||<list[]>>
-    - define chats "**Latest <[chatlogs].size> chat(s) from <[target].name>:**<&nl><[chatlogs].separated_by[<&nl>]>"
-    - discordmessage id:ReportSystem_Discord channel:<script[ReportSystem_Data].data_key[config.channel_report_post]> rows:<[my_button]>|<[my_button2]>|<[my_button3]>|<[my_button4]> embed:<discord_embed[title=Mwthorn;description=<[embed_line1]><&nl><[embed_line2]><&nl><[chats]>]>
+
+    - bungeerun backup discord_player_report def:<player.name>|<[target].name>|<[reason]>
+
     - if <[mongo_id]> == null:
         - debug error "<&c>ReportSystem: Error while reporting '<[target].name>' at timestamp '<[timestamp]>' by reporter '<player.name>' with reason: <[reason]||None>"
         - define finish_report false
