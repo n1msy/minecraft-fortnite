@@ -115,6 +115,9 @@ fort_lobby_handler:
     - waituntil <world[fort_lobby].if_null[false]> max:10s
     #-in case the server crashed/it was incorrectly shut down
 
+    - ~mongo id:nimnite_playerdata connect:<secret[nimbus_db]> database:Nimnite collection:Playerdata
+    - narrate "<&b>[Nimnite]<&r> Connected to Nimnite database."
+
     - remove <world[fort_lobby].entities[item_display|text_display|npc]>
     - run fort_lobby_setup
     - narrate "<&b>[Nimnite]<&r> The lobby is now set up."
@@ -229,6 +232,14 @@ fort_lobby_handler:
     - if <[current_hash]> != <[new_hash]>:
       - flag server fort.resourcepack.hash:<[new_hash]>
       - announce "<&b>[<bungee.server>]<&r> Cached new resourcepack hash <&8>(<&7><[new_hash]><&8>)<&r>." to_console
+
+    # - [ Add player to DB if haven't already ] - #
+    - if !<server.flag[fort.joined_players].contains[<player>]||false>:
+
+      ##add player to mongo database
+      - flag server fort.joined_players:->:<player>
+
+    ##save the player's skull_skin data
 
     #- [ ! ] Warning: RP is being downloaded every time players join lobby server (even when returning from game)
     #can be fixed with new snapshot stuff from 1/18/23

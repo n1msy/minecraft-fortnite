@@ -34,7 +34,7 @@ ReportSystem_Connect:
     script:
     - inject ReportSystem_Disconnect
     # MongoDB
-    - ~mongo id:ReportSystem_MongoDB connect:<secret[report_system_uri]> database:ReportSystem collection:Reports
+    - ~mongo id:ReportSystem_MongoDB connect:<secret[nimbus_db]> database:ReportSystem collection:Reports
 
     # - discordmessage id:ReportSystem_Discord channel:557160153485410324 "Connected to Discord!"
 
