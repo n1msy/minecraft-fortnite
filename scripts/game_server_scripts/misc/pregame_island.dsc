@@ -35,6 +35,11 @@ pregame_island_handler:
     - announce "-------------------- [ <&b>NIMNITE GAME SERVER STARTUP <&r>] --------------------" to_console
 
 
+    #connect to db
+    - ~mongo id:nimnite_playerdata connect:<secret[nimbus_db]> database:Nimnite collection:Playerdata
+    - announce "<&b>[Nimnite]<&r> Connected to the Nimbus database with id <&dq><&a>nimnite_playerdata<&r><&dq>" to_console
+
+
     - if <util.has_file[../../nimnite_map]>:
       - ~createworld nimnite_map
       #-in case server was shut down during bus phase
