@@ -385,14 +385,14 @@ fort_pic_handler:
       #first add the mat (so they can place it instantly)
       #(then "animate" the counter)
       - flag player fort.<[mat]>.qty:+:<[qty]>
-      #doesn't work well
-      #19,20,21
-      #- define item      <map[wood=oak_log;brick=bricks;metal=iron_block].get[<[mat]>].as[item]>
-      #- define item_slot <map[wood=19;brick=20;metal=21].get[<[mat]>]>
-      #- inventory set o:<[item].with[quantity=<player.flag[fort.<[mat]>.qty]>]> slot:<[item_slot]>
-      - repeat <[qty]>:
 
-        - define mat_qty  <[current_qty].add[<[value]>]>
+
+      #the more mats, the faster the frequency
+      - define add_freq <[qty].div[15].round_up>
+
+      - repeat <[qty].div[<[add_freq]>].round_up>:
+
+        - define mat_qty  <[current_qty].add[<[add_freq].mul[<[value]>]>]>
         - define mat_icon <[icon]>
         - if <player.flag[build.material]||null> == <[mat]>:
           - define mat_icon <[sel_icon]>
