@@ -488,7 +488,7 @@ fort_lobby_handler:
         - define button <player.flag[fort.menu.invite_button_entity]>
         - run fort_lobby_handler.press_anim def.button:<[button]> def.size_data:<map[to=<location[1.15,1.15,1.15]>;back=<location[0.75,0.75,0.75]>]>
         - if !<player.has_flag[fort.menu.party_invite_msg]>:
-          - narrate "<[beta_tag]> <&e>Party system coming soon."
+          - narrate "<[beta_tag]||<empty>> <&e>Party system coming soon."
           - flag player fort.menu.party_invite_msg duration:3s
         #- define beta_tag <element[<&b><&lb>Pre-Alpha<&rb>].on_hover[<&e>Party system is in pre-alpha.<n><&7>I sorta rushed to add this, so this whole thing is temp.]>
         #- narrate "<[beta_tag]> <&7>Enter player to invite:"
@@ -502,6 +502,20 @@ fort_lobby_handler:
       - case vid_button:
         - define button <player.flag[fort.menu.vid_button]>
         - run fort_lobby_handler.press_anim def.button:<[button]> def.size_data:<map[to=<location[3.5,3.5,3.5]>;back=<location[3,3,3]>]>
+
+        - if !<player.has_flag[fort.vid_button_clicked]>:
+          - flag player fort.vid_button_clicked duration:3s
+
+          - define yt_icon <&r><&chr[13].font[icons]>
+          - define line <&8><element[<&sp>].repeat[44].strikethrough>
+
+          - define text <element[Click here to watch my video!].color[<color[#FFE800]>].on_hover[<&7>Watch Nimsy<&sq>s <&7><&dq><&f>I Made Fortnite in Minecraft<&7><&dq>]>
+          - define text <&click[https://youtu.be/0XbpycV7qbQ?si=_r08btrGwQVgGSVF].type[OPEN_URL]><[text]><&end_click>
+
+
+          - narrate <[line]>
+          - narrate "<n><&a><[yt_icon]> <[text]><n>"
+          - narrate <[line]>
 
   match_info:
     - define info_display <player.flag[fort.menu.match_info]||null>

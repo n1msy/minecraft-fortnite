@@ -31,7 +31,7 @@ fort_queue_handler:
 
         #play button animation every 8 seconds
         - define play_button <[p].flag[fort.menu.play_button]>
-        - if <[loop_index].div[20].mod[8]> == 0:
+        - if <[tick].div[20].mod[8]> == 0:
           #not doing second check in same line, so it doesn't have to define every tick
           - define play_button <[p].flag[fort.menu.play_button]>
           - if !<[play_button].has_flag[selected]> && !<[p].has_flag[fort.in_queue]>:
