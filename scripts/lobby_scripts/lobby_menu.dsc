@@ -23,8 +23,13 @@ fort_lobby_handler:
     - define motd "                  <&b><&k><&l>k<&r> <&f><&l>» <element[<&l>NIMBUS].color_gradient[from=#ffc800;to=#ffea9c]> <&f><&l>« <&b><&k><&l>k<&r><&r><&nl>   <&b><&l>NIMNITE <&7>test run in <&a>COMPLETE<&7>. <&r>Tysm everyone!"
     - determine passively MOTD:<[motd]>
     - determine passively max_players:420
-    #on player damaged:
-    #- determine cancelled
+
+    ###NEW MOTD
+    - stop
+
+    - define motd "                  <&b><&k><&l>k<&r> <&f><&l>» <element[<&l>NIMBUS].color_gradient[from=#ffc800;to=#ffea9c]> <&f><&l>« <&b><&k><&l>k<&r><&r><&nl>           <&b><&l>NIMNITE <&e><&l>DEMO <&7>is now open!"
+    - determine passively MOTD:<[motd]>
+    - determine passively max_players:420
 
     ## - [ Invite System (temporary) ] - ##
     on player chats flagged:fort.invite_player priority:-1:
@@ -178,14 +183,24 @@ fort_lobby_handler:
     - if !<server.has_flag[whitelist]> || <server.flag[whitelist].contains[<[name]>]>:
       - stop
       #<time[2024/02/02_20:00:00].duration_since[<util.time_now>].formatted>
-    - define time_left <time[2024/02/02_20:00:00].duration_since[<util.time_now>].formatted_words.to_uppercase.bold>
+    - define time_left <&l><time[2024/02/03_2:00:00].duration_since[<util.time_now>].formatted_words.to_uppercase>
     - define msg "<n><n><n><&f>SUP HOMOSAPIEN.<n><n><n><&l>THIS SERVER IS PUBLIC IN <&a><&l><[time_left]><&r>!<n><n><n><n>Meanwhile,
                   check out my <&e>latest video<&r> about the server on <&c><&l>YouTube<&r>.<n><n>
                   Stay tuned for some <&e>test runs <&r>this week on my <&5><&l>Twitch<&r>.<n><n><n>
+                  <&o><&b>Yo, I messed up the timer for the server, it was actually supposed to be at 6 PM PST, not 12 PM. Oops...<n><n>
                   <&c>YouTube.com/Nimsy
                   <n><&5>Twitch.tv/FlimsyNimsy"
     - determine passively KICKED:<[msg]>
     - announce "<&e>Kicked <&r><[name]><&e>." to_console
+
+    ####NEW KICK MESSAGE
+    - stop
+
+    - if <server.online_players.size> >= <script[nimnite_config].data_key[max_lobby_players]>:
+      - if <[name]> in Nimsy|Mwthorn:
+        - stop
+      - define msg "<&c>The server is currently full. Join back later!"
+      - determine passively KICKED:<[msg]>
 
     #### - [ OPTIMIZE / PRETTIFY THIS CODE ] ###
     on player join:
