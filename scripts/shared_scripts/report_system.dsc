@@ -12,6 +12,11 @@ ReportSystem_Data:
         enable_player_recording: true
         channel_report_post: 1195963976908021821
 
+    disabled_servers:
+
+        - fort_lobby
+
+
 ReportSystem_Events:
     type: world
     debug: false
@@ -130,7 +135,7 @@ ReportSystem_Create_New_Report:
         - announce to_console format:ReportSystem_FF "<&7><player.name> has reported <[target].name> at '<[timestamp]>' for: <[reason]||None>"
         - define finish_report true
         - if <[target].is_online>:
-            - if <script[ReportSystem_Data].data_key[config.enable_player_recording]>:
+            - if <script[ReportSystem_Data].data_key[config.enable_player_recording]> || <script[ReportSystem_Data.config].data_key[disabled_servers].contains[<bungee.server>]>:
                 - run ReportSystem_Record_Task def:<[mongo_id]>|<[timestamp]> player:<[target]>
 
 ReportSystem_FF:
