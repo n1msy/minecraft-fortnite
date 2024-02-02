@@ -108,8 +108,16 @@ ReportSystem_Create_New_Report:
     definitions: target|reason
     script:
 
+    - define timestamp <util.current_time_millis>
+    - definemap data:
+        timestamp: <[timestamp]>
+        reporter: <player.name>
+        target: <[target].name>
+        reason: <[reason]||None>
+
     - ~mongo id:ReportSystem_MongoDB insert:<[data]> save:mg
     - define mongo_id <entry[mg].inserted_id||null>
+
 
     - bungeerun backup discord_player_report def:<player.name>|<[target].name>|<[reason]>|<[mongo_id]>
 
