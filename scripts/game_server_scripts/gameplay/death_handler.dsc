@@ -81,9 +81,12 @@ fort_death_handler:
       - run fort_item_handler.drop_everything if:<player.world.name.equals[nimnite_map]>
       - run fort_death_handler.fx.anim def:<map[loc=<[dead_loc]>]>
 
-      #in case they were in the storm
+    #in case they were in the storm
     - flag player fort.in_storm:!
 
+    #- remove minimap for spectators
+    #check just in case their minimap was somehow disabled already
+    - run minimap if:<player.has_flag[fort.minimap]>
 
     - define killer_name <[killer].name.if_null[<player.name>]>
     - title title:<&e><&l><[killer_name].font[elim_player]><&r> subtitle:<&chr[1].font[elim_text]><&l><element[ELIMINATED BY].font[elim_text]>
