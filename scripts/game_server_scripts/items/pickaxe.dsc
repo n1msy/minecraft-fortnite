@@ -385,14 +385,15 @@ fort_pic_handler:
       #first add the mat (so they can place it instantly)
       #(then "animate" the counter)
       - flag player fort.<[mat]>.qty:+:<[qty]>
-      #doesn't work well
-      #19,20,21
-      #- define item      <map[wood=oak_log;brick=bricks;metal=iron_block].get[<[mat]>].as[item]>
-      #- define item_slot <map[wood=19;brick=20;metal=21].get[<[mat]>]>
-      #- inventory set o:<[item].with[quantity=<player.flag[fort.<[mat]>.qty]>]> slot:<[item_slot]>
-      - repeat <[qty]>:
 
-        - define mat_qty  <[current_qty].add[<[value]>]>
+      #the more mats, the faster the frequency
+      - define add_freq 1
+      - if <[qty]> > 22:
+        - define add_freq <[qty].div[15].round_down>
+
+      - repeat <[qty].div[<[add_freq]>].round_down>:
+
+        - define mat_qty  <[current_qty].add[<[add_freq].mul[<[value]>]>]>
         - define mat_icon <[icon]>
         - if <player.flag[build.material]||null> == <[mat]>:
           - define mat_icon <[sel_icon]>
@@ -402,6 +403,15 @@ fort_pic_handler:
         - sidebar set_line scores:<[line]> values:<[mat_]>
 
         - wait 1t
+
+      - define total_qty <player.flag[fort.<[mat]>.qty]>
+      - define mat_text <&sp.repeat[<element[3].sub[<[total_qty].length>]>]><[total_qty].font[hud_text]>
+      - define mat_icon <[icon]>
+      - if <player.flag[build.material]||null> == <[mat]>:
+        - define mat_icon <[sel_icon]>
+      - define mat_     <element[<[mat_icon]><proc[spacing].context[-32]><[mat_text]>].color[<color[4<[mat#]>,0,0]>]>
+      - sidebar set_line scores:<[line]> values:<[mat_]>
+
 
     - else if <[action]> == remove:
       - flag player fort.<[mat]>.qty:-:<[qty]>
