@@ -10,7 +10,7 @@ ReportSystem_Data:
     config:
         # Should we record a player's movements and interactions when they are reported?
         enable_player_recording: true
-        channel_report_post: 557160153485410324
+        channel_report_post: 1195963976908021821
 
 ReportSystem_Events:
     type: world
