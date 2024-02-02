@@ -125,6 +125,11 @@ pregame_island_handler:
 
     - define mode <script[nimnite_config].data_key[game_servers.<bungee.server>.mode]||solo>
     - flag server fort.mode:<[mode]>
+
+    #cache full map data
+    #no reason to do this every startup, but idgaf
+    - run tablist_map_handler.cache_map_tiles
+
     - announce "<&b>[Nimnite]<&r> Mode set: <&e><[mode].to_titlecase>" to_console
 
     - announce ------------------------------------------------------------------------- to_console

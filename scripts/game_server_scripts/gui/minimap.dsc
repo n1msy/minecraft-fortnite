@@ -26,11 +26,13 @@ minimap:
 
       #so it doesnt clog up
       - inject minimap.get_map_definitions
+      - define storm_id_data <map[1600=1;800=2;400=3;200=4;100=5;50=6;35=7;20=8;1=9]>
 
       # - [ Create Minimap/Compass Bossbars ] - #
       - define bb minimap_<[uuid]>
       - bossbar create <[bb]> color:YELLOW
       - bossbar create <[bb]>_yaw color:YELLOW
+
 
       - while <player.is_online> && <player.has_flag[fort.minimap]>:
 
