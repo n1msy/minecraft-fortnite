@@ -60,6 +60,9 @@ fort_bungee_handler:
       - stop
     #-only announce this in the fort lobby, not in-game
     - define name <context.name>
+    - if <server.has_flag[fort.<[name]>.rp_failed]>:
+      - flag server fort.<[name]>:!
+      - stop
     - announce "<&chr[0002].font[denizen:announcements]> <&9><[name]>"
     - announce to_console "<&8><&lb><&c>-<&8><&rb> <&f><[name]>"
 
