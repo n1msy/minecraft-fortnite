@@ -304,6 +304,8 @@ fort_core_handler:
     - wait 1s
 
     - while <[winners].filter[is_online].any>:
+      #-do it every 2s so winner title shows up still
+      - title title:<&chr[10].font[icons].color[<color[77,0,0]>]> fade_in:0 fade_out:0 stay:1m targets:<[winners].filter[is_online]>
       - actionbar <&chr[1].font[elim_text]><element[<&e><&l>Double-Sneak <&f>to <&c>leave<&r> the match.].font[elim_text]> targets:<[winners].filter[is_online]>
       - wait 2s
 
