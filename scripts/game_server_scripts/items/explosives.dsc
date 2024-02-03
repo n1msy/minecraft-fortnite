@@ -121,7 +121,8 @@ fort_explosive_handler:
   primed:
     - define grenade <[data].get[grenade]>
     - wait 1.5s
-    - playsound <[grenade].location> sound:ENTITY_TNT_PRIMED pitch:1.5 volume:1.2
+    - if <[grenade].is_spawned>:
+      - playsound <[grenade].location> sound:ENTITY_TNT_PRIMED pitch:1.5 volume:1.2
 
   explosion_damage:
     - define radius           <[data].get[radius]>
