@@ -5,7 +5,7 @@ nimnite_config:
   maximum_players: 35
 
 
-  max_lobby_players: 50
+  max_lobby_players: 75
 
   #how much mats players get
   harvesting_multiplier: 1
