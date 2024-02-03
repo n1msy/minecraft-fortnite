@@ -304,24 +304,25 @@ fort_core_handler:
         - kick <[players]> "reason:<&r>The <&b>Nimnite lobby menu<&r> is currently offline. Rejoin later!"
     - announce to_console "<&b>[Nimnite]<&r> Match ended. Saving player data..."
 
-    #-playerdata shit
-
-    #in the future, i wanna change this to modifying the data, and then only inserting/updating it on the db ONCE instead of using several mongo commands
+    # In the future, i wanna change this to modifying the data, and then only inserting/updating it on the db ONCE instead of using several mongo commands
     - define players_that_played <server.flag[fort.temp.kills].list_keys>
     - foreach <[players_that_played]> as:p:
-      - ~mongo id:name find:[uuid=<[p].uuid>] save:pdata
+      - define current_kills <server.flag[fort.temp.kills.<[p]>]>
       - define pdata <entry[pdata].result>
-
-      - define current_kills   <server.flag[fort.temp.kills.<[p]>]>
-
-      #im sure there's a way to do this via a mongodb command... right?
-      - define total_kills         <[pdata].get[kills]||0>
-      - define updated_total_kills <[total_kills].add[<[current_kills]>]>
-
-      ####still needs work
-      - ~mongo id:ReportSystem_MongoDB update:<[old_data]> new:<[new_data]> by_id:<[report_id]>
-
-    #-playerdata shit
+      - ~mongo id:nimnite_playerdata find:[uuid=<[p]>] save:pdata
+      - if <[pdata].is_empty>:
+        - definemap data:
+            uuid: <[p]>
+            kills: <[current_kills]>
+        - ~mongo id:nimnite_playerdata insert:<[data]>
+      - else:
+        - define total_kills <[pdata].get[1].parse_yaml.get[kills]||0>
+        - definemap old_data:
+            uuid: <[p]>
+        - definemap new_data:
+            uuid: <[p]>
+            kills: <[total_kills].add[<[current_kills]>]>
+        - ~mongo id:nimnite_playerdata update:<[old_data]> new:<[new_data]>
 
     ###also send player victory data (winners) (run a foreach for the winners)
 
