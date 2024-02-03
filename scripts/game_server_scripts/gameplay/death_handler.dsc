@@ -64,6 +64,7 @@ fort_death_handler:
       #track *who* they kill?
       # flag <[killer]> fort.killed_players:->:<player>
       - flag <[killer]> fort.kills:++
+      - flag server fort.temp.kills.<[killer].uuid>:++
       #ENTITY_PLAYER_ATTACK_STRONG -> would use this, but it's not loud enough
       - playsound <[killer]> sound:ENTITY_PLAYER_ATTACK_CRIT pitch:0.9 volume:1
       - actionbar "<&chr[1].font[elim_text]><element[<&l>ELIMINATED].font[elim_text]> <element[<&c><&l><player.name>].font[elim_text]>" targets:<[killer]>

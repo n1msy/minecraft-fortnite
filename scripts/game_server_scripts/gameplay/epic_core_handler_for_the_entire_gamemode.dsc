@@ -275,29 +275,13 @@ fort_core_handler:
     - title title:<&chr[10].font[icons].color[<color[77,0,0]>]> fade_in:0 fade_out:0 stay:1m targets:<[winners]>
     - playsound <[winners]> sound:ENTITY_PLAYER_LEVELUP pitch:0
 
-    - flag <[winners]> fort.winner
-    - flag server fort.temp.winners:<[winners]>
-
     #######set player victory flags
     #- flag <[winners]> fort.wins.<[mode]>:->:<util.time_now>
     #- flag <[winners]> fort.kills.<[mode]>:+:<[kills]>
     #- bungeerun
 
-    # - [ RETURN TO MENU SPAWNER ] - #
-    #no need to worry about removing it, since the world is removed
-    #- wait 1s
-    #- define loc <[death_loc].above[2].with_pitch[90].ray_trace.with_pitch[-90]>
-    #- flag server fort.temp.last_death_loc:<[loc]>
-
-    #-no need to do this, just add a "DOUBLE SNEAK" to leave
-    #-this way, the line on the minimap points at where the "return to lobby" thing is
-    #- flag server fort.temp.storm.new_center:<[loc]>
-    #- flag server fort.temp.storm.new_diameter:20
-
-    #- inject fort_core_handler.spawn_lobby_circle
-
-    #- define ellipsoid <[loc].to_ellipsoid[1.3,3,1.3]>
-    #- note <[ellipsoid]> as:fort_lobby_circle
+    - flag <[winners]> fort.winner
+    - flag server fort.temp.winners:<[winners]>
 
     #wait for elim text and anything else to disappear
     - wait 1s
@@ -318,7 +302,31 @@ fort_core_handler:
           - adjust <[p]> send_to:fort_lobby
       - else:
         - kick <[players]> "reason:<&r>The <&b>Nimnite lobby menu<&r> is currently offline. Rejoin later!"
-    - announce to_console "<&b>[Nimnite]<&r> Match ended. Restarting server..."
+    - announce to_console "<&b>[Nimnite]<&r> Match ended. Saving player data..."
+
+    # In the future, i wanna change this to modifying the data, and then only inserting/updating it on the db ONCE instead of using several mongo commands
+    - define players_that_played <server.flag[fort.temp.kills].keys>
+    - foreach <[players_that_played]> as:p:
+      - define current_kills <server.flag[fort.temp.kills.<[p]>]>
+      - ~mongo id:nimnite_playerdata find:[uuid=<[p]>] save:pdata
+      - define pdata <entry[pdata].result>
+      - if <[pdata].is_empty>:
+        - definemap data:
+            uuid: <[p]>
+            kills: <[current_kills]>
+        - ~mongo id:nimnite_playerdata insert:<[data]>
+      - else:
+        - define total_kills <[pdata].get[1].parse_yaml.get[kills]||0>
+        - definemap old_data:
+            uuid: <[p]>
+        - definemap new_data:
+            uuid: <[p]>
+            kills: <[total_kills].add[<[current_kills]>]>
+        - ~mongo id:nimnite_playerdata update:<[old_data]> new:<[new_data]>
+
+    ###also send player victory data (winners) (run a foreach for the winners)
+
+    - announce to_console "<&b>[Nimnite]<&r>Restarting server..."
     - wait 5s
     - adjust server restart
 
