@@ -583,6 +583,7 @@ fort_pic_handler:
 
 fort_pickaxe_mat_animation_clear_queue:
   type: task
+  debug: false
   script:
   - if <player.has_flag[fort.mat_animation_queue]>:
     - define que <player.flag[fort.mat_animation_queue]>
