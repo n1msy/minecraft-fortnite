@@ -22,7 +22,7 @@ fort_lobby_handler:
 
     - define motd "                  <&b><&k><&l>k<&r> <&f><&l>» <element[<&l>NIMBUS].color_gradient[from=#ffc800;to=#ffea9c]> <&f><&l>« <&b><&k><&l>k<&r><&r><&nl>           <&b><&l>NIMNITE <&e><&l>DEMO <&7>is now open!"
     - determine passively MOTD:<[motd]>
-    - determine passively max_players:420
+    - determine passively max_players:100
 
     ## - [ Invite System (temporary) ] - ##
     on player chats flagged:fort.invite_player priority:-1:

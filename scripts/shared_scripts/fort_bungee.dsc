@@ -60,7 +60,7 @@ fort_bungee_handler:
       - stop
     - announce "<&chr[0002].font[denizen:announcements]> <&9><[name]>"
     - announce to_console "<&8><&lb><&c>-<&8><&rb> <&f><[name]>"
-    #- bungeerun backup discord_join def:<map[name=<context.name>;uuid=<context.uuid>;status=leave]>
+    - bungeerun backup discord_join def:<map[name=<context.name>;uuid=<context.uuid>;status=leave]>
 
 
 fort_bungee_tasks:
