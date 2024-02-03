@@ -281,7 +281,7 @@ fort_core_handler:
     - if <[alive_teams].size> > 1:
       - stop
 
-    - run fort_core_handler.timer def:<map[phase=END;seconds=60]>
+    - run fort_core_handler.timer def:<map[phase=END;seconds=30]>
 
     #team name is the team captain's name
     - define winning_team <[alive_teams].first>
