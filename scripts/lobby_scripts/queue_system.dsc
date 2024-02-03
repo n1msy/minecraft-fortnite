@@ -59,7 +59,8 @@ fort_queue_handler:
 
         # - Update Queue Timer
         #bossbar is created on player joins in "lobby.dsc"
-        - foreach <[players_queued]> as:player:
+        #sort_by_number.reverse so players who have waited the longest get the highest priority
+        - foreach <[players_queued].sort_by_number[flag[fort.in_queue]].reverse> as:player:
           - define uuid <[player].uuid>
           - define mode <[player].flag[fort.menu.mode]>
 
