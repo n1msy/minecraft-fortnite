@@ -842,7 +842,7 @@ fort_gun_handler:
 
       - stop
 
-    - flag player fort.reloading_gun
+    - flag player fort.reloading_gun:<[gun]>
 
     #to ticks
     - define reload_time <[gun].flag[rarities.<[rarity]>.reload_time].mul[20]>
@@ -852,7 +852,7 @@ fort_gun_handler:
     - repeat <[reload_time].div[3]>:
 
       #if they hold it and it's, it'll auto reload
-      - if <player.item_in_hand.flag[uuid]||null> != <[gun_uuid]>:
+      - if <player.item_in_hand.flag[uuid]||null> != <[gun_uuid]> || !<player.has_flag[fort.reloading_gun]>:
         - define cancelled True
         - repeat stop
 
@@ -873,7 +873,8 @@ fort_gun_handler:
         - define new_loaded_ammo <[total_ammo]>
       - else:
         - define new_loaded_ammo <[mag_size]>
-      - define new_total_ammo <[total_ammo].sub[<[mag_size].sub[<[current_loaded_ammo]>]>]>
+
+      - define new_total_ammo <[total_ammo].sub[<[new_loaded_ammo]>]>
 
       - flag server fort.temp.<[gun_uuid]>.loaded_ammo:<[new_loaded_ammo]>
       - flag player fort.ammo.<[ammo_type]>:<[new_total_ammo]>

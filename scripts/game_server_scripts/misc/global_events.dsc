@@ -233,6 +233,11 @@ fort_global_handler:
           - if <[current_qty]> > 0:
             - choose <[type]>:
               - case ammo:
+                #-cancel gun reload if dropping the same ammo that the gun uses
+                - define current_reloading <player.flag[fort.reloading_gun]||null>
+                - if <[current_reloading]> != null && <[current_reloading].flag[ammo_type]> == <[sub_type]>:
+                  - flag player fort.reloading_gun:!
+
                 - flag player fort.ammo.<[sub_type]>:-:<[current_qty]>
                 - run fort_gun_handler.drop_ammo def:<map[ammo_type=<[sub_type]>;qty=<[current_qty]>]>
               - case material:
