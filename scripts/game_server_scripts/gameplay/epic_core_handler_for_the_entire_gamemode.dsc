@@ -43,7 +43,7 @@ fort_core_handler:
   #-stage 1
   #storm eye shrinks in 3 minutes 20 seconds
   #default: 200
-  - define seconds       100
+  - define seconds       70
   - define phase         GRACE_PERIOD
   - define forming:!
   - flag server fort.temp.storm.dps:1
@@ -51,7 +51,7 @@ fort_core_handler:
   - inject fort_core_handler.timer
   #storm eye shrinking 3 minutes
   #default: 180
-  - define seconds  80
+  - define seconds  65
   - define phase    STORM_SHRINK
   - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
