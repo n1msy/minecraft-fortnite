@@ -272,7 +272,7 @@ fort_lobby_handler:
                       <n><n><n><n>If you think this is a <&c>bug<&r>, please report it in our <&9><&l><&n>Discord<&r> server!
                       <n><n><&b><&n>https://discord.gg/RB5a7WvHeP<&r>
                       <n><n>(idk how to make the link clickable rip)"
-        - flag server fort.<player.name>.rp_failed duration:1s
+        - flag server fort.<player.name>.rp_failed
         - kick <player> reason:<[msg]>
 
     ## - [ MAKE THIS CLEANER ] - ##
