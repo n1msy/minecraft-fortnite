@@ -64,6 +64,8 @@ tablist_map_handler:
       # - [ Update Tablist Maps + Individual Markers ] - #
       - foreach <[batch]> as:p_list:
         - foreach <[p_list]> as:p:
+          - if !<[p].is_online>:
+            - foreach next
           #get individual marker data
           - define world <[p].world>
           - define loc <[p].location>
