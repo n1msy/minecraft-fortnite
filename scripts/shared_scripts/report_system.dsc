@@ -58,6 +58,7 @@ ReportSystem_Command:
     - reportuser
     usage: /report (player) (reason)
     description: Reports a player who is not following the rules
+    permission: net.report
     tab completions:
         1: <server.online_players.parse[name]>
     script:
