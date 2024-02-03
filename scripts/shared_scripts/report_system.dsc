@@ -10,12 +10,10 @@ ReportSystem_Data:
     config:
         # Should we record a player's movements and interactions when they are reported?
         enable_player_recording: true
-        channel_report_post: 1195963976908021821
+        channel_report_post: 875558316196106250
 
     disabled_servers:
-
         - fort_lobby
-
 
 ReportSystem_Events:
     type: world
