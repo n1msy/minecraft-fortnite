@@ -190,6 +190,10 @@ fort_death_handler:
         - case FALL:
           - define msg_template <script[nimnite_config].data_key[killfeed.<[kill_type]>_fall].random.parse_minimessage>
 
+        # I don't know if this will work... Fingers crossed!
+        - case SUFFOCATION:
+          - define msg_template <script[nimnite_config].data_key[killfeed.<[kill_type]>_suffocation].random.parse_minimessage>
+
         #from storm
         - case WORLD_BORDER:
           - define msg_template <script[nimnite_config].data_key[killfeed.<[kill_type]>_storm].random.parse_minimessage>
