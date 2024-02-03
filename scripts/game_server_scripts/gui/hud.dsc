@@ -11,7 +11,7 @@ update_hud:
   script:
 
   #dont give hud to players if in fort menu
-  - if <player.has_flag[fort.in_menu]>:
+  - if !<player.is_online> or <player.has_flag[fort.in_menu]> or <server.has_flag[fort.temp.restarting_server]>:
     - stop
 
   #falling icon turns to clock icon after bus is done dropping
