@@ -305,7 +305,7 @@ fort_core_handler:
     - announce to_console "<&b>[Nimnite]<&r> Match ended. Saving player data..."
 
     # In the future, i wanna change this to modifying the data, and then only inserting/updating it on the db ONCE instead of using several mongo commands
-    - define players_that_played <server.flag[fort.temp.kills].list_keys>
+    - define players_that_played <server.flag[fort.temp.kills].keys>
     - foreach <[players_that_played]> as:p:
       - define current_kills <server.flag[fort.temp.kills.<[p]>]>
       - define pdata <entry[pdata].result>
