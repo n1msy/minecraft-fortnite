@@ -311,10 +311,10 @@ fort_core_handler:
       - ~mongo id:name find:[uuid=<[p]>] save:pdata
       - define pdata <entry[pdata].result>
       - if <[pdata].is_empty>:
-        - definemap new_data:
+        - definemap data:
             uuid: <[p]>
             kills: <[current_kills]>
-        - ~mongo id:nimnite_playerdata insert:<[data]> save:mg
+        - ~mongo id:nimnite_playerdata insert:<[data]>
       - else:
         - define total_kills <[pdata].get[1].parse_yaml.get[kills]||0>
         - definemap old_data:
@@ -322,7 +322,7 @@ fort_core_handler:
         - definemap new_data:
             uuid: <[p]>
             kills: <[total_kills].add[<[current_kills]>]>
-        - ~mongo id:nimnite_playerdata update:<[old_data]> new:<[new_data]> by_id:<[report_id]>
+        - ~mongo id:nimnite_playerdata update:<[old_data]> new:<[new_data]>
 
     ###also send player victory data (winners) (run a foreach for the winners)
 
