@@ -4,7 +4,7 @@ test:
   type: task
   debug: false
   script:
-    - define msg "<n><&c><&l>[!] Resourcepack Failed!
+    - define msg "<n><&c><&l>RESOURCE PACK FAILED TO APPLY
                   <n><n><&f>Uh oh, the Nimnite resourcepack is <&n><&l>required<&r> to play!
                   <n><n><n><n>If you think this is a <&c>bug<&r>, please report it in our <&9><&l><&n>Discord<&r> server!
                   <n><n><&b><&n>https://discord.gg/nimsy<&r>"
@@ -179,22 +179,6 @@ fort_lobby_handler:
     #the attack cooldown is removed via rp
     - inject fort_lobby_handler.button_press
 
-    # - (temp whitelist) - #
-    # Deprecated at 2/2/24 - We're now in open beta.
-    # on player prelogin:
-    # - define name <context.name>
-    # - if !<server.has_flag[whitelist]> || <server.flag[whitelist].contains[<[name]>]>:
-    #   - stop
-    #   #<time[2024/02/02_20:00:00].duration_since[<util.time_now>].formatted>
-    # - define time_left <&l><time[2024/02/02_20:00:00].duration_since[<util.time_now>].formatted_words.to_uppercase>
-    # - define msg "<n><n><n><&f>SUP HOMOSAPIEN.<n><n><n><&l>THIS SERVER IS PUBLIC IN <&a><&l><[time_left]><&r>!<n><n><n><n>Meanwhile,
-    #               check out my <&e>latest video<&r> about the server on <&c><&l>YouTube<&r>.<n><n>
-    #               Stay tuned for some <&e>test runs <&r>this week on my <&5><&l>Twitch<&r>.<n><n><n>
-    #               <&c>YouTube.com/Nimsy
-    #               <n><&5>Twitch.tv/FlimsyNimsy"
-    # - determine passively KICKED:<[msg]>
-    # - announce "<&e>Kicked <&r><[name]><&e>." to_console
-
     #### - [ OPTIMIZE / PRETTIFY THIS CODE ] ###
     on player join:
     #player join message
@@ -214,7 +198,7 @@ fort_lobby_handler:
     #used to prevent collision
     - team name:lobby_player add:<player>
 
-    #-for test server
+    # for test server
     - if <server.has_flag[is_test_server]>:
       - run fort_lobby_setup.player_setup
       - stop
@@ -241,12 +225,10 @@ fort_lobby_handler:
     - define hash <server.flag[fort.resourcepack.hash]>
     #add a rp prompt?
     - resourcepack url:http://mc.nimsy.live:4000/latest.zip hash:<[hash]> forced
-
-    #put this inside the tick loop too, or nah
     - cast BLINDNESS duration:infinite hide_particles no_icon no_ambient
     - define subtitle "bare with me"
     - while <player.is_online> && !<player.has_flag[fort.menu]> || <player.has_flag[]>:
-      - title "title:<&e>Downloading Resourcepack..." subtitle:<&7><[subtitle]> fade_in:1 stay:1 fade_out:1
+      - title "title:<&e><&l>DOWNLOADING RESOURCEPACK..." subtitle:<&7><[subtitle]> fade_in:1 stay:1 fade_out:1
       - define subtitle <list[here's a shameless promo -<&gt> twitch.tv/flimsynimsy|you ever just realize how handsome nimsy is?|fun fact: 1 year of a degen<&sq>s life was spent on this|y are u still here|please donate me money PLEASE|isn<&sq>t nimsy like- the best?].random>
       #wait 1s for a "flashing" effect
       - wait 3s
@@ -267,6 +249,7 @@ fort_lobby_handler:
         - wait 2s
         # Check if the player's client ruins the hud, if so we warn them.
         - define client           <player.client_brand>
+        - announce to_console "Player is using: <[client]>"
         - define client_blacklist <list[Lunar|Feather|Badlion|unknown]>
         - if <player.is_online> && <[client].contains_any_text[<[client_blacklist]>]>:
           - playsound <player> sound:BLOCK_NOTE_BLOCK_PLING pitch:1.5
@@ -278,7 +261,7 @@ fort_lobby_handler:
           - narrate <[line]>
 
       - case DECLINED FAILED_DOWNLOAD:
-        - define msg "<n><n><n><&c><&l>[!] Resourcepack download failed.
+        - define msg "<n><n><n><&c><&l>RESOURCEPACK FAILED TO DOWNLOAD
                       <n><n><&f>Uh oh... The Nimnite resourcepack is <&c><&n><&l>required<&r> to play.
                       <n><n><n><n>If you think this is a <&c>bug<&r>, please report it in our <&9><&l><&n>DISCORD<&r> server!
                       <n><n><&b><&n>https://discord.gg/nimsy<&r>"
@@ -454,7 +437,7 @@ fort_lobby_handler:
 
           - run fort_lobby_handler.match_info def.option:remove
 
-          - adjust <[name_text]> "text:<player.name><n><&c>Not ready" if:<[name_text].equals[null].not>
+          - adjust <[name_text]> "text:<player.name><n><&c>Not Ready" if:<[name_text].equals[null].not>
 
           - playsound <player> sound:BLOCK_NOTE_BLOCK_BASS pitch:1
           - flag player fort.in_queue:!

@@ -97,16 +97,19 @@ fort_pic_handler:
     - define block <context.location>
     - define mat <[block].material.name>
 
-    - if <[mat].contains_any_text[wool]>:
-      - define tool shears
+    - if <[mat].contains_any_text[sand]>:
+      - define tool netherite_shovel
     - else:
-      - if <[mat].contains_any_text[oak|spruce|birch|jungle|acacia|dark_oak|mangrove|warped|barrel|bamboo]>:
-        - define tool netherite_axe
+      - if <[mat].contains_any_text[wool]>:
+        - define tool shears
       - else:
-        - define tool netherite_pickaxe
+        - if <[mat].contains_any_text[oak|spruce|birch|jungle|acacia|dark_oak|mangrove|warped|barrel|bamboo]>:
+          - define tool netherite_axe
+        - else:
+          - define tool netherite_pickaxe
 
-    - if <[i].material.name> != <[tool]>:
-      - inventory adjust slot:<player.held_item_slot> material:<[tool]>
+      - if <[i].material.name> != <[tool]>:
+        - inventory adjust slot:<player.held_item_slot> material:<[tool]>
 
     #in case they switched from another item
     - cast FAST_DIGGING remove
