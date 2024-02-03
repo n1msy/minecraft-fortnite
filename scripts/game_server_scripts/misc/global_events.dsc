@@ -184,7 +184,7 @@ fort_global_handler:
         - define item_clicked_on <player.inventory.slot[<context.slot>]>
         - define cursor_item     <context.cursor_item>
         #check if it's stackable
-        - if <[item_clicked_on].has_flag[stack_size]> && <[item_clicked_on].script.name> == <[cursor_item].script.name>:
+        - if <[item_clicked_on].has_flag[stack_size]> && <[item_clicked_on].script.name> == <[cursor_item].script.name||null>:
           - define stack_size <[item_clicked_on].flag[stack_size]>
           - define new_qty    <[item_clicked_on].quantity>
           - if <[new_qty]> > <[stack_size]>:

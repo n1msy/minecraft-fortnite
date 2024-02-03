@@ -11,9 +11,7 @@ ReportSystem_Data:
         # Should we record a player's movements and interactions when they are reported?
         enable_player_recording: true
         channel_report_post: 1195963976908021821
-
-    disabled_servers:
-
+        disabled_servers:
         - fort_lobby
 
 
@@ -120,7 +118,7 @@ ReportSystem_Create_New_Report:
     - define mongo_id <entry[mg].inserted_id||null>
 
     - define chatlogs <[target].chat_history_list.get[1].to[5].escaped||<list[]>>
-    - bungeerun backup discord_player_report def:<player.name>|<[target].name>|<[reason]>|<[mongo_id]>|<[chatlogs]>|<bungee.server>
+    - bungeerun backup discord_player_report def:<player.name>|<[target].name>|<[reason]||None>|<[mongo_id]>|<[chatlogs]>|<bungee.server>
 
     - if <[mongo_id]> == null:
         - debug error "<&c>ReportSystem: Error while reporting '<[target].name>' at timestamp '<[timestamp]>' by reporter '<player.name>' with reason: <[reason]||None>"
@@ -129,8 +127,9 @@ ReportSystem_Create_New_Report:
         - announce to_console format:ReportSystem_FF "<&7><player.name> has reported <[target].name> at '<[timestamp]>' for: <[reason]||None>"
         - define finish_report true
         - if <[target].is_online>:
-            - if <script[ReportSystem_Data].data_key[config.enable_player_recording]> || <script[ReportSystem_Data.config].data_key[disabled_servers].contains[<bungee.server>]>:
-                - run ReportSystem_Record_Task def:<[mongo_id]>|<[timestamp]> player:<[target]>
+            - if <script[ReportSystem_Data].data_key[config.enable_player_recording]>:
+                - if !<script[ReportSystem_Data.config].data_key[config.disabled_servers].contains[<bungee.server>]>:
+                    - run ReportSystem_Record_Task def:<[mongo_id]>|<[timestamp]> player:<[target]>
 
 ReportSystem_FF:
     type: format

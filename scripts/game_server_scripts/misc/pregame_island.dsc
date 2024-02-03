@@ -17,6 +17,30 @@ apply_team_options:
     #so you can't see anyone that's invisible
     - team name:<[name]> option:SEE_INVISIBLE status:NEVER
 
+enable_server:
+  type: task
+  debug: false
+  script:
+    - waituntil rate:1s <bungee.list_servers.contains[fort_lobby]>
+    - definemap data:
+        game_server: <bungee.server>
+        status: AVAILABLE
+        mode: <server.flag[fort.mode]>
+        players: <server.online_players_flagged[fort]>
+    # For whatever reason, bungeetag doesn't handle map defs
+    - define mode <[data.mode]>
+    - define game_server <[data.game_server]>
+    - while true:
+      - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
+      - wait 1s
+      - ~bungeetag server:fort_lobby <server.has_flag[fort.available_servers.<[mode]>.<[game_server]>]> save:res
+      # This is probably the only time where you will see a valid == true... sometimes the tag will not error but instead spit out gibberish.
+      - if <entry[res].result||false> == true:
+        - announce to_console "<&b>[Nimnite]<&r> Set this game server to <&a>AVAILABLE<&r> (<&b><[data].get[game_server]><&r>)."
+        - stop
+      - announce to_console "<&b>[Nimnite]<&r> Failed to connect to lobby, retrying in 1s..."
+      - wait 1s
+
 ##show names before the game starts?
 pregame_island_handler:
   type: world
@@ -146,15 +170,7 @@ pregame_island_handler:
     #just for safety, wait a few seconds
     - wait 2s
     #players *should* always be 0, but in case someone somehow (like an op) joins this server manually
-    - if <bungee.list_servers.contains[fort_lobby]>:
-      - definemap data:
-          game_server: <bungee.server>
-          status: AVAILABLE
-          mode: <server.flag[fort.mode]>
-          players: <server.online_players_flagged[fort]>
-      #- define data <map[game_server=<bungee.server>;status=AVAILABLE;mode=<server.flag[fort.mode]||solo>;players=<server.online_players_flagged[fort]>]>
-      - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
-      - announce "<&b>[Nimnite]<&r> Set this game server to <&a>AVAILABLE<&r> (<&b><[data].get[game_server]><&r>)." to_console
+    - run enable_server
 
     - flag server fort.temp.available
 

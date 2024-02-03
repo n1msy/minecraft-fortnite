@@ -677,7 +677,7 @@ fort_gun_handler:
         - run fort_gun_handler.camera_shake def:<map[mult=0.0965]>
         - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[0.6]> offthread_repeat:3
         - repeat 4:
-          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.add[0.15]> offthread_repeat:3
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.add[0.15]> offthread_repeat:3 if:<player.is_online>
           - wait 1t
       - case tactical_shotgun:
         - run fort_gun_handler.camera_shake def:<map[mult=0.083]>
@@ -688,20 +688,20 @@ fort_gun_handler:
         #smoother effect
         - repeat 3:
           - define up <[up].add[<[smooth]>]>
-          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[smooth]>]> offthread_repeat:3
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[smooth]>]> offthread_repeat:3 if:<player.is_online>
           - wait 1t
         #meaning go down (original amount + smooth amount)
         #higher = slower
         - define speed          8
         - define down_increment <[up].div[<[speed]>]>
         - repeat <[speed]>:
-          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.add[<[down_increment]>]> offthread_repeat:3
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.add[<[down_increment]>]> offthread_repeat:3 if:<player.is_online>
           - wait 1t
       - case rocket_launcher:
         - run fort_gun_handler.camera_shake def:<map[mult=0.0965]>
-        - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[1]> offthread_repeat:3
+        - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[1]> offthread_repeat:3 if:<player.is_online>
         - repeat 8:
-          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.add[0.125]> offthread_repeat:3
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.add[0.125]> offthread_repeat:3 if:<player.is_online>
           - wait 1t
 
       - case grenade_launcher:
@@ -709,18 +709,18 @@ fort_gun_handler:
         - define base   1.5
         - define smooth 0.15
         - define up     <[base]>
-        - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[base]>]> offthread_repeat:3
+        - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[base]>]> offthread_repeat:3 if:<player.is_online>
         #smoother effect
         - repeat 3:
           - define up <[up].add[<[smooth]>]>
-          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[smooth]>]> offthread_repeat:3
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[smooth]>]> offthread_repeat:3 if:<player.is_online>
           - wait 1t
         #meaning go down (original amount + smooth amount)
         #higher = slower
         - define speed          6
         - define down_increment <[up].div[<[speed]>]>
         - repeat <[speed]>:
-          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.add[<[down_increment]>]> offthread_repeat:3
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.add[<[down_increment]>]> offthread_repeat:3 if:<player.is_online>
           - wait 1t
 
       - case bolt_action_sniper_rifle:
@@ -728,11 +728,11 @@ fort_gun_handler:
         - define recoil 2
         - repeat <[recoil]>:
           - define pitch_sub <[value].div[1.5]>
-          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[pitch_sub]>]> offthread_repeat:3
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[pitch_sub]>]> offthread_repeat:3 if:<player.is_online>
           - wait 1t
         - repeat <[recoil].mul[3]>:
           - define pitch_sub <element[6].sub[<[value]>].sub[4].div[4.5]>
-          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[pitch_sub]>]> offthread_repeat:3
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[pitch_sub]>]> offthread_repeat:3 if:<player.is_online>
           - wait 1t
       #they're similar enough recoils
       - case revolver pump_shotgun:
@@ -740,24 +740,24 @@ fort_gun_handler:
         - define recoil 2
         - repeat <[recoil]>:
           - define pitch_sub <[value].div[1.5]>
-          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[pitch_sub]>]> offthread_repeat:3
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[pitch_sub]>]> offthread_repeat:3 if:<player.is_online>
           - wait 1t
         - repeat <[recoil].mul[4]>:
           - define pitch_sub <element[8].sub[<[value]>].sub[6].div[10]>
-          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[pitch_sub]>]> offthread_repeat:3
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[pitch_sub]>]> offthread_repeat:3 if:<player.is_online>
           - wait 1t
       - case tactical_smg smg:
         - run fort_gun_handler.camera_shake def:<map[mult=0.094;ticks=3]>
         - define size 0.1
         - if <player.has_flag[gun.<[gun_name]>.recoil]> && <player.flag[gun.<[gun_name]>.recoil].div[<[size]>].round_down> > 10:
           - stop
-        - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[size]>]> offthread_repeat:3
+        - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[<[size]>]> offthread_repeat:3 if:<player.is_online>
         - flag player gun.<[gun_name]>.recoil:+:<[size]>
       - default:
         - run fort_gun_handler.camera_shake def:<map[mult=0.0965]>
-        - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[0.7]> offthread_repeat:3
+        - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.sub[0.7]> offthread_repeat:3 if:<player.is_online>
         - repeat 4:
-          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.add[0.175]> offthread_repeat:3
+          - look <player> yaw:<player.location.yaw> pitch:<player.location.pitch.add[0.175]> offthread_repeat:3 if:<player.is_online>
           - wait 1t
 
   # - [ Ammo ] - #

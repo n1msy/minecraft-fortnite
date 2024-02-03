@@ -22,7 +22,7 @@ fort_lobby_handler:
 
     - define motd "                  <&b><&k><&l>k<&r> <&f><&l>» <element[<&l>NIMBUS].color_gradient[from=#ffc800;to=#ffea9c]> <&f><&l>« <&b><&k><&l>k<&r><&r><&nl>           <&b><&l>NIMNITE <&e><&l>DEMO <&7>is now open!"
     - determine passively MOTD:<[motd]>
-    - determine passively max_players:420
+    - determine passively max_players:100
 
     ## - [ Invite System (temporary) ] - ##
     on player chats flagged:fort.invite_player priority:-1:
@@ -272,6 +272,7 @@ fort_lobby_handler:
                       <n><n><n><n>If you think this is a <&c>bug<&r>, please report it in our <&9><&l><&n>Discord<&r> server!
                       <n><n><&b><&n>https://discord.gg/RB5a7WvHeP<&r>
                       <n><n>(idk how to make the link clickable rip)"
+        - flag server fort.<player.name>.rp_failed
         - kick <player> reason:<[msg]>
 
     ## - [ MAKE THIS CLEANER ] - ##
