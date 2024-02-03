@@ -107,6 +107,9 @@ fort_lobby_handler:
     - waituntil <world[fort_lobby].if_null[false]> max:10s
     #-in case the server crashed/it was incorrectly shut down
 
+    # prevents entity cramming of entities.
+    - gamerule <world[fort_lobby]> maxEntityCramming 0
+
     - ~mongo id:nimnite_playerdata connect:<secret[nimbus_db]> database:Nimnite collection:Playerdata
     - narrate "<&b>[Nimnite]<&r> Connected to Nimnite database."
 
