@@ -128,6 +128,9 @@ pregame_island_handler:
     - bossbar create <[bossbar]> title:<proc[spacing].context[50]><&chr[A004].font[icons]><proc[spacing].context[-72]><&l><element[WAITING FOR PLAYERS].font[lobby_text]> color:YELLOW players:<server.online_players>
     - announce "<&b>[Nimnite]<&r> Created bossbar <&dq><&e><[bossbar]><&r><&dq>" to_console
 
+    - announce to_console "Waiting for bungee to connect..."
+    - waituntil rate:1s <bungee.connected>
+
     - define mode <script[nimnite_config].data_key[game_servers.<bungee.server>.mode]||solo>
     - flag server fort.mode:<[mode]>
 
@@ -141,7 +144,7 @@ pregame_island_handler:
     - flag server fort.temp.startup:!
 
     #just for safety, wait a few seconds
-    - wait 5s
+    - wait 2s
     #players *should* always be 0, but in case someone somehow (like an op) joins this server manually
     - if <bungee.list_servers.contains[fort_lobby]>:
       - definemap data:
