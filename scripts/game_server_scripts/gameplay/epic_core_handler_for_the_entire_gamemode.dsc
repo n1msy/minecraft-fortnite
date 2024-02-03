@@ -308,8 +308,8 @@ fort_core_handler:
     - define players_that_played <server.flag[fort.temp.kills].keys>
     - foreach <[players_that_played]> as:p:
       - define current_kills <server.flag[fort.temp.kills.<[p]>]>
-      - define pdata <entry[pdata].result>
       - ~mongo id:nimnite_playerdata find:[uuid=<[p]>] save:pdata
+      - define pdata <entry[pdata].result>
       - if <[pdata].is_empty>:
         - definemap data:
             uuid: <[p]>
