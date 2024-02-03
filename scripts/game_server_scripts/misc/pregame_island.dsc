@@ -27,11 +27,15 @@ enable_server:
         status: AVAILABLE
         mode: <server.flag[fort.mode]>
         players: <server.online_players_flagged[fort]>
+    # For whatever reason, bungeetag doesn't handle map defs
+    - define mode <[data.mode]>
+    - define game_server <[data.game_server]>
     - while true:
       - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
       - wait 1s
-      - ~bungeetag server:fort_lobby <server.has_flag[fort.available_servers.<[data.mode]>.<[data.game_server]>]> save:res
-      - if <entry[res].result||false>:
+      - ~bungeetag server:fort_lobby <server.has_flag[fort.available_servers.<[mode]>.<[game_server]>]> save:res
+      # This is probably the only time where you will see a valid == true... sometimes the tag will not error but instead spit out gibberish.
+      - if <entry[res].result||false> == true:
         - announce to_console "<&b>[Nimnite]<&r> Set this game server to <&a>AVAILABLE<&r> (<&b><[data].get[game_server]><&r>)."
         - stop
       - announce to_console "<&b>[Nimnite]<&r> Failed to connect to lobby, retrying in 1s..."
