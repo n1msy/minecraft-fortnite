@@ -1,6 +1,6 @@
 ##make sure to flag the server for different modes with "fort.mode"
 
-##should we hide usernames when the player first joins, or no?
+##should we hide usernames when the player first joins, or no?#
 #if not, then when the player emotes, their name tag disappears, maybe add a name tag
 #for them? im too lazy for now
 
