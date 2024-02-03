@@ -317,7 +317,7 @@ fort_lobby_handler:
 
   menu:
     #used in "minimap.dsc"
-    - define interaction <player.eye_location.ray_trace_target[entities=interaction;range=25]||null>
+    - define interaction <player.eye_location.ray_trace_target[entities=interaction;range=25;ignore=<server.online_players>]||null>
     - if <[interaction]> != null && <[interaction].has_flag[menu]>:
 
       #get the button type from the player's target
