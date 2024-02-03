@@ -4,11 +4,10 @@ test:
   type: task
   debug: false
   script:
-    - define msg "<n><&c><&l>[!] Resourcepack download failed.
-                  <n><n><&f>Sup nerd, the Nimnite resourcepack is <&n>required<&r> to play.
+    - define msg "<n><&c><&l>[!] Resourcepack Failed!
+                  <n><n><&f>Uh oh, the Nimnite resourcepack is <&n><&l>required<&r> to play!
                   <n><n><n><n>If you think this is a <&c>bug<&r>, please report it in our <&9><&l><&n>Discord<&r> server!
-                  <n><n><&b><&n>https://discord.gg/RB5a7WvHeP<&r>
-                  <n><n>(idk how to make the link clickable rip)"
+                  <n><n><&b><&n>https://discord.gg/nimsy<&r>"
     - kick <player> reason:<[msg]>
 
 fort_lobby_handler:
@@ -145,6 +144,7 @@ fort_lobby_handler:
     - adjust <player> fly_speed:0.02
 
     - invisible state:true
+    - adjust <player> collidable:false
 
     - inventory clear
     - sidebar remove
@@ -155,11 +155,18 @@ fort_lobby_handler:
       - run fort_lobby_handler.lobby_tp
       - stop
 
-    #cancel the emote
+    # cancel the emote
     - flag player fort.in_menu:!
     - flag player fort.emote:!
     - if <context.cause> == QUIT:
       - stop
+
+    on player chats:
+    - determine passively cancelled
+
+    # This prevents players from being damaged in the lobby.
+    on player damaged:
+    - determine passively cancelled
 
     #in case they hit a player and not click a block
     on player damages entity flagged:fort.in_menu priority:-10:
@@ -171,21 +178,21 @@ fort_lobby_handler:
     #the attack cooldown is removed via rp
     - inject fort_lobby_handler.button_press
 
-
     # - (temp whitelist) - #
-    on player prelogin:
-    - define name <context.name>
-    - if !<server.has_flag[whitelist]> || <server.flag[whitelist].contains[<[name]>]>:
-      - stop
-      #<time[2024/02/02_20:00:00].duration_since[<util.time_now>].formatted>
-    - define time_left <&l><time[2024/02/02_20:00:00].duration_since[<util.time_now>].formatted_words.to_uppercase>
-    - define msg "<n><n><n><&f>SUP HOMOSAPIEN.<n><n><n><&l>THIS SERVER IS PUBLIC IN <&a><&l><[time_left]><&r>!<n><n><n><n>Meanwhile,
-                  check out my <&e>latest video<&r> about the server on <&c><&l>YouTube<&r>.<n><n>
-                  Stay tuned for some <&e>test runs <&r>this week on my <&5><&l>Twitch<&r>.<n><n><n>
-                  <&c>YouTube.com/Nimsy
-                  <n><&5>Twitch.tv/FlimsyNimsy"
-    - determine passively KICKED:<[msg]>
-    - announce "<&e>Kicked <&r><[name]><&e>." to_console
+    # Deprecated at 2/2/24 - We're now in open beta.
+    # on player prelogin:
+    # - define name <context.name>
+    # - if !<server.has_flag[whitelist]> || <server.flag[whitelist].contains[<[name]>]>:
+    #   - stop
+    #   #<time[2024/02/02_20:00:00].duration_since[<util.time_now>].formatted>
+    # - define time_left <&l><time[2024/02/02_20:00:00].duration_since[<util.time_now>].formatted_words.to_uppercase>
+    # - define msg "<n><n><n><&f>SUP HOMOSAPIEN.<n><n><n><&l>THIS SERVER IS PUBLIC IN <&a><&l><[time_left]><&r>!<n><n><n><n>Meanwhile,
+    #               check out my <&e>latest video<&r> about the server on <&c><&l>YouTube<&r>.<n><n>
+    #               Stay tuned for some <&e>test runs <&r>this week on my <&5><&l>Twitch<&r>.<n><n><n>
+    #               <&c>YouTube.com/Nimsy
+    #               <n><&5>Twitch.tv/FlimsyNimsy"
+    # - determine passively KICKED:<[msg]>
+    # - announce "<&e>Kicked <&r><[name]><&e>." to_console
 
     #### - [ OPTIMIZE / PRETTIFY THIS CODE ] ###
     on player join:
@@ -193,7 +200,11 @@ fort_lobby_handler:
     - determine passively NONE
     - define name <player.name>
 
-    - announce "<&chr[0001].font[denizen:announcements]> <&9><[name]>"
+    # hide player from other players.
+    - adjust <player> hide_from_players
+
+    ## This shit is so annoying
+    # - announce "<&chr[0001].font[denizen:announcements]> <&9><[name]>"
     - announce to_console "<&8><&lb><&a>+<&8><&rb> <&f><[name]>"
 
     - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
@@ -218,8 +229,6 @@ fort_lobby_handler:
     #- [ ! ] Warning: RP is being downloaded every time players join lobby server (even when returning from game)
     #can be fixed with new snapshot stuff from 1/18/23
 
-    #
-
     - define hash <server.flag[fort.resourcepack.hash]>
     #add a rp prompt?
     - resourcepack url:http://mc.nimsy.live:4000/latest.zip hash:<[hash]> forced
@@ -234,38 +243,36 @@ fort_lobby_handler:
       - wait 3s
 
     on resource pack status:
-    #SUCCESSFULLY_LOADED, DECLINED, FAILED_DOWNLOAD, ACCEPTED
+    # SUCCESSFULLY_LOADED, DECLINED, FAILED_DOWNLOAD, ACCEPTED
     - define status <context.status>
-    #-for test server
+    # - For test server
     - define status SUCCESSFULLY_LOADED if:<server.has_flag[is_test_server]>
-    #
     - choose <context.status>:
       - case SUCCESSFULLY_LOADED:
-        #reset loading text
+        # Reset title and remove blindness.
         - title title:<&sp> subtitle:<&sp> fade_in:1 stay:1 fade_out:1
         - cast blindness remove
-        #in case they moved during rp load
+        # If the player moves while loading the resource pack, teleport them back to the middle.
         - teleport <player> <server.flag[fort.menu_spawn].above[0.5]>
         - inject fort_lobby_setup.player_setup
         - wait 2s
-        #-non-vanilla client risk message
+        # Check if the player's client ruins the hud, if so we warn them.
         - define client           <player.client_brand>
         - define client_blacklist <list[Lunar|Feather|Badlion|unknown]>
         - if <player.is_online> && <[client].contains_any_text[<[client_blacklist]>]>:
           - playsound <player> sound:BLOCK_NOTE_BLOCK_PLING pitch:1.5
           - define line <&8><element[<&sp>].repeat[80].strikethrough>
           - narrate <[line]>
-          - narrate "<&c><&l>[!] Warning [!] <&c>You're running on a client that probably f**ks with your UI in-game."
+          - narrate "<&c><&l>Warning <&r><&c>You're using a client that could ruin your in-game HUD."
           - narrate "<n><&7>Your client: <&c><player.client_brand>"
           - narrate "<&8>Known clients that cause issues: <&7><[client_blacklist].separated_by[<&8>, <&7>]>"
           - narrate <[line]>
 
       - case DECLINED FAILED_DOWNLOAD:
         - define msg "<n><n><n><&c><&l>[!] Resourcepack download failed.
-                      <n><n><&f>Sup nerd, the Nimnite resourcepack is <&n>required<&r> to play.
-                      <n><n><n><n>If you think this is a <&c>bug<&r>, please report it in our <&9><&l><&n>Discord<&r> server!
-                      <n><n><&b><&n>https://discord.gg/RB5a7WvHeP<&r>
-                      <n><n>(idk how to make the link clickable rip)"
+                      <n><n><&f>Uh oh... The Nimnite resourcepack is <&c><&n><&l>required<&r> to play.
+                      <n><n><n><n>If you think this is a <&c>bug<&r>, please report it in our <&9><&l><&n>DISCORD<&r> server!
+                      <n><n><&b><&n>https://discord.gg/nimsy<&r>"
         - kick <player> reason:<[msg]>
 
     ## - [ MAKE THIS CLEANER ] - ##
@@ -620,7 +627,6 @@ fort_lobby_setup:
   debug: false
   definitions: cube|loops|type|name
   script:
-
     #-reset previous entities
     - foreach play|mode|vid as:button_type:
       - if <server.has_flag[fort.menu.<[button_type]>_button_hitboxes]>:
