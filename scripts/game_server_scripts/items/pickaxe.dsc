@@ -97,6 +97,8 @@ fort_pic_handler:
     - define block <context.location>
     - define mat <[block].material.name>
 
+    - if <[mat].contains_any_text[wool|leaves]>:
+      - define tool shears
     - if <[mat].contains_any_text[oak|spruce|birch|jungle|acacia|dark_oak|mangrove|warped|barrel|bamboo]>:
       - define tool netherite_axe
     - else:
