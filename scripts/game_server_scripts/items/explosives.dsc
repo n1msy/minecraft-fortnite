@@ -20,13 +20,14 @@ fort_explosive_handler:
           - foreach stop
       - wait 1t
 
-    on player left clicks block with:fort_item_impulse_grenade flagged:!fort.item_dropped:
+    on player left clicks block with:fort_item_impulse_grenade flagged:!fort.item_dropped|!using_impulse_grenade:
     - define i       <context.item>
     - define eye_loc <player.eye_location>
     - define origin <[eye_loc].relative[-0.25,0,0.35]>
     - define target_loc <[eye_loc].ray_trace[default=air;range=100]>
     - define points <[origin].points_between[<[target_loc]>].distance[0.75]>
 
+    - flag <player> fort.using_impulse_grenade expire:2s
     - playsound <player> sound:ENTITY_SNOWBALL_THROW pitch:0.9
 
     - take slot:<player.held_item_slot>
@@ -67,13 +68,14 @@ fort_explosive_handler:
     - foreach <[entities]> as:e:
       - adjust <[e]> velocity:<[e].location.above[1].sub[<[grenade_loc]>]>
 
-    on player left clicks block with:fort_item_grenade flagged:!fort.item_dropped:
+    on player left clicks block with:fort_item_grenade flagged:!fort.item_dropped|!fort.using_grenade:
     - define i       <context.item>
     - define eye_loc <player.eye_location>
     - define origin <[eye_loc].relative[-0.25,0,0.35]>
     - define target_loc <[eye_loc].ray_trace[default=air;range=100]>
     - define points <[origin].points_between[<[target_loc]>].distance[0.75]>
 
+    - flag <player> fort.using_grenade expire:1.5s
     - playsound <player> sound:ENTITY_SNOWBALL_THROW pitch:0.9
 
     #item:<[item]> doesn't work for some reason

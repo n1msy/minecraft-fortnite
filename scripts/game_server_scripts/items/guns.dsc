@@ -131,7 +131,7 @@ fort_gun_handler:
 
     #if gun is empty when picking it up, reload
     - define loaded_ammo <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
-    - if <[loaded_ammo]> == 0:
+    - if <[loaded_ammo]> <= 0:
       - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
 
     on player drops gun_*:
@@ -322,6 +322,7 @@ fort_gun_handler:
       - flag player fort.<[gun_name]>.cooldown duration:<[gun].flag[cooldown]>s
 
     - flag player is_shooting
+    - flag player fort.reloading_gun:!
     - while <player.has_flag[gun_holding_down]> && <player.is_online> && <player.item_in_hand.flag[uuid]||null> == <[gun_uuid]>:
       #do 1 instead of 0 so there's no delay on the first shot
       - if <[loop_index].mod[<[ticks_between_shots]>]> == <[mod_value]>:
@@ -769,7 +770,7 @@ fort_gun_handler:
     #run, not inject, since there are waits in it
     - run update_hud
 
-    - if <[loaded_ammo]> == 0:
+    - if <[loaded_ammo]> <= 0:
       - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
       - while stop
 
@@ -833,13 +834,15 @@ fort_gun_handler:
 
     - define auto_reload <[data].get[auto_reload]||false>
 
-    - if <[total_ammo]> == 0:
+    # disallow player to reload if negative or equal to 0 ammo
+    - if <[total_ammo]> <= 0:
+      # ensure the player has 0 ammo and not negative ammo
+      - flag player fort.ammo.<[ammo_type]>:0
       #auto reload just makes it so the "no reload" text doesn't appear every time you hold the item
       - if !<[auto_reload]>:
         - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
-        - title "subtitle:<&c>No reload ammo." fade_in:0 stay:1 fade_out:15t
+        - title "subtitle:<&c>No ammo to reload with." fade_in:0 stay:1 fade_out:15t
         - playsound <player> sound:UI_BUTTON_CLICK pitch:1.8
-
       - stop
 
     - flag player fort.reloading_gun
@@ -851,7 +854,12 @@ fort_gun_handler:
     - cast SLOW_DIGGING amplifier:255 duration:9999999s no_icon no_ambient hide_particles if:<[gun_name].equals[rocket_launcher].not>
     - repeat <[reload_time].div[3]>:
 
-      #if they hold it and it's, it'll auto reload
+      # check if the player has stopped reloading during the sequence
+      - if !<player.has_flag[fort.reloading_gun]>:
+        - define cancelled True
+        - repeat stop
+
+      # if they hold it and it's, it'll auto reload
       - if <player.item_in_hand.flag[uuid]||null> != <[gun_uuid]>:
         - define cancelled True
         - repeat stop
@@ -875,10 +883,18 @@ fort_gun_handler:
         - define new_loaded_ammo <[mag_size]>
       - define new_total_ammo <[total_ammo].sub[<[mag_size].sub[<[current_loaded_ammo]>]>]>
 
+      # ensure that new_loaded_ammo is 0 and not negative.
+      - if <[new_loaded_ammo]> < 0:
+        - define <[new_loaded_ammo]> 0
+
+      # ensure that new_total_ammo is 0 and not negative.
+      - if <[new_total_ammo]> < 0:
+        - define <[new_total_ammo]> 0
+
       - flag server fort.temp.<[gun_uuid]>.loaded_ammo:<[new_loaded_ammo]>
       - flag player fort.ammo.<[ammo_type]>:<[new_total_ammo]>
 
-      #"return" rocket into gun
+      # "return" rocket into gun
       - if <[gun].script.name.after[gun_]> == rocket_launcher:
         - inventory adjust slot:<player.held_item_slot> custom_model_data:20
 
@@ -891,7 +907,6 @@ fort_gun_handler:
 
     - cast SLOW_DIGGING remove
     - flag player fort.reloading_gun:!
-
 
   shoot_fx:
     #default origin
