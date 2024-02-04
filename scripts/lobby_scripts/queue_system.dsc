@@ -88,6 +88,8 @@ fort_queue_handler:
             #instead of finding the server for each player, update the count within the queue while still having this def so the definition doesnt have to constantly be redefined?
             - define server_to_join <[<[mode]>_servers].parse_tag[<[parse_value]>/<server.flag[fort.available_servers.<[mode]>.<[parse_value]>.players].size||0>].sort_by_number[parse[after[/]]].reverse.first.before[/]>
 
+            - narrate "<&a>Sending you to game server <[server_to_join].after_last[_]>." targets:<[player]>
+
             #this flag is so the foreach doesn't include the "joining" players, in case it takes a minute
             - flag <[player]> fort.joining_match
             - adjust <[player]> send_to:<[server_to_join]>
