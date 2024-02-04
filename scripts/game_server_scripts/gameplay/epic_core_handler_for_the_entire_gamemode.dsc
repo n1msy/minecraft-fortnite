@@ -331,20 +331,16 @@ fort_core_handler:
     - define players_that_played <server.flag[fort.temp.total_players]>
     - foreach <[players_that_played]> as:p:
       #i dont think we have to erase, since it overrides but just in case ig
-      - define data:!
-      - define old_data:!
-      - define new_data:!
-
       - define uuid <[p].uuid>
       - define current_kills <server.flag[fort.temp.kills.<[uuid]>]||0>
       - ~mongo id:nimnite_playerdata find:[uuid=<[uuid]>] save:pdata
       - define pdata <entry[pdata].result>
       - if <[pdata].is_empty>:
 
-        - define data.uuid:<[uuid]>
-        - define data.<[mode]>.kills:<[current_kills]>
+        - define created_data.uuid:<[uuid]>
+        - define created_data.<[mode]>.kills:<[current_kills]>
 
-        - ~mongo id:nimnite_playerdata insert:<[data]>
+        - ~mongo id:nimnite_playerdata insert:<[created_data]>
       - else:
         - define total_kills       <[pdata].first.parse_yaml.get[<[mode]>].get[kills]||0>
         - define new_total_kills   <[total_kills].add[<[current_kills]>]>
@@ -356,8 +352,6 @@ fort_core_handler:
 
     # - [ Save Player WINS ] - #
     - foreach <[winners]> as:winner:
-      - define old_data:!
-      - define new_data:!
 
       - define uuid <[winner].uuid>
 
