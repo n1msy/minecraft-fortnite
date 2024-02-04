@@ -10,7 +10,8 @@ ReportSystem_Data:
     config:
         # Should we record a player's movements and interactions when they are reported?
         enable_player_recording: true
-        channel_report_post: 875558316196106250
+        # Staff chat channel ID in Nimbus staff Discord server
+        channel_report_post: 1195963976908021821
 
     disabled_servers:
         - fort_lobby
@@ -39,11 +40,10 @@ ReportSystem_Connect:
 ReportSystem_Disconnect:
     type: task
     debug: false
-    scripT:
+    script:
     # MongoDB
     - if <util.mongo_connections.contains[ReportSystem_MongoDB]>:
         - mongo id:ReportSystem_MongoDB disconnect
-
 
 ReportSystem_Command:
     type: command
@@ -54,7 +54,7 @@ ReportSystem_Command:
     - reportplayer
     - report_user
     - reportuser
-    usage: /report (player) (reason)
+    usage: /report (player) [reason]
     description: Reports a player who is not following the rules
     permission: net.report
     tab completions:
@@ -66,7 +66,7 @@ ReportSystem_Command:
         - narrate "<&c>You may report another player in <player.flag_expiration[ReportSystem.Report_Cooldown].from_now.formatted||0.01s>"
         - stop
     - if <context.args.is_empty>:
-        - narrate "<&c>Usage: /report (player) (optional-reason)"
+        - narrate "<&c>Usage: /report (player) [optional-reason]"
         - stop
     - if <context.args.size> > 1:
         - define reason <context.args.get[2].to[<context.args.size>].separated_by[<&sp>].sql_escaped>
