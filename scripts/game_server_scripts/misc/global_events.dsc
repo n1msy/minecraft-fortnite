@@ -153,7 +153,11 @@ fort_global_handler:
 
     #prevent any items from being equipped
     on player clicks in inventory slot:37|38|39|40:
-    - determine cancelled
+    - determine passively cancelled
+    - define cursor_item <context.cursor_item>
+    - adjust <player> item_on_cursor:air
+    - if <[cursor_item].script.name.starts_with[fort_item_]||false>:
+      - inventory set o:<[cursor_item]> slot:<player.flag[fort.last_slot_clicked]>
 
     #since you only have access to 1-6 slots, and the other slots are category names
     #WAY better way of doing this but my brain is too tired to think rn
@@ -168,6 +172,9 @@ fort_global_handler:
     - if <context.is_shift_click>:
       - determine passively cancelled
       - stop
+
+    #-save last slot clicked on to prevent item from being equipped
+    - flag player fort.last_slot_clicked:<context.slot>
     - stop if:<context.clicked_inventory.inventory_type.equals[CRAFTING]>
     - stop if:<context.item.has_flag[action]||false>
     - if <util.list_numbers[from=19;to=27].contains[<context.slot>]> && <context.item.material.name> != air:
