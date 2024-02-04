@@ -18,7 +18,8 @@ fort_death_handler:
     #no need to remove spectate flag either, since when they quit flag is removed
     - wait 4s
     - while <player.is_online> && <player.has_flag[fort.spectating]>:
-      - actionbar <&chr[1].font[elim_text]><element[<&l><&lb><&e><&l>SNEAK<&f><&l><&rb> <&c><&l>LEAVE MATCH].font[elim_text]>
+      - if !<player.has_flag[fort.leave_match_delay]>:
+        - actionbar <&chr[1].font[elim_text]><element[<&l><&lb><&e><&l>SNEAK<&f><&l><&rb> <&c><&l>LEAVE MATCH].font[elim_text]>
       - wait 2s
 
     on player stops spectating flagged:fort.spectating:
@@ -29,7 +30,8 @@ fort_death_handler:
     #and don't do it again
     - if !<[player_spectating].is_online> || <[player_spectating].has_flag[fort.spectating]>:
       - stop
-    - if <player.has_flag[fort.left_match]>:
+    #leave match delay so players dont instantly accidentally leave the game
+    - if <player.has_flag[fort.left_match]> || <player.has_flag[fort.leave_match_delay]>:
       - stop
     - narrate "<element[<&l><player.name>].color[<color[#ffb62e]>]> <&7>has stopped spectating you" targets:<[player_spectating]>
     - adjust <player> send_to:fort_lobby
@@ -146,6 +148,9 @@ fort_death_handler:
     - foreach <[spectators]> as:spectator:
       #flagging this NOT in separate task, so the hud can update correctly
       - flag <[spectator]> fort.spectating:<[player_to_spectate]>
+      #add a delay so they dont instantly accidentally leave / trigger the event
+      - flag <[spectator]> fort.leave_match_delay duration:5s
+
       #-running this in separate queue as delayed function, since spectator_target mech is a little wonky and id like to add a delay
       - run fort_death_handler.spectate_target def:<map[spectator=<[spectator]>;target=<[player_to_spectate]>]>
 
