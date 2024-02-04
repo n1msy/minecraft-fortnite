@@ -867,17 +867,16 @@ fort_gun_handler:
 
     - if !<[cancelled].exists>:
 
+      #this will ALWAYS be less than <[mag_size]>
       - define current_loaded_ammo <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
 
-      - if <[total_ammo]> < <[mag_size]>:
-        - define new_loaded_ammo <[total_ammo]>
-      - else:
-        - define new_loaded_ammo <[mag_size]>
+      - define ammo_to_fill        <[mag_size].sub[<[current_loaded_ammo]>]>
 
-      - define new_total_ammo <[total_ammo].sub[<[new_loaded_ammo]>]>
+      - if <[total_ammo]> < <[ammo_to_fill]>:
+        - define ammo_to_fill <[total_ammo]>
 
-      - flag server fort.temp.<[gun_uuid]>.loaded_ammo:<[new_loaded_ammo]>
-      - flag player fort.ammo.<[ammo_type]>:<[new_total_ammo]>
+      - flag server fort.temp.<[gun_uuid]>.loaded_ammo:+:<[ammo_to_fill]>
+      - flag player fort.ammo.<[ammo_type]>:-:<[ammo_to_fill]>
 
       #"return" rocket into gun
       - if <[gun].script.name.after[gun_]> == rocket_launcher:
