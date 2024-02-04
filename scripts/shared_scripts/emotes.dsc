@@ -18,6 +18,11 @@ fort_emote_handler:
         - flag player fort.emote_cooldown_msg_cooldown duration:3s
       - stop
 
+    - define players_emoting <server.online_players_flagged[fort.emote]>
+    - if <[players_emoting].size> >= 10:
+      - narrate "<&c>There are too many players emoting right now."
+      - stop
+
     - define emote <map[2=default;3=none;4=none;5=none].get[<context.slot>]>
 
     #second check is for if they're already emoting
