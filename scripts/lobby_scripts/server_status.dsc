@@ -13,11 +13,14 @@ update_server_status:
 
     - foreach <[game_servers]> as:s:
 
-      - ~bungeetag server:<[s]> <map[player_size=<server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].size>;mode=<server.flag[fort.mode]>;is_startup=<server.has_flag[fort.temp.startup]>]> save:s_data
+      - ~bungeetag server:<[s]> <map[players=<server.online_players_flagged[fort].filter[has_flag[fort.spectating].not]>;mode=<server.flag[fort.mode]>;is_startup=<server.has_flag[fort.temp.startup]>]> save:s_data
       - define s_data <entry[s_data].result>
 
+      ##might be a little cheesing, but for some reason the players flag is incorrectly updated in the hub sometimes?
+      - flag server fort.available_servers.<[s]>.players:<[s_data].get[players]>
+
       - define mode        <[s_data].get[mode]>
-      - define player_size <[s_data].get[player_size]>
+      - define player_size <[s_data].get[players].size>
 
       - define is_available <server.flag[fort.available_servers.<[mode]>].keys.contains[<[s]>]>
       - define status_icon  <[is_available].if_true[<&a>●].if_false[<&c>●]>
@@ -27,7 +30,6 @@ update_server_status:
       - if <[s_data].get[is_startup]>:
         - define status_icon  <element[●].color[#ffaa2b]>
         - define desc         <&f>Preparing...
-
 
       - define text "<[status_icon]> <&7>Server <[number]> (<&f><[mode]><&7>) <&8>- <[desc]>"
 
