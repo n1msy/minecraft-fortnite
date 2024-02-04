@@ -845,7 +845,16 @@ fort_lobby_setup:
 
     ##
 
-    ##for tutorial icon, make sure to add text saying "Tutorial" when hovering over it
+    ## - [ Game Status Title ] - ##
+    - define status_title_loc <server.flag[fort.menu_spawn].right[4.5].with_yaw[-90].above[3]>
+
+    - define title_display <server.flag[fort.status.title]||null>
+    - if <[title_display]> != null:
+      - remove <[title_display]>
+    - spawn <entity[text_display].with[text=<&b><&l>Game Status<&r>;pivot=FIXED;background_color=transparent]> <[status_title_loc]> save:title_display
+    - flag server fort.status.title:<entry[title_display].spawned_entity>
+
+    ##
 
     - flag server fort.menu_spawn:<[loc]>
 

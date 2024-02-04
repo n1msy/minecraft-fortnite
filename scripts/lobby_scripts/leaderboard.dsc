@@ -1,3 +1,12 @@
+fort_board_handler:
+  type: world
+  debug: false
+  events:
+    on delta time secondly every:10:
+
+    - run update_server_status
+
+
 update_leaderboard:
   type: task
   debug: false
@@ -9,20 +18,13 @@ update_leaderboard:
     - define start_loc <[lb_loc].above[4]>
 
     ####temp (move to lobby setup) ####
-    - define lb_bg <server.flag[fort.leaderboard.bg]||null>
-    - if <[lb_bg]> != null:
-      - remove <[lb_bg]>
-    #- spawn <entity[item_display].with[item=<item[oak_sign].with[custom_model_data=13]>;scale=2.75,5,2.75]> <[lb_loc].above[2].with_yaw[-90]> save:lb_bg
-    #- flag server fort.leaderboard.bg:<entry[lb_bg].spawned_entity>
-
-    #####
 
     - define title_display <server.flag[fort.leaderboard.wins.title]||null>
     - if <[title_display]> != null:
       - remove <[title_display]>
     - spawn <entity[text_display].with[text=<&b><&l>Top 10 Wins<&r>;pivot=FIXED;background_color=transparent]> <[start_loc]> save:lb_title_display
     - flag server fort.leaderboard.wins.title:<entry[lb_title_display].spawned_entity>
-
+    #####
 
     - define first <player>
 
@@ -102,4 +104,4 @@ update_leaderboard:
       - adjust <[e]> interpolation_duration:3t
 
 
-    - announce "<&b>[<bungee.server>]<&r> Updated leaderboard. <&8>(<util.time_now.format>)" to_console
+    #- announce "<&b>[<bungee.server>]<&r> Updated leaderboard. <&8>(<util.time_now.format>)" to_console

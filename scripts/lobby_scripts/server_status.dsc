@@ -5,88 +5,49 @@ update_server_status:
   script:
 
 
-
-    - define lb_loc <server.flag[fort.menu_spawn].right[6.5]>
-
-    - define start_loc <[lb_loc].above[4]>
-
-
-
-    - define title_display <server.flag[fort.leaderboard.wins.title]||null>
-    - if <[title_display]> != null:
-      - remove <[title_display]>
-    - spawn <entity[text_display].with[text=<&b><&l>Game Status<&r>;pivot=FIXED;background_color=transparent]> <[start_loc]> save:lb_title_display
-    - flag server fort.status.title:<entry[lb_title_display].spawned_entity>
-
-#⬤
-    #-first place player head
-    - define player_head <server.flag[fort.leaderboard.wins.head]||null>
-    - if <[player_head]> != null:
-      - remove <[player_head]>
-
-    ####REMEMBER TO CACHE THE SKULL SKIN OF THE WINNER WHEN TRANSFERRING SERVER DATA
-
-    - define player_head_item <item[player_head].with[skull_skin=<[first].skull_skin>]>
-
-    - spawn <entity[item_display].with[item=<[player_head_item]>;scale=0,0,0]> <[start_loc].below[0.415].with_yaw[-90]> save:wins_first_head
-    - define head_display <entry[wins_first_head].spawned_entity>
-
-    - flag server fort.leaderboard.wins.head:<[head_display]>
-
-    - rotate <[head_display]> infinite yaw:2.5 frequency:1t
-
-    - wait 2t
-    #pop up animation
-    - adjust <[head_display]> interpolation_start:0
-    - adjust <[head_display]> scale:1.25,1.25,1.25
-    - adjust <[head_display]> translation:0,0.23,0
-    - adjust <[head_display]> interpolation_duration:4t
-
-    - wait 4t
-
-    #redefine start_loc with the player head in mind, so the rest of the names follow after it
-    - define start_loc <[start_loc].below[1]>
+    - define start_loc <server.flag[fort.menu_spawn].right[4.5].with_yaw[-90].above[2.5]>
 
     #fort flag is removed for lobby stuff, so using separate flag name
-    - define players <server.players.random[10]>
-    - foreach <[players]> as:p:
-      - define place <[loop_index]>
-      - define name  <[p].name>
+    - define game_servers <bungee.list_servers.filter[starts_with[fort_]].exclude[fort_lobby]>
 
-      - define text "<[place].bold>. <[name]>"
 
-      #name colors
-      - choose <[place]>:
-        - case 1:
-          - define text <[text].color_gradient[from=<color[#ffc800]>;to=<color[#fff8de]>]><&r>
-        - case 2:
-          - define text <[text].color_gradient[from=<color[#b07031]>;to=<color[#fff8de]>]><&r>
-        - case 3:
-          - define text <[text].color_gradient[from=<color[#757575]>;to=<color[#ffffff]>]><&r>
-        - default:
-          - define text <[text].color[<color[#696969]>]><&r>
+    - foreach <[game_servers]> as:s:
 
-      - define text "<[text]> <&f><[p].flag[fort_data.wins]||->"
+      - ~bungeetag server:<[s]> <map[player_size=<server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].size>;mode=<server.flag[fort.mode]>]> save:s_data
+      - define s_data <entry[s_data].result>
+
+      - define mode        <[s_data].get[mode]>
+      - define player_size <[s_data].get[player_size]>
+
+      - define is_available <server.flag[fort.available_servers.<[mode]>].keys.contains[<[s]>]>
+      - define status_icon  <[is_available].if_true[<&a>●].if_false[<&c>●]>
+      - define number       <[s].after_last[_]>
+
+      - define desc         <[is_available].if_true[<&a>AVAILABLE].if_false[<&f><[player_size]> <&7>left]>
+
+      - define text "<[status_icon]> <&7>Server <[number]> (<&f><[mode]><&7>) <&8>- <[desc]>"
 
       #gold, silver, bronze, gray
-
-      - define name_loc <[start_loc].below[<[place].div[2.5]>]>
+      - define name_loc <[start_loc].below[<[loop_index].div[2.5]>]>
 
       #-text
-      #i could just remove and readd a new display entity, OR just update the current one already...
-      #idc i wanna do it this way
-      - define current_place_display <server.flag[fort.leaderboard.wins.<[place]>.entity]||null>
-      - if <[current_place_display]> != null:
-        - adjust <[current_place_display]> interpolation_start:0
-        - adjust <[current_place_display]> scale:1,0,1
-        - adjust <[current_place_display]> translation:0,0.08,0
-        - adjust <[current_place_display]> interpolation_duration:1t
-        - wait 1t
-        - remove <[current_place_display]>
+      - define current_display <server.flag[fort.status.<[s]>.entity]||null>
+      - if <[current_display]> != null:
 
-      - spawn <entity[text_display].with[text=<[text]>;pivot=FIXED;background_color=transparent;scale=1,0,1]> <[name_loc]> save:t_<[p]>
-      - define e <entry[t_<[p]>].spawned_entity>
-      - flag server fort.leaderboard.wins.<[place]>.entity:<[e]>
+        # - [ only update the text display if it has changed ] - #
+        - if <[text]> == <[current_display].text>:
+          - foreach next
+
+        - adjust <[current_display]> interpolation_start:0
+        - adjust <[current_display]> scale:1,0,1
+        - adjust <[current_display]> translation:0,0.08,0
+        - adjust <[current_display]> interpolation_duration:1t
+        - wait 2t
+        - remove <[current_display]>
+
+      - spawn <entity[text_display].with[text=<[text]>;pivot=FIXED;background_color=transparent;scale=1,0,1]> <[name_loc]> save:e_<[s]>
+      - define e <entry[e_<[s]>].spawned_entity>
+      - flag server fort.status.<[s]>.entity:<[e]>
 
       - wait 1t
       - adjust <[e]> interpolation_start:0
@@ -94,5 +55,21 @@ update_server_status:
       - adjust <[e]> translation:0,0.08,0
       - adjust <[e]> interpolation_duration:3t
 
+    #so offline servers are removed from the list OR a new game server is starting up
 
-    - announce "<&b>[<bungee.server>]<&r> Updated leaderboard. <&8>(<util.time_now.format>)" to_console
+    - define cached_servers  <server.flag[fort.status].keys>
+    - define offline_servers <[cached_servers].exclude[<[game_servers]>]>
+
+    - foreach <[offline_servers]> as:o_s:
+      - define display <server.flag[fort.status.<[o_s]>.entity]>
+      #in case they were somehow removed
+      - if !<[display].is_spawned>:
+        - foreach next
+      - adjust <[display]> interpolation_start:0
+      - adjust <[display]> scale:1,0,1
+      - adjust <[display]> translation:0,0.08,0
+      - adjust <[display]> interpolation_duration:1t
+      - wait 2t
+      - remove <[display]>
+      - flag server fort.status.<[o_s]>:!
+
