@@ -43,7 +43,7 @@ fort_storm_handler:
     - flag player fort.in_storm
     #remember: night vision plays a part in showing the purple sky
     - cast BLINDNESS duration:10t hide_particles no_ambient no_icon no_clear
-    - cast SPEED amplifier:1 duration:infinite hide_particles no_icon no_ambient no_clear
+    - cast SPEED amplifier:2 duration:infinite hide_particles no_icon no_ambient no_clear
     - cast BLINDNESS duration:infinite hide_particles no_icon no_ambient no_clear
     - playsound <player> sound:BLOCK_BEACON_POWER_SELECT pitch:1.25 volume:0.5
     #- time player 13000
