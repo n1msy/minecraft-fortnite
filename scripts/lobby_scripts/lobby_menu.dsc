@@ -217,13 +217,25 @@ fort_lobby_handler:
       - flag server fort.resourcepack.hash:<[new_hash]>
       - announce "<&b>[<bungee.server>]<&r> Cached new resourcepack hash <&8>(<&7><[new_hash]><&8>)<&r>." to_console
 
+
+    ##i dont wanna use mongo command for every join, so we'll just save skull skin data on server
     # - [ Add player to DB if haven't already ] - #
     - if !<server.flag[fort.joined_players].contains[<player>]||false>:
 
-      ##add player to mongo database
+      #- ~mongo id:nimnite_playerdata find:[uuid=<[uuid]>] save:pdata
+      #- define pdata <entry[pdata].result>
+      #just in case the server flag was reset or something
+      # if <[pdata].is_empty>:
+
+      #  - define created_data.uuid:<[uuid]>
+      #  - ~mongo id:nimnite_playerdata insert:<[created_data]>
+
       - flag server fort.joined_players:->:<player>
 
+    #- define insert_skull_data.skull_skin:<player.skull_skin>
     ##save the player's skull_skin data
+    - flag server fort.playerdata.<player.uuid>.skull_skin:<player.skull_skin>
+
 
     #- [ ! ] Warning: RP is being downloaded every time players join lobby server (even when returning from game)
     #can be fixed with new snapshot stuff from 1/18/23
