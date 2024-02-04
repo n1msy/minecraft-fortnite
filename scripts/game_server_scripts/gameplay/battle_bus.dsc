@@ -432,7 +432,7 @@ fort_bus_handler:
       - define seats       <[total_seats]>
       - define controllers <[total_controllers]>
 
-      - define bus_path_points <[bus_start].points_between[<[bus_start].forward[<[distance]>]>].distance[1.5]>
+      - define bus_path_points <[bus_start].points_between[<[bus_start].forward[<[distance]>]>].distance[1.4]>
       - foreach <[bus_path_points]> as:point:
 
         - if <server.has_flag[fort.temp.cancel_bus]> || !<[bus].is_spawned>:
