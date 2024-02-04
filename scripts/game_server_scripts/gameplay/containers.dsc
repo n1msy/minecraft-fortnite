@@ -1,13 +1,32 @@
-test:
-  type: task
-  debug: false
-  script:
-    - define chest_loc <player.cursor_on.center>
+# test:
+#   type: task
+#   debug: false
+#   script:
+#     - define chest_loc <player.cursor_on.center>
 
-    - define p_loc      <[chest_loc].with_yaw[<[chest_loc].flag[fort.chest.yaw]>].forward[0.4]>
-    - define gold_shine <[p_loc].left[0.5].points_between[<[p_loc].right[0.55]>].distance[0.1]>
+#     - define p_loc      <[chest_loc].with_yaw[<[chest_loc].flag[fort.chest.yaw]>].forward[0.4]>
+#     - define gold_shine <[p_loc].left[0.5].points_between[<[p_loc].right[0.55]>].distance[0.1]>
 
-    - playeffect at:<[gold_shine].random[15]> effect:DUST_COLOR_TRANSITION offset:0 quantity:1 special_data:1|<color[#ffc02e]>|<color[#fff703]>
+#     - playeffect at:<[gold_shine].random[15]> effect:DUST_COLOR_TRANSITION offset:0 quantity:1 special_data:1|<color[#ffc02e]>|<color[#fff703]>
+
+containers_data:
+  type: data
+  config:
+    # List of guns that the supply-drop can drop
+    # TODO: Make this list dynamic and cache/update on server starts/reloads
+    supply_drop_guns:
+    - gun_pump_shotgun
+    - gun_tactical_shotgun
+    - gun_assault_rifle
+    - gun_burst_assault_rifle
+    - gun_tactical_smg
+    - gun_smg
+    - gun_bolt_action_sniper_rifle
+    # Revolvers and pistols have a high spawn rate so they are excluded
+    # - gun_revolver
+    # - gun_pistol
+    - gun_grenade_launcher
+    - gun_rocket_launcher
 
 fort_chest:
   type: item
@@ -161,8 +180,6 @@ fort_chest_handler:
         - playsound <[loc]> sound:BLOCK_AMETHYST_BLOCK_CHIME pitch:1.5 volume:0.56
       - playeffect at:<[gold_shine].random[15]> effect:DUST_COLOR_TRANSITION offset:0 quantity:1 special_data:1|<color[#ffc02e]>|<color[#fff703]>
       - wait 4t
-    #- if <server.has_flag[fort.temp.startup]>:
-      #- announce "<&b>[Nimnite] <&f>DEBUG: Chest effects stopped @ <[loc]>" to_console
 
   #new chest effect system
   all_chest_effects:
@@ -227,16 +244,15 @@ fort_chest_handler:
       - define rarity legendary
     - else:
       - define rarity epic
-    - define guns <util.scripts.filter[name.starts_with[gun_]].exclude[<script[gun_particle_origin]>].parse[name.as[item]]>
-    - while !<[gun_to_drop].exists>:
-      - define cycles <[loop_index]>
-      - foreach <[guns]> as:g:
-        - if <util.random_chance[<[g].flag[rarities.<[rarity]>.chance]>]>:
-          #just because revolvers and pistols have such a high spawn rate
-          - if <list[revolver|pistol].contains[<[g].script.name.after[gun_]>]> && <[cycles]> <= 30:
-            - foreach next
-          - define gun_to_drop <[g].with[flag=rarity:<[rarity]>]>
-          - foreach stop
+
+    # Pick a random gun based on their chance
+    - define guns <script[containers_data].data_key[config.supply_drop_guns]>
+    - define gun_chances <list[]>
+    - foreach <[guns]> as:gun:
+      # Create a large list and repeat a object based on their chance
+      - define chance <item[<[gun]>].flag[rarities.<[rarity]>.chance].mul[100].round>
+      - define gun_chances <[gun_chances].include[<[gun].repeat_as_list[<[chance]>]>]>
+    - define gun_to_drop <item[<[gun_chances].random>].with[flag=rarity:<[rarity]>]>
 
     - spawn INTERACTION[height=6;width=2.5] <[start_loc].below[3]> save:hitbox
     - spawn ITEM_DISPLAY[item=<item[gold_nugget].with[custom_model_data=20]>;scale=<[size]>,<[size]>,<[size]>] <[start_loc]> save:supply_drop

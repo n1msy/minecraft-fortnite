@@ -386,6 +386,9 @@ fort_pic_handler:
       #(then "animate" the counter)
       - flag player fort.<[mat]>.qty:+:<[qty]>
 
+      - inject fort_pickaxe_mat_animation_clear_queue
+      - flag player fort.mat_animation_queue:<queue.id>
+
       #the more mats, the faster the frequency
       - define add_freq 1
       - if <[qty]> > 22:
@@ -415,6 +418,10 @@ fort_pic_handler:
 
     - else if <[action]> == remove:
       - flag player fort.<[mat]>.qty:-:<[qty]>
+
+      - inject fort_pickaxe_mat_animation_clear_queue
+      - flag player fort.mat_animation_queue:<queue.id>
+
       - repeat <[qty]>:
 
         - define mat_qty  <[current_qty].sub[<[value]>]>
@@ -427,6 +434,7 @@ fort_pic_handler:
         - sidebar set_line scores:<[line]> values:<[mat_]>
 
         - wait 1t
+    - flag player fort.mat_animation_queue:!
 
   break_natural_structure:
     ##minor problem: sometimes parts of the leaves/tree stay because there was a mistake
@@ -572,6 +580,15 @@ fort_pic_handler:
     - if <[health_display].is_spawned>:
       - remove <[health_display]>
 
+
+fort_pickaxe_mat_animation_clear_queue:
+  type: task
+  debug: false
+  script:
+  - if <player.has_flag[fort.mat_animation_queue]>:
+    - define que <player.flag[fort.mat_animation_queue]>
+    - if <queue[<[que]>].exists>:
+        - queue <queue[<[que]>]> clear
 
 #based on the material inputted, it returns either wood, brick, or metal
 get_material_type:

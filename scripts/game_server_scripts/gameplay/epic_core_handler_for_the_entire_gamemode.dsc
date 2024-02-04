@@ -43,7 +43,7 @@ fort_core_handler:
   #-stage 1
   #storm eye shrinks in 3 minutes 20 seconds
   #default: 200
-  - define seconds       100
+  - define seconds       30
   - define phase         GRACE_PERIOD
   - define forming:!
   - flag server fort.temp.storm.dps:1
@@ -51,7 +51,7 @@ fort_core_handler:
   - inject fort_core_handler.timer
   #storm eye shrinking 3 minutes
   #default: 180
-  - define seconds  80
+  - define seconds  65
   - define phase    STORM_SHRINK
   - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
@@ -59,7 +59,7 @@ fort_core_handler:
   #-stage 2
   #storm eye shrinks in 2 minutes
   #default: 120
-  - define seconds       60
+  - define seconds       100
   - define phase         GRACE_PERIOD
   - ~run fort_storm_handler.set_new def.new_diameter:800
   - inject fort_core_handler.timer
@@ -72,14 +72,14 @@ fort_core_handler:
   #-stage 3
   #storm eye shrinks in 1 Minute 30 seconds
   #default: 90
-  - define seconds       45
+  - define seconds       30
   - define phase         GRACE_PERIOD
   - flag server fort.temp.storm.dps:2
   - ~run fort_storm_handler.set_new def.new_diameter:400
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute 30 seconds
   #default: 90
-  - define seconds  45
+  - define seconds  60
   - define phase    STORM_SHRINK
   - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
@@ -87,7 +87,7 @@ fort_core_handler:
   #-stage 4
   #storm eye shrinks in 1 Minute 20 Seconds
   #default: 80
-  - define seconds       40
+  - define seconds       20
   - define phase         GRACE_PERIOD
   - define new_diameter  200
   - flag server fort.temp.storm.dps:5
@@ -95,7 +95,7 @@ fort_core_handler:
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute 10 seconds
   #default: 70
-  - define seconds  35
+  - define seconds  55
   - define phase    STORM_SHRINK
   - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
@@ -103,14 +103,14 @@ fort_core_handler:
   #-stage 5
   #storm eye shrinks in 50 Seconds
   #default: 50
-  - define seconds       25
+  - define seconds       15
   - define phase         GRACE_PERIOD
   - flag server fort.temp.storm.dps:8
   - ~run fort_storm_handler.set_new def.new_diameter:100
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute
   #default: 60
-  - define seconds  30
+  - define seconds  40
   - define phase    STORM_SHRINK
   - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
@@ -118,14 +118,14 @@ fort_core_handler:
   #-stage 6
   #storm eye shrinks in 30 Seconds
   #default: 30
-  - define seconds       15
+  - define seconds       5
   - define phase         GRACE_PERIOD
   - flag server fort.temp.storm.dps:10
   - ~run fort_storm_handler.set_new def.new_diameter:50
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute
   #default: 60
-  - define seconds  30
+  - define seconds  40
   - define phase    STORM_SHRINK
   - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
@@ -133,7 +133,7 @@ fort_core_handler:
   #-stage 7
   #storm eye shrinking 55 seconds
   #default: 55
-  - define seconds       25
+  - define seconds       10
   - define phase         STORM_SHRINK
   - ~run fort_storm_handler.set_new def.new_diameter:35
   - run fort_storm_handler.resize def.seconds:<[seconds]>
@@ -142,7 +142,7 @@ fort_core_handler:
   #-stage 8
   #storm eye shrinking 45 seconds
   #default: 45
-  - define seconds      20
+  - define seconds      35
   - define phase        STORM_SHRINK
   - ~run fort_storm_handler.set_new def.new_diameter:20
   - run fort_storm_handler.resize def.seconds:<[seconds]>
@@ -281,7 +281,7 @@ fort_core_handler:
     - if <[alive_teams].size> > 1:
       - stop
 
-    - run fort_core_handler.timer def:<map[phase=END;seconds=60]>
+    - run fort_core_handler.timer def:<map[phase=END;seconds=30]>
 
     #team name is the team captain's name
     - define winning_team <[alive_teams].first>
@@ -304,6 +304,8 @@ fort_core_handler:
     - wait 1s
 
     - while <[winners].filter[is_online].any>:
+      #-do it every 2s so winner title shows up still
+      - title title:<&chr[10].font[icons].color[<color[77,0,0]>]> fade_in:0 fade_out:0 stay:1m targets:<[winners].filter[is_online]>
       - actionbar <&chr[1].font[elim_text]><element[<&e><&l>Double-Sneak <&f>to <&c>leave<&r> the match.].font[elim_text]> targets:<[winners].filter[is_online]>
       - wait 2s
 
