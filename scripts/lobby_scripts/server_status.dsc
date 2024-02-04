@@ -13,7 +13,7 @@ update_server_status:
 
     - foreach <[game_servers]> as:s:
 
-      - ~bungeetag server:<[s]> <map[player_size=<server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].size>;mode=<server.flag[fort.mode]>]> save:s_data
+      - ~bungeetag server:<[s]> <map[player_size=<server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].size>;mode=<server.flag[fort.mode]>;is_startup=<server.has_flag[fort.temp.startup]>]> save:s_data
       - define s_data <entry[s_data].result>
 
       - define mode        <[s_data].get[mode]>
@@ -24,6 +24,10 @@ update_server_status:
       - define number       <[s].after_last[_]>
 
       - define desc         <[is_available].if_true[<&a>AVAILABLE].if_false[<&f><[player_size]> <&7>left]>
+      - if <[s_data].get[is_startup]>:
+        - define status_icon  <element[●].color[#ffaa2b]>
+        - define desc         <&f>Preparing...
+
 
       - define text "<[status_icon]> <&7>Server <[number]> (<&f><[mode]><&7>) <&8>- <[desc]>"
 

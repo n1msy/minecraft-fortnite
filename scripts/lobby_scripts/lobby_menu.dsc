@@ -271,7 +271,7 @@ fort_lobby_handler:
         - inject fort_lobby_setup.player_setup
         - wait 2s
         #-non-vanilla client risk message
-        - define client           <player.client_brand>
+        - define client           <player.client_brand||null>
         - define client_blacklist <list[Lunar|Feather|Badlion|unknown]>
         - if <player.is_online> && <[client].contains_any_text[<[client_blacklist]>]>:
           - playsound <player> sound:BLOCK_NOTE_BLOCK_PLING pitch:1.5
