@@ -162,6 +162,10 @@ fort_lobby_handler:
     - if <context.cause> == QUIT:
       - stop
 
+    #attempt to cancel damage (from entity cramming?)
+    on player damaged:
+    - determine cancelled
+
     #in case they hit a player and not click a block
     on player damages entity flagged:fort.in_menu priority:-10:
     - determine passively cancelled

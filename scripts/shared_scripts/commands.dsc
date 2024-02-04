@@ -159,7 +159,7 @@ fort_admin_commands:
       - case lobby_setup:
         - inject fort_admin_commands.server_check
         - run fort_lobby_setup
-        - narrate "<&a>Nimnite lobby menu set."
+        - narrate "<&a>Nimnite lobby circle set."
 
       - case lobby_teleport:
         #- define loc <player.location.round.above[0.5]>
