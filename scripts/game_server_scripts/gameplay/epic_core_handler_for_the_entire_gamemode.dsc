@@ -330,6 +330,11 @@ fort_core_handler:
     # In the future, i wanna change this to modifying the data, and then only inserting/updating it on the db ONCE instead of using several mongo commands
     - define players_that_played <server.flag[fort.temp.total_players]>
     - foreach <[players_that_played]> as:p:
+      #i dont think we have to erase, since it overrides but just in case ig
+      - define data:!
+      - define old_data:!
+      - define new_data:!
+
       - define uuid <[p].uuid>
       - define current_kills <server.flag[fort.temp.kills.<[uuid]>]||0>
       - ~mongo id:nimnite_playerdata find:[uuid=<[uuid]>] save:pdata
@@ -351,6 +356,9 @@ fort_core_handler:
 
     # - [ Save Player WINS ] - #
     - foreach <[winners]> as:winner:
+      - define old_data:!
+      - define new_data:!
+
       - define uuid <[winner].uuid>
 
       - ~mongo id:nimnite_playerdata find:[uuid=<[uuid]>] save:pdata
