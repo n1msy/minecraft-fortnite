@@ -35,7 +35,7 @@ update_server_status:
       - if <[current_display]> != null:
 
         # - [ only update the text display if it has changed ] - #
-        - if <[text]> == <[current_display].text>:
+        - if <[text]> == <[current_display].text> && <[name_loc]> == <[current_display].location>:
           - foreach next
 
         - adjust <[current_display]> interpolation_start:0
