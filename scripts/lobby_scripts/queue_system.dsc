@@ -92,9 +92,9 @@ fort_queue_handler:
             - define server_to_join <[available_servers].parse_tag[<[parse_value]>/<server.flag[fort.available_servers.<[mode]>.<[parse_value]>.players].size||0>].sort_by_number[parse[after[/]]].reverse.first.before[/]>
             - narrate "<&a>Sending you to game server <[server_to_join].after_last[_]>." targets:<[player]>
 
-            - wait 10t
-            - if !<[player].is_online>:
-              - foreach next
+            #- wait 10t
+            #- if !<[player].is_online>:
+            #  - foreach next
 
             #this flag is so the foreach doesn't include the "joining" players, in case it takes a minute
             - flag <[player]> fort.joining_match
