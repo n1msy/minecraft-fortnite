@@ -212,6 +212,11 @@ pregame_island_handler:
       - run update_hud player:<[p]>
     #in case they were invisible for some reason (case: mergu, even though emotes were disabled)
     - invisible <[players]> false
+
+    #-cache in-game players
+    #used for storing data after game ends
+    - flag server fort.temp.total_players:<[players]>
+
     #wait for emotes to stop, then send
     - wait 3t
     - run fort_core_handler

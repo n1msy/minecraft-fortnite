@@ -12,6 +12,17 @@ fort_emote_handler:
     - if <player.has_flag[fort.disable_emotes]> || <player.has_flag[fort.on_bus]> || <player.has_flag[fort.using_glider]>:
       - stop
 
+    - if <player.has_flag[fort.emote_cooldown]>:
+      - if !<player.has_flag[fort.emote_cooldown_msg_cooldown]>:
+        - narrate "<&c>Your emotes are on cooldown. (<player.flag_expiration[fort.emote_cooldown].from_now.formatted>)"
+        - flag player fort.emote_cooldown_msg_cooldown duration:3s
+      - stop
+
+    - define players_emoting <server.online_players_flagged[fort.emote]>
+    - if <[players_emoting].size> >= 10:
+      - narrate "<&c>There are too many players emoting right now."
+      - stop
+
     - define emote <map[2=default;3=none;4=none;5=none].get[<context.slot>]>
 
     #second check is for if they're already emoting
@@ -65,6 +76,7 @@ fort_emote_handler:
     - flag <[spawned]> emote_sound:<[sound]>
 
     - run dmodels_animate def.root_entity:<[spawned]> def.animation:<[emote]>
+    - flag player fort.emote_cooldown duration:20s
 
     - wait 1t
     - inventory close

@@ -39,7 +39,7 @@ ReportSystem_Connect:
 ReportSystem_Disconnect:
     type: task
     debug: false
-    scripT:
+    script:
     # MongoDB
     - if <util.mongo_connections.contains[ReportSystem_MongoDB]>:
         - mongo id:ReportSystem_MongoDB disconnect

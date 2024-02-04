@@ -323,27 +323,49 @@ fort_core_handler:
         - kick <[players]> "reason:<&r>The <&b>Nimnite lobby menu<&r> is currently offline. Rejoin later!"
     - announce to_console "<&b>[Nimnite]<&r> Match ended. Saving player data..."
 
+    - define mode <server.flag[fort.mode]||solo>
+
+    # - [ Save Player KILLS ] - #
+
     # In the future, i wanna change this to modifying the data, and then only inserting/updating it on the db ONCE instead of using several mongo commands
-    - define players_that_played <server.flag[fort.temp.kills].keys>
+    - define players_that_played <server.flag[fort.temp.total_players]>
     - foreach <[players_that_played]> as:p:
-      - define current_kills <server.flag[fort.temp.kills.<[p]>]>
-      - ~mongo id:nimnite_playerdata find:[uuid=<[p]>] save:pdata
+      #i dont think we have to erase, since it overrides but just in case ig
+      - define uuid <[p].uuid>
+      - define current_kills <server.flag[fort.temp.kills.<[uuid]>]||0>
+      - ~mongo id:nimnite_playerdata find:[uuid=<[uuid]>] save:pdata
       - define pdata <entry[pdata].result>
       - if <[pdata].is_empty>:
-        - definemap data:
-            uuid: <[p]>
-            kills: <[current_kills]>
-        - ~mongo id:nimnite_playerdata insert:<[data]>
+
+        - define created_data.uuid:<[uuid]>
+        - define created_data.<[mode]>.kills:<[current_kills]>
+
+        - ~mongo id:nimnite_playerdata insert:<[created_data]>
       - else:
-        - define total_kills <[pdata].get[1].parse_yaml.get[kills]||0>
-        - definemap old_data:
-            uuid: <[p]>
-        - definemap new_data:
-            uuid: <[p]>
-            kills: <[total_kills].add[<[current_kills]>]>
+        - define total_kills       <[pdata].first.parse_yaml.get[<[mode]>].get[kills]||0>
+        - define new_total_kills   <[total_kills].add[<[current_kills]>]>
+
+        - define old_data.uuid:<[uuid]>
+        - define new_data.$set.<[mode]>.kills:<[new_total_kills]>
+
         - ~mongo id:nimnite_playerdata update:<[old_data]> new:<[new_data]>
 
-    ###also send player victory data (winners) (run a foreach for the winners)
+    # - [ Save Player WINS ] - #
+    - foreach <[winners]> as:winner:
+
+      - define uuid <[winner].uuid>
+
+      - ~mongo id:nimnite_playerdata find:[uuid=<[uuid]>] save:pdata
+      #no need to check if the file exists or not, since if it didn't already, it has now (because of former code)
+      - define pdata          <entry[pdata].result>
+      - define total_wins     <[pdata].first.parse_yaml.get[<[mode]>].get[wins]||0>
+      - define new_total_wins <[total_wins].add[1]>
+
+      - define old_data.uuid:<[uuid]>
+      - define new_data.$set.<[mode]>.wins:<[total_wins]>
+
+      - ~mongo id:nimnite_playerdata update:<[old_data]> new:<[new_data]>
+
 
     - announce to_console "<&b>[Nimnite]<&r>Restarting server..."
     - wait 5s
