@@ -8,7 +8,7 @@ update_server_status:
     - define start_loc <server.flag[fort.menu_spawn].right[4.5].with_yaw[-90].above[2.5]>
 
     #fort flag is removed for lobby stuff, so using separate flag name
-    - define game_servers <bungee.list_servers.filter[starts_with[fort_]].exclude[fort_lobby]>
+    - define game_servers <bungee.list_servers.filter[starts_with[fort_]].exclude[fort_lobby].sort_by_number[after[_]]>
 
 
     - foreach <[game_servers]> as:s:
