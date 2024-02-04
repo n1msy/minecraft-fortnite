@@ -51,7 +51,7 @@ fort_core_handler:
   - inject fort_core_handler.timer
   #storm eye shrinking 3 minutes
   #default: 180
-  - define seconds  65
+  - define seconds  100
   - define phase    STORM_SHRINK
   - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
@@ -64,7 +64,7 @@ fort_core_handler:
   - ~run fort_storm_handler.set_new def.new_diameter:800
   - inject fort_core_handler.timer
   #storm eye shrinking 2 minutes
-  - define seconds  60
+  - define seconds  100
   - define phase    STORM_SHRINK
   - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
@@ -79,7 +79,7 @@ fort_core_handler:
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute 30 seconds
   #default: 90
-  - define seconds  60
+  - define seconds  75
   - define phase    STORM_SHRINK
   - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
@@ -95,7 +95,7 @@ fort_core_handler:
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute 10 seconds
   #default: 70
-  - define seconds  55
+  - define seconds  60
   - define phase    STORM_SHRINK
   - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
@@ -110,7 +110,7 @@ fort_core_handler:
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute
   #default: 60
-  - define seconds  40
+  - define seconds  50
   - define phase    STORM_SHRINK
   - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
@@ -125,7 +125,7 @@ fort_core_handler:
   - inject fort_core_handler.timer
   #storm eye shrinking 1 Minute
   #default: 60
-  - define seconds  40
+  - define seconds  50
   - define phase    STORM_SHRINK
   - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
@@ -133,7 +133,7 @@ fort_core_handler:
   #-stage 7
   #storm eye shrinking 55 seconds
   #default: 55
-  - define seconds       10
+  - define seconds       45
   - define phase         STORM_SHRINK
   - ~run fort_storm_handler.set_new def.new_diameter:35
   - run fort_storm_handler.resize def.seconds:<[seconds]>
@@ -142,7 +142,7 @@ fort_core_handler:
   #-stage 8
   #storm eye shrinking 45 seconds
   #default: 45
-  - define seconds      35
+  - define seconds      40
   - define phase        STORM_SHRINK
   - ~run fort_storm_handler.set_new def.new_diameter:20
   - run fort_storm_handler.resize def.seconds:<[seconds]>
@@ -151,7 +151,7 @@ fort_core_handler:
   #-stage 9
   #storm eye shrinking 1 Minute 15 seconds
   #default: 75
-  - define seconds      40
+  - define seconds      55
   - define phase        STORM_SHRINK
   - ~run fort_storm_handler.set_new def.new_diameter:0
   - run fort_storm_handler.resize def.seconds:<[seconds]>
