@@ -20,7 +20,7 @@ update_server_status:
       - define player_size <[s_data].get[players].size>
 
       ##might be a little cheesing, but for some reason the players flag is incorrectly updated in the hub sometimes?
-      - flag server fort.available_servers.<[mode]>.<[s]>.players:<[s_data].get[players]>
+      #- flag server fort.available_servers.<[mode]>.<[s]>.players:<[s_data].get[players]>
 
       - define is_available <server.flag[fort.available_servers.<[mode]>].keys.contains[<[s]>]>
       - define status_icon  <[is_available].if_true[<&a>●].if_false[<&c>●]>
