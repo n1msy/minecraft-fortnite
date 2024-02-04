@@ -85,7 +85,7 @@ fort_queue_handler:
 
           #only send players after waiting at least 5 seconds
           ##change from 6 to 10 temporarily
-          - if <[secs_in_queue]> >= 10 && <[available_servers].any>:
+          - if <[secs_in_queue]> >= 8 && <[available_servers].any>:
 
             #get the server with the most players
             #instead of finding the server for each player, update the count within the queue while still having this def so the definition doesnt have to constantly be redefined?
