@@ -151,8 +151,9 @@ fort_global_handler:
     after player closes inventory:
     - inject update_hud
 
-    #prevent any items from being equipped
-    on player clicks in inventory slot:37|38|39|40:
+
+    #prevent any items from being equipped (and put in offhand)
+    on player clicks in inventory slot:37|38|39|40|41:
     - determine passively cancelled
     - define cursor_item <context.cursor_item>
     - adjust <player> item_on_cursor:air
