@@ -16,11 +16,11 @@ update_server_status:
       - ~bungeetag server:<[s]> <map[players=<server.online_players_flagged[fort].filter[has_flag[fort.spectating].not]>;mode=<server.flag[fort.mode]>;is_startup=<server.has_flag[fort.temp.startup]>]> save:s_data
       - define s_data <entry[s_data].result>
 
-      ##might be a little cheesing, but for some reason the players flag is incorrectly updated in the hub sometimes?
-      - flag server fort.available_servers.<[s]>.players:<[s_data].get[players]>
-
       - define mode        <[s_data].get[mode]>
       - define player_size <[s_data].get[players].size>
+
+      ##might be a little cheesing, but for some reason the players flag is incorrectly updated in the hub sometimes?
+      - flag server fort.available_servers.<[mode]>.<[s]>.players:<[s_data].get[players]>
 
       - define is_available <server.flag[fort.available_servers.<[mode]>].keys.contains[<[s]>]>
       - define status_icon  <[is_available].if_true[<&a>●].if_false[<&c>●]>
