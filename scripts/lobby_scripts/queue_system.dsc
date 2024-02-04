@@ -90,8 +90,8 @@ fort_queue_handler:
             #get the server with the most players
             #instead of finding the server for each player, update the count within the queue while still having this def so the definition doesnt have to constantly be redefined?
             - define server_to_join <[available_servers].parse_tag[<[parse_value]>/<server.flag[fort.available_servers.<[mode]>.<[parse_value]>.players].size||0>].sort_by_number[parse[after[/]]].reverse.first.before[/]>
-
             - narrate "<&a>Sending you to game server <[server_to_join].after_last[_]>." targets:<[player]>
+
             - wait 10t
             - if !<[player].is_online>:
               - foreach next
