@@ -158,7 +158,7 @@ fort_global_handler:
     - define cursor_item <context.cursor_item>
     - adjust <player> item_on_cursor:air
     - wait 1t
-    - if <[cursor_item].script.name.starts_with[fort_item_]||false>:
+    - if <[cursor_item].material.name> != air:
       - inventory set o:<[cursor_item]> slot:<player.flag[fort.last_slot_clicked]>
 
     #since you only have access to 1-6 slots, and the other slots are category names
