@@ -158,8 +158,7 @@ fort_global_handler:
     #in case it's part of the drop menu
     #this stop is for emotes
     #-clean up these stop checks and the determine at the end
-    - narrate <context.action>
-    - if <context.action> in CLONE_STACK|COLLECT_TO_CURSOR:
+    - if <context.action> in CLONE_STACK|COLLECT_TO_CURSOR|HOTBAR_SWAP:
       - determine passively cancelled
       - stop
     - if <context.is_shift_click>:
