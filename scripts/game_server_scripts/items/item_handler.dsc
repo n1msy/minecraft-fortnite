@@ -83,6 +83,10 @@ fort_item_handler:
     on player picks up fort_item_*:
     - determine passively cancelled
 
+    #prevent players from picking up items while building (it removes it from their inv)
+    - if <player.has_flag[build]>:
+      - stop
+
     #-save hotbar
     #save ordered hotbar items with slot data
     - foreach <list[2|3|4|5|6]> as:slot:
