@@ -1,7 +1,7 @@
 nimnite_config:
   type: data
   #default: 60
-  minimum_players: 13
+  minimum_players: 3
   maximum_players: 30
 
 
