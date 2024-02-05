@@ -96,7 +96,7 @@ fort_global_handler:
       #that way the annoying head thing doesn't happen when falling by the smallest amount
       - if <[damage]> < 5:
         - determine passively cancelled
-          #(stop the damage indicator from continuing)
+        #(stop the damage indicator from continuing)
         - stop
       - else:
         - determine passively <[damage]>
