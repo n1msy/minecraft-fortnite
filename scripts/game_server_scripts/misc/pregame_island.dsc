@@ -181,6 +181,7 @@ pregame_island_handler:
         - flag server fort.temp:!
         #so this flag isn't removed (probably a better way to do this but eh)
         - flag server fort.temp.available
+
         - stop
 
     - definemap data:
