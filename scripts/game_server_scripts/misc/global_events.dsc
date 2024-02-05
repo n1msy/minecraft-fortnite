@@ -154,17 +154,8 @@ fort_global_handler:
 
     #prevent any items from being equipped (and put in offhand)
     on player clicks in inventory slot:37|38|39|40|41:
-    - determine passively cancelled
-    - define cursor_item <context.cursor_item>
-    - if <[cursor_item].material.name> != air:
-      - flag player fort.cursor_item_clicked:<[cursor_item]> duration:2t
-    - adjust <player> item_on_cursor:air
-    - wait 1t
-    - if <player.has_flag[fort.cursor_item_clicked]>:
-      - define cursor_item <player.flag[fort.cursor_item_clicked]>
-    - adjust <player> item_on_cursor:<[cursor_item]>
-    #- if <[cursor_item].material.name> != air:
-      #- inventory set o:<[cursor_item]> slot:<player.flag[fort.last_slot_clicked]>
+    - determine cancelled
+
 
     #since you only have access to 1-6 slots, and the other slots are category names
     #WAY better way of doing this but my brain is too tired to think rn
@@ -215,7 +206,12 @@ fort_global_handler:
 
     ##small bug where if you swap items the rarity thing disappears?
     on player drags in inventory:
-    - if <context.slots.contains[<util.list_numbers[from=19;to=27]>]> && <context.item.material.name> != air:
+    #cancel dragging in offhand / armor slots
+    - if <context.slots.contains_any[37|38|39|40|41]>:
+      - determine passively cancelled
+      - stop
+    - if <context.slots.contains_any[<util.list_numbers[from=19;to=27]>]>:
+      - determine passively cancelled
       - stop
     - if <context.slots.contains_any[7|8|9|10|11|12|13|14|15|16|17|18|28|29|30|31|32|33|34|35|36|19|20|21|22|23|24|25|26|27]>:
       - determine passively cancelled
