@@ -870,6 +870,15 @@ fort_gun_handler:
 
       - wait 3t
 
+      #total ammo check already done before the loop, so checking after 3t to make sure it doesn't happen
+      - define total_ammo <player.flag[fort.ammo.<[ammo_type]>]||0>
+      #should always equal 0, no point in checking for less than, but just in case
+      - if <[total_ammo]> <= 0:
+        - define cancelled True
+        - title "subtitle:<&c>No reload ammo." fade_in:0 stay:1 fade_out:15t
+        - playsound <player> sound:UI_BUTTON_CLICK pitch:1.8
+        - repeat stop
+
     - if !<[cancelled].exists>:
 
       #this will ALWAYS be less than <[mag_size]>
