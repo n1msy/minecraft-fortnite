@@ -351,6 +351,7 @@ fort_core_handler:
         - ~mongo id:nimnite_playerdata update:<[old_data]> new:<[new_data]>
 
     # - [ Save Player WINS ] - #
+    - define winners <server.flag[fort.temp.winners]>
     - foreach <[winners]> as:winner:
 
       - define uuid <[winner].uuid>

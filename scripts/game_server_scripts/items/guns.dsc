@@ -88,6 +88,8 @@ fort_gun_handler:
     - if <context.entity.has_flag[text_display]>:
       - remove <context.entity.flag[text_display]> if:<context.entity.flag[text_display].is_spawned>
 
+    #TODO (potentially): cancel gun pickup and just give it to the player ourselves?
+
     #safety
     - wait 1t
     - define gun      <context.item>

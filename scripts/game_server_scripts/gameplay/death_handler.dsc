@@ -202,7 +202,8 @@ fort_death_handler:
 
         - case ENTITY_ATTACK:
           #if it's entity attack, then it means killer *has* to exist
-          - define weapon <[killer].item_in_hand>
+          #-fallback in case killer left
+          - define weapon <[killer].item_in_hand||???>
           #fallback is in case they used an item with no script attached (ie air)
           - if <[weapon].script.name.starts_with[gun_]||false>:
             - define gun_type <[weapon].flag[type]>
