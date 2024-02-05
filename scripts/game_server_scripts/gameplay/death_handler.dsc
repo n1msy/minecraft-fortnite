@@ -84,6 +84,8 @@ fort_death_handler:
       - run fort_item_handler.drop_everything if:<player.world.name.equals[nimnite_map]>
       - run fort_death_handler.fx.anim def:<map[loc=<[dead_loc]>]>
 
+    #just in case they weren't removed from the storm properly
+    - run fort_storm_handler.exit_storm
     #in case they were in the storm
     - flag player fort.in_storm:!
 
