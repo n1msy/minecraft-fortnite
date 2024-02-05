@@ -18,14 +18,14 @@ fort_core_handler:
   #-Doors open
   #doors open in 20 seconds
   #default: 20
-  - define seconds 15
+  - define seconds 20
   - define phase   BUS
   - inject fort_core_handler.timer
 
   #-Bus drop
   #everybody off, last stop in 55 seconds
   #default: 55
-  - define seconds 40
+  - define seconds 55
   - define phase   FALL
   - inject fort_core_handler.timer
 
