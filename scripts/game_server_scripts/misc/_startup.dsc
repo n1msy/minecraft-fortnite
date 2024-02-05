@@ -97,7 +97,9 @@ fort_startup_events:
       - note remove as:fort_storm_circle
     - note <[storm_circle]> as:fort_storm_circle
 
-    - remove <world[pregame_island].entities[dropped_item]>
+    #-instead of filtering out the pregame island circle, why not just re-set it up again?
+    - define remove_entities <world[pregame_island].entities[dropped_item|text_display|item_display].filter[has_flag[fort.pregame].not]>
+    - remove <[remove_entities]>
 
     - run pregame_island_handler.lobby_circle.anim
     - announce "<&b>[Nimnite]<&r> Set lobby circle animation in world <&dq><&e>fort_pregame_island<&r><&dq>" to_console
