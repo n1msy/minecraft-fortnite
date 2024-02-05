@@ -38,6 +38,7 @@ pallete_command:
   debug: false
   description: Customize a 5x5 pallete for Nimnite building.
   usage: /pallete
+  permission: fort.pallete
   aliases:
     - p
   tab completions:
