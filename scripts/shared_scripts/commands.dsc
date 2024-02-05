@@ -24,7 +24,7 @@ fort_admin_commands:
   debug: false
   description: Fortnite Menu Commands
   usage: /fortnite_menu
-  #permission: fort.menu
+  permission: fort.menu
   aliases:
   - fort_menu
   script:
