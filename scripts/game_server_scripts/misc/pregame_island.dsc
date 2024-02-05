@@ -104,7 +104,7 @@ pregame_island_handler:
           game_server: <bungee.server>
           status: AVAILABLE
           mode: <server.flag[fort.mode]||solo>
-          players: <server.online_players_flagged[fort]>
+          players: <server.online_players_flagged[fort].exclude[<player>]>
       #send all the player data, or just remove the current one?
       - bungeerun fort_lobby fort_bungee_tasks.set_status def:<[data]>
       - determine passively "<&9><&l><player.name> <&7>quit"

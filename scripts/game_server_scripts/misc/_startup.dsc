@@ -139,9 +139,7 @@ enable_server:
         game_server: <bungee.server>
         status: AVAILABLE
         mode: <server.flag[fort.mode]>
-        ##<server.online_players_flagged[fort]>
-        #removing this tag and setting player count to 0, because for some reason sometimes the server thinks it's 30?
-        players: 0
+        players: <server.online_players_flagged[fort]>
     # For whatever reason, bungeetag doesn't handle map defs
     - define mode <[data.mode]>
     - define game_server <[data.game_server]>
