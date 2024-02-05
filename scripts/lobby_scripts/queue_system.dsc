@@ -75,6 +75,9 @@ fort_queue_handler:
           #checking if null at the end, since the ".players" key isn't necessarily added yet
           - define available_servers <[<[mode]>_servers].filter_tag[<server.flag[fort.available_servers.<[mode]>.<[filter_value]>.players].size.is[LESS].than[<[max_players]>].if_null[true]>]>
 
+          #-this sorts all available servers by player count from highest to lowest so all servers fill properly
+          - define available_servers <[available_servers].parse_tag[<[parse_value]>/<server.flag[fort.available_servers.<[mode]>.<[parse_value]>.players].size>].sort_by_number[after[/]].parse[before[/]].reverse>
+
           - if <[secs_in_queue]> >= 5 && <[available_servers].any>:
             - define text "Joining match..."
 
