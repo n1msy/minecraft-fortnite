@@ -1,5 +1,6 @@
 fort_startup_events:
   type: world
+  debug: false
   events:
     on server start:
 
