@@ -100,6 +100,7 @@ pregame_island_handler:
 
     #if it's still in the pregame lobbe island
     - if <server.has_flag[fort.temp.available]>:
+      - announce a;lkdfja;lsdkfj;asdklfja;sdlkfjas;dlkfja;sldfkjas;dfja;sldfjk to_console
       - definemap data:
           game_server: <bungee.server>
           status: AVAILABLE
