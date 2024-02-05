@@ -159,7 +159,8 @@ fort_glider_handler:
 
       - wait 1t
 
-      - if <[loc].y> < -42:
+      #the next 2 checks are to make sure the hurt only fires ONCE
+      - if <[loc].y> < -42 && <player.is_spawned> && !<player.has_flag[fort.spectating]>:
         #doing this causes the death effect to fire
         - hurt <player.health> cause:VOID
         - remove <[glider]> if:<[glider].is_spawned>
