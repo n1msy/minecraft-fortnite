@@ -85,7 +85,6 @@ fort_bungee_tasks:
       - case AVAILABLE SET_MODE:
         - define players     <[data].get[players]>
         - flag server fort.available_servers.<[mode]>.<[game_server]>.players:<[players]>
-        - announce .........................................../<[players].size> to_console
         - if <[status]> == available:
           - announce "<&b>[Nimnite]<&r> Game server <&b><[game_server]><&r> is now <&a>AVAILABLE<&r>. Mode: <&e><[mode]>" to_console
         - else:

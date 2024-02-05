@@ -102,14 +102,14 @@ pregame_island_handler:
     - if <server.has_flag[fort.temp.available]>:
       - determine passively "<&9><&l><player.name> <&7>quit"
 
-      - definemap data:
+      - definemap send_server_data:
           game_server: <bungee.server>
           status: AVAILABLE
           mode: <server.flag[fort.mode]||solo>
           players: <server.online_players_flagged[fort].exclude[<player>]>
 
       #send all the player data, or just remove the current one?
-      - bungeerun fort_lobby fort_bungee_tasks.set_status def:<[data]>
+      - bungeerun fort_lobby fort_bungee_tasks.set_status def:<[send_server_data]>
 
       #so update the pregame island (since if they leave via lobby teleport circle, the death event wont fire)
       - if <player.has_flag[fort.lobby_teleport]>:
