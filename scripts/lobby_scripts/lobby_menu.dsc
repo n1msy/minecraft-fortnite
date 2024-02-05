@@ -187,6 +187,7 @@ fort_lobby_handler:
       - if <[name]> in Nimsy|Mwthorn:
         - stop
       - define msg "<&c>The server is currently full. Join back later!"
+      - flag server fort.players_kicked.<[name]> duration:1s
       - determine passively KICKED:<[msg]>
 
     #### - [ OPTIMIZE / PRETTIFY THIS CODE ] ###
