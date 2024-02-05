@@ -153,6 +153,11 @@ fort_gun_handler:
 
     # - [ Scope ] - #
     after player starts sneaking:
+
+    #-prevent spectators from opening containers
+    - if <player.has_flag[fort.spectating]>:
+      - stop
+
     - define look_loc <player.eye_location.ray_trace[return=block;range=2.7;default=air].center>
     - foreach <list[chest|ammo_box]> as:container_type:
       - if <[look_loc].has_flag[fort.<[container_type]>]> && !<[look_loc].has_flag[fort.chest.<[container_type]>]>:
@@ -864,6 +869,15 @@ fort_gun_handler:
       - playsound <player.location> sound:BLOCK_NOTE_BLOCK_HAT pitch:<[value].div[<[reload_time].div[2]>].add[1]> volume:1.2
 
       - wait 3t
+
+      #total ammo check already done before the loop, so checking after 3t to make sure it doesn't happen
+      - define total_ammo <player.flag[fort.ammo.<[ammo_type]>]||0>
+      #should always equal 0, no point in checking for less than, but just in case
+      - if <[total_ammo]> <= 0:
+        - define cancelled True
+        - title "subtitle:<&c>No reload ammo." fade_in:0 stay:1 fade_out:15t
+        - playsound <player> sound:UI_BUTTON_CLICK pitch:1.8
+        - repeat stop
 
     - if !<[cancelled].exists>:
 

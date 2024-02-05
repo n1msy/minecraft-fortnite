@@ -151,9 +151,11 @@ fort_global_handler:
     after player closes inventory:
     - inject update_hud
 
-    #prevent any items from being equipped
-    on player clicks in inventory slot:37|38|39|40:
+
+    #prevent any items from being equipped (and put in offhand)
+    on player clicks in inventory slot:37|38|39|40|41:
     - determine cancelled
+
 
     #since you only have access to 1-6 slots, and the other slots are category names
     #WAY better way of doing this but my brain is too tired to think rn
@@ -168,6 +170,7 @@ fort_global_handler:
     - if <context.is_shift_click>:
       - determine passively cancelled
       - stop
+
     - stop if:<context.clicked_inventory.inventory_type.equals[CRAFTING]>
     - stop if:<context.item.has_flag[action]||false>
     - if <util.list_numbers[from=19;to=27].contains[<context.slot>]> && <context.item.material.name> != air:
@@ -203,7 +206,12 @@ fort_global_handler:
 
     ##small bug where if you swap items the rarity thing disappears?
     on player drags in inventory:
-    - if <context.slots.contains[<util.list_numbers[from=19;to=27]>]> && <context.item.material.name> != air:
+    #cancel dragging in offhand / armor slots
+    - if <context.slots.contains_any[37|38|39|40|41]>:
+      - determine passively cancelled
+      - stop
+    - if <context.slots.contains_any[<util.list_numbers[from=19;to=27]>]>:
+      - determine passively cancelled
       - stop
     - if <context.slots.contains_any[7|8|9|10|11|12|13|14|15|16|17|18|28|29|30|31|32|33|34|35|36|19|20|21|22|23|24|25|26|27]>:
       - determine passively cancelled
