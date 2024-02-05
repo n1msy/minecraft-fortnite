@@ -46,7 +46,7 @@ fort_death_handler:
 
     on player death:
     - define cause  <context.cause||null>
-    - define killer <player.flag[fort.last_damager].if_null[<context.damager>]||null>
+    - define killer <context.damager||<player.flag[fort.last_damager]||null>>
 
     - determine passively cancelled
     #-don't die if the phase is END
