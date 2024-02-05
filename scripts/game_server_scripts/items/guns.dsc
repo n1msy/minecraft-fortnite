@@ -207,12 +207,16 @@ fort_gun_handler:
     #wait until anything stops them from scoping
     - waituntil !<player.has_flag[fort.gun_scoped]> || <player.has_flag[fort.reset_sniper_scope]> || !<player.is_online> || !<player.is_sneaking> || <player.gamemode> == SPECTATOR || <player.item_in_hand.flag[uuid]||null> != <[gun_uuid]> rate:1t
 
+
     - if <[gun].has_flag[sniper]>:
       - inject fort_gun_handler.reset_sniper_scope
     - else:
       #-issue: when player dies?
       #no need to check if they dropped, since they can't drop when scoped
-      - inventory adjust slot:<[slot]> custom_model_data:<[cmd]>
+      ##they can't adjust, since their inventory is being cleared
+      ##potential problem: when player dies while scoped
+      - if !<player.has_flag[fort.spectating]>:
+        - inventory adjust slot:<[slot]> custom_model_data:<[cmd]>
     - cast SPEED remove
 
     - flag player fort.gun_scoped:!
