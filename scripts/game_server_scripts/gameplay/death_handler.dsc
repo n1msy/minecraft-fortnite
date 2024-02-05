@@ -44,6 +44,11 @@ fort_death_handler:
     - define cause  <context.cause||null>
     - define killer <context.damager||<player.flag[fort.last_damager]||null>>
 
+    #to make sure guns work properly
+    - if <player.has_flag[fort.shot]>:
+      - define cause ENTITY_ATTACK
+      - define killer <player.flag[fort.shot].before[/]>
+
     - determine passively cancelled
     #-don't die if the phase is END
     - if <server.flag[fort.temp.phase]||null> == END:
@@ -201,9 +206,10 @@ fort_death_handler:
           - define msg_template <script[nimnite_config].data_key[killfeed.<[kill_type]>_void].random.parse_minimessage>
 
         - case ENTITY_ATTACK:
+          #what if it's by pickaxe though?
           #if it's entity attack, then it means killer *has* to exist
           #-fallback in case killer left
-          - define weapon <[killer].item_in_hand||???>
+          - define weapon <[killer].item_in_hand||<player.flag[fort.shot].after[/]>>
           #fallback is in case they used an item with no script attached (ie air)
           - if <[weapon].script.name.starts_with[gun_]||false>:
             - define gun_type <[weapon].flag[type]>
