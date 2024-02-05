@@ -104,7 +104,7 @@ fort_death_handler:
     - if <[quit]>:
       - define msg_template <script[nimnite_config].data_key[killfeed.quit].random.parse_minimessage>
       - define death_message <[msg_template].replace_text[_player_].with[<player.name>]>
-      - announce <[death_message]>
+      - announce <[death_message].parsed>
     - else:
       #-make sure this message doesn't stay after the next match?
       #this is before adding the fort.spectating flag, so no need to remove the dead player from the list
@@ -233,7 +233,7 @@ fort_death_handler:
     #-in case the cause was none of these, let players know to report it (unknown)
       - define death_message "<&c><&l><[name]> <&7>died for some reason... <element[<&f><&l><&lb><&e><&l>HOVER<&f><&l><&rb>].on_hover[<&f>Hey, if you see this message, this is an <&c>error<&f>.<n><&f>Please let Nimsy know. <&7>CAUSE: <&a><[cause]>]>"
 
-    - announce <[death_message]>
+    - announce <[death_message].parsed>
 
   fx:
     anim:
