@@ -80,7 +80,7 @@ fort_explosive_handler:
     - take slot:<player.held_item_slot>
     - run update_hud
 
-    - drop <context.item.with[flag=thrown_grenade]> <[origin]> delay:10s save:grenade
+    - drop <context.item.with[flag=thrown_grenade;quantity=1]> <[origin]> delay:10s save:grenade
     - define grenade <entry[grenade].dropped_entity>
     - run fort_explosive_handler.primed def:<map[grenade=<[grenade]>]>
 
@@ -111,7 +111,7 @@ fort_explosive_handler:
 
     - run fort_explosive_handler.explosion_fx def:<map[grenade_loc=<[grenade_loc]>;size=3]>
 
-    - define body_damage      <[i].flag[body_damage]>
+    - define body_damage      <[i].flag[body_damage].div[5]>
     - define structure_damage <[i].flag[structure_damage]>
     - define radius 4
     - run fort_explosive_handler.explosion_damage def:<map[radius=<[radius]>;body_damage=<[body_damage]>;structure_damage=<[structure_damage]>;grenade_loc=<[grenade_loc]>]>
@@ -128,10 +128,6 @@ fort_explosive_handler:
     - define structure_damage <[data].get[structure_damage]>
     - define grenade_loc      <[data].get[grenade_loc]>
 
-    - define nearby_centers <[grenade_loc].find_blocks_flagged[build.center].within[<[radius]>].parse[flag[build.center]].deduplicate>
-    - foreach <[nearby_centers]> as:center:
-      - run build_system_handler.structure_damage def:<map[center=<[center]>;damage=<[structure_damage]>]>
-
     - define nearby_entities <[grenade_loc].find_entities.within[<[radius]>]>
     #
     - define nearby_hitboxes <[nearby_entities].filter[entity_type.equals[interaction]]>
@@ -141,10 +137,17 @@ fort_explosive_handler:
         #deduplicating in case the player was already in the list
         - define nearby_entities <[nearby_entities].include[<[hb].flag[emote.hitbox.host]>].deduplicate>
       #-damage props
-      - else if <[hb].has_flag[fort.prop]>:
+      - else if <[hb].has_flag[fort.prop]> && <[hb].location.line_of_sight[<[grenade_loc]>]>:
         - run fort_prop_handler.damage_prop def:<map[prop_hb=<[hb]>;damage=<[body_damage]>]>
 
-    - hurt <[body_damage].div[5]> <[nearby_entities]> source:<player> cause:BLOCK_EXPLOSION
+    #so entities can't be damaged through walls
+    - define valid_entities <[nearby_entities].filter[location.above.round.line_of_sight[<[grenade_loc].round>]]>
+    - hurt <[body_damage]> <[valid_entities]> source:<player> cause:BLOCK_EXPLOSION
+
+    #do structure damage at the end, in case there's like a wall in the way that stops damage
+    - define nearby_centers <[grenade_loc].find_blocks_flagged[build.center].within[<[radius]>].parse[flag[build.center]].deduplicate>
+    - foreach <[nearby_centers]> as:center:
+      - run build_system_handler.structure_damage def:<map[center=<[center]>;damage=<[structure_damage]>]>
 
   explosion_fx:
     - define grenade_loc <[data].get[grenade_loc]>

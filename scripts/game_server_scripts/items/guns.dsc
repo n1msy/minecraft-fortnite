@@ -631,12 +631,13 @@ fort_gun_handler:
       #-use item displays and display entities?
       #or rather, use item displays and interactions?
 
-      #- spawn <entity[item_display].with[item=<item[leather_helmet].with[custom_model_data=14]>;scale=1,1,1]> <[origin]> save:e
+      #- spawn <entity[item_display].with[item=<item[gold_nugget].with[custom_model_data=3]>;scale=1.4,1.4,1.4]> <[origin]> save:e
       - spawn <entity[armor_stand].with[equipment=<map.with[helmet].as[<item[gold_nugget].with[custom_model_data=3]>]>;gravity=false;collidable=false;invulnerable=true;visible=false]> <[origin].below[1.685]> save:e
+
       - define rocket <entry[e].spawned_entity>
       - define rocket_loc <[rocket].location.above[1.685]>
       #default = 0.65
-      - define speed 0.65
+      - define speed 0.7
       #this lets multiple people ride one rocket
       - define total_riders <list[]>
       - flag <[rocket]> riders:<list[]>
@@ -671,7 +672,7 @@ fort_gun_handler:
         - remove <[rocket]>
 
       - run fort_explosive_handler.explosion_fx def:<map[grenade_loc=<[rocket_loc]>;size=4]>
-      - run fort_explosive_handler.explosion_damage def:<map[radius=5;body_damage=<[body_damage]>;structure_damage=<[structure_damage]>;grenade_loc=<[rocket_loc]>]>
+      - run fort_explosive_handler.explosion_damage def:<map[radius=5;body_damage=<[body_damage]>;structure_damage=<[structure_damage]>;grenade_loc=<[rocket_loc].backward[0.5]>]>
 
   camera_shake:
     #default: 0.094
