@@ -50,7 +50,15 @@ fort_bungee_handler:
 
       - bungeerun backup discord_join def:<map[name=<context.name>;uuid=<context.uuid>;status=join]>
 
+    #-to track what server the player is on, if they're online, and how many players there are on the network
+    - flag server bungee.players.<context.uuid>:<bungee.server>
+
+    on bungee player switches to server:
+    - flag server bungee.players.<context.uuid>:<context.server>
+
     on bungee player leaves network:
+    - flag server bungee.players.<context.uuid>:!
+
     - if <bungee.server> != fort_lobby:
       - stop
     #-only announce this in the fort lobby, not in-game

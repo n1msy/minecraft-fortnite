@@ -39,6 +39,8 @@ fort_queue_handler:
             - run fort_lobby_handler.play_button_anim def.button:<[play_button]>
 
         ## - [ AFK System ] - ##
+        #-maybe add a bypass for mods?
+
         #should we make this a separate run task?
 
         #(updates every second)
