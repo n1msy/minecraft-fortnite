@@ -130,7 +130,7 @@ fort_global_handler:
       - playsound <[e]> sound:ITEM_ARMOR_EQUIP_LEATHER pitch:2
 
     #guns handle damage indicators a little differently
-    - if !<[e].has_flag[fort.shot]>:
+    - if !<[e].has_flag[fort.shot.player]>:
       - define color <&f> if:<[color].exists.not>
       - define entity <context.entity>
       - if <[entity].has_flag[spawned_dmodel_emotes]> && <[entity].flag[spawned_dmodel_emotes].has_flag[emote_hitbox]||false>:

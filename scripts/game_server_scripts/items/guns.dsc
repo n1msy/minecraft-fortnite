@@ -503,7 +503,9 @@ fort_gun_handler:
 
           #shot flag is for damage indicator
           ##was 1t by default, changing to 2 for testing
-          - flag <[target]> fort.shot:<player>/<[gun]> duration:2t
+          - flag <[target]> fort.shot.player:<player> duration:2t
+          - flag <[target]> fort.shot.gun:<[gun]> duration:2t
+
           - define damage <[damage].mul[<[headshot_multiplier]>].round_down> if:<[body_part].equals[Head]>
           - hurt <[damage]> <[target]> source:<player> if:<[target].world.name.equals[pregame_island].not>
           #total damage to consider all damage combined if multiple pellets are used per shot
@@ -818,6 +820,7 @@ fort_gun_handler:
     - define rarity <[gun].flag[rarity]>
 
     #so all guns have different uuids
+    #mightve been a denizen update that made the uuids static upon starting server?
     - define gun <[gun].with[flag=uuid:<util.random_uuid>]>
 
     - if <[drop]> == null:

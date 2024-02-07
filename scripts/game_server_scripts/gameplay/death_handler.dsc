@@ -45,9 +45,9 @@ fort_death_handler:
     - define killer <context.damager||<player.flag[fort.last_damager]||null>>
 
     #to make sure guns work properly
-    - if <player.has_flag[fort.shot]>:
+    - if <player.has_flag[fort.shot.player]>:
       - define cause ENTITY_ATTACK
-      - define killer <player.flag[fort.shot].before[/]>
+      - define killer <player.flag[fort.shot.player]>
 
     - determine passively cancelled
     #-don't die if the phase is END
@@ -213,7 +213,7 @@ fort_death_handler:
           #what if it's by pickaxe though?
           #if it's entity attack, then it means killer *has* to exist
           #-fallback in case killer left
-          - define weapon <[killer].item_in_hand||<player.flag[fort.shot].after[/]>>
+          - define weapon <[killer].item_in_hand||<player.flag[fort.shot.gun]>>
           #fallback is in case they used an item with no script attached (ie air)
           - if <[weapon].script.name.starts_with[gun_]||false>:
             - define gun_type <[weapon].flag[type]>
