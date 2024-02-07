@@ -671,7 +671,7 @@ fort_gun_handler:
         - remove <[rocket]>
 
       - run fort_explosive_handler.explosion_fx def:<map[grenade_loc=<[rocket_loc]>;size=4]>
-      - run fort_explosive_handler.explosion_damage def:<map[radius=5;body_damage=<[body_damage]>;structure_damage=<[structure_damage]>;grenade_loc=<[rocket_loc]>]>
+      - run fort_explosive_handler.explosion_damage def:<map[radius=5;body_damage=<[body_damage]>;structure_damage=<[structure_damage]>;grenade_loc=<[rocket_loc].backward[0.5]>]>
 
   camera_shake:
     #default: 0.094
