@@ -111,7 +111,7 @@ fort_explosive_handler:
 
     - run fort_explosive_handler.explosion_fx def:<map[grenade_loc=<[grenade_loc]>;size=3]>
 
-    - define body_damage      <[i].flag[body_damage]>
+    - define body_damage      <[i].flag[body_damage].div[5]>
     - define structure_damage <[i].flag[structure_damage]>
     - define radius 4
     - run fort_explosive_handler.explosion_damage def:<map[radius=<[radius]>;body_damage=<[body_damage]>;structure_damage=<[structure_damage]>;grenade_loc=<[grenade_loc]>]>
@@ -142,7 +142,7 @@ fort_explosive_handler:
 
     #so entities can't be damaged through walls
     - define valid_entities <[nearby_entities].filter[location.above.round.line_of_sight[<[grenade_loc].round>]]>
-    - hurt <[body_damage].div[5]> <[valid_entities]> source:<player> cause:BLOCK_EXPLOSION
+    - hurt <[body_damage]> <[valid_entities]> source:<player> cause:BLOCK_EXPLOSION
 
     #do structure damage at the end, in case there's like a wall in the way that stops damage
     - define nearby_centers <[grenade_loc].find_blocks_flagged[build.center].within[<[radius]>].parse[flag[build.center]].deduplicate>
