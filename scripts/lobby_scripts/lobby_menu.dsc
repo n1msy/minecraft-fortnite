@@ -153,6 +153,8 @@ fort_lobby_handler:
     on player exits fort_menu:
 
     - if <context.cause> == WALK:
+      #in case they get teleported back to spawn
+      - flag <[p]> fort.afk.time:0
       - run fort_lobby_handler.lobby_tp
       - stop
 
