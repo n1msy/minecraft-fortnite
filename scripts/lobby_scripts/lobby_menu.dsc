@@ -153,6 +153,9 @@ fort_lobby_handler:
     on player exits fort_menu:
 
     - if <context.cause> == WALK:
+      #in case they get teleported back to spawn
+      #it's very unlikely for it not to reset since the location updates every *second*, but fuck it
+      - flag <player> fort.afk.time:0
       - run fort_lobby_handler.lobby_tp
       - stop
 
@@ -169,6 +172,9 @@ fort_lobby_handler:
     #in case they hit a player and not click a block
     on player damages entity flagged:fort.in_menu priority:-10:
     - determine passively cancelled
+    #if they hit something, it means they aren't afk technically (auto clicker?)
+    - flag player fort.afk.time:0
+
     - inject fort_lobby_handler.button_press if:<player.has_flag[fort.menu.selected_button]>
 
     #in case they click it from far
@@ -937,6 +943,10 @@ fort_lobby_setup:
       - adjust <player> show_entity:<[button]>
       - flag player fort.menu.invite_button.<[loop_index]>:->:<[button]>
       - flag <[button]> type:invite
+
+    #for afk system
+    - flag player fort.afk.location:<player.location>
+    - flag player fort.afk.time:0
 
     #default mode
     - flag player fort.menu.mode:solo
