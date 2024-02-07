@@ -185,7 +185,7 @@ build_toggle:
           - define too_far True
 
         #-BUILD LIMIT (so you can't build above y level 150)
-        - if <[final_center].y> >= 150:
+        - if <[final_center].y> >= 210:
           - define can_build False
 
         - define build_color 45,167,237,150
