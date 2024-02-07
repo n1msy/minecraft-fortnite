@@ -155,7 +155,7 @@ fort_lobby_handler:
     - if <context.cause> == WALK:
       #in case they get teleported back to spawn
       #it's very unlikely for it not to reset since the location updates every *second*, but fuck it
-      - flag <[p]> fort.afk.time:0
+      - flag <player> fort.afk.time:0
       - run fort_lobby_handler.lobby_tp
       - stop
 
