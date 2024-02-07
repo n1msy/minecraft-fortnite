@@ -332,21 +332,33 @@ fort_core_handler:
     - foreach <[players_that_played]> as:p:
       #i dont think we have to erase, since it overrides but just in case ig
       - define uuid <[p].uuid>
-      - define current_kills <server.flag[fort.temp.kills.<[uuid]>]||0>
+      - define current_kills  <server.flag[fort.temp.kills.<[uuid]>]||0>
+      - define current_deaths <server.flag[fort.temp.deaths.<[uuid]>]||0>
+
       - ~mongo id:nimnite_playerdata find:[uuid=<[uuid]>] save:pdata
       - define pdata <entry[pdata].result>
       - if <[pdata].is_empty>:
 
         - define created_data.uuid:<[uuid]>
         - define created_data.<[mode]>.kills:<[current_kills]>
+        - define created_data.<[mode]>.deaths:<[current_deaths]>
+        - define created_data.<[mode]>.games_played:1
 
         - ~mongo id:nimnite_playerdata insert:<[created_data]>
       - else:
         - define total_kills       <[pdata].first.parse_yaml.get[<[mode]>].get[kills]||0>
         - define new_total_kills   <[total_kills].add[<[current_kills]>]>
 
+        - define total_deaths      <[pdata].first.parse_yaml.get[<[mode]>].get[deaths]||0>
+        - define new_total_deaths  <[total_deaths].add[<[current_deaths]>]>
+
+        - define total_games_played     <[pdata].first.parse_yaml.get[<[mode]>].get[games_played]||0>
+        - define new_total_games_played <[total_games_played].add[1]>
+
         - define old_data.uuid:<[uuid]>
         - define new_data.$set.<[mode]>.kills:<[new_total_kills]>
+        - define new_data.$set.<[mode]>.deaths:<[new_total_deaths]>
+        - define new_data.$set.<[mode]>.games_played:<[new_total_games_played]>
 
         - ~mongo id:nimnite_playerdata update:<[old_data]> new:<[new_data]>
 
