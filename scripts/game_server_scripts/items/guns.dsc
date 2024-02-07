@@ -636,7 +636,7 @@ fort_gun_handler:
       - define rocket <entry[e].spawned_entity>
       - define rocket_loc <[rocket].location.above[1.685]>
       #default = 0.65
-      - define speed 0.65
+      - define speed 0.7
       #this lets multiple people ride one rocket
       - define total_riders <list[]>
       - flag <[rocket]> riders:<list[]>

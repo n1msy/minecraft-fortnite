@@ -80,7 +80,7 @@ fort_explosive_handler:
     - take slot:<player.held_item_slot>
     - run update_hud
 
-    - drop <context.item.with[flag=thrown_grenade]> <[origin]> delay:10s save:grenade
+    - drop <context.item.with[flag=thrown_grenade;quantity=1]> <[origin]> delay:10s save:grenade
     - define grenade <entry[grenade].dropped_entity>
     - run fort_explosive_handler.primed def:<map[grenade=<[grenade]>]>
 
