@@ -17,6 +17,23 @@ apply_team_options:
     #so you can't see anyone that's invisible
     - team name:<[name]> option:SEE_INVISIBLE status:NEVER
 
+get_min_players:
+  type: procedure
+  debug: false
+  script:
+    #-confusing ass def names, maybe we should change later lol
+    - define max_players      <script[nimnite_config].data_key[maximum_players]>
+    #the most minimum players there can be
+    - define max_min_players  <[max_players].sub[10]>
+    #just in case there's less than 10 players on the network
+    - if <[max_min_players]> < 2:
+      - define max_min_players 2
+    - define min_players <server.flag[bungee.players].size.div[3].round_up||2>
+    - if <[min_players]> >= <[max_min_players]>:
+      - define min_players <[max_min_players]>
+
+    - determine <[min_players]>
+
 ##show names before the game starts?
 pregame_island_handler:
   type: world
@@ -78,7 +95,11 @@ pregame_island_handler:
     #second check is in case more people join during the countdown and it still going on, dont start another one
     #wait a bit after the last person before starting the queue
     - wait 2s
-    - if <[players].size> >= <script[nimnite_config].data_key[minimum_players]> && !<server.has_flag[fort.temp.game_starting]>:
+    #- define min_players <script[nimnite_config].data_key[minimum_players]>
+    #-dynamic min. players system
+    - define min_players <proc[get_min_players]>
+
+    - if <[players].size> >= <[min_players]> && !<server.has_flag[fort.temp.game_starting]>:
       - run pregame_island_handler.countdown
 
     # - [ Return to Lobby Menu ] - #
@@ -132,7 +153,8 @@ pregame_island_handler:
       - inject fort_core_handler.reset_server
 
   countdown:
-    - define min_players <script[nimnite_config].data_key[minimum_players]>
+    #- define min_players <script[nimnite_config].data_key[minimum_players]>
+    - define min_players <proc[get_min_players]>
     - define +spacing    <proc[spacing].context[99]>
     - define -spacing    <proc[spacing].context[-121]>
     - define bus_icon    <&chr[A025].font[icons]>
