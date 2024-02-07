@@ -28,9 +28,14 @@ get_min_players:
     #just in case there's less than 10 players on the network
     - if <[max_min_players]> < 2:
       - define max_min_players 2
+
     - define min_players <server.flag[bungee.players].size.div[3].round_up||2>
     - if <[min_players]> >= <[max_min_players]>:
       - define min_players <[max_min_players]>
+    #in case there's 1 or 2 players online
+    - if <[min_players]> <= 1:
+      - define min_players 2
+
 
     - determine <[min_players]>
 
