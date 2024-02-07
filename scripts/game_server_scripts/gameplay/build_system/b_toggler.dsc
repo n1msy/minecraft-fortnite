@@ -54,6 +54,12 @@ build_toggle:
       - stop
 
     # - [ Turn ON Builds ] - #
+
+    #so the scope is properly reset
+    - if <player.has_flag[fort.gun_scoped]>:
+      - flag player fort.gun_scoped:!
+      - wait 1t
+
     - define world <player.world.name>
     - define origin <location[0,0,0,<[world]>]>
 
