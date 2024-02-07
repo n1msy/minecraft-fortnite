@@ -56,7 +56,8 @@ fort_queue_handler:
 
           - define afk_seconds <[p].flag[fort.afk.time]>
           #after 10 minutes, kick the player (only if they're not in queue)
-          - if <[afk_seconds]> >= 600 && !<[p].has_flag[fort.in_queue]>:
+          #third check is so staff aren't kicked for afk
+          - if <[afk_seconds]> >= 600 && !<[p].has_flag[fort.in_queue]> && !<list[helper|mod|admin|owner].contains[<[p].luckperms_primary_group.group_name>]>:
             - kick <[p]> "reason:<&c>You've been AFK for too long!"
 
 
