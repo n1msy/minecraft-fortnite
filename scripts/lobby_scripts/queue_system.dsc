@@ -25,6 +25,7 @@ fort_queue_handler:
       #socials
       - define actionbar_text "<[youtube_icon]> Nimsy <[twitch_icon]> FlimsyNimsy <[twitter_icon]> N1msy"
 
+
       - foreach <[lobby_players]> as:p:
 
         - run fort_lobby_handler.menu player:<[p]>
@@ -36,6 +37,26 @@ fort_queue_handler:
           - define play_button <[p].flag[fort.menu.play_button]>
           - if !<[play_button].has_flag[selected]> && !<[p].has_flag[fort.in_queue]>:
             - run fort_lobby_handler.play_button_anim def.button:<[play_button]>
+
+        ## - [ AFK System ] - ##
+        #should we make this a separate run task?
+
+        #(updates every second)
+        - if <[tick].div[20]> == 0:
+          #no need for fallback, since the data is initalized when player joins
+          - define previous_loc <[p].flag[fort.afk.location]>
+          - define new_loc      <[p].location>
+          - if <[previous_loc]> == <[new_loc]>:
+            - flag <[p]> fort.afk.time:++
+          - else:
+            - flag <[p]> fort.afk.time:0
+          - flag <[p]> fort.afk.location:<[new_loc]>
+
+          - define afk_seconds <[p].flag[fort.afk.time]>
+          #after 10 minutes, kick the player (only if they're not in queue)
+          - if <[afk_seconds]> == 600 && !<[p].has_flag[fort.in_queue]>:
+            - kick <[p]> "reason:You've been AFK for too long!"
+
 
       #only update every 2 seconds
       - actionbar <[actionbar_text]> if:<[tick].mod[40].equals[0]> targets:<[lobby_players]>
