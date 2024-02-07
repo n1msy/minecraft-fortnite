@@ -631,8 +631,9 @@ fort_gun_handler:
       #-use item displays and display entities?
       #or rather, use item displays and interactions?
 
-      #- spawn <entity[item_display].with[item=<item[leather_helmet].with[custom_model_data=14]>;scale=1,1,1]> <[origin]> save:e
+      #- spawn <entity[item_display].with[item=<item[gold_nugget].with[custom_model_data=3]>;scale=1.4,1.4,1.4]> <[origin]> save:e
       - spawn <entity[armor_stand].with[equipment=<map.with[helmet].as[<item[gold_nugget].with[custom_model_data=3]>]>;gravity=false;collidable=false;invulnerable=true;visible=false]> <[origin].below[1.685]> save:e
+
       - define rocket <entry[e].spawned_entity>
       - define rocket_loc <[rocket].location.above[1.685]>
       #default = 0.65
