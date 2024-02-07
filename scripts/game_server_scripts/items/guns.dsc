@@ -817,6 +817,9 @@ fort_gun_handler:
 
     - define rarity <[gun].flag[rarity]>
 
+    #so all guns have different uuids
+    - define gun <[gun].with[flag=uuid:<util.random_uuid>]>
+
     - if <[drop]> == null:
       - define gun <[gun].with[custom_model_data=<[gun].flag[rarities.<[rarity]>.custom_model_data]>]> if:<[gun].flag[rarities.<[rarity]>.custom_model_data].is_truthy>
       - drop <[gun]> <[loc]> save:drop
