@@ -42,7 +42,7 @@ fort_queue_handler:
         #should we make this a separate run task?
 
         #(updates every second)
-        - if <[tick].div[20]> == 1:
+        - if <[tick].mod[20]> == 1:
           #no need for fallback, since the data is initalized when player joins
           - define previous_loc <[p].flag[fort.afk.location]>
           - define new_loc      <[p].location>
