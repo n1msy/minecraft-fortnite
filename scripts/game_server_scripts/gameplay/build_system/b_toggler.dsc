@@ -184,6 +184,10 @@ build_toggle:
           - define can_build False
           - define too_far True
 
+        #-BUILD LIMIT (so you can't build above y level 150)
+        - if <[final_center].y> >= 150:
+          - define can_build False
+
         - define build_color 45,167,237,150
         - if <player.flag[fort.<[material]>.qty]||0> < 10:
           - define build_color 219,55,55,150
