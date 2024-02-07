@@ -129,8 +129,9 @@ fort_gun_handler:
       - define lore <list[<[rarity_line]>|<[stars_line]>|<[dps_line]>|<[fire_rate_line]>|<[mag_line]>|<[reload_line]>]>
       - inventory adjust slot:<[gun_slot]> lore:<[lore]>
 
-    - inject update_hud
+    - run update_hud
 
+    ##for some reason sometimes it thinks the flag doesn't exist even tho we flagged it?
     #if gun is empty when picking it up, reload
     - define loaded_ammo <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
     - if <[loaded_ammo]> == 0:
