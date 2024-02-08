@@ -46,13 +46,21 @@ pregame_island_handler:
   definitions: data
   events:
     on player join:
+
+    - if <player.has_flag[joined_as_spectator]>:
+      - determine passively "<proc[get_prefix].context[<player>]> <&9><&l><player.name> <&7>started spectating."
+      - flag player joined_as_spectator:!
+      - adjust <player> gamemode:spectator
+      - teleport <player> <world[nimnite_map].spawn_location>
+      - stop
+
     - determine passively "<&9><&l><player.name> <&7>joined the match"
 
     #clear previous fort flags in case it wasn't
     - flag player fort:!
 
     #in case they're invis
-    - invisible <player> reset
+    - invisible <player> false
     - teleport <player> <server.flag[fort.pregame.spawn].above.random_offset[10,0,10]>
 
     - flag player fort.wood.qty:0
