@@ -49,13 +49,34 @@ fort_commands_handler:
     - wait 1s
     #this command is not very well tested. for example, a player could leave and theyd still have the joined_as_spectator flag, but idc
     - flag player fort.spectate_sending:!
-    - if <player.is_online>:
+    - if !<player.is_online>:
       - stop
     - adjust <player> send_to:<[server]>
 
     on player closes inventory flagged:fort.spectate_menu:
     - flag player fort.spectate_menu:!
     - narrate "<&c>Closed Nimnite spectate menu."
+
+get_prefix:
+  type: procedure
+  debug: false
+  definitions: player
+  script:
+    - define prefix <[player].luckperms_primary_group.group_name||none>
+
+    - choose <[prefix]>:
+      - case helper:
+        - define prefix <&a>[helper]<&r><&sp>
+      - case mod:
+        - define prefix <&9>[mod]<&r><&sp>
+      - case admin:
+        - define prefix <&c>[admin]<&r><&sp>
+      - case owner:
+        - define prefix <&7>[not<&sp>owner]<&r><&sp>
+      - default:
+        - define prefix <empty>
+
+    - determine <[prefix]>
 
 fort_spectate_bungee:
   type: task
