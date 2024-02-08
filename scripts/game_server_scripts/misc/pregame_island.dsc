@@ -49,6 +49,7 @@ pregame_island_handler:
 
     - if <player.has_flag[joined_as_spectator]>:
       - determine passively "<proc[get_prefix].context[<player>]> <&9><&l><player.name> <&7>started spectating."
+      - flag player fort:!
       - flag player joined_as_spectator:!
       - adjust <player> gamemode:spectator
       - teleport <player> <world[nimnite_map].spawn_location>
