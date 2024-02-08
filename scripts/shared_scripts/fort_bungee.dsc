@@ -13,6 +13,14 @@ fort_bungee_handler:
           players: <server.online_players_flagged[fort]>
       - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[data]>
 
+    #-since the player always has to join through the lobby, this will always work. otherwise, maybe run this on the backup server?
+    #if it's not the lobby being connected & the event being run on IS the lobby
+    - if <context.server> != fort_lobby && <bungee.server> == fort_lobby:
+      - define server_to_update <context.server>
+      - define data             <map[playerdata=<server.flag[bungee]>]>
+      - bungeerun <[server_to_update]> fort_bungee_tasks.update_players def:<[data]>
+
+
     on bungee server disconnects:
     - if <context.server> != fort_lobby && <context.server.starts_with[fort_]>:
       - define closed_server <context.server>
@@ -81,6 +89,11 @@ fort_bungee_tasks:
   definitions: data
   script:
     - narrate "do bungee tings"
+
+  update_players:
+    - define playerdata <[data].get[playerdata]>
+    - flag server bungee:<[playerdata]>
+
   set_data:
 
     #instead of having available_servers flag, have only .servers flag and have a status key?
