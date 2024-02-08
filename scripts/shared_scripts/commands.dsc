@@ -15,10 +15,77 @@ fort_commands_handler:
     - narrate "<&7>Recieved <&a><[i].display>"
 
     on player closes inventory flagged:fort.model_menu:
-    - narrate "<&c>Closed Nimnite models menu."
     - flag player fort.model_menu:!
+    - narrate "<&c>Closed Nimnite models menu."
 
-fort_admin_commands:
+    on player clicks in inventory flagged:fort.spectate_menu:
+    - determine passively cancelled
+    - define i <context.item>
+    - if !<[i].has_flag[server]>:
+      - stop
+
+    - if <player.has_flag[fort.spectate_cooldown]>:
+      - narrate "<&c>This is on cooldown."
+      - stop
+
+    - if <player.has_flag[fort.spectate_sending]>:
+      - narrate "<&c>Already sending you to a server."
+      - stop
+
+    - flag player fort.spectate_cooldown duration:1s
+
+    - define server <[i].flag[server]>
+    - ~bungeetag server:<[server]> <server.worlds.contains[<world[nimnite_map]>]> save:is_ready
+    - define is_ready <entry[is_ready].result>
+    - if !<[is_ready]>:
+      - narrate "<&c>Server isn't ready yet."
+      - stop
+
+    - inventory close
+    - flag player fort.spectate_sending
+
+    - narrate "<&a>Sending you to server:<&r> <[server]>"
+    - bungeerun <[server]> fort_spectate_bungee def:<player>
+    - wait 1s
+    #this command is not very well tested. for example, a player could leave and theyd still have the joined_as_spectator flag, but idc
+    - flag player fort.spectate_sending:!
+    - if <player.is_online>:
+      - stop
+    - adjust <player> send_to:<[server]>
+
+    on player closes inventory flagged:fort.spectate_menu:
+    - flag player fort.spectate_menu:!
+    - narrate "<&c>Closed Nimnite spectate menu."
+
+fort_spectate_bungee:
+  type: task
+  debug: false
+  definitions: player
+  script:
+    - flag <[player]> joined_as_spectator
+
+fort_spectate_command:
+  type: command
+  name: fort_spectate
+  debug: false
+  description: Open fortnite game server spectating menu.
+  usage: /fort_spectate
+  permission: fort.spectate
+  aliases:
+  - fspec
+  script:
+    - define game_servers <bungee.list_servers.filter[starts_with[fort_]].exclude[fort_lobby].sort_by_number[after[_]]>
+    - narrate "<&a>Opening current Nimnite game servers <&7>(<[game_servers].size>)"
+
+    - define items <list[]>
+    - foreach <[game_servers]> as:s:
+      - define i <item[paper].with[display=<&a><&l>Game Server <[loop_index]>;flag=server:<[s]>;lore=<list[<&sp>|<&e>Click to spectate.]>]>
+      - define items:->:<[i]>
+
+    - inventory open d:<inventory[generic[title=Nimnite Game Servers (<[game_servers].size>);contents=<[items]>;size=9]]>
+    - flag player fort.spectate_menu
+
+fort_admin_commands_2:
   type: command
   name: fortnite_menu
   debug: false
