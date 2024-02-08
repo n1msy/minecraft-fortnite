@@ -96,6 +96,10 @@ pregame_island_handler:
     #update the player count for everyone
     - sidebar set_line scores:4 values:<[alive_]> players:<[players]>
 
+    #-show how many players needed before a game starts
+    - if <server.has_flag[fort.temp.available]>:
+      - actionbar <&chr[1].font[item_name]><&f><&l><element[<[players].size>/<proc[get_min_players]>].font[item_name]> targets:<[players]>
+
     #-start countdown if there are enough people ready
     #second check is in case more people join during the countdown and it still going on, dont start another one
     #wait a bit after the last person before starting the queue
@@ -124,6 +128,8 @@ pregame_island_handler:
     - if <server.has_flag[fort.temp.unexpected_shutdown]>:
       - stop
 
+    - define players       <server.online_players_flagged[fort].exclude[<player>]>
+
     #if it's still in the pregame lobbe island
     - if <server.has_flag[fort.temp.available]>:
       - determine passively "<&9><&l><player.name> <&7>quit"
@@ -132,16 +138,19 @@ pregame_island_handler:
           game_server: <bungee.server>
           status: AVAILABLE
           mode: <server.flag[fort.mode]||solo>
-          players: <server.online_players_flagged[fort].exclude[<player>]>
+          players: <[players]>
 
       #send all the player data, or just remove the current one?
       - bungeerun fort_lobby fort_bungee_tasks.set_data def:<[send_server_data]>
 
       #so update the pregame island (since if they leave via lobby teleport circle, the death event wont fire)
       - if <player.has_flag[fort.lobby_teleport]>:
-        - define players       <server.online_players_flagged[fort].exclude[<player>]>
+        - define players       <[players]>
         - define alive_icon <&chr[0002].font[icons]>
         - sidebar set_line scores:4 values:<element[<[alive_icon]> <[players].size>].font[hud_text].color[<color[51,0,0]>]> players:<[players]>
+
+      #-show how many players needed before a game starts
+      - actionbar <&chr[1].font[item_name]><&f><&l><element[<[players].size>/<proc[get_min_players]>].font[item_name]> targets:<[players]>
 
     - else:
       - determine passively NONE
@@ -154,7 +163,7 @@ pregame_island_handler:
     - flag player fort:!
 
     #-if nobody is left on the server (there's no need to wait the whole 1 minute before server restarting)
-    - if <server.flag[fort.temp.phase]||null> == END && <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].is_empty>:
+    - if <server.flag[fort.temp.phase]||null> == END && <[players].filter[has_flag[fort.spectating].not].is_empty>:
       - inject fort_core_handler.reset_server
 
   countdown:
