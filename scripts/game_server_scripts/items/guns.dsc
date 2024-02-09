@@ -242,6 +242,10 @@ fort_gun_handler:
 
     - stop if:<player.has_flag[fort.dropped_gun].or[<player.has_flag[fort.opened_door_with_gun]>]>
 
+    #dont let players reload while shooting
+    - if <player.has_flag[gun_holding_down]>:
+      - stop
+
     - define gun <context.item>
     - define loaded_ammo <server.flag[fort.temp.<[gun].flag[uuid]>.loaded_ammo]>
     - if <[loaded_ammo]> < <[gun].flag[mag_size]>:

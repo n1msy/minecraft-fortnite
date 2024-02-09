@@ -203,6 +203,8 @@ hud_handler:
     - define old_slot <context.previous_slot>
     #dont use run, because new_slot and old_slot is defined
     - inject update_hud.hotbar
+    #in case they started/stopped holding a gun
+    - run update_hud.ammo
 
     - if <player.item_in_hand.script.name.starts_with[gun].not||true>:
       - stop
