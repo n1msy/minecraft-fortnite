@@ -165,6 +165,7 @@ fort_death_handler:
       - run fort_death_handler.spectate_target def:<map[spectator=<[spectator]>;target=<[player_to_spectate]>]>
 
     #update their hud so its correctly updated for spectating players too
+    ## [ warning ] this updates the ENTIRE hud (so the spectators can view the same thing)
     - run update_hud player:<[player_to_spectate]>
 
   spectate_target:

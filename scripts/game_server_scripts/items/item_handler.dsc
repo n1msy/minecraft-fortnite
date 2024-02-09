@@ -47,7 +47,7 @@ fort_item_handler:
     #so all items match to merge
     - adjust <[drop].item> lore:<list[]>
 
-    - inject update_hud
+    - run update_hud.hotbar
 
     on fort_item_* merges:
     - define item <context.item>
@@ -167,8 +167,6 @@ fort_item_handler:
 
     - foreach <[item_give_data]> as:data:
       - inventory set o:<[data].get[item]> slot:<[data].get[slot]>
-
-    - run update_hud
 
   item_text:
     - define text   <[data].get[text]>

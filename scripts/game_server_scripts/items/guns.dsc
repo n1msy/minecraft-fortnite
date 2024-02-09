@@ -46,7 +46,7 @@ fort_gun_handler:
     - remove <[e]>
 
     - flag player fort.ammo.<[ammo_type]>:+:<[add_qty]>
-    - inject update_hud
+    - run fort_inventory_handler.update.ammo def.ammo_type:<[ammo_type]>
 
     on ammo_* merges:
     - determine passively cancelled
@@ -130,8 +130,6 @@ fort_gun_handler:
       - define lore <list[<[rarity_line]>|<[stars_line]>|<[dps_line]>|<[fire_rate_line]>|<[mag_line]>|<[reload_line]>]>
       - inventory adjust slot:<[gun_slot]> lore:<[lore]>
 
-    - run update_hud
-
     ##for some reason sometimes it thinks the flag doesn't exist even tho we flagged it?
     #if gun is empty when picking it up, reload
     - define loaded_ammo <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
@@ -147,13 +145,23 @@ fort_gun_handler:
       - flag player fort.dropped_gun duration:7t
       - stop
 
-    - wait 1t
     - define gun    <context.item>
+    #this slot def ONLY works when the player is holding the item and drops it.
+    #otherwise, if the player drops it via cursor_item, there'd be nothing to drop, since
+    #the bg is removed already when clicked on
+    - define slot <player.held_item_slot>
+
+    - wait 1t
     - define drop   <context.entity>
 
     - run fort_gun_handler.drop_gun def:<map[gun=<[gun]>;drop=<[drop]>]>
 
-    - inject update_hud
+    #check because if they DO have this flag, it means they dropped the item via cursor_item
+    #and by then, the bg was already removed
+    - if !<player.has_flag[fort.last_slot_clicked]>:
+      - run fort_inventory_handler.update_rarity_bg def.slot:<[slot]>
+
+    - inject update_hud.hotbar
 
     # - [ Scope ] - #
     after player starts sneaking:
@@ -789,7 +797,11 @@ fort_gun_handler:
     - define loaded_ammo <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
 
     #run, not inject, since there are waits in it
-    - run update_hud
+    - run update_hud.ammo
+    #we have to update the hotbar too, so it shows the right ammo count in the slot
+    #(ask someone to isolate the hotbar slots too? so it only updates whatever item you pick up based on the slot, then cache that data in an inventory player flag? idk...)
+    #for now, we'll just do this...
+    - run update_hud.hotbar
 
     - if <[loaded_ammo]> == 0:
       - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
@@ -917,7 +929,13 @@ fort_gun_handler:
       - if <[gun].script.name.after[gun_]> == rocket_launcher:
         - inventory adjust slot:<player.held_item_slot> custom_model_data:20
 
-      - inject update_hud
+      #ammo
+      - run update_hud.ammo
+      #hotbar ammo
+      - run update_hud.hotbar
+      #inventory total ammo
+      - run fort_inventory_handler.update.ammo def.ammo_type:<[ammo_type]>
+
       - playsound <player.location> sound:BLOCK_NOTE_BLOCK_BIT pitch:1 volume:1.2
       #- actionbar <&a>Reloaded
       - title subtitle:<&a>Reloaded fade_in:0 fade_out:0.5 stay:5t

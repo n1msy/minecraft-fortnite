@@ -91,8 +91,12 @@ pregame_island_handler:
     #so all houses/builds aren't dark
     - cast NIGHT_VISION duration:infinite no_ambient hide_particles no_icon no_clear
 
+    ## [ warning ] updates entire hud (for initial setup)
     - run update_hud
     - run minimap
+
+    #rarity bg for pickaxe
+    - run fort_inventory_handler.update_rarity_bg def.slot:1
 
     #for future purpose maybe?
     #- team name:Pregame_Island add:<player.name>
@@ -263,7 +267,7 @@ pregame_island_handler:
     - wait 3t
     - foreach <[players]> as:p:
       - adjust <[p]> item_slot:1
-      - run update_hud player:<[p]>
+      - run update_hud.hotbar player:<[p]>
     #in case they were invisible for some reason (case: mergu, even though emotes were disabled)
     - invisible <[players]> false
 
