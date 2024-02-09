@@ -45,11 +45,11 @@ minimap:
         - define yaw_data <[yaw].is[LESS].than[0].if_true[<[yaw].add[360]>].if_false[<[yaw]>].div[360]>
 
         ## - [ UPDATE YAW COMPASS ] - ##
-        - if <[loop_index].mod[3]> == 0:
+        - if <[loop_index].mod[4]> == 0:
           - inject minimap.update_yaw_compass
 
         ## - [ UPDATE MINIMAP ] - ##
-        - if <[loop_index].mod[6]> == 0:
+        - if <[loop_index].mod[7]> == 0:
           - inject minimap.update_minimap
 
         - wait 1t
