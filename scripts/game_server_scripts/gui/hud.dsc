@@ -184,12 +184,6 @@ hud_handler:
     #-INVENTORY LOCKS ADJUSTED IN "global_events.dsc"
     #only let players change item locations within the 2-6 slots
 
-    after player picks up item:
-    #i have a custom way of picking fort_items, so i have to also run this in item_handler (because this event doesn't fire)
-
-    #can't update bg here, because leather color changes (i *could* look for it by changing leather color, but eh)
-    - run update_hud.hotbar
-
     on player scrolls their hotbar:
     - if <player.has_flag[fort.using_glider]> || <player.has_flag[fort.spectating]>:
       - determine passively cancelled
