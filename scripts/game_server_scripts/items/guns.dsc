@@ -91,6 +91,7 @@ fort_gun_handler:
     #TODO (potentially): cancel gun pickup and just give it to the player ourselves?
 
     #safety
+    #since we wait a tick, if the player shoots right after they pick it up and the gun isn't initalized yet, it will break
     - wait 1t
     - define gun      <context.item>
     - define gun_slot <player.inventory.find_item[<[gun]>]>
@@ -259,6 +260,11 @@ fort_gun_handler:
     - define gun        <player.item_in_hand>
     - define gun_name   <[gun].script.name.after[_]>
     - define gun_uuid   <[gun].flag[uuid]>
+
+    #-initialized check
+    #(since you wait a tick before it's initalized after they pick it up)
+    - if !<server.has_flag[fort.temp.<[gun_uuid]>.loaded_ammo]>:
+      - stop
 
     #-out of ammo check
     - define loaded_ammo <server.flag[fort.temp.<[gun_uuid]>.loaded_ammo]>
