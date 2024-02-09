@@ -75,6 +75,8 @@ fort_death_handler:
       - playsound <[killer]> sound:ENTITY_PLAYER_ATTACK_CRIT pitch:0.9 volume:1
       - actionbar "<&chr[1].font[elim_text]><element[<&l>ELIMINATED].font[elim_text]> <element[<&c><&l><player.name>].font[elim_text]>" targets:<[killer]>
 
+      - run update_hud.kills player:<[killer]>
+
   #-should we make a player leaving mid-fight count as a kill too?
   death:
     #using queued player
