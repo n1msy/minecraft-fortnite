@@ -144,7 +144,7 @@ fort_gun_handler:
     - if <player.has_flag[fort.gun_scoped]>:
       - determine passively cancelled
       #flag so reload event doesn't fire
-      - flag player fort.dropped_gun duration:1t
+      - flag player fort.dropped_gun duration:7t
       - stop
 
     - wait 1t
@@ -228,6 +228,7 @@ fort_gun_handler:
     on player left clicks block with:gun_*:
     - determine passively cancelled
     - cast FAST_DIGGING amplifier:9999 duration:1s no_icon no_ambient hide_particles
+
     - stop if:<player.has_flag[fort.dropped_gun].or[<player.has_flag[fort.opened_door_with_gun]>]>
 
     - define gun <context.item>
