@@ -247,6 +247,9 @@ fort_gun_handler:
       - stop
 
     - define gun <context.item>
+    - if !<server.has_flag[fort.temp.<[gun].flag[uuid]>.loaded_ammo]>:
+      - stop
+
     - define loaded_ammo <server.flag[fort.temp.<[gun].flag[uuid]>.loaded_ammo]>
     - if <[loaded_ammo]> < <[gun].flag[mag_size]>:
       - stop if:<player.has_flag[fort.reloading_gun]>
