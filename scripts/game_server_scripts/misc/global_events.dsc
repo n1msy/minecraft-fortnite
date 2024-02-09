@@ -330,6 +330,40 @@ fort_global_handler:
       - run <[script_path]> def:<map[<[type_name]>=<[sub_type]>;qty=1]>
       - inject update_hud
 
+
+    #-convenience route: check if the player can stack the cursor item, otherwise drop it
+    #-easiest/most optimized wise: just drop whatever cursor item you have
+
+    #make a task for dropping any type of item?
+
+    on player closes inventory:
+    - define drop_item <player.item_on_cursor>
+    - define script_name <[drop_item].script.name||null>
+
+    - if <[script_name]> == null:
+      - stop
+
+    - define drop_loc <player.location.above[0.1]>
+
+    - adjust <player> item_on_cursor:air
+
+    #- if [ gun ]
+    - if <[script_name].starts_with[gun_]>:
+      #-can't use .drop_gun, because new uuid is generated
+      - define gun    <[drop_item]>
+      - define rarity <[gun].flag[rarity]>
+      - define gun    <[gun].with[custom_model_data=<[gun].flag[rarities.<[rarity]>.custom_model_data]>]> if:<[gun].flag[rarities.<[rarity]>.custom_model_data].is_truthy>
+      - drop <[gun]>  <[drop_loc]> save:drop
+      - define drop   <entry[drop].dropped_entity>
+      - define name   <[gun].display.strip_color>
+      - define text <&l><[name].to_uppercase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]>
+      - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>;rarity=<[rarity]>]>
+
+    # - if [ item ]
+    - else if <[script_name].starts_with[fort_item_]>:
+      - run fort_item_handler.drop_item def:<map[item=<[drop_item]>;qty=<[drop_item].quantity>;loc=<[drop_loc]>]>
+
+
     on player closes inventory flagged:fort.drop_menu:
     #meaning the inventory wasn't actually closed, just a new one was opened
     - if <player.has_flag[fort.drop_menu.changed_qty]>:
