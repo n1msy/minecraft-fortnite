@@ -185,12 +185,10 @@ hud_handler:
     #only let players change item locations within the 2-6 slots
 
     after player picks up item:
+    #i have a custom way of picking fort_items, so i have to also run this in item_handler (because this event doesn't fire)
 
-    #idk y i dont like this... i feel like it's error prone
-    - define slot <player.inventory.list_contents.find[<context.item>]>
-    - run fort_inventory_handler.update_rarity_bg def.slot:<[slot]>
-
-    - inject update_hud.hotbar
+    #can't update bg here, because leather color changes (i *could* look for it by changing leather color, but eh)
+    - run update_hud.hotbar
 
     on player scrolls their hotbar:
     - if <player.has_flag[fort.using_glider]> || <player.has_flag[fort.spectating]>:

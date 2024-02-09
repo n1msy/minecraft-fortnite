@@ -136,6 +136,8 @@ fort_gun_handler:
     - if <[loaded_ammo]> == 0:
       - run fort_gun_handler.reload def:<map[gun=<[gun]>]>
 
+    - run fort_inventory_handler.update_rarity_bg def.slot:<[gun_slot]>
+
     on player drops gun_*:
     #so players can't drop their gun while scoped
     #do this^ OR let them drop the gun and just change the gun model data back to what it was?
