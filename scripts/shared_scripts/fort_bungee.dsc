@@ -94,12 +94,12 @@ fort_bungee_tasks:
 
     # - [ Read Mongo DB & Cache Player Data ] - #
 
-    - announce to_console <[data].get[players]>
+    - define players_that_played <[data].get[players].unescaped>
 
-    #- announce to_console "<&b>[Nimnite] <&f>Updated playerdata for <&a><[players_that_played].size><&r> players."
+    - announce to_console "<&b>[Nimnite] <&f>Updated playerdata for <&a><[players_that_played].size><&r> players."
 
-    #- foreach <[players_that_played]> as:p:
-    #  - run fort_stats.cache_playerdata def:<map[uuid=<[p].uuid>]>
+    - foreach <[players_that_played]> as:p:
+      - run fort_stats.cache_playerdata def:<map[uuid=<[p].uuid>]>
 
   update_players:
     - define playerdata <[data].get[playerdata]>
