@@ -201,7 +201,7 @@ fort_global_handler:
           - define new_qty    <[item_clicked_on].quantity>
           - if <[new_qty]> > <[stack_size]>:
             - define cursor_qty <[new_qty].sub[<[stack_size]>]>
-            - inventory set o:<[item_clicked_on].with[quantity=<[stack_size]>]> slot:<[slot]>
+            - inventory set o:<[item_clicked_on].with[quantity=<[stack_size]>]> slot:<[slot_clicked]>
             - adjust <player> item_on_cursor:<[item_clicked_on].with[quantity=<[cursor_qty]>]>
 
         #dont check for if only the cursor item has the rarity flag, since players can take out multiple items that are stackable from the same slot
