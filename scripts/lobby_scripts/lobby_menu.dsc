@@ -231,19 +231,8 @@ fort_lobby_handler:
     ##i dont wanna use mongo command for every join, so we'll just save skull skin data on server
     # - [ Add player to DB if haven't already ] - #
     - if !<server.flag[fort.joined_players].contains[<player>]||false>:
-
-      #- ~mongo id:nimnite_playerdata find:[uuid=<[uuid]>] save:pdata
-      #- define pdata <entry[pdata].result>
-      #just in case the server flag was reset or something
-      # if <[pdata].is_empty>:
-
-      #  - define created_data.uuid:<[uuid]>
-      #  - ~mongo id:nimnite_playerdata insert:<[created_data]>
-
       - flag server fort.joined_players:->:<player>
 
-    #- define insert_skull_data.skull_skin:<player.skull_skin>
-    ##save the player's skull_skin data
     - flag server fort.playerdata.<player.uuid>.skull_skin:<player.skull_skin>
 
     # - [ Read Mongo DB & Cache Player Data ] - #
