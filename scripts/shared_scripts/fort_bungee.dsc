@@ -90,6 +90,13 @@ fort_bungee_tasks:
   script:
     - narrate "do bungee tings"
 
+  update_playerdata_cache:
+
+    - define players_that_played <[data].get[players]>
+
+    - foreach <[players_that_played]> as:p:
+      - run fort_stats.cache_playerdata player:<[p]>
+
   update_players:
     - define playerdata <[data].get[playerdata]>
     - flag server bungee:<[playerdata]>

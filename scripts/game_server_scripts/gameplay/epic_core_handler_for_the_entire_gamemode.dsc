@@ -292,11 +292,6 @@ fort_core_handler:
     - title title:<&chr[10].font[icons].color[<color[77,0,0]>]> fade_in:0 fade_out:0 stay:1m targets:<[winners]>
     - playsound <[winners]> sound:ENTITY_PLAYER_LEVELUP pitch:0
 
-    #######set player victory flags
-    #- flag <[winners]> fort.wins.<[mode]>:->:<util.time_now>
-    #- flag <[winners]> fort.kills.<[mode]>:+:<[kills]>
-    #- bungeerun
-
     - flag <[winners]> fort.winner
     - flag server fort.temp.winners:<[winners]>
 
@@ -378,7 +373,7 @@ fort_core_handler:
 
         - ~mongo id:nimnite_playerdata update:<[old_data]> new:<[new_data]>
 
-
+    - bungeerun fort_lobby fort_bungee_tasks.update_playerdata_cache def:<map[players=<[players_that_played]>]>
     - announce to_console "<&b>[Nimnite]<&r>Restarting server..."
     - wait 5s
     - adjust server restart
