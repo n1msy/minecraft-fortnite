@@ -29,8 +29,11 @@ fort_explosive_handler:
 
     - playsound <player> sound:ENTITY_SNOWBALL_THROW pitch:0.9
 
-    - take slot:<player.held_item_slot>
+    - define slot <player.held_item_slot>
+    - take slot:<[slot]>
     - run update_hud.hotbar
+    #update it every time, or check if the item is gone first?
+    - run fort_inventory_handler.update_rarity_bg def.slot:<[slot]>
 
     - drop <context.item.with[flag=thrown_grenade]> <[origin]> delay:9999s save:grenade
     - define grenade <entry[grenade].dropped_entity>
