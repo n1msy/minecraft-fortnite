@@ -6,7 +6,7 @@ fort_board_handler:
     - run update_server_status
 
     #update lb every 20 sec
-    #- if <context.second.mod[20]> == 0:
+    ##- if <context.second.mod[20]> == 0:
       # - [ Fetch LB Data ] - #
       #- run update_leaderboard
 
