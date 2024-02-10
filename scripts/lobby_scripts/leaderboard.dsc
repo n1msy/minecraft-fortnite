@@ -19,6 +19,7 @@ fort_stats:
   usage: /stats (mode) (player)
   aliases:
     - stastitics
+  definitions: data
   script:
     - if !<player.is_op>:
       - narrate "<&c>Command not out yet."
@@ -84,7 +85,7 @@ fort_stats:
   cache_playerdata:
     #TODO: cache duos and squads too
 
-    - define uuid <player.uuid>
+    - define uuid <[data].get[uuid]>
     - define mode solo
 
     - ~mongo id:nimnite_playerdata find:[_id=<player.uuid>] save:pdata
