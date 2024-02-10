@@ -68,7 +68,8 @@ fort_stats:
     - narrate "<&7>K/D: <&b><[kills].div[<[deaths]>].round_to[2]||0>"
     - narrate "<&7>Games Played: <&b><[games_played]>"
     - narrate "<&7>Wins: <&b><[wins]>"
-    - narrate "<&7>W/L: <&b><[wins].div[<[losses]>].round_to[2]||0>"
+    - narrate "<&7>W/L: <&b><[wins].div[<[losses]>].round_to[2]||1>"
+    #fallback is 1 because if you divide wins by 0, w/l would be 1
     - narrate <[line]>
 
   player_check:
