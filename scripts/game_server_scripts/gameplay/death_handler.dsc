@@ -96,9 +96,6 @@ fort_death_handler:
     #in case they were in the storm
     - flag player fort.in_storm:!
 
-    #mainly for duos and squads (will be saved in playerdata db)
-    - flag server fort.temp.deaths.<player.uuid>:++
-
     #- remove minimap for spectators
     #check just in case their minimap was somehow disabled already
     - run minimap if:<player.has_flag[fort.minimap]>
@@ -131,6 +128,11 @@ fort_death_handler:
     # - [ Victory Check ] - #
     #if is in case they player leaves after theyve won
     - run fort_core_handler.victory_check def:<map[dead_player=<player>]> if:<server.flag[fort.temp.phase].equals[END].not>
+
+    #check if phase is end (so if a player leaves during end phase, it doesn't count as a death)
+    - if <server.flag[fort.temp.phase]> == END:
+      #mainly for duos and squads (will be saved in playerdata db)
+      - flag server fort.temp.deaths.<player.uuid>:++
 
     # - [ Spectating System ] - #
     #if they die without a killer, just spectate a random player that's alive
