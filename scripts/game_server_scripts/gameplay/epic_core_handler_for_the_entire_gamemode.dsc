@@ -335,8 +335,8 @@ fort_core_handler:
       - define current_kills  <server.flag[fort.temp.kills.<[uuid]>]||0>
       - define current_deaths <server.flag[fort.temp.deaths.<[uuid]>]||0>
 
-      - ~mongo id:nimnite_playerdata find:[uuid=<[uuid]>] save:pdata
-      - define pdata <entry[pdata].result>
+      - ~mongo id:nimnite_playerdata find:[uuid=<[uuid]>] save:pdata_<[uuid]>
+      - define pdata <entry[pdata_<[uuid]>].result>
       - if <[pdata].is_empty>:
 
         - define created_data.uuid:<[uuid]>
@@ -368,9 +368,9 @@ fort_core_handler:
 
       - define uuid <[winner].uuid>
 
-      - ~mongo id:nimnite_playerdata find:[uuid=<[uuid]>] save:pdata
+      - ~mongo id:nimnite_playerdata find:[uuid=<[uuid]>] save:pdata_wins_<[uuid]>
       #no need to check if the file exists or not, since if it didn't already, it has now (because of former code)
-      - define pdata          <entry[pdata].result>
+      - define pdata          <entry[pdata_wins_<[uuid]>].result>
       - define total_wins     <[pdata].first.parse_yaml.get[<[mode]>].get[wins]||0>
       - define new_total_wins <[total_wins].add[1]>
 
