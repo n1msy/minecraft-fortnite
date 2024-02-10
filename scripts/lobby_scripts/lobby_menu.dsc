@@ -105,15 +105,18 @@ fort_lobby_handler:
     #- webserver start port:4274
     #- narrate "<&b>[Nimnite]<&r> Started web server on port: <&e>4274"
 
+    ##do this?
+    - flag server bungee.players:<list[]>
+
     - waituntil <world[fort_lobby].if_null[false]> max:10s
     #-in case the server crashed/it was incorrectly shut down
 
     - ~mongo id:nimnite_playerdata connect:<secret[nimbus_db]> database:Nimnite collection:Playerdata
-    - narrate "<&b>[Nimnite]<&r> Connected to Nimnite database."
+    - announce "<&b>[Nimnite]<&r> Connected to Nimnite database." to_console
 
     - remove <world[fort_lobby].entities[item_display|text_display|npc]>
     - run fort_lobby_setup
-    - narrate "<&b>[Nimnite]<&r> The lobby is now set up."
+    - announce "<&b>[Nimnite]<&r> The lobby is now set up." to_console
 
     #-to prevent collision
     - team name:lobby_player option:collision_rule status:never
@@ -243,6 +246,8 @@ fort_lobby_handler:
     ##save the player's skull_skin data
     - flag server fort.playerdata.<player.uuid>.skull_skin:<player.skull_skin>
 
+    # - [ Read Mongo DB & Cache Player Data ] - #
+    - run fort_stats.cache_playerdata
 
     #- [ ! ] Warning: RP is being downloaded every time players join lobby server (even when returning from game)
     #can be fixed with new snapshot stuff from 1/18/23
@@ -861,6 +866,10 @@ fort_lobby_setup:
     - spawn <entity[text_display].with[text=<&b><&l>Game Status<&r>;pivot=FIXED;background_color=transparent]> <[status_title_loc]> save:title_display
     - flag server fort.status.title:<entry[title_display].spawned_entity>
 
+    ##
+
+    ## - [ Leaderboard Titles ] - ##
+    - run update_leaderboard.title_setup
     ##
 
     - flag server fort.menu_spawn:<[loc]>
