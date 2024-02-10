@@ -96,8 +96,10 @@ fort_bungee_tasks:
 
     - define players_that_played <[data]>
 
+    - announce to_console "<&b>[Nimnite] <&f>Updated playerdata for <&a><[players_that_played].size><&r> players."
+
     - foreach <[players_that_played]> as:p:
-      - run fort_stats.cache_playerdata player:<[p]>
+      - run fort_stats.cache_playerdata def:<map[uuid=<[p].uuid>]>
 
   update_players:
     - define playerdata <[data].get[playerdata]>

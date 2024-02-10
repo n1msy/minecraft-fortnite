@@ -117,7 +117,11 @@ fort_consumable_handler:
         - playeffect at:<[particle_loc]> offset:0.3,0.5,0.3 quantity:25 effect:REDSTONE special_data:1.5|AQUA
         - playsound <player> sound:BLOCK_NOTE_BLOCK_CHIME pitch:1.5
 
-    - take slot:<player.held_item_slot>
+    - define slot <player.held_item_slot>
+
+    - take slot:<[slot]>
+    #update it every time, or check if the item is gone first?
+    - run fort_inventory_handler.update_rarity_bg def.slot:<[slot]>
 
     #so the item count drops
     - run update_hud.hotbar

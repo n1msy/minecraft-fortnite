@@ -51,7 +51,7 @@ fort_core_handler:
   - inject fort_core_handler.timer
   #storm eye shrinking 3 minutes
   #default: 180
-  - define seconds  100
+  - define seconds  140
   - define phase    STORM_SHRINK
   - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
@@ -318,7 +318,8 @@ fort_core_handler:
         - kick <[players]> "reason:<&r>The <&b>Nimnite lobby menu<&r> is currently offline. Rejoin later!"
     - announce to_console "<&b>[Nimnite]<&r> Match ended. Saving player data..."
 
-    - define mode <server.flag[fort.mode]||solo>
+    - define mode         <server.flag[fort.mode]||solo>
+    - define winner_uuids <server.flag[fort.temp.winners].parse[uuid]>
 
     # - [ Save Player KILLS ] - #
 
@@ -346,7 +347,7 @@ fort_core_handler:
         - define created_data.<[mode]>.games_played:1
 
         # - [ Save Player WINS ] - #
-        - if <[winners].contains[<[uuid].as[player]>]>:
+        - if <[winner_uuids].contains[<[uuid]>]>:
           - define created_data.<[mode]>.wins:1
 
         - ~mongo id:nimnite_playerdata insert:<[created_data]>
@@ -366,7 +367,7 @@ fort_core_handler:
         - define new_data.$set.<[mode]>.games_played:<[new_total_games_played]>
 
         # - [ Save Player WINS ] - #
-        - if <[winners].contains[<[uuid].as[player]>]>:
+        - if <[winner_uuids].contains[<[uuid]>]>:
           - define total_wins     <[pdata].first.parse_yaml.get[<[mode]>].get[wins]||0>
           - define new_total_wins <[total_wins].add[1]>
           - define new_data.$set.<[mode]>.wins:<[new_total_wins]>
