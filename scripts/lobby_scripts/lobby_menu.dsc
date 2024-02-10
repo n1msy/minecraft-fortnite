@@ -235,9 +235,6 @@ fort_lobby_handler:
 
     - flag server fort.playerdata.<player.uuid>.skull_skin:<player.skull_skin>
 
-    # - [ Read Mongo DB & Cache Player Data ] - #
-    - run fort_stats.cache_playerdata
-
     #- [ ! ] Warning: RP is being downloaded every time players join lobby server (even when returning from game)
     #can be fixed with new snapshot stuff from 1/18/23
 
