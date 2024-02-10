@@ -94,7 +94,7 @@ fort_bungee_tasks:
 
     # - [ Read Mongo DB & Cache Player Data ] - #
 
-    - announce to_console <[data]>
+    - announce to_console <[data].get[players]>
 
     #- announce to_console "<&b>[Nimnite] <&f>Updated playerdata for <&a><[players_that_played].size><&r> players."
 
