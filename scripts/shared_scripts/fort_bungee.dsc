@@ -92,6 +92,8 @@ fort_bungee_tasks:
 
   update_playerdata_cache:
 
+    # - [ Read Mongo DB & Cache Player Data ] - #
+
     - define players_that_played <[data].get[players]>
 
     - foreach <[players_that_played]> as:p:
