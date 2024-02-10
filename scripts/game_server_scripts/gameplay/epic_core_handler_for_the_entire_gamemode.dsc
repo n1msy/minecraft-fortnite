@@ -51,7 +51,7 @@ fort_core_handler:
   - inject fort_core_handler.timer
   #storm eye shrinking 3 minutes
   #default: 180
-  - define seconds  100
+  - define seconds  140
   - define phase    STORM_SHRINK
   - run fort_storm_handler.resize def.seconds:<[seconds]>
   - inject fort_core_handler.timer
