@@ -290,6 +290,10 @@ fort_gun_handler:
     - if <[loaded_ammo]> == 0:
       - stop
 
+    #-cancel shoot if reloading
+    - if <player.has_flag[fort.reloading_gun]>:
+      - stop
+
     #all NON-AUTO guns have cooldowns
     - if <player.has_flag[fort.<[gun_name]>.cooldown]>:
       - stop
