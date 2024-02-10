@@ -96,9 +96,6 @@ fort_death_handler:
     #in case they were in the storm
     - flag player fort.in_storm:!
 
-    #mainly for duos and squads (will be saved in playerdata db)
-    - flag server fort.temp.deaths.<player.uuid>:++
-
     #- remove minimap for spectators
     #check just in case their minimap was somehow disabled already
     - run minimap if:<player.has_flag[fort.minimap]>
@@ -110,30 +107,32 @@ fort_death_handler:
     - if <server.has_flag[fort.temp.available]>:
       - stop
 
+    - define players       <server.online_players_flagged[fort]>
+    - define players_alive <[players].filter[has_flag[fort.spectating].not].exclude[<player>]>
+
     #killfeed (if they quit and didn't actually die)
     - if <[quit]>:
       - define msg_template <script[nimnite_config].data_key[killfeed.quit].random.parse_minimessage>
       - define death_message <[msg_template].replace_text[_player_].with[<player.name>]>
       - announce <[death_message].parsed>
     - else:
-      #-make sure this message doesn't stay after the next match?
-      #this is before adding the fort.spectating flag, so no need to remove the dead player from the list
-      - define placement <server.online_players_flagged[fort].filter[has_flag[fort.spectating].not].size>
+      - define placement <[players_alive].size.add[1]>
       - define placement_text "<&l>YOU PLACED <&r>#<&e><&l><[placement]>"
-      #- bossbar update fort_info title:<[placement_text]> color:YELLOW players:<player>
       - title subtitle:<[placement_text]> fade_in:0t stay:15s fade_out:10t
 
     #-Update alive players (players left)
-    #excluding killer, since their hud updates already in .death
-    - define players       <server.online_players_flagged[fort].exclude[<[killer]>]>
-    - define players_alive <server.online_players_flagged[!fort.spectating]>
+    #do this, or use hud update?
     - define alive_icon <&chr[0002].font[icons]>
-
     - sidebar set_line scores:4 values:<element[<[alive_icon]> <[players_alive].size>].font[hud_text].color[<color[51,0,0]>]> players:<[players]>
 
     # - [ Victory Check ] - #
     #if is in case they player leaves after theyve won
     - run fort_core_handler.victory_check def:<map[dead_player=<player>]> if:<server.flag[fort.temp.phase].equals[END].not>
+
+    #check if phase is end (so if a player leaves during end phase, it doesn't count as a death)
+    - if <server.flag[fort.temp.phase]> == END:
+      #mainly for duos and squads (will be saved in playerdata db)
+      - flag server fort.temp.deaths.<player.uuid>:++
 
     # - [ Spectating System ] - #
     #if they die without a killer, just spectate a random player that's alive
