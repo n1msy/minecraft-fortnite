@@ -34,8 +34,10 @@ build_toggle_handler:
     - flag player fort.emote:! if:<[new_type].equals[build]>
     - run build_toggle
 
-    - inject update_hud
+    - run update_hud.hotbar
 
+
+##due to new hud isolation method: the inventory completely clears when in build mode, ill only add it back if players complain
 build_toggle:
   type: task
   debug: false

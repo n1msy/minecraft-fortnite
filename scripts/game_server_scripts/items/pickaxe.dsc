@@ -385,6 +385,8 @@ fort_pic_handler:
       #first add the mat (so they can place it instantly)
       #(then "animate" the counter)
       - flag player fort.<[mat]>.qty:+:<[qty]>
+      #update mat slots (i never added this before and nobody noticed LOL)
+      - run fort_inventory_handler.update.material def.mat:<[mat]>
 
       - inject fort_pickaxe_mat_animation_clear_queue
       - flag player fort.mat_animation_queue:<queue.id>
@@ -418,6 +420,7 @@ fort_pic_handler:
 
     - else if <[action]> == remove:
       - flag player fort.<[mat]>.qty:-:<[qty]>
+      - run fort_inventory_handler.update.material def.mat:<[mat]>
 
       - inject fort_pickaxe_mat_animation_clear_queue
       - flag player fort.mat_animation_queue:<queue.id>

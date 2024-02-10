@@ -48,8 +48,13 @@ pregame_island_handler:
     on player join:
 
     - if <player.has_flag[joined_as_spectator]>:
-      - determine passively "<proc[get_prefix].context[<player>]><&9><&l><player.name> <&7>started spectating."
+      #- determine passively "<proc[get_prefix].context[<player>]><&9><&l><player.name> <&7>started spectating."
+      - determine passively NONE
+      - cast blindness remove
+      - cast NIGHT_VISION duration:infinite no_ambient hide_particles no_icon no_clear
       - flag player fort:!
+      - flag player fort.spectating
+      - flag player fort.is_mod
       - flag player joined_as_spectator:!
       - adjust <player> gamemode:spectator
       - teleport <player> <world[nimnite_map].spawn_location>
@@ -86,8 +91,12 @@ pregame_island_handler:
     #so all houses/builds aren't dark
     - cast NIGHT_VISION duration:infinite no_ambient hide_particles no_icon no_clear
 
+    ## [ warning ] updates entire hud (for initial setup)
     - run update_hud
     - run minimap
+
+    #rarity bg for pickaxe
+    - run fort_inventory_handler.update_rarity_bg def.slot:1
 
     #for future purpose maybe?
     #- team name:Pregame_Island add:<player.name>
@@ -258,7 +267,7 @@ pregame_island_handler:
     - wait 3t
     - foreach <[players]> as:p:
       - adjust <[p]> item_slot:1
-      - run update_hud player:<[p]>
+      - run update_hud.hotbar player:<[p]>
     #in case they were invisible for some reason (case: mergu, even though emotes were disabled)
     - invisible <[players]> false
 

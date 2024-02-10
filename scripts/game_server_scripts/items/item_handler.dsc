@@ -31,6 +31,8 @@ fort_item_handler:
     on player drops fort_item_*:
     - define item  <context.item>
     - flag player fort.item_dropped:<[item]> duration:1t
+
+    - define slot <player.held_item_slot>
     #safety
     - wait 1t
 
@@ -47,7 +49,10 @@ fort_item_handler:
     #so all items match to merge
     - adjust <[drop].item> lore:<list[]>
 
-    - inject update_hud
+    - run update_hud.hotbar
+
+    - if !<player.has_flag[fort.last_slot_clicked]>:
+      - run fort_inventory_handler.update_rarity_bg def.slot:<[slot]>
 
     on fort_item_* merges:
     - define item <context.item>
@@ -167,8 +172,8 @@ fort_item_handler:
 
     - foreach <[item_give_data]> as:data:
       - inventory set o:<[data].get[item]> slot:<[data].get[slot]>
-
-    - run update_hud
+      - run fort_inventory_handler.update_rarity_bg def.slot:<[data].get[slot]>
+    - run update_hud.hotbar
 
   item_text:
     - define text   <[data].get[text]>

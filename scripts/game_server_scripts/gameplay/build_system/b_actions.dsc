@@ -37,7 +37,7 @@ build_system_handler:
 
     - playsound <player> sound:<[sound]> pitch:1.75 volume:0.5
 
-    - inject update_hud
+    - run update_hud.materials
 
     #-place
     on player left clicks block flagged:build:
@@ -123,7 +123,7 @@ build_system_handler:
           - define switched True
           - flag player build.material:<[mat]>
           - define material <[mat]>
-          - inject update_hud
+          - run update_hud.materials
           - foreach stop
       #aka there's no mats left to build with
       - stop if:<[switched].exists.not>

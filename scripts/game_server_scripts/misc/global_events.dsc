@@ -146,10 +146,11 @@ fort_global_handler:
       #don't update their hud after they die
       - stop if:<[e].has_flag[fort.spectating]>
       - adjust <queue> linked_player:<[e]>
-      - run update_hud
+      - run update_hud.health
 
-    after player closes inventory:
-    - inject update_hud
+    #why was i doing this?
+    ##after player closes inventory:
+    ##- inject update_hud
 
 
     #prevent any items from being equipped (and put in offhand)
@@ -173,12 +174,17 @@ fort_global_handler:
 
     - stop if:<context.clicked_inventory.inventory_type.equals[CRAFTING]>
     - stop if:<context.item.has_flag[action]||false>
-    - if <util.list_numbers[from=19;to=27].contains[<context.slot>]> && <context.item.material.name> != air:
+
+    - define slot_clicked <context.slot>
+
+    - if <util.list_numbers[from=19;to=27].contains[<[slot_clicked]>]> && <context.item.material.name> != air:
       - stop
-    - if <list[2|3|4|5|6].contains[<context.slot>]> && <context.clicked_inventory.inventory_type> == PLAYER:
+    - if <list[2|3|4|5|6].contains[<[slot_clicked]>]> && <context.clicked_inventory.inventory_type> == PLAYER:
 
       - define cursor_item     <context.cursor_item>
       - define item_clicked_on <context.item>
+
+      - flag player fort.last_slot_clicked:<[slot_clicked]>
 
       #-remove/re-add rarity bg
       #if they're clicking WITH a fort item or ON one, update the rarity
@@ -187,8 +193,7 @@ fort_global_handler:
 
         #-checking item stack sizes
         #update item data from a tick after
-        - define slot            <context.slot>
-        - define item_clicked_on <player.inventory.slot[<context.slot>]>
+        - define item_clicked_on <player.inventory.slot[<[slot_clicked]>]>
         - define cursor_item     <context.cursor_item>
         #check if it's stackable
         - if <[item_clicked_on].has_flag[stack_size]> && <[item_clicked_on].script.name> == <[cursor_item].script.name||null>:
@@ -199,7 +204,9 @@ fort_global_handler:
             - inventory set o:<[item_clicked_on].with[quantity=<[stack_size]>]> slot:<[slot]>
             - adjust <player> item_on_cursor:<[item_clicked_on].with[quantity=<[cursor_qty]>]>
 
-        - inject update_hud
+        #dont check for if only the cursor item has the rarity flag, since players can take out multiple items that are stackable from the same slot
+        - run fort_inventory_handler.update_rarity_bg def.slot:<[slot_clicked]>
+        - inject update_hud.hotbar
       - stop
 
     - determine cancelled
@@ -218,11 +225,8 @@ fort_global_handler:
     #-if i really really really wanted to, i could add the stack_size check for drags too
     - if <list[2|3|4|5|6].contains_any[<context.slots>]>:
       - determine passively cancelled
-    #remove/re-add rarity bg
-    #if they're clicking WITH a fort item or ON one, update the rarity
-    - if <context.item.has_flag[rarity]>:
-      - wait 0.5t
-      - inject update_hud
+      - stop
+    #no need for updating rarity bg anymore, since we cancel the event completely
 
     on player clicks in inventory action:PLACE_SOME:
     - determine cancelled
@@ -258,7 +262,6 @@ fort_global_handler:
               - default:
                 - narrate "<&c>Oops... that wasn't supposed to happen. Whatever..."
           - inventory close
-          - inject update_hud
         - else if <context.click> == RIGHT:
           - inventory close
         - stop
@@ -328,7 +331,46 @@ fort_global_handler:
       - playsound <player> sound:BLOCK_NOTE_BLOCK_BASS pitch:2
       - flag player <[flag_path]>:--
       - run <[script_path]> def:<map[<[type_name]>=<[sub_type]>;qty=1]>
-      - inject update_hud
+      #update inv items
+      #def.<[type_name]> not working
+      #so we'll just input both
+      - run fort_inventory_handler.update.<[type]> def.ammo_type:<[sub_type]> def.mat:<[sub_type]>
+
+
+    #-convenience route: check if the player can stack the cursor item, otherwise drop it
+    #-easiest/most optimized wise: just drop whatever cursor item you have
+
+    #make a task for dropping any type of item?
+
+    on player closes inventory:
+    - define drop_item <player.item_on_cursor>
+    - define script_name <[drop_item].script.name||null>
+
+    - flag player fort.last_slot_clicked:!
+
+    - if <[script_name]> == null:
+      - stop
+
+    - define drop_loc <player.location.above[0.1]>
+
+    - adjust <player> item_on_cursor:air
+
+    #- if [ gun ]
+    - if <[script_name].starts_with[gun_]>:
+      #-can't use .drop_gun, because new uuid is generated
+      - define gun    <[drop_item]>
+      - define rarity <[gun].flag[rarity]>
+      - define gun    <[gun].with[custom_model_data=<[gun].flag[rarities.<[rarity]>.custom_model_data]>]> if:<[gun].flag[rarities.<[rarity]>.custom_model_data].is_truthy>
+      - drop <[gun]>  <[drop_loc]> save:drop
+      - define drop   <entry[drop].dropped_entity>
+      - define name   <[gun].display.strip_color>
+      - define text <&l><[name].to_uppercase.color[#<map[Common=bfbfbf;Uncommon=4fd934;Rare=45c7ff;Epic=bb33ff;Legendary=ffaf24].get[<[rarity]>]>]>
+      - run fort_item_handler.item_text def:<map[text=<[text]>;drop=<[drop]>;rarity=<[rarity]>]>
+
+    # - if [ item ]
+    - else if <[script_name].starts_with[fort_item_]>:
+      - run fort_item_handler.drop_item def:<map[item=<[drop_item]>;qty=<[drop_item].quantity>;loc=<[drop_loc]>]>
+
 
     on player closes inventory flagged:fort.drop_menu:
     #meaning the inventory wasn't actually closed, just a new one was opened

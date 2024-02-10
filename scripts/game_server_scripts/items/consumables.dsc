@@ -119,7 +119,11 @@ fort_consumable_handler:
 
     - take slot:<player.held_item_slot>
 
-    - inject update_hud
+    #so the item count drops
+    - run update_hud.hotbar
+    #i *could* just isolate it for shields and health, but whatevs
+    - run update_hud.health
+
     - flag player fort.consuming:!
 
   use_bush:

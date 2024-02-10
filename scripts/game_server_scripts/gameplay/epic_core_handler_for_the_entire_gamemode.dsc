@@ -375,7 +375,7 @@ fort_core_handler:
       - define new_total_wins <[total_wins].add[1]>
 
       - define old_data.uuid:<[uuid]>
-      - define new_data.$set.<[mode]>.wins:<[total_wins]>
+      - define new_data.$set.<[mode]>.wins:<[new_total_wins]>
 
       - ~mongo id:nimnite_playerdata update:<[old_data]> new:<[new_data]>
 

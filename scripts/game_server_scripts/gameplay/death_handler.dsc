@@ -11,9 +11,11 @@ fort_death_handler:
 
     #so they can't use the teleport feature vanilla mc has
     on player teleports cause:SPECTATE flagged:fort.spectating:
+    - stop if:<player.has_flag[fort.is_mod]>
     - determine passively cancelled
 
     after player spectates player flagged:fort.spectating:
+    - stop if:<player.has_flag[fort.is_mod]>
     #we don't really need the second check in reality, but ill keep it for debugging/future needs
     #no need to remove spectate flag either, since when they quit flag is removed
     - wait 4s
@@ -23,6 +25,7 @@ fort_death_handler:
       - wait 2s
 
     on player stops spectating flagged:fort.spectating:
+    - stop if:<player.has_flag[fort.is_mod]>
     - determine passively cancelled
     - define player_spectating <player.flag[fort.spectating]>
     #(second check in case the other player died and is spectating someone else now)
@@ -71,6 +74,8 @@ fort_death_handler:
       #ENTITY_PLAYER_ATTACK_STRONG -> would use this, but it's not loud enough
       - playsound <[killer]> sound:ENTITY_PLAYER_ATTACK_CRIT pitch:0.9 volume:1
       - actionbar "<&chr[1].font[elim_text]><element[<&l>ELIMINATED].font[elim_text]> <element[<&c><&l><player.name>].font[elim_text]>" targets:<[killer]>
+
+      - run update_hud.kills player:<[killer]>
 
   #-should we make a player leaving mid-fight count as a kill too?
   death:
@@ -162,6 +167,7 @@ fort_death_handler:
       - run fort_death_handler.spectate_target def:<map[spectator=<[spectator]>;target=<[player_to_spectate]>]>
 
     #update their hud so its correctly updated for spectating players too
+    ## [ warning ] this updates the ENTIRE hud (so the spectators can view the same thing)
     - run update_hud player:<[player_to_spectate]>
 
   spectate_target:
