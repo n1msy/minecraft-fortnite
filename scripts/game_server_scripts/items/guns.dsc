@@ -46,6 +46,8 @@ fort_gun_handler:
     - remove <[e]>
 
     - flag player fort.ammo.<[ammo_type]>:+:<[add_qty]>
+
+    - run update_hud.ammo
     - run fort_inventory_handler.update.ammo def.ammo_type:<[ammo_type]>
 
     on ammo_* merges:
@@ -138,6 +140,7 @@ fort_gun_handler:
 
     - run fort_inventory_handler.update_rarity_bg def.slot:<[gun_slot]>
     - run update_hud.hotbar
+    - run update_hud.ammo
 
     on player drops gun_*:
     #so players can't drop their gun while scoped
