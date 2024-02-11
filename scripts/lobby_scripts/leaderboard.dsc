@@ -6,7 +6,7 @@ fort_board_handler:
     - run update_server_status
 
     #update lb every 20 sec
-    - if <context.second.mod[20]> == 0:
+    - if <context.second.mod[15]> == 0:
       # - [ Fetch LB Data ] - #
       - run update_leaderboard
 
@@ -21,9 +21,6 @@ fort_stats:
     - stastitics
   definitions: data
   script:
-    - if !<player.is_op>:
-      - narrate "<&c>Command not out yet."
-      - stop
 
     - define mode        <context.args.first||null>
     - define player_name <context.args.get[2]||null>
