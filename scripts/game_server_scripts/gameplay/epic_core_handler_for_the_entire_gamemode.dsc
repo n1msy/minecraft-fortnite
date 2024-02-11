@@ -361,6 +361,8 @@ fort_core_handler:
         - define total_games_played     <[pdata].first.parse_yaml.get[<[mode]>].get[games_played]||0>
         - define new_total_games_played <[total_games_played].add[1]>
 
+        - define total_wins     <[pdata].first.parse_yaml.get[<[mode]>].get[wins]||0>
+
         - define old_data._id:<[uuid]>
         - define new_data.$set.<[mode]>.kills:<[new_total_kills]>
         - define new_data.$set.<[mode]>.deaths:<[new_total_deaths]>
@@ -368,9 +370,11 @@ fort_core_handler:
 
         # - [ Save Player WINS ] - #
         - if <[winner_uuids].contains[<[uuid]>]>:
-          - define total_wins     <[pdata].first.parse_yaml.get[<[mode]>].get[wins]||0>
           - define new_total_wins <[total_wins].add[1]>
           - define new_data.$set.<[mode]>.wins:<[new_total_wins]>
+        - else:
+          #so you retain previous win data
+          - define new_data.$set.<[mode]>.wins:<[total_wins]>
 
         - ~mongo id:nimnite_playerdata update:<[old_data]> new:<[new_data]>
 
