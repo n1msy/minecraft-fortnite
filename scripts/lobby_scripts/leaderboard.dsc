@@ -88,7 +88,7 @@ fort_stats:
     - define uuid <[data].get[uuid]>
     - define mode solo
 
-    - ~mongo id:nimnite_playerdata find:[_id=<player.uuid>] save:pdata
+    - ~mongo id:nimnite_playerdata find:[_id=<[uuid]>] save:pdata
     - define pdata <entry[pdata].result.first.parse_yaml||no_data>
 
     - define kills        <[pdata].get[<[mode]>].get[kills]||0>
