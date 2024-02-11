@@ -144,12 +144,12 @@ update_leaderboard:
     - define mode solo
 
     #fort flag is removed for lobby stuff, so using separate flag name
-    - define cached_uuids <server.flag[fort.playerdata].keys||<list[]>>
+    - define cached_uuids <server.flag[fort.playerstats].keys||<list[]>>
 
     #type = wins/kills
     - define pdata <list[]>
     - foreach <[cached_uuids]> as:u:
-      - define amount <server.flag[fort.playerdata.<[u]>.<[mode]>.<[type]>]>
+      - define amount <server.flag[fort.playerstats.<[u]>.<[mode]>.<[type]>]>
       - define pdata:->:<map[uuid=<[u]>;amount=<[amount]>]>
 
     - define top_players <[pdata].sort_by_number[get[amount]].reverse.get[1].to[10].parse[get[uuid].as[player]]||<list[]>>
@@ -158,6 +158,7 @@ update_leaderboard:
 
     #-first place player head
     - define player_head <server.flag[fort.leaderboard.<[type]>.head]||null>
+    ####skull_skin is stored in PLAYERDATA, while stats are stored in PLAYERSTATS
     - define skull_skin         <server.flag[fort.playerdata.<[first].uuid||null>.skull_skin]||null>
 
     - if <[player_head]> != null && <[player_head].is_spawned>:
@@ -209,7 +210,7 @@ update_leaderboard:
         - default:
           - define text <[text].color[<color[#696969]>]><&r>
 
-      - define amount <server.flag[fort.playerdata.<[p].uuid>.<[mode]>.<[type]>]>
+      - define amount <server.flag[fort.playerstats.<[p].uuid>.<[mode]>.<[type]>]>
       - define text "<[text]> <&f><[amount]>"
 
       #gold, silver, bronze, gray
