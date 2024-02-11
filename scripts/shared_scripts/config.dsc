@@ -68,6 +68,13 @@ nimnite_config:
       - <gray>_killer_ introduced <red><bold>_player_<reset> <gray>to Gravity
       - <gray>_killer_ Eliminated <red><bold>_player_<reset> <gray>with a great fall
 
+    # - [ From Suffocation ] - #
+    self_suffocation:
+      - <red><bold>_player_<reset> <gray>ate too much dirt
+      - <red><bold>_player_<reset> <gray>suffocated in a block
+    enemy_suffocation:
+      - <gray>_killer_ helped bury <red><bold>_player_<reset> underground
+
     # - [ From Explosion ] - #
     self_explosion:
       - <red><bold>_player_<reset> <gray>is <gray><&o>Literally <gray>on fire
