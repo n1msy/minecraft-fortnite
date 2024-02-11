@@ -211,7 +211,7 @@ update_leaderboard:
           - define text <[text].color[<color[#696969]>]><&r>
 
       - define amount <server.flag[fort.playerstats.<[p].uuid>.<[mode]>.<[type]>]>
-      - define text "<[text]> <&f><[amount]>"
+      - define text "<[text]> <&f><[amount].format_number>"
 
       #gold, silver, bronze, gray
 
