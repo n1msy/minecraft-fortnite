@@ -4,7 +4,7 @@ fort_pickaxe_default:
   type: item
   material: netherite_pickaxe
   display name: <&chr[1].font[item_name]><&f><&l><element[Pickaxe].font[item_name]>
-  enchantments:
+  enchantments:!
   - efficiency:3
   mechanisms:
     custom_model_data: 1
@@ -100,7 +100,11 @@ fort_pic_handler:
     - if <[mat].contains_any_text[oak|spruce|birch|jungle|acacia|dark_oak|mangrove|warped|barrel|bamboo]>:
       - define tool netherite_axe
     - else:
-      - define tool netherite_pickaxe
+      # If the block is wool, switch pickaxe to shears.
+      - if <[mat].contains_any_text[wool]>:
+        - define tool shears
+      - else:
+        - define tool netherite_pickaxe
 
     - if <[i].material.name> != <[tool]>:
       - inventory adjust slot:<player.held_item_slot> material:<[tool]>
