@@ -107,18 +107,19 @@ fort_spectate_command:
 
       - inventory open d:<inventory[generic[title=Nimnite Game Servers (<[game_servers].size>);contents=<[items]>;size=9]]>
       - flag player fort.spectate_menu
+      - stop 
 
-    - else:
-      - define server_number <context.args.get[1]>
-      - if <[server_number].is_numeric> && <bungee.list_servers.filter[starts_with[fort_]].exclude[fort_lobby].sort_by_number[after[_]]>.size >= <[server_number]>:
-        - define server_to_spectate <bungee.list_servers.filter[starts_with[fort_]].exclude[fort_lobby].sort_by_number[after[_]].get[<[server_number]>]>
-        - narrate "<&a>Spectating server <&7><[server_to_spectate]>"
-        - flag player fort.spectate_sending
+    - define server_number <context.args.get[1]>
+    - if <[server_number].is_numeric> && <[server_number]> >= 1 && <bungee.list_servers.filter[starts_with[fort_]].exclude[fort_lobby].sort_by_number[after[_]]>.size >= <[server_number]>:
+      - define server_to_spectate <bungee.list_servers.filter[starts_with[fort_]].exclude[fort_lobby].sort_by_number[after[_]].get[<[server_number]>]>
+      - narrate "<&a>Spectating server <&7><[server_to_spectate]>"
+      - flag player fort.spectate_sending
 
-        - bungeerun <[server_to_spectate]> fort_spectate_bungee def:<player>
-        - wait 1s
-      - else:
-        - narrate "<&c>Invalid server number. Please select a number between 1 and <bungee.list_servers.filter[starts_with[fort_]].exclude[fort_lobby].sort_by_number[after[_]]>.size>."
+      - bungeerun <[server_to_spectate]> fort_spectate_bungee def:<player>
+      - wait 1s
+      - stop 
+
+    - narrate "<&c>Invalid server number. Please select a number between 1 and <bungee.list_servers.filter[starts_with[fort_]].exclude[fort_lobby].sort_by_number[after[_]]>.size>."
 
 fort_admin_commands_2:
   type: command
