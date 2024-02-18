@@ -9,6 +9,11 @@ fort_emote_handler:
     - if <context.clicked_inventory.inventory_type> != CRAFTING:
       - stop
     - determine passively cancelled
+
+    - if <bungee.server> == fort_lobby:
+      - narrate "<&e>To prevent lag, emotes are disabled in the lobby temporarily."
+      - stop
+
     - if <player.has_flag[fort.disable_emotes]> || <player.has_flag[fort.on_bus]> || <player.has_flag[fort.using_glider]>:
       - stop
 
