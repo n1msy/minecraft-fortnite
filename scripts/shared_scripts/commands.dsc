@@ -244,10 +244,11 @@ fort_admin_commands:
         - narrate "<&c>Game unpaused."
 
       # - [ SETUP COMMANDS ] - #
-      - case lobby_setup:
-        - inject fort_admin_commands.server_check
-        - run fort_lobby_setup
-        - narrate "<&a>Nimnite lobby circle set."
+      #command is fucked
+      ##- case lobby_setup:
+      ##  - inject fort_admin_commands.server_check
+      ##  - run fort_lobby_setup
+      ##  - narrate "<&a>Nimnite lobby circle set."
 
       - case lobby_teleport:
         #- define loc <player.location.round.above[0.5]>
