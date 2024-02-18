@@ -378,7 +378,7 @@ fort_core_handler:
 
         - ~mongo id:nimnite_playerdata update:<[old_data]> new:<[new_data]>
 
-    - bungeerun fort_lobby fort_bungee_tasks.update_playerdata_cache def:<map[players=<[players_that_played].escaped>]>
+    - bungeerun fort_lobby fort_bungee_tasks.update_playerdata_cache def:<map[players=<[players_that_played].escaped>]> if:<[players_that_played].any>
     - announce to_console "<&b>[Nimnite]<&r>Restarting server..."
     - wait 5s
     - adjust server restart
