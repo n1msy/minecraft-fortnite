@@ -66,7 +66,10 @@ ReportSystem_Command:
         - narrate "<&c>You may report another player in <player.flag_expiration[ReportSystem.Report_Cooldown].from_now.formatted||0.01s>"
         - stop
     - if <context.args.is_empty>:
-        - narrate "<&c>Usage: /report (player) (optional-reason)"
+        - narrate "<&c>Usage: /report (player) (reason)"
+        - stop
+    - if <context.args.size> == 1:
+        - narrate "<&c>Please state the reason of your report."
         - stop
     - if <context.args.size> > 1:
         - define reason <context.args.get[2].to[<context.args.size>].separated_by[<&sp>].sql_escaped>
