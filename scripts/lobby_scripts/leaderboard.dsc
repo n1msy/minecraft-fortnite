@@ -62,11 +62,11 @@ fort_stats:
     - narrate <[line]>
     - narrate "<&a>Nimnite <&n><[mode].to_titlecase><&r> <&a>Stats <&f>(<[player].name>)"
     - narrate "<&7>Kills: <&b><[kills]>"
-    - narrate "<&7>Deaths: <&b><[deaths]>"
-    - narrate "<&7>K/D: <&b><[kills].div[<[deaths]>].round_to[2]||0>"
+    - narrate "<&7>Deaths: <&b><[losses]>"
+    - narrate "<&7>K/D: <&b><[kills].div[<[losses]>].round_to[2]||0>"
     - narrate "<&7>Games Played: <&b><[games_played]>"
     - narrate "<&7>Wins: <&b><[wins]>"
-    - narrate "<&7>W/L: <&b><[wins].div[<[losses]>].round_to[2]||1>"
+    - narrate "<&7>W/L: <&b><[wins].div[<[games_played]>].round_to[2]||1>"
     #fallback is 1 because if you divide wins by 0, w/l would be 1
     - narrate <[line]>
 
