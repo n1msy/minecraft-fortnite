@@ -301,7 +301,7 @@ fort_gun_handler:
     - if <player.has_flag[fort.<[gun_name]>.cooldown]>:
       - stop
 
-    - if <[gun].has_flag[first_shot_accuracy]> && !<player.has_flag[gun_holding_down]>:
+    - if <[gun].has_flag[first_shot_accuracy]> && !<player.has_flag[gun_holding_down]> && <player.has_flag[fort.gun_scoped]>:
       - define gun <[gun].with[flag=base_bloom:0]>
 
     - flag player gun_holding_down duration:5t
@@ -1186,33 +1186,33 @@ gun_pump_shotgun:
     rarities:
       common:
         chance: 22
-        damage: 92
+        damage: 75
         structure_damage: 45
         reload_time: 4.59
         custom_model_data: 1
       uncommon:
         chance: 34
         floor_weight: 5.5
-        damage: 101
+        damage: 80
         structure_damage: 49
         reload_time: 4.32
         custom_model_data: 1
       rare:
         chance: 8
-        damage: 110
+        damage: 90
         floor_weight: 1.83
         structure_damage: 50
         reload_time: 3.96
         custom_model_data: 1
       epic:
         chance: 1.36
-        damage: 119
+        damage: 100
         structure_damage: 54
         reload_time: 3.6
         custom_model_data: 1
       legendary:
         chance: 0.34
-        damage: 128
+        damage: 115
         structure_damage: 55
         reload_time: 3.33
         custom_model_data: 1
@@ -1221,7 +1221,7 @@ gun_pump_shotgun:
     #max means it wont deal any damage past that
     damage_falloff:
       7: 100
-      10: 78
+      10: 90
       15: 49
       31: 0
 
