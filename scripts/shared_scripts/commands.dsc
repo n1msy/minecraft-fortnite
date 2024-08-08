@@ -95,16 +95,31 @@ fort_spectate_command:
   aliases:
   - fspec
   script:
-    - define game_servers <bungee.list_servers.filter[starts_with[fort_]].exclude[fort_lobby].sort_by_number[after[_]]>
-    - narrate "<&a>Opening current Nimnite game servers <&7>(<[game_servers].size>)"
+    - if <context.args.is_empty>:
+      - define game_servers <bungee.list_servers.filter[starts_with[fort_]].exclude[fort_lobby].sort_by_number[after[_]]>
+      
+      - narrate "<&a>Opening current Nimnite game servers <&7>(<[game_servers].size>)"
+      
+      - define items <list[]>
+      - foreach <[game_servers]> as:s:
+        - define i <item[paper].with[display=<&a><&l>Game Server <[loop_index]>;flag=server:<[s]>;lore=<list[<&sp>|<&e>Click to spectate.]>]>
+        - define items:->:<[i]>
 
-    - define items <list[]>
-    - foreach <[game_servers]> as:s:
-      - define i <item[paper].with[display=<&a><&l>Game Server <[loop_index]>;flag=server:<[s]>;lore=<list[<&sp>|<&e>Click to spectate.]>]>
-      - define items:->:<[i]>
+      - inventory open d:<inventory[generic[title=Nimnite Game Servers (<[game_servers].size>);contents=<[items]>;size=9]]>
+      - flag player fort.spectate_menu
+      - stop 
 
-    - inventory open d:<inventory[generic[title=Nimnite Game Servers (<[game_servers].size>);contents=<[items]>;size=9]]>
-    - flag player fort.spectate_menu
+    - define server_number <context.args.get[1]>
+    - if <[server_number].is_numeric> && <[server_number]> >= 1 && <bungee.list_servers.filter[starts_with[fort_]].exclude[fort_lobby].sort_by_number[after[_]]>.size >= <[server_number]>:
+      - define server_to_spectate <bungee.list_servers.filter[starts_with[fort_]].exclude[fort_lobby].sort_by_number[after[_]].get[<[server_number]>]>
+      - narrate "<&a>Spectating server <&7><[server_to_spectate]>"
+      - flag player fort.spectate_sending
+
+      - bungeerun <[server_to_spectate]> fort_spectate_bungee def:<player>
+      - wait 1s
+      - stop 
+
+    - narrate "<&c>Invalid server number. Please select a number between 1 and <bungee.list_servers.filter[starts_with[fort_]].exclude[fort_lobby].sort_by_number[after[_]]>.size>."
 
 fort_admin_commands_2:
   type: command
