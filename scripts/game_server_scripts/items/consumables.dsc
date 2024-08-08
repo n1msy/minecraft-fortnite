@@ -258,6 +258,6 @@ fort_item_bush:
     #replaces other consumables from chests
     chance: 5
     icon_chr: 7
-    drop_quantity: 2
+    drop_quantity: 1
     stack_size: 2
     use_time: 3

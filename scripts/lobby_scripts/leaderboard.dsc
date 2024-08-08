@@ -18,7 +18,7 @@ fort_stats:
   #permission: Fort.stats
   usage: /stats (mode) (player)
   aliases:
-    - stastitics
+    - statitics
   definitions: data
   script:
 
@@ -56,17 +56,19 @@ fort_stats:
       - narrate "<&c>This player hasn't played yet."
       - stop
 
-    - define losses <[games_played].sub[<[wins]>]>
+    #this isnt needed, we are making a RATIO nimsy (-_-)
+    #- define losses <[games_played].sub[<[wins]>]>
 
     - define line <&8><element[<&sp>].repeat[45].strikethrough>
     - narrate <[line]>
     - narrate "<&a>Nimnite <&n><[mode].to_titlecase><&r> <&a>Stats <&f>(<[player].name>)"
     - narrate "<&7>Kills: <&b><[kills]>"
     - narrate "<&7>Deaths: <&b><[deaths]>"
-    - narrate "<&7>K/D: <&b><[kills].div[<[deaths]>].round_to[2]||0>"
+    #kdr is fucked, so its disabled for now
+    # - narrate "<&7>K/D: <&><[kills].div[<[deaths]>].round_to[2]||0>"
     - narrate "<&7>Games Played: <&b><[games_played]>"
     - narrate "<&7>Wins: <&b><[wins]>"
-    - narrate "<&7>W/L: <&b><[wins].div[<[losses]>].round_to[2]||1>"
+    - narrate "<&7>W/L: <&b><[wins].div[<[games_played]>].round_to[2]||1>"
     #fallback is 1 because if you divide wins by 0, w/l would be 1
     - narrate <[line]>
 

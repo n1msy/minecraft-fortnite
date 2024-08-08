@@ -301,7 +301,7 @@ fort_gun_handler:
     - if <player.has_flag[fort.<[gun_name]>.cooldown]>:
       - stop
 
-    - if <[gun].has_flag[first_shot_accuracy]> && !<player.has_flag[gun_holding_down]>:
+    - if <[gun].has_flag[first_shot_accuracy]> && !<player.has_flag[gun_holding_down]> && <player.has_flag[fort.gun_scoped]>:
       - define gun <[gun].with[flag=base_bloom:0]>
 
     - flag player gun_holding_down duration:5t
@@ -1186,42 +1186,42 @@ gun_pump_shotgun:
     rarities:
       common:
         chance: 22
-        damage: 92
+        damage: 75
         structure_damage: 45
-        reload_time: 5.1
+        reload_time: 4.59
         custom_model_data: 1
       uncommon:
         chance: 34
         floor_weight: 5.5
-        damage: 101
+        damage: 80
         structure_damage: 49
-        reload_time: 4.8
+        reload_time: 4.32
         custom_model_data: 1
       rare:
         chance: 8
-        damage: 110
+        damage: 90
         floor_weight: 1.83
         structure_damage: 50
-        reload_time: 4.4
+        reload_time: 3.96
         custom_model_data: 1
       epic:
         chance: 1.36
-        damage: 119
+        damage: 100
         structure_damage: 54
-        reload_time: 4.0
+        reload_time: 3.6
         custom_model_data: 1
       legendary:
         chance: 0.34
-        damage: 128
+        damage: 115
         structure_damage: 55
-        reload_time: 3.7
+        reload_time: 3.33
         custom_model_data: 1
     #(in meters/blocks)
     #value is in percentage of damage
     #max means it wont deal any damage past that
     damage_falloff:
       7: 100
-      10: 78
+      10: 90
       15: 49
       31: 0
 
@@ -1267,34 +1267,34 @@ gun_tactical_shotgun:
         floor_weight: 5.25
         damage: 77
         structure_damage: 50
-        reload_time: 6.27
+        reload_time: 5.643
         custom_model_data: 23
       uncommon:
         chance: 34
         damage: 81
         floor_weight: 1.44
         structure_damage: 52
-        reload_time: 5.99
+        reload_time: 5.391
         custom_model_data: 23
       rare:
         chance: 8
         floor_weight: 0.53
         damage: 85
         structure_damage: 55
-        reload_time: 5.7
+        reload_time: 5.13
         custom_model_data: 23
       epic:
         chance: 1.36
         damage: 89
         structure_damage: 75
-        reload_time: 5.41
+        reload_time: 4.869
         ##25
         custom_model_data: 23
       legendary:
         chance: 0.34
         damage: 94
         structure_damage: 78
-        reload_time: 5.13
+        reload_time: 4.617
         ##25
         custom_model_data: 23
     #(in meters/blocks)
@@ -1304,6 +1304,8 @@ gun_tactical_shotgun:
       8: 100
       10: 90
       15: 70
+      20: 50
+      25: 25
       30: 0
 
     sounds:
@@ -1334,6 +1336,7 @@ gun_assault_rifle:
     ticks_between_shots: 5
     ammo_type: medium
     mag_size: 30
+    first_shot_accuracy: true
     #in seconds
     cooldown: 0.1
     pellets: 1
@@ -1347,32 +1350,32 @@ gun_assault_rifle:
         chance: 43
         floor_weight: 3.24
         damage: 30
-        reload_time: 2.7
+        reload_time: 2.835
         custom_model_data: 3
       uncommon:
         chance: 39
         floor_weight: 1.62
         damage: 31
-        reload_time: 2.6
+        reload_time: 2.73
         custom_model_data: 3
       rare:
         chance: 39
         floor_weight: 0.65
         damage: 33
-        reload_time: 2.5
+        reload_time: 2.625
         custom_model_data: 3
       epic:
         chance: 2
         floor_weight: 0.24
         damage: 35
-        reload_time: 2.4
+        reload_time: 2.52
         icon_chr: 2
         custom_model_data: 5
       legendary:
         chance: 0.5
         floor_weight: 0.06
         damage: 36
-        reload_time: 2.2
+        reload_time: 2.31
         icon_chr: 2
         custom_model_data: 5
     #(in meters)
@@ -1401,6 +1404,7 @@ gun_burst_assault_rifle:
     icon_chr: 3
     #global stats
     #min is 5 if you want singular shots
+    first_shot_accuracy: true
     ticks_between_shots: 2
     ammo_type: medium
     mag_size: 30
@@ -1409,7 +1413,7 @@ gun_burst_assault_rifle:
     #sorta as a way to offset the timing, specifically for the burst
     shots_between_wait: 3
     pellets: 1
-    base_bloom: 1.3
+    base_bloom: 1.1
     bloom_multiplier: 1
     headshot_multiplier: 1.5
     custom_recoil_fx: false
@@ -1490,23 +1494,27 @@ gun_tactical_smg:
         chance: 22
         floor_weight: 3.8
         damage: 18
+        structure_damage: 13
         reload_time: 2.2
         custom_model_data: 7
       rare:
         chance: 34
         floor_weight: 1.5
         damage: 19
+        structure_damage: 16
         reload_time: 2.1
         custom_model_data: 7
       epic:
         chance: 1.36
         floor_weight: 0.35
         damage: 20
+        structure_damage: 18
         reload_time: 2.0
         custom_model_data: 7
       legendary:
         chance: 0.34
         damage: 21
+        structure_damage: 20
         reload_time: 1.9
         custom_model_data: 7
     #(in meters)
@@ -1554,39 +1562,40 @@ gun_smg:
       common:
         chance: 14
         floor_weight: 3.455
-        damage: 16
+        damage: 14
         reload_time: 2.31
         custom_model_data: 9
       uncommon:
         chance: 39.7
         floor_weight: 1.15
-        damage: 17
+        damage: 15
         reload_time: 2.2
         custom_model_data: 9
       rare:
         chance: 9.33
         floor_weight: 0.39
-        damage: 18
+        damage: 16
         reload_time: 2.1
         custom_model_data: 9
       epic:
         chance: 1.59
         floor_weight: 0.2279
-        damage: 19
+        damage: 17
         reload_time: 2.0
         custom_model_data: 9
       legendary:
         chance: 0.4
         floor_weight: 0.0848
-        damage: 20
+        damage: 18
         reload_time: 1.89
         custom_model_data: 9
     #(in meters)
     #value is in percentage of damage
-    #no damage falloff was found, so im using same as AR
     damage_falloff:
       20: 100
-      40: 45
+      30: 50
+      35: 15
+      45: 0
 
     sounds:
       ENTITY_FIREWORK_ROCKET_BLAST_FAR:
@@ -1620,7 +1629,7 @@ gun_bolt_action_sniper_rifle:
     pellets: 1
     base_bloom: 2.5
     bloom_multiplier: 1.2
-    headshot_multiplier: 2.5
+    headshot_multiplier: 2
     #if there's a slightly different shoot effect alongside the base ones
     custom_recoil_fx: false
     uuid: <util.random_uuid>
@@ -1629,30 +1638,30 @@ gun_bolt_action_sniper_rifle:
       #idk about common uncommon?
       common:
         chance: 10
-        damage: 99
+        damage: 85
         reload_time: 3.3
         custom_model_data: 11
       uncommon:
         chance: 51.72
-        damage: 105
+        damage: 90
         reload_time: 3.15
         custom_model_data: 11
       rare:
         chance: 25.86
         floor_weight: 0.35
-        damage: 110
+        damage: 95
         reload_time: 3
         custom_model_data: 11
       epic:
         chance: 2.76
         floor_weight: 0.1
-        damage: 116
+        damage: 100
         reload_time: 2.5
         custom_model_data: 11
       legendary:
         chance: 0.69
         floor_weight: 0.03
-        damage: 121
+        damage: 113
         reload_time: 2.35
         custom_model_data: 11
     #-no damage falloff
@@ -1681,6 +1690,7 @@ gun_revolver:
     ticks_between_shots: 5
     ammo_type: medium
     mag_size: 6
+    first_shot_accuracy: true
     #in seconds
     cooldown: 0.75
     pellets: 1
@@ -1721,7 +1731,6 @@ gun_revolver:
         icon_chr: 7
         custom_model_data: 14
     #-no damage falloff (?)
-
     sounds:
       ENTITY_FIREWORK_ROCKET_LARGE_BLAST:
         pitch: 1.47
@@ -1825,7 +1834,7 @@ gun_grenade_launcher:
     uuid: <util.random_uuid>
     rarities:
       rare:
-        chance: 1.84
+        chance: 2
         damage: 70
         structure_damage: 200
         reload_time: 1.4
@@ -1883,7 +1892,7 @@ gun_rocket_launcher:
     uuid: <util.random_uuid>
     rarities:
       rare:
-        chance: 2
+        chance: 1
         damage: 100
         structure_damage: 300
         reload_time: 3.60
