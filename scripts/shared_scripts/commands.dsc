@@ -152,7 +152,7 @@ fort_admin_commands:
   aliases:
   - fort
   tab completions:
-    1: <list[models|lobby_setup|lobby_teleport|pregame_spawn|fill_chests|fill_ammo_boxes|supply_drop|mode]>
+    1: <list[models|lobby_setup|lobby_teleport|pregame_spawn|fill_chests|fill_ammo_boxes|supply_drop|mode|give_all_players_ammo]>
   script:
     - choose <context.args.first||null>:
 
@@ -341,6 +341,14 @@ fort_admin_commands:
           - inject fort_chest_handler.fill_<map[chests=chest;ammo_boxes=ammo_box].get[<[container_type]>]>
 
         - narrate "<&a>All <[container_type].replace[_].with[ ]> have been filled <&7>(<[containers].size>)<&a>."
+      - case give_all_players_ammo:
+        - foreach <server.online_players> as:player:
+          - flag <[player]> fort.ammo.shells:1000000
+          - flag <[player]> fort.ammo.medium:1000000
+          - flag <[player]> fort.ammo.light:1000000
+          - flag <[player]> fort.ammo.heavy:1000000
+          - flag <[player]> fort.wood.qty:1000000
+        - narrate "<&a>All players have been given ammo and wood."
 
       - case supply_drop:
         - inject fort_admin_commands.server_check
